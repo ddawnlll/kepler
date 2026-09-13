@@ -1,0 +1,30 @@
+# Environment & Secrets
+.env
+.venv/
+env/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# MLflow & Experiments
+mlruns/
+.mlflow/
+
+# Qlib & RD-Agent workspaces and artifacts
+.qlib/
+qlib_data/
+git_ignore_folder/
+log/
+logs/
+workspace/
+workspaces/
+*.parquet
+*.pkl
+*.bin
+
+# macOS
+.DS_Store
