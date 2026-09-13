@@ -25,6 +25,10 @@ workspaces/
 *.parquet
 *.pkl
 *.bin
+*.log
+pickle_cache/
+Users/
 
 # macOS
 .DS_Store
+
