@@ -1,0 +1,51 @@
+# Kepler modern backtest config (train-free, default path).
+# Train yok: model mlruns'daki donuk params.pkl'dan yüklenir, sadece predict + backtest koşar.
+# smoke_qlib.sh M0 arşivi olarak salt-okunur kalır; yeni işler bu config + scripts/backtest_only.sh ile yürür.
+
+qlib_init:
+  provider_uri: "~/.qlib/qlib_data/cn_data"
+  region: cn
+
+market: &market csi300
+benchmark: &benchmark SH000300
+
+# Donuk train penceresi (normalizasyon aynı kalsın diye; refit YOK)
+data_handler_config: &data_handler_config
+  start_time: 2008-01-01
+  end_time: 2026-08-31
+  fit_start_time: 2008-01-01
+  fit_end_time: 2014-12-31
+  instruments: *market
+
+# Modern OOS penceresi: 2020 V-shape atlandı, regülasyon + faiz şoku + güncel yatay hepsi içinde
+segments:
+  train: [2008-01-01, 2014-12-31]
+  valid: [2015-01-01, 2016-12-31]
+  test: [2023-01-01, 2026-08-31]
+
+strategy:
+  class: TopkDropoutStrategy
+  module_path: qlib.contrib.strategy
+  kwargs:
+    signal: <PRED>
+    topk: 50
+    n_drop: 5
+
+executor:
+  class: SimulatorExecutor
+  module_path: qlib.backtest.executor
+  kwargs:
+    time_per_step: day
+    generate_portfolio_metrics: True
+
+backtest:
+  start_time: 2023-01-01
+  end_time: 2026-08-31
+  account: 100000000
+  benchmark: *benchmark
+  exchange_kwargs:
+    limit_threshold: 0.095
+    deal_price: close
+    open_cost: 0.0005
+    close_cost: 0.0015
+    min_cost: 5

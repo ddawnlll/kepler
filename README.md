@@ -9,15 +9,13 @@ Kepler is a minimal, reproducible quantitative research setup evaluating **Micro
 
 See [MISSION.md](MISSION.md) for core principles and constraints.
 
-## Getting Started
+## Getting Started (default: train-free)
 
 ```bash
-# 1. Environment Setup
-./scripts/setup.sh
-
-# 2. Gate 1: Qlib baseline
-./scripts/smoke_qlib.sh
-
-# 3. Gate 2: RD-Agent iteration (requires .env configuration)
-./scripts/smoke_rdagent.sh
+# Default: train-free modern backtest (refit yok, donuk model)
+./scripts/backtest_only.sh
+# config: configs/backtest_modern.yaml (2023-01-01 -> 2026-08-31)
+# çıktı: reports/backtest_modern/metrics.yaml
 ```
+
+## Archive: Kepler M0 Smoke-Test Gates (salt-okunur)

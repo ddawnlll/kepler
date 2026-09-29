@@ -1,0 +1,25 @@
+window:
+  start: '2023-01-01'
+  end: '2026-08-31'
+freq: 1day
+n_bars: 887
+model: mlruns/461983874136587276/0414105956094a979bdd0f1a8a008066/artifacts/params.pkl
+refit: false
+signal:
+  IC: 0.011137624298446858
+  ICIR: 0.08398433441632545
+  Rank IC: 0.010576976943277847
+  Rank ICIR: 0.07979029681769047
+portfolio:
+  excess_return_without_cost:
+    mean: 0.0003544461989589246
+    std: 0.006672452230772278
+    annualized_return: 0.08435819535222405
+    information_ratio: 0.8195082474666685
+    max_drawdown: -0.14861252054545881
+  excess_return_with_cost:
+    mean: 0.00015791931945505712
+    std: 0.0066727599187595115
+    annualized_return: 0.037584798030303596
+    information_ratio: 0.3651053886069969
+    max_drawdown: -0.16889848493332885
