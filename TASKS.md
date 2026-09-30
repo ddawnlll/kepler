@@ -23,7 +23,7 @@ devralacak.
 | C3 | vectorbt eleme + eleme–hakem uyumu | 10 | ◐ | kepler/screen.py + tests/test_screen.py (3): eleme≈hakem (sentetik), her konfigürasyon deftere/deneme sayacına; gerçek veride sıralama korelasyonu B3 indirmesini bekliyor |
 | C4 | Nedensellik, determinizm, pencere denkliği, negatif kontroller | 10 | ☑ | tests/test_trust.py (7): nedensellik (nedensel geçer; sızdıran sinyal assert_causal'da AssertionError [120,200,280,360] — elle doğrulandı), determinizm hash, pencere=tam tape (funding sınırı dahil), flat=0, rastgele=brüt~0/net<0 |
 | C5 | Gerçek veride çapraz kontrol (hakem vs bağımsız elle hesap) | 5 | ☐ | |
-| D | Kitaplar: PDF → metin (paralel, düşük öncelik) | 3 | ☐ | |
+| D | Kitaplar: PDF → metin (paralel, düşük öncelik) | 3 | ☑ | books_text/ (125 metin) + books_text/QUALITY.md; kaynaklar PDF değil zaten düz metindi (0 PDF, sayfa bilgisi yok); 2 kitap bayraklı; scripts/books_quality.py |
 | E | Rapor + bağımsız inceleme | 8 | ☐ | |
 
 Toplam 100. **Çekirdek = A–C5 + E.** D paralel ve çekirdeği bekletmez.
