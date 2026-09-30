@@ -132,6 +132,8 @@ def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.Da
     open_pos = eng.cache.positions_open()
     unreal = sum(float(p.signed_qty) * (float(kl.close.iloc[-1]) - float(p.avg_px_open)) for p in open_pos)
     end_pos = float(strat.pos())  # dispose'dan önce (sonra cache boşalır)
+    pr = eng.generate_positions_report()
+    positions = pd.DataFrame({"opened": pr.ts_opened, "closed": pr.ts_closed, "realized": pr.realized_pnl.map(lambda m: float(str(m).split()[0]))}).reset_index(drop=True) if len(pr) else pd.DataFrame(columns=["opened", "closed", "realized"])
     eng.dispose()
     fills = pd.DataFrame(strat.fills, columns=["ts", "side", "qty", "px", "commission", "liq"]).astype({"qty": float, "px": float, "commission": float, "liq": bool})
     notional = (fills.qty * fills.px).sum()
@@ -148,4 +150,4 @@ def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.Da
     net = bal + unreal - spec.capital + fund - liq_fee
     return dict(summary=dict(net_pnl=net, gross_pnl=net + fee + slip - fund + liq_fee, fee=fee, slippage=slip, funding=fund, liq_fee=liq_fee,
                              n_fills=len(fills), n_liq=int(fills.liq.sum()), end_position=end_pos, engine_commission=float(fills.commission.sum())),
-                fills=fills, rejected=strat.rejected)
+                fills=fills, positions=positions, rejected=strat.rejected)

@@ -112,6 +112,8 @@ def fetch(k: str, root: Path, retries: int = 4) -> Path:
             dst.with_name(dst.name + ".sha256").write_text(sha)
             return dst
         except (requests.RequestException, ChecksumError) as e:  # bozuk dosya diske yazılmaz, yeniden denenir
+            if isinstance(e, requests.HTTPError) and e.response is not None and e.response.status_code == 404:
+                raise FileNotFoundError(k) from e  # arşivde yok: yeniden denemenin anlamı yok
             err = e
             time.sleep(min(2 ** i, 10))
     raise ChecksumError(f"{k}: {retries} denemede indirilemedi: {err}")
