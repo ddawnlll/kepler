@@ -18,10 +18,10 @@ devralacak.
 | B2 | Kalite kontrolü + manifest | 8 | ◐ | kod + tests/test_qc.py (21 test: her kontrol sentetik bozuk veride tetikleniyor) ✓; gerçek veri raporu B3 indirmesini bekliyor |
 | B3 | Dönemsel hacim evreni + gerçek dev verisi | 8 | ☐ | |
 | B4 | Mühür aracı | 4 | ☑ | tests/test_seal.py: sentetik şifrele→aç birebir, yanlış özel anahtar açamaz, bozulmuş şifreli metin reddedilir, seal aracında özel anahtar yolu yok (5 test) |
-| C1 | Hedef-pozisyon sözleşmesi + veri yükleme + deney defteri | 6 | ☐ | |
+| C1 | Hedef-pozisyon sözleşmesi + veri yükleme + deney defteri | 6 | ☑ | kepler/tape.py + kepler/ledger.py; tests/test_tape_ledger.py (5): sözleşme doğrulama, mühür sınırı reddi, append-only defter, DuckDB sorgu, eleme result yazamaz |
 | C2 | Hakem motor (Nautilus; yedek Freqtrade) + bilinen-cevaplı testler | 25 | ☑ | tests/test_referee.py (26 test, hepsi elle hesap): long/short, fee 4/9/10/11/16, slippage, lot+min notional, NaN tutma, flip, funding ±oran + sınır anı, likidasyon long/short, test_nautilus_alone_does_not_liquidate. SAPMA: Nautilus bar verisinde likide etmiyor -> likidasyon stop-market yapıştırması (belge: geçemezse Freqtrade; karar kullanıcıda) |
-| C3 | vectorbt eleme + eleme–hakem uyumu | 10 | ☐ | |
-| C4 | Nedensellik, determinizm, pencere denkliği, negatif kontroller | 10 | ☐ | |
+| C3 | vectorbt eleme + eleme–hakem uyumu | 10 | ◐ | kepler/screen.py + tests/test_screen.py (3): eleme≈hakem (sentetik), her konfigürasyon deftere/deneme sayacına; gerçek veride sıralama korelasyonu B3 indirmesini bekliyor |
+| C4 | Nedensellik, determinizm, pencere denkliği, negatif kontroller | 10 | ☑ | tests/test_trust.py (7): nedensellik (nedensel geçer; sızdıran sinyal assert_causal'da AssertionError [120,200,280,360] — elle doğrulandı), determinizm hash, pencere=tam tape (funding sınırı dahil), flat=0, rastgele=brüt~0/net<0 |
 | C5 | Gerçek veride çapraz kontrol (hakem vs bağımsız elle hesap) | 5 | ☐ | |
 | D | Kitaplar: PDF → metin (paralel, düşük öncelik) | 3 | ☐ | |
 | E | Rapor + bağımsız inceleme | 8 | ☐ | |

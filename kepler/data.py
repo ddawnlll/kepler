@@ -42,8 +42,15 @@ def list_bucket(prefix: str, delimiter: str = "/") -> tuple[list[str], list[str]
     """(keys, common_prefixes) — S3 ListBucketResult, `marker` ile sayfalama."""
     keys, prefixes, marker = [], [], ""
     while True:
-        r = _get(S3, params={"delimiter": delimiter, "prefix": prefix, "marker": marker})
-        r.raise_for_status()
+        for i in range(6):  # liste çağrıları da geçici hatada yeniden denenir
+            try:
+                r = _get(S3, params={"delimiter": delimiter, "prefix": prefix, "marker": marker})
+                r.raise_for_status()
+                break
+            except requests.RequestException:
+                if i == 5:
+                    raise
+                time.sleep(min(2 ** i, 20))
         xml = r.text  # düz regex: S3 XML yanıtı basit; XML ayrıştırıcı saldırı yüzeyi açmaya değmez
         keys += re.findall(r"<Key>([^<]+)</Key>", xml)
         prefixes += re.findall(r"<CommonPrefixes><Prefix>([^<]+)</Prefix>", xml)
@@ -85,6 +92,9 @@ def fetch(k: str, root: Path, retries: int = 4) -> Path:
     dst = Path(root) / "raw" / k
     dst.parent.mkdir(parents=True, exist_ok=True)
     err = None
+    side = dst.with_name(dst.name + ".sha256")
+    if dst.exists() and side.exists() and hashlib.sha256(dst.read_bytes()).hexdigest() == side.read_text():
+        return dst  # önceki indirmede doğrulanmış; ağa gitmeden yerel bütünlük kontrolü yeterli
     for i in range(retries):
         try:
             want = _get(f"{CDN}/{k}.CHECKSUM")
