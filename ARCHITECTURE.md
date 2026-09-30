@@ -7,7 +7,7 @@ ilişkili, hangisini biz yazıyoruz, hangisi platformdan geliyor. Hedef ve kapı
 ## İlke
 
 Tek yönlü akış, tek gerçek kaynak: **tarihsel tape**. Paper trading ve canlı veri akışı
-yok; her şey tape'in tekrar oynatılmasıyla (replay) yapılır. Sonuçlar tek değerlendiriciden
+yok; her şey tape'in tekrar oynatılmasıyla (replay) yapılır. Sonuçlar tek hakem motordan
 çıkar ve hepsi deftere yazılır.
 
 ## Sistemler ve ilişkileri
@@ -17,7 +17,7 @@ yok; her şey tape'in tekrar oynatılmasıyla (replay) yapılır. Sonuçlar tek 
 | 1 | **Veri hattı** | Tarihsel veriyi indirir, doğrular, sürümler | Binance → tape + manifest (hash) | Platform (indirici) + biz (kalite kontrol, manifest) |
 | 2 | **Sinyal** | Her bar için long / short / flat niyeti | tape → yön | **Biz** (2–3 basit sinyal) |
 | 3 | **Risk motoru** | Niyeti pozisyon büyüklüğüne ve kaldıraca çevirir; hesabı korur | yön + oynaklık + hesap durumu → hedef pozisyon | **Biz** |
-| 4 | **Yürütme/muhasebe** | Hedef pozisyonu fill, fee, funding, slippage, likidasyonla işler | hedef pozisyon + tape → işlem defteri, equity eğrisi | Platform (Freqtrade backtest); yedek: ince çekirdek |
+| 4 | **Yürütme/muhasebe** | Hedef pozisyonu fill, fee, funding, slippage, likidasyonla işler | hedef pozisyon + tape → işlem defteri, equity eğrisi | Platform: eleme vectorbt, hakem Nautilus; yedek hakem Freqtrade |
 | 5 | **Denetim** | Sonucun gerçek olup olmadığını sınar: defter, null kontroller, nedensellik, mühürlü dönem, çoklu test | 2–4'ün çıktıları → karar | **Biz** (+ `arch`, `skfolio`) |
 | 6 | **Rapor** | İşlem seviyesinde açıklanabilir sonuç | 4–5 → rapor | **Biz** (küçük) |
 | 7 | **Ajan döngüsü** (sonra) | LLM sinyal önerir; aynı hat ölçer | öneri → 2 → 3 → 4 → 5 | **Biz** (ince) + LLM sağlayıcı |
@@ -28,8 +28,8 @@ yok; her şey tape'in tekrar oynatılmasıyla (replay) yapılır. Sonuçlar tek 
 - Sinyal yalnızca **yön** verir. Büyüklüğü ve kaldıracı yalnızca risk motoru belirler.
 - Ajan (7) yalnızca sinyalleri (2) değiştirebilir. Risk parametrelerine ve mühürlü döneme
   erişemez.
-- Değerlendirici (4) tektir. Başka bir simülatör yalnızca çapraz kontrol (oracle) olarak
-  kullanılır, sonuç üretmez.
+- Sonuç üreten hakem tektir (Nautilus; yedek Freqtrade). vectorbt yalnızca eleme filtresidir,
+  deftere sonuç yazmaz; elemede koşulan her konfigürasyon yine de deneme sayacına girer.
 
 ## Risk motoru
 
@@ -55,7 +55,7 @@ sembole boyut verir. Kaldıraç girdi değil, bu boyutun sonucudur.
 
 - **Kaynak:** Binance USDT-M, yalnızca ücretsiz (toplu arşiv + REST): klines, mark price,
   funding; gerekirse open interest. Evren: top 10–20 major.
-- **Depolama:** dosya tabanlı tape (kolon formatlı dosyalar) + manifest. Manifest her
+- **Depolama:** Parquet dosyaları (tape) + DuckDB ile sorgu, ve manifest. Manifest her
   dosyanın hash'ini, zaman aralığını, sembol listesini, listeleme/delist tarihlerini ve
   dev / mühürlü dönem sınırını taşır.
 - **Akış:** tek yönlü. İndir → doğrula → tape → replay. Canlı akış yok.
@@ -69,20 +69,23 @@ sembole boyut verir. Kaldıraç girdi değil, bu boyutun sonucudur.
 | Platformdan (yazmıyoruz) | Biz yazıyoruz |
 |---|---|
 | Veri indirme (Freqtrade indiricisi) | Veri kalite kontrolü + manifest |
-| Backtest, fee/funding/likidasyon muhasebesi (Freqtrade) | Sinyaller (2–3 tane) |
-| `lookahead-analysis` (Freqtrade) | Risk motoru |
+| Eleme: vectorbt. Hakem muhasebe (fee/funding/marjin): Nautilus | Sinyaller (2–3 tane) |
+| `lookahead-analysis` (Freqtrade, yedek hakem devredeyse) | Risk motoru |
 | `arch` (SPA / StepM / MCS), `skfolio` (CPCV) | Denetim katmanı: defter, null, mühür, DSR |
-| LLM sağlayıcı (H4'te) | Rapor, ince ajan döngüsü |
+| LLM sağlayıcı (H4'te) | Yapıştırma kodu: funding, hedef→emir adaptörü; rapor; ince ajan döngüsü |
 
-Kural: yazdığımız kod küçük kalır (çekirdek ≲300 satır). Bir parça platformda yoksa
-yazmadan önce kanıtlı engel gösterilir (`MISSION.md` kural 4).
+Kural: yazdığımız kod küçük kalır (≲300 satır; yapıştırma kodu dahil). Bir parça platformda
+yoksa yazmadan önce kanıtlı engel gösterilir (`MISSION.md` kural 4, 7).
 
 ## Açık noktalar
 
-- **Freqtrade'in dinamik boyut (volatilite hedefleme) ifadesi:** Freqtrade giriş/çıkış
-  odaklı. Bar bar hedef boyut ayarı için uygun olup olmadığı doğrulanmadı
-  (UNKNOWN — TARGETED EXPERIMENT REQUIRED, G1). Olmazsa yedek: ince çekirdek (hedef
-  pozisyonu doğal destekler).
+- **Nautilus hakem olarak G1'i geçiyor mu:** funding sınır anı, marjin ve likidasyon
+  davranışı, hedef pozisyon boyutunun bar bar uygulanması, Python ≥3.12 şartı
+  (UNKNOWN — TARGETED EXPERIMENT REQUIRED, G1). Önceki denemede likidasyon tetiklenmedi ve tek
+  koşu yavaştı (~36 sn); geçemezse hakem Freqtrade olur.
+- **Eleme ile hakem uyumu:** vectorbt sıralamasının (hangi konfigürasyon iyi) hakemle
+  örtüşüp örtüşmediği doğrulanmadı. Filtre iyi adayı eliyorsa eleme işe yaramaz
+  (UNKNOWN — TARGETED EXPERIMENT REQUIRED).
 - **MEXC canlı emir katmanı:** karar verilmedi. MEXC futures'ın Freqtrade/ccxt desteği
   doğrulanmadı (UNKNOWN — TARGETED RESEARCH REQUIRED). G3 sonrasında ele alınır.
 - **Paper yok kararı:** ileriye dönük doğrulama, mühürlü dönemden sonra ancak küçük gerçek

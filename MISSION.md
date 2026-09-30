@@ -36,7 +36,8 @@ sonuçtur (%25 drawdown bütçesi 10x'te ~%2,5, 3x'te ~%8 ters harekete denk gel
 - **S1** Bir sinyalin brüt edge'i, aynı işlem sayısı ve tutma süresindeki rastgele/rotasyon
   null'ının dışında mı?
 - **S2** İşlem başına brüt edge, fee + slippage + funding maliyetini geçiyor mu? (fee
-  duyarlılığı: gidiş-dönüş 4 / 9 / 10 / 11 bps)
+  duyarlılığı: gidiş-dönüş 4 / 9 / 10 / 11 / 16 bps; 16 = MEXC API taker, kullanıcı bilgisi,
+  doğrulanmadı)
 - **S3** S1–S2'yi geçen sinyal, mühürlü dönemde de geçiyor mu?
 - **H4** (sonra) LLM ajanlı arama, aynı deneme bütçesindeki rastgele aramadan iyi mi?
 - **H5** (sonra) Aday, mühürlü dönemden sonra küçük gerçek parayla (paper yok) araştırmayla
@@ -61,9 +62,11 @@ G3 geçerse, **ayrı onayla**: Monte Carlo, stres testi, risk/kaldıraç ve trad
 
 ## Değişmez kurallar (mekanik; yönetişim belgesi değil)
 
-1. **Tek değerlendirici.** İki simülatör yok; sonuçlar tek yerden gelir.
-2. **Her deneme deftere yazılır** (hipotez, config/kod/veri hash'i, deneme sayısı). Deneme
-   sayacı çoklu test düzeltmesinin girdisidir.
+1. **Tek hakem.** Sonuç deftere yalnızca hakem motordan girer; vectorbt sadece filtredir
+   (eleme), hiçbir sonuç ondan deftere yazılmaz.
+2. **Her deneme deftere yazılır** (hipotez, config/kod/veri hash'i, deneme sayısı). Elemede
+   koşulan her konfigürasyon da deftere ve DSR deneme sayısına girer. Deneme sayacı çoklu
+   test düzeltmesinin girdisidir.
 3. **Mühürlü dönem tek atış**, ajandan gizli, insan komutuyla açılır.
 4. **Yeni bileşen = gözlenmiş engel + önceki basit hale karşı karşılaştırma.** Engel yoksa
    BUILD yok.
@@ -71,8 +74,9 @@ G3 geçerse, **ayrı onayla**: Monte Carlo, stres testi, risk/kaldıraç ve trad
    altında kısa notlardır.
 6. **Bütçe.** Her blok için açık süre ve araç çağrısı/token tavanı yazılır; aşılınca dur ve
    raporla. Dış sınır: 1 hafta.
-7. **Kendi kodumuz küçük kalır** (çekirdek ≲300 satır). Aşılırsa kullanıcıya sor; bakım
-   maliyeti V8'de projeyi bitirdi.
+7. **Kendi kodumuz küçük kalır** (≲300 satır). Yapıştırma kodu (funding, hedef→emir
+   adaptörü) bu tavana dahildir. Aşılırsa kullanıcıya sor; bakım maliyeti V8'de projeyi
+   bitirdi.
 8. **Geliştirme ajanları kilometre taşında onay bekler**, aralarda serbest çalışır.
 9. **Kritik kod** (değerlendirici, denetim) güçlü model + bağımsız inceleme ile yazılır;
    veri çekme ve toplu koşum ucuz modelle yapılabilir.
@@ -82,18 +86,21 @@ G3 geçerse, **ayrı onayla**: Monte Carlo, stres testi, risk/kaldıraç ve trad
 
 ## Varsayılan stack (G1 sonunda testle doğrulanır)
 
-Freqtrade (veri indirme, backtest, lookahead-analysis) + ince denetim katmanı (deney defteri,
-null kontroller, mühürlü dönem, `arch` SPA/StepM, `skfolio` CPCV, DSR). Freqtrade bilinen-cevaplı
-testleri geçemezse Phase 2 spike'ındaki ince çekirdek yedektir. Qlib ve RD-Agent bu projeden
-çıkarıldı (short, funding ve likidasyon desteği yok; ayrıntı Phase 2 raporunda, repoda değil).
+İki aşamalı değerlendirme: **vectorbt eleme** (hızlı filtre; sonuç sayılmaz) + **NautilusTrader
+hakem** (sonuç yalnızca buradan deftere girer). **Freqtrade yedek hakemdir**: Nautilus G1'i
+geçemezse hakem Freqtrade olur. Üstüne ince denetim katmanı (deney defteri, null kontroller,
+mühürlü dönem, `arch` SPA/StepM, `skfolio` CPCV, DSR). Veri: Parquet + DuckDB. Qlib ve RD-Agent
+bu projeden çıkarıldı (short, funding ve likidasyon desteği yok; ayrıntı Phase 2 raporunda,
+repoda değil).
 
 ## Onay bekleyen kararlar
 
 - Binance host'ları için ağ izni (G0).
-- Freqtrade'in varsayılan stack olması.
+- Python sürümü: Nautilus 2.0.0rc5 Python ≥3.12 ister (önceki denemede 3.11'de sessizce eski
+  sürüme düştü); proje 3.11'de ise hakem Freqtrade'e döner.
 - Mühürlü dönem uzunluğu (öneri: son 6 ay).
 
 ## Kapsam dışı (şimdilik)
 
-Qlib, RD-Agent, NautilusTrader, portföy optimizasyonu, drawdown throttle, Kelly, L2/L3 veri,
+Qlib, RD-Agent, portföy optimizasyonu, drawdown throttle, Kelly, L2/L3 veri,
 canlı borsa bağlantısı, yönetişim/anayasa belgeleri.
