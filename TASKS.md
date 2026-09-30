@@ -13,8 +13,8 @@ devralacak.
 
 | # | Görev | Ağırlık | Durum | Kanıt |
 |---|---|---|---|---|
-| A | Ortam, proje iskeleti, görev takibi | 5 | ☐ | |
-| B1 | Binance arşiv istemcisi (liste, indirme, checksum) | 8 | ☐ | |
+| A | Ortam, proje iskeleti, görev takibi | 5 | ☑ | Modal imajı (modal_app.py, uv.lock), `modal run modal_app.py --cmd 'pytest -q'`; tests/test_env.py 3 geçti |
+| B1 | Binance arşiv istemcisi (liste, indirme, checksum) | 8 | ☑ | tests/test_data.py: bozuk sha256 reddi + yeniden indirme, idempotent, mühür koruması (SealedError), gerçek uçtan uca (KEPLER_NET=1, Modal) |
 | B2 | Kalite kontrolü + manifest | 8 | ☐ | |
 | B3 | Dönemsel hacim evreni + gerçek dev verisi | 8 | ☐ | |
 | B4 | Mühür aracı | 4 | ☐ | |

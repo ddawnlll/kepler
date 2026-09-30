@@ -1,0 +1,25 @@
+[project]
+name = "kepler"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "nautilus_trader==2.0.0rc5",
+  "vectorbt==1.1.1",
+  "duckdb",
+  "pandas",
+  "numpy",
+  "pyarrow",
+  "requests",
+  "cryptography",
+  "pypdf",
+]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
