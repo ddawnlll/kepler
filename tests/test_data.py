@@ -69,6 +69,14 @@ def test_corrupt_local_file_is_replaced(tmp_path, monkeypatch):
     assert data.fetch(K, tmp_path).read_bytes() == make_zip()
 
 
+def test_headerless_old_file_is_named_by_column_count(tmp_path):
+    row = "1638316800000,1.0,2.0,0.5,1.5,10,1638320399999,15.0,3,5,7.5,0\n"
+    p = tmp_path / "old.zip"
+    p.write_bytes(make_zip(row * 3))
+    df = data.read_zip_csv(p)
+    assert list(df.columns)[:3] == ["open_time", "open", "high"] and len(df) == 3  # ilk satır veri olarak korunur
+
+
 def test_sealed_period_is_never_fetched(tmp_path, monkeypatch):
     def boom(*a, **k):
         raise AssertionError("ağa çıkılmamalıydı")

@@ -19,6 +19,13 @@ BASE = "data/futures/um/monthly"
 DEV_END = "2026-03"  # son dev ayı (bugünden 6 ay önce = 2026-04-01 sınırı); sonrası mühürlü
 
 
+NAMES = {  # başlıksız dosyalar için sütun adları (sütun sayısına göre)
+    12: ["open_time", "open", "high", "low", "close", "volume", "close_time", "quote_volume", "count",
+         "taker_buy_volume", "taker_buy_quote_volume", "ignore"],
+    3: ["calc_time", "funding_interval_hours", "last_funding_rate"],
+}
+
+
 class SealedError(Exception):
     """Mühürlü döneme ait bir dosya istendi."""
 
@@ -109,6 +116,9 @@ def read_zip_csv(path: Path) -> pd.DataFrame:
     with zipfile.ZipFile(path) as z:
         raw = z.read(z.namelist()[0])
     df = pd.read_csv(io.BytesIO(raw))
-    if df.columns[0].lstrip("-").isdigit():  # başlıksız eski dosyalar
-        raise ValueError(f"{path}: başlık satırı yok")
+    if df.columns[0].lstrip("-").isdigit():  # başlıksız eski dosyalar: sütun sayısından adlandır
+        names = NAMES.get(df.shape[1])
+        if names is None:
+            raise ValueError(f"{path}: başlık yok ve {df.shape[1]} sütun tanınmıyor")
+        df = pd.read_csv(io.BytesIO(raw), header=None, names=names)
     return df

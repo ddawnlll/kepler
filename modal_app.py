@@ -37,7 +37,13 @@ def make_lock() -> str:
 
 @app.function(image=img, volumes={"/data": vol}, timeout=3 * 3600, cpu=4, memory=8192)
 def run(cmd: str) -> int:
-    rc = subprocess.run(cmd, shell=True, cwd="/repo").returncode
+    proc = subprocess.Popen(cmd, shell=True, cwd="/repo")
+    while True:  # uzun indirmede ilerleme kaybolmasın: dakikada bir Volume'a commit
+        try:
+            rc = proc.wait(timeout=60)
+            break
+        except subprocess.TimeoutExpired:
+            vol.commit()
     vol.commit()
     return rc
 

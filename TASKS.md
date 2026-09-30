@@ -15,11 +15,11 @@ devralacak.
 |---|---|---|---|---|
 | A | Ortam, proje iskeleti, görev takibi | 5 | ☑ | Modal imajı (modal_app.py, uv.lock), `modal run modal_app.py --cmd 'pytest -q'`; tests/test_env.py 3 geçti |
 | B1 | Binance arşiv istemcisi (liste, indirme, checksum) | 8 | ☑ | tests/test_data.py: bozuk sha256 reddi + yeniden indirme, idempotent, mühür koruması (SealedError), gerçek uçtan uca (KEPLER_NET=1, Modal) |
-| B2 | Kalite kontrolü + manifest | 8 | ☐ | |
+| B2 | Kalite kontrolü + manifest | 8 | ◐ | kod + tests/test_qc.py (21 test: her kontrol sentetik bozuk veride tetikleniyor) ✓; gerçek veri raporu B3 indirmesini bekliyor |
 | B3 | Dönemsel hacim evreni + gerçek dev verisi | 8 | ☐ | |
-| B4 | Mühür aracı | 4 | ☐ | |
+| B4 | Mühür aracı | 4 | ☑ | tests/test_seal.py: sentetik şifrele→aç birebir, yanlış özel anahtar açamaz, bozulmuş şifreli metin reddedilir, seal aracında özel anahtar yolu yok (5 test) |
 | C1 | Hedef-pozisyon sözleşmesi + veri yükleme + deney defteri | 6 | ☐ | |
-| C2 | Hakem motor (Nautilus; yedek Freqtrade) + bilinen-cevaplı testler | 25 | ☐ | |
+| C2 | Hakem motor (Nautilus; yedek Freqtrade) + bilinen-cevaplı testler | 25 | ☑ | tests/test_referee.py (26 test, hepsi elle hesap): long/short, fee 4/9/10/11/16, slippage, lot+min notional, NaN tutma, flip, funding ±oran + sınır anı, likidasyon long/short, test_nautilus_alone_does_not_liquidate. SAPMA: Nautilus bar verisinde likide etmiyor -> likidasyon stop-market yapıştırması (belge: geçemezse Freqtrade; karar kullanıcıda) |
 | C3 | vectorbt eleme + eleme–hakem uyumu | 10 | ☐ | |
 | C4 | Nedensellik, determinizm, pencere denkliği, negatif kontroller | 10 | ☐ | |
 | C5 | Gerçek veride çapraz kontrol (hakem vs bağımsız elle hesap) | 5 | ☐ | |
