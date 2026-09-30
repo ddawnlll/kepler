@@ -30,6 +30,7 @@ canlıya gitmez.
 | Çalışma ortamı | Modal. Hiçbir bileşen belirli bir ajana/ortama bağlı olmaz (Claude cloud, Hermes vb. aynı repo ve komutlarla çalışır) |
 | Bütçe (G0–G1) | ~4–6 saat, ~200 araç çağrısı; aşılırsa dur ve raporla |
 | Bildirim | Telegram (canlı bot için; şimdi kurulmaz) |
+| Operasyon | Sistem kurulunca 7/24 ajan araştırır; 15–20 dk'da durum mesajı; telefondan sohbetle yönetilen "müdür" ajan (`ARCHITECTURE.md` → Operasyon katmanı). Harcama tavanı yok, yalnızca uyarı |
 
 Kaldıraç girdi değildir. Risk bütçesinden ve sinyalin normal oynaklığından çıkan bir
 sonuçtur (%25 drawdown bütçesi 10x'te ~%2,5, 3x'te ~%8 ters harekete denk gelir).
@@ -42,7 +43,7 @@ sonuçtur (%25 drawdown bütçesi 10x'te ~%2,5, 3x'te ~%8 ters harekete denk gel
   duyarlılığı: gidiş-dönüş 4 / 9 / 10 / 11 / 16 bps; 16 = MEXC API taker, kullanıcı bilgisi,
   doğrulanmadı)
 - **S3** S1–S2'yi geçen sinyal, mühürlü dönemde de geçiyor mu?
-- **H4** (sonra) LLM ajanlı arama, aynı deneme bütçesindeki rastgele aramadan iyi mi?
+- **H4** (G2'den sonra, 7/24) LLM ajanlı arama, aynı deneme bütçesindeki rastgele aramadan iyi mi?
 - **H5** (sonra) Aday, mühürlü dönemden sonra küçük gerçek parayla (paper yok) araştırmayla
   uyumlu davranıyor mu?
 
@@ -60,8 +61,10 @@ ve kullanıcıya raporlar.
 | **G2 S1–S2** | 2–3 sinyal (zaman serisi momentum, Donchian breakout, funding tabanlı); walk-forward; etiketler çakışıyorsa purge + embargo; null dağılımı; fee duyarlılığı | En az bir sinyal null'ın dışında **ve** en az bir fee senaryosunda net > 0 | Hiçbiri geçmezse `NO_EDGE` raporu; S3'e geçme; yeni hipotez öner |
 | **G3 S3** | Mühürlü dönemi (son 6 ay) tek seferlik aç; yalnızca kullanıcı komutuyla | `SUPPORTED` / `REJECTED` / `INCONCLUSIVE` kararı | Açıldıktan sonra o dönem temiz sayılmaz |
 
-G3 geçerse, **ayrı onayla**: Monte Carlo, stres testi, risk/kaldıraç ve trade yönetimi
-(her biri önceki basit haline karşı), MEXC farkı ölçümü, H4, küçük canlı (H5).
+G2'den sonra 7/24 ajanlı arama (H4) mühürlü dönem açılmadan, yalnızca dev verisinde yürür;
+G3 tek atışı en iyi aday için yapılır. G3 geçerse, **ayrı onayla**: Monte Carlo, stres testi,
+risk/kaldıraç ve trade yönetimi (her biri önceki basit haline karşı), MEXC farkı ölçümü, küçük
+canlı (H5).
 
 ## Değişmez kurallar (mekanik; yönetişim belgesi değil)
 
@@ -83,8 +86,9 @@ G3 geçerse, **ayrı onayla**: Monte Carlo, stres testi, risk/kaldıraç ve trad
    adaptörü) bu tavana dahildir. Aşılırsa kullanıcıya sor; bakım maliyeti V8'de projeyi
    bitirdi.
 8. **Geliştirme ajanları kilometre taşında onay bekler**, aralarda serbest çalışır.
-9. **Kritik kod** (değerlendirici, denetim) güçlü model + bağımsız inceleme ile yazılır;
-   veri çekme ve toplu koşum ucuz modelle yapılabilir.
+9. **Kritik kod** (değerlendirici, denetim) güçlü model + bağımsız inceleme ile yazılır
+   (G0–G1: Claude Code + Sonnet 5.5 high); veri çekme ve toplu koşum ucuz modelle yapılabilir.
+   G1'den sonraki 7/24 işleri ucuz modelle yürür ve değerlendirici/denetim koduna dokunamaz.
 10. **Sonuçlar dürüst raporlanır:** test kırmızıysa söylenir, atlanan adım "atlandı" diye
     yazılır, doğrulanmamış rakam "doğrulanmadı" etiketiyle gelir
     (KNOWN / LIKELY / UNKNOWN).

@@ -20,8 +20,10 @@ yok; her şey tape'in tekrar oynatılmasıyla (replay) yapılır. Sonuçlar tek 
 | 4 | **Yürütme/muhasebe** | Hedef pozisyonu fill, fee, funding, slippage, likidasyonla işler | hedef pozisyon + tape → işlem defteri, equity eğrisi | Platform: eleme vectorbt, hakem Nautilus; yedek hakem Freqtrade |
 | 5 | **Denetim** | Sonucun gerçek olup olmadığını sınar: defter, null kontroller, nedensellik, mühürlü dönem, çoklu test | 2–4'ün çıktıları → karar | **Biz** (+ `arch`, `skfolio`) |
 | 6 | **Rapor** | İşlem seviyesinde açıklanabilir sonuç | 4–5 → rapor | **Biz** (küçük) |
-| 7 | **Ajan döngüsü** (sonra) | LLM sinyal önerir; aynı hat ölçer | öneri → 2 → 3 → 4 → 5 | **Biz** (ince) + LLM sağlayıcı |
+| 7 | **Araştırma ajanı** (7/24; G2'den sonra) | LLM sinyal önerir; aynı hat ölçer | öneri → 2 → 3 → 4 → 5 | Runtime: Hermes veya RD-Agent (doğrulanmadı); sözleşme bizim |
 | 8 | **Canlı emir katmanı** (sonra) | MEXC'e emir gönderir | hedef pozisyon → borsa | **Karar verilmedi** |
+| 9 | **Güncelleme katmanı** | 15–20 dk'da bir durum mesajı | defter → Telegram | **Biz** (deterministik, LLM yok) |
+| 10 | **Müdür ajan** (sohbet) | Direktifini alır, sistemden sorumludur, önemli durumda seni uyarır | sen ↔ sistem | Hermes (Telegram geçidi); yetki sınırları bizim |
 
 İlişki kuralları:
 - Akış 1 → 2 → 3 → 4 olarak ilerler; 5 hepsinin dışında durur ve hiçbirini değiştirmez.
@@ -78,6 +80,36 @@ sembole boyut verir. Kaldıraç girdi değil, bu boyutun sonucudur.
 
 Kural: yazdığımız kod küçük kalır (≲300 satır; yapıştırma kodu dahil). Bir parça platformda
 yoksa yazmadan önce kanıtlı engel gösterilir (`MISSION.md` kural 4, 7).
+
+## Operasyon katmanı (7/24, telefondan yönetim)
+
+Amaç: sistemi bir kez kurarsın; araştırma 7/24 sürer, durum sana düzenli gelir, telefondan
+direktif verirsin. Bilgisayar başında olman gerekmez.
+
+| Parça | Ne yapar | LLM |
+|---|---|---|
+| **Araştırma ajanı** | Sinyal ve parametre önerir; hakemde ölçer; deftere yazar | Evet (ucuz model) |
+| **Güncelleme katmanı** | 15–20 dk'da bir durum: deneme sayısı, en iyi adaylar, null'a göre durum, harcama, hatalar. Sayılar defterden kodla üretilir | Hayır |
+| **Müdür ajan** | Seninle sohbet eder; direktifini araştırma ajanının kuyruğuna yapılandırılmış komut olarak iletir; durumu açıklar; önemli olayda (hata, aday, harcama sıçraması) seni kendisi uyarır | Evet |
+
+Kurallar:
+- **Rapor sayıları LLM'den gelmez.** Güncelleme katmanı deftere bakan deterministik bir
+  betiktir; müdür yorum ekleyebilir ama sayıyı o üretmez. Değişiklik yoksa mesaj kısa
+  ("değişiklik yok") veya saatlik nabza seyreltilir (öneri; dersteyken spam'i önler).
+- **Yazma sınırı.** Araştırma ve müdür ajanı değerlendiriciyi, denetim katmanını, risk
+  parametrelerini ve mühür dosyasını **değiştiremez**; yalnızca `signals/` ve deney
+  yapılandırmalarına yazar. Hermes kendi "skill"lerini yazabildiği için yazma izni ayrıca
+  sınırlanır.
+- **Telefondan komutlar** (hepsi sohbetle): durum/rapor, duraklat/devam/durdur, yön ver
+  (hipotez/odak), aday onay/red. Müdür bunları yapılandırılmış komuta çevirir.
+- **Geri dönüşsüz komutlar** (mühürlü dönemi açmak, gerçek para işlemi) sohbet yorumuyla
+  yürümez. Müdür yalnızca "şunu yapmak üzere onay iste" der; asıl tetik, ajanların
+  erişemediği ayrı ve LLM'siz bir onay adımıdır (ör. tek kullanımlık kod).
+- **Erişim:** Telegram yalnızca senin kullanıcı kimliğine yanıt verir.
+- **Harcama:** tavan yok, yalnızca uyarı (kullanıcı kararı). Öneri, karar sende: derste
+  müdahale edemeyebileceğin için acil, yüksek bir sert üst sınır da konsun.
+- **Runtime:** Hermes Agent (Nous Research; kalıcı servis, Telegram geçidi, cron, bellek;
+  doğrulanmadı) veya RD-Agent. Runtime değiştirilebilir; sözleşme bu bölümdür.
 
 ## Laboratuvar (araçlar ve çalışma şekli)
 
