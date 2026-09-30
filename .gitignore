@@ -32,3 +32,7 @@ Users/
 # macOS
 .DS_Store
 
+
+# PDF kitaplar (yalniz yerelde; metin books_text/ altinda)
+books/
+*.pdf
