@@ -54,15 +54,17 @@ sembole boyut verir. Kaldıraç girdi değil, bu boyutun sonucudur.
 ## Veri ağı
 
 - **Kaynak:** Binance USDT-M, yalnızca ücretsiz (toplu arşiv + REST): klines, mark price,
-  funding; gerekirse open interest. Evren: top 10–20 major.
+  funding; gerekirse open interest. Evren: dönemsel hacim sıralamasına göre top 10–20 (her
+  tarihte o günün en likit perp'leri).
 - **Depolama:** Parquet dosyaları (tape) + DuckDB ile sorgu, ve manifest. Manifest her
   dosyanın hash'ini, zaman aralığını, sembol listesini, listeleme/delist tarihlerini ve
   dev / mühürlü dönem sınırını taşır.
 - **Akış:** tek yönlü. İndir → doğrula → tape → replay. Canlı akış yok.
 - **MEXC:** araştırma verisi değil. Yalnızca aday çıktıktan sonra fee, funding, min notional,
   lot ve fiyat farkını ölçmek için küçük bir örnek.
-- **Ağ:** Binance veri host'larına erişim gerekir (G0). Bu container'da engelli; kullanıcı
-  izni bekleniyor.
+- **Ağ:** Binance veri host'larına erişim gerekir (G0). Çalışma ortamı Modal olduğundan ağ
+  izni sorunu beklenmiyor (doğrulanmadı). Claude cloud'da bu host'lar varsayılan olarak
+  engelli.
 
 ## Biz ne yazıyoruz, platformdan ne alıyoruz
 
@@ -76,6 +78,31 @@ sembole boyut verir. Kaldıraç girdi değil, bu boyutun sonucudur.
 
 Kural: yazdığımız kod küçük kalır (≲300 satır; yapıştırma kodu dahil). Bir parça platformda
 yoksa yazmadan önce kanıtlı engel gösterilir (`MISSION.md` kural 4, 7).
+
+## Laboratuvar (araçlar ve çalışma şekli)
+
+- **Ortam:** Python 3.12, `uv` + kilit dosyası. Çalışma ortamı Modal; aynı repo ve komutlarla
+  Claude cloud'da veya başka bir ajanla (ör. Hermes) da çalışır. Ajana/ortama özel bağımlılık yok.
+- **Veri:** saatlik (1h) tape ana; 4h ve 1d yukarı toplanır. Depolama Parquet + DuckDB.
+- **Sinyal arayüzü:** sinyal, tape'ten hedef pozisyon serisi (long/short/flat + büyüklük)
+  üreten saf bir fonksiyondur. vectorbt (eleme) ve Nautilus (hakem) aynı seriyi oynatır.
+  Yapıştırma kodu ≲300 satır tavanına dahildir.
+- **Eleme ve hakem:** eleme başına ~100 konfigürasyon bütçesi; hepsi deftere ve DSR sayısına
+  girer. Eleme–hakem sıralama uyumu ölçülür; öneri eşiği ≥0,8 (doğrulanmadı), altındaysa
+  eleme devre dışı kalır ve doğrudan hakem kullanılır.
+- **Deney defteri:** append-only JSONL dosyası, DuckDB ile sorgulanır (kullanıcı kararı yok,
+  varsayılan).
+- **Raporlar:** her koşu `reports/` altında Markdown/HTML rapor üretir. Pano yok.
+- **Testler:** elle çalıştırılır (CI yok); G1 sonunda yeniden değerlendirilir.
+- **Mühürlü dönem (ajan ve ortamdan bağımsız):** son 6 ay verisi şifreli dosya olarak tutulur.
+  Anahtar yalnızca kullanıcıdadır ve hiçbir ajanın ortam değişkenine/dosya sistemine girmez.
+  Açma betiğini kullanıcı çalıştırır; tek seferde değerlendirir ve sonucu deftere "yakıldı"
+  kaydıyla yazar. Şifreli dosya dışında bu veri ajanın ortamında bulunmaz.
+- **Ajan döngüsü (H4):** LiteLLM üzerinden ucuz modeller; kritik kod için güçlü model ayrıca
+  (`MISSION.md` kural 9).
+- **Kitaplar:** PDF'ler repoya eklenir, metne çevrilip repoda tutulur (repo özel kalmalı);
+  hipotez kaynağı.
+- **Bildirim:** Telegram (canlı bot için; şimdi kurulmaz).
 
 ## Açık noktalar
 

@@ -27,6 +27,9 @@ canlıya gitmez.
 | Hipotez kaynağı | Okunmuş trading kitapları |
 | Emir tipi | Önce taker; maker ayrı hipotez |
 | Negatif sonuç | Aynı altyapıyla başka fikre geç; baştan başlama yok |
+| Çalışma ortamı | Modal. Hiçbir bileşen belirli bir ajana/ortama bağlı olmaz (Claude cloud, Hermes vb. aynı repo ve komutlarla çalışır) |
+| Bütçe (G0–G1) | ~4–6 saat, ~200 araç çağrısı; aşılırsa dur ve raporla |
+| Bildirim | Telegram (canlı bot için; şimdi kurulmaz) |
 
 Kaldıraç girdi değildir. Risk bütçesinden ve sinyalin normal oynaklığından çıkan bir
 sonuçtur (%25 drawdown bütçesi 10x'te ~%2,5, 3x'te ~%8 ters harekete denk gelir).
@@ -67,7 +70,9 @@ G3 geçerse, **ayrı onayla**: Monte Carlo, stres testi, risk/kaldıraç ve trad
 2. **Her deneme deftere yazılır** (hipotez, config/kod/veri hash'i, deneme sayısı). Elemede
    koşulan her konfigürasyon da deftere ve DSR deneme sayısına girer. Deneme sayacı çoklu
    test düzeltmesinin girdisidir.
-3. **Mühürlü dönem tek atış**, ajandan gizli, insan komutuyla açılır.
+3. **Mühürlü dönem tek atış**, ajandan mekanik olarak gizli, insan komutuyla açılır. Veri
+   şifreli saklanır, anahtar yalnızca kullanıcıdadır ve hiçbir ajanın ortamına girmez
+   (ayrıntı `ARCHITECTURE.md` → Laboratuvar).
 4. **Yeni bileşen = gözlenmiş engel + önceki basit hale karşı karşılaştırma.** Engel yoksa
    BUILD yok.
 5. **Doküman tavanı.** Yeni spec, karar, anayasa belgesi yazılmaz. Sonuçlar `reports/`
@@ -96,9 +101,8 @@ repoda değil).
 ## Onay bekleyen kararlar
 
 - Binance host'ları için ağ izni (G0).
-- Python sürümü: Nautilus 2.0.0rc5 Python ≥3.12 ister (önceki denemede 3.11'de sessizce eski
-  sürüme düştü); proje 3.11'de ise hakem Freqtrade'e döner.
 - Mühürlü dönem uzunluğu (öneri: son 6 ay).
+- Eleme–hakem uyum eşiği (öneri: sıralama korelasyonu ≥0,8; doğrulanmadı).
 
 ## Kapsam dışı (şimdilik)
 
