@@ -98,7 +98,7 @@ def run_all(root: Path) -> tuple[dict, pd.DataFrame]:
             df = pd.read_parquet(p)
             frames[kind] = df
             issues += [{"sym": sym, "kind": kind, **x} for x in check_frame(df, kind)]
-            raw = {z.name[-14:-4]: z.with_name(z.name + ".sha256").read_text() for z in sorted((root / "raw" / data.BASE / kind / sym).rglob("*.zip"))}
+            raw = json.loads(p.with_suffix(".sha.json").read_text())  # ay -> zip sha256 (indirme anında doğrulanmış)
             man_syms[sym][kind] = {"first": str(df.ts.min()), "last": str(df.ts.max()), "rows": len(df), "parquet_sha256": sha256_file(p), "zip_sha256": raw}
         if "klines" in frames and "markPriceKlines" in frames:
             issues += [{"sym": sym, "kind": "klines~mark", **x} for x in check_mark_vs_kline(frames["klines"], frames["markPriceKlines"])]
