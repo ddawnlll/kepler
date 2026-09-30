@@ -39,7 +39,8 @@ sonuçtur (%25 drawdown bütçesi 10x'te ~%2,5, 3x'te ~%8 ters harekete denk gel
   duyarlılığı: gidiş-dönüş 4 / 9 / 10 / 11 bps)
 - **S3** S1–S2'yi geçen sinyal, mühürlü dönemde de geçiyor mu?
 - **H4** (sonra) LLM ajanlı arama, aynı deneme bütçesindeki rastgele aramadan iyi mi?
-- **H5** (sonra) Aday paper'da araştırmayla uyumlu davranıyor mu?
+- **H5** (sonra) Aday, mühürlü dönemden sonra küçük gerçek parayla (paper yok) araştırmayla
+  uyumlu davranıyor mu?
 
 Sonuç notional üzerinden bps/işlem olarak raporlanır. Stop'suz politikada "R" kullanılmaz.
 
@@ -56,7 +57,7 @@ ve kullanıcıya raporlar.
 | **G3 S3** | Mühürlü dönemi (son 6 ay) tek seferlik aç; yalnızca kullanıcı komutuyla | `SUPPORTED` / `REJECTED` / `INCONCLUSIVE` kararı | Açıldıktan sonra o dönem temiz sayılmaz |
 
 G3 geçerse, **ayrı onayla**: Monte Carlo, stres testi, risk/kaldıraç ve trade yönetimi
-(her biri önceki basit haline karşı), MEXC farkı ölçümü, paper, H4, küçük canlı.
+(her biri önceki basit haline karşı), MEXC farkı ölçümü, H4, küçük canlı (H5).
 
 ## Değişmez kurallar (mekanik; yönetişim belgesi değil)
 

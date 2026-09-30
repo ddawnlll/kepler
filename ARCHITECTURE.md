@@ -86,6 +86,6 @@ yazmadan önce kanıtlı engel gösterilir (`MISSION.md` kural 4).
 - **MEXC canlı emir katmanı:** karar verilmedi. MEXC futures'ın Freqtrade/ccxt desteği
   doğrulanmadı (UNKNOWN — TARGETED RESEARCH REQUIRED). G3 sonrasında ele alınır.
 - **Paper yok kararı:** ileriye dönük doğrulama, mühürlü dönemden sonra ancak küçük gerçek
-  parayla olur. `MISSION.md`'deki H5 (paper) bu karara göre güncellenecek.
+  parayla olur (`MISSION.md` H5).
 - **Kill switch eşiği ve hedef volatilite parametreleri:** G2 sonuçlarından sonra
   belirlenir; önceden ayarlanmaz.
