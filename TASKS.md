@@ -9,7 +9,27 @@ Yeni ajan: bu listeyi kendi görev sistemine aç, kendi planla, işi sırala ve 
 tahmin; ama her "yapıldı" işareti için kanıt dosyası/test adı yaz). Başka bir ajan (Hermes) buradan
 devralacak.
 
-## İlerleme
+## KEPLER TOPLAM DURUM (tek bakışta; ARCHITECTURE'daki 10 sistem)
+
+Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = gerçek veride koşuldu veya testle kanıtlı.
+
+| # | Sistem | Durum | Ne var / ne yok |
+|---|---|---|---|
+| 1 | Veri hattı | ☑ | 2022-01 → 2026-03, 179 sembol, QC raporu, sha256 manifest, mühür ayrı (G0) |
+| 2 | Sinyal | ☐ | Gerçek sinyal kodu yok (momentum, Donchian, funding yazılmadı); yalnızca test fixture'ları |
+| 3 | Risk motoru | ☐ | Yok: vol hedefleme, boyutlama, kill switch yazılmadı. Hakemde yalnızca sabit `leverage=10` ve likidasyon benzetimi var. MISSION bunu G3 sonrasına bırakıyor; G2 için sabit boyut yeter |
+| 4 | Backtest/hakem (yürütme+muhasebe) | ◐ | Nautilus hakem: long/short, fee, funding, slippage, likidasyon; elle hesaplı testler + BTC'de 3773 işlem eşleşti. Eksik: iyimser dolum (kapanıştan, slippage 0), tek sembol, portföy yok |
+| 5 | Denetim | ◐ | Defter (ledger) ve nedensellik denetimi var, ama denetim deftere bağlı değil. Yok: walk-forward, null dağılımı, DSR, çoklu test düzeltmesi |
+| 6 | Rapor | ◐ | Elle yazılan Markdown raporlar; otomatik rapor yok |
+| 7 | Araştırma ajanı (7/24) | ☐ | Yalnızca talimat dosyaları (`factory/agents/`) |
+| 8 | Canlı emir katmanı | ☐ | Yok; MEXC desteği doğrulanmadı |
+| 9 | Güncelleme (15–20 dk) | ☐ | Yalnızca talimat |
+| 10 | Sekreter/müdür (Hermes) | ◐ | Hermes sunucuda kurulmuş (başka oturumdan), sekreter talimatı henüz uygulanmadı; kuyruk kodu var (`factory/enqueue.py`) |
+
+**Döngü** (sinyal → boyut → backtest → denetim → rapor) bugün uçtan uca **çalışmıyor**: yalnızca 1 → 4 gerçek veride, fixture sinyalle koştu.
+**Sıradaki en kısa yol "edge var mı" cevabına:** hakem düzeltmesi (sonraki-bar dolum + slippage) → 3 sinyal → walk-forward + null + fee ızgarası (G2). Risk motoru bu cevap için gerekmiyor.
+
+## İlerleme (G0–G1 çekirdek görevleri)
 
 | # | Görev | Ağırlık | Durum | Kanıt |
 |---|---|---|---|---|
