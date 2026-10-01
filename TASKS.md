@@ -16,10 +16,10 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 | # | Sistem | Durum | Ne var / ne yok |
 |---|---|---|---|
 | 1 | Veri hattı | ☑ | 2022-01 → 2026-03, 179 sembol, QC raporu, sha256 manifest, mühür ayrı (G0) |
-| 2 | Sinyal | ☐ | Gerçek sinyal kodu yok (momentum, Donchian, funding yazılmadı); yalnızca test fixture'ları |
+| 2 | Sinyal | ☑ | `kepler/signals.py`: 6 kitap sinyali (Turtle S1/S2, Donchian Trend, tsmom, dual momentum, carry→funding), parametreleri `reports/book_signals.md`'de veriye bakmadan sabit; tests/test_signals.py (12: elle hesaplı kural + nedensellik) |
 | 3 | Risk motoru | ☐ | Yok: vol hedefleme, boyutlama, kill switch yazılmadı. Hakemde yalnızca sabit `leverage=10` ve likidasyon benzetimi var. MISSION bunu G3 sonrasına bırakıyor; G2 için sabit boyut yeter |
-| 4 | Backtest/hakem (yürütme+muhasebe) | ◐ | Nautilus hakem: long/short, fee, funding, slippage, likidasyon; elle hesaplı testler + BTC'de 3773 işlem eşleşti. Eksik: iyimser dolum (kapanıştan, slippage 0), tek sembol, portföy yok |
-| 5 | Denetim | ◐ | Defter (ledger) ve nedensellik denetimi var, ama denetim deftere bağlı değil. Yok: walk-forward, null dağılımı, DSR, çoklu test düzeltmesi |
+| 4 | Backtest/hakem (yürütme+muhasebe) | ☑ | Nautilus hakem gerçekçi: sonraki-bar açılış dolumu, zorunlu slippage (`evaluate`), açık pozisyon çıkış maliyeti, likidasyon çifte sayımı yok, likidasyon sonrası hesap ölü (tests/test_realistic.py, test_referee.py). Tek sembol: portföy = sembol başına bağımsız koşu toplamı (G2'de) |
+| 5 | Denetim | ◐ | `evaluate()` tek giriş: nedensellik denetimi → hakem → defter (ledger flock + `audit_causal` korkuluğu); walk-forward, rotasyon null'ı, DSR `scripts/g2.py` + `g2_report.py`'de (G2 işinde). Yok: SPA/StepM, purge/embargo (etiket çakışması yok: sabit kural) |
 | 6 | Rapor | ◐ | Elle yazılan Markdown raporlar; otomatik rapor yok |
 | 7 | Araştırma ajanı (7/24) | ☐ | Yalnızca talimat dosyaları (`factory/agents/`) |
 | 8 | Canlı emir katmanı | ☐ | Yok; MEXC desteği doğrulanmadı |
