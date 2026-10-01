@@ -11,7 +11,7 @@ def check_causal(signal, kl: pd.DataFrame, fracs=tuple(np.linspace(0.1, 0.95, 16
     rng, base, bad = np.random.default_rng(seed), signal(kl), []
     for f in fracs:
         k = int(len(kl) * f)
-        alt = kl.copy()
+        alt = kl.astype(float)  # tamsayı sütunlar (hacim) float gürültüyü kabul etsin
         for col in ("open", "high", "low", "close", "volume"):
             alt.iloc[k:, alt.columns.get_loc(col)] = kl[col].iloc[k:].to_numpy() * rng.uniform(0.5, 1.5, len(kl) - k)
         same = lambda a, b: a.iloc[:k].equals(b.iloc[:k])  # noqa: E731  (NaN'lar eşit sayılır)

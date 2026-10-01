@@ -118,3 +118,9 @@ def test_ledger_concurrent_writers_keep_unique_trials(tmp_path):
         pool.map(_writer, [(p, i) for i in range(4)])
     q = ledger.query(p, "select trial from ledger order by trial")
     assert list(q.trial) == list(range(1, 101))  # yarış yok: 100 satır, deneme sayacı tekil
+
+
+def test_causal_audit_handles_integer_volume_columns():
+    from kepler import audit
+    kl = walk().assign(volume=np.arange(600) + 1000)  # int64 hacim (gerçek veride DOGE vb.)
+    assert audit.check_causal(mom, kl) == []
