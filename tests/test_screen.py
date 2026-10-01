@@ -25,7 +25,7 @@ def test_actions_follow_referee_rule():
 def test_screen_matches_referee_on_simple_fixture(tmp_path):
     kl = market()
     t = mom(kl, 24, 1000.0)
-    sp = referee.Spec(tick="0.01", step="0.0001", capital=10000.0, liq=False, fee_rt_bps=10.0)
+    sp = referee.Spec(tick="0.01", step="0.0001", capital=10000.0, liq=False, fee_rt_bps=10.0, fill="close", close_out=False)
     ref = referee.run(kl, t, sp)["summary"]["net_pnl"]
     scr = screen.screen(kl, {"a": t}, 10.0, tmp_path / "l.jsonl", capital=10000.0)["a"]
     assert scr == pytest.approx(ref, abs=0.05 * max(1.0, abs(ref)) + 0.5)  # yuvarlama farkı içinde; eşik deneysel

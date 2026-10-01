@@ -15,7 +15,7 @@ from kepler import ledger, qc, referee, screen, tape
 SYM = "BTCUSDT"
 # Muhasebe/sıralama karşılaştırması için büyük sermaye: yüksek devirli fixture sinyalleri 500 USD'lik hesabı fee ile bitirir
 # (ilk denemede INITIAL_MARGIN_EXCEEDS_FREE_BALANCE ile reddedilen binlerce emir -> geçersiz koşu). Sermaye PnL'yi değiştirmez.
-SPEC = referee.Spec(tick="0.1", step="0.001", min_notional=100.0, fee_rt_bps=10.0, capital=1_000_000.0)
+SPEC = referee.Spec(tick="0.1", step="0.001", min_notional=100.0, fee_rt_bps=10.0, capital=1_000_000.0, fill="close", close_out=False)
 
 
 def mom(kl, n, sign=1.0, size=1000.0):
@@ -50,7 +50,7 @@ def corr(root, out):
         if s["n_rejected"] or s["funding_missed"]:  # geçersiz koşu: deftere ve korelasyona girmez, raporda sayılır
             bad[name] = (s["n_rejected"], s["funding_missed"], (r["rejected"] or [""])[0][:200])
             continue
-        ledger.record(led, "referee", "G1 eleme-hakem uyumu (fixture ızgarası)", dict(name=name, **SPEC.__dict__), code, dh, result=s)
+        ledger.record(led, "referee", "G1 eleme-hakem uyumu (fixture ızgarası)", dict(name=name, audit_causal=True, **SPEC.__dict__), code, dh, result=s)
         ref[name] = s["net_pnl"]
     df = pd.DataFrame({"screen": scr, "referee": pd.Series(ref)}).dropna()
     rho = df.screen.corr(df.referee, method="spearman")
