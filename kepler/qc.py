@@ -14,6 +14,7 @@ from kepler import data
 HOUR = pd.Timedelta("1h")
 JUMP = 0.30  # saatlik |close/önceki close - 1| bu değerden büyükse "anormal sıçrama"
 MARK_DIV = 0.05  # kline close ile mark close arası göreli fark
+DIV_RUN = 24  # bu kadar ardışık sapan bar = sembolün verisi artık kullanılamaz (divergence_cutoff)
 FUND_MAX = 0.01  # |funding oranı| > %1 şüpheli
 WICK = 0.5  # (high-low)/close > %50 tek saatlik mum: aşırı fitil
 SEAL_START = pd.Timestamp(f"{pd.Period(data.DEV_END, 'M') + 1}-01", tz="UTC")
@@ -87,6 +88,15 @@ def check_mark_vs_kline(kl: pd.DataFrame, mk: pd.DataFrame) -> list[dict]:
     return [_i("mark_kline_divergence", "WARN", f"kline ile mark close farkı > {MARK_DIV:.0%}", div.sum(), m.index[div][0])] if div.any() else []
 
 
+def divergence_cutoff(kl: pd.DataFrame, mk: pd.DataFrame):
+    """KURAL (G2'den önce sabit, sinyale bakmadan): kline~mark farkı >%5 olan >=24 ARDIŞIK bar görülürse (ölü/göç etmiş/bayat kontrat)
+    sembolün verisi o koşunun BAŞLANGICINDAN itibaren kullanılamaz. Önceki veri kalır (nedensel: yalnızca sonrası atılır). Yoksa None."""
+    m = kl.set_index("ts").close.to_frame("k").join(mk.set_index("ts").close.rename("m"), how="inner")
+    bad = (((m.k / m.m) - 1).abs() > MARK_DIV).astype(int)
+    run = bad.rolling(DIV_RUN).sum() == DIV_RUN
+    return m.index[run.to_numpy().argmax() - DIV_RUN + 1] if run.any() else None
+
+
 def sha256_file(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
@@ -110,6 +120,10 @@ def run_all(root: Path) -> tuple[dict, pd.DataFrame]:
             man_syms[sym][kind] = {"first": str(df.ts.min()), "last": str(df.ts.max()), "rows": len(df), "parquet_sha256": sha256_file(p), "zip_sha256": raw}
         if "klines" in frames and "markPriceKlines" in frames:
             issues += [{"sym": sym, "kind": "klines~mark", **x} for x in check_mark_vs_kline(frames["klines"], frames["markPriceKlines"])]
+            cut = divergence_cutoff(frames["klines"], frames["markPriceKlines"])
+            man_syms[sym]["usable_until"] = str(cut) if cut is not None else None
+            if cut is not None:
+                issues.append({"sym": sym, "kind": "klines~mark", **_i("usable_window_truncated", "WARN", f"{DIV_RUN}+ ardışık bar kline~mark >{MARK_DIV:.0%}: veri bu andan itibaren kullanılamaz", 0, cut)})
         if "klines" in frames:  # listeleme / delist: dev penceresi içinde son bar erken bitiyorsa delist adayı
             last = frames["klines"].ts.max()
             if last < SEAL_START - pd.Timedelta("2D"):
@@ -149,4 +163,5 @@ if __name__ == "__main__":
     (a.out / "manifest.json").write_text(json.dumps(man, separators=(",", ":")))
     (a.out / "quality_report.md").write_text(report_md(iss, man))
     iss.to_csv(a.out / "quality_issues.csv", index=False)
+    (a.root / "tape" / "usable.json").write_text(json.dumps({s: v["usable_until"] for s, v in man["symbols"].items() if v.get("usable_until")}))  # tape.load bunu uygular
     print(iss.severity.value_counts().to_dict())

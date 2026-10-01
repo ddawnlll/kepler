@@ -142,7 +142,8 @@ def xcheck(root, out):
           f"Funding toplamı: hakem {s['funding']:.6f}, bağımsız {ifund:.6f}, fark {s['funding'] - ifund:.2e} USDT; eksik funding olayı hakem {s['funding_missed']}, bağımsız {imissed}.",
           f"Hakem toplam net {s['net_pnl']:.4f}; fills {s['n_fills']}, likidasyon {s['n_liq']}, reddedilen emir {len(r['rejected'])}.", "",
           "Açıklama (varsayım, doğrulanmadı): fark neredeyse yalnızca çevirme (flip) dolumlarında; çevirmede komisyon iki pozisyona bölünür. Bağımsız hesap miktarla orantılı böler; "
-          "Nautilus'un bölüşümü bundan ≤0,002 USDT/işlem sapıyor (muhtemelen farklı yuvarlama/ağırlık). Toplam komisyon iki tarafta aynı; fark yalnızca iki komşu pozisyon arasındaki paylaşımda."]
+          "Nautilus'un bölüşümü bundan ≤0,002 USDT/işlem sapıyor (muhtemelen farklı yuvarlama/ağırlık). Toplam komisyon iki tarafta aynı; fark yalnızca iki komşu pozisyon arasındaki paylaşımda.",
+          "Sermaye bu karşılaştırma için 1.000.000 USDT: 500 USD'lik hesap bu yüksek devirli fixture ile fee'den iflas eder (ilk denemede INITIAL_MARGIN_EXCEEDS_FREE_BALANCE ile binlerce emir reddedildi). Sermaye PnL'yi değiştirmez."]
     Path(out, "xcheck_btc.md").write_text("\n".join(md))
     print(md[2], md[3], md[4], sep="\n")
 

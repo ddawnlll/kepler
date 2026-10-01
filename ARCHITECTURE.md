@@ -138,10 +138,12 @@ Kurallar:
 
 ## Açık noktalar
 
-- **Nautilus hakem olarak G1'i geçiyor mu:** funding sınır anı, marjin ve likidasyon
-  davranışı, hedef pozisyon boyutunun bar bar uygulanması, Python ≥3.12 şartı
-  (UNKNOWN — TARGETED EXPERIMENT REQUIRED, G1). Önceki denemede likidasyon tetiklenmedi ve tek
-  koşu yavaştı (~36 sn); geçemezse hakem Freqtrade olur.
+- **Nautilus hakem olarak G1'i geçiyor mu:** G1'de ölçüldü (`reports/g0_g1.md`): geçiyor,
+  ama likidasyon yapıştırmasıyla (Nautilus bar verisinde kendisi likide etmiyor; mark H/L ile
+  tetiklenen reduce-only stop-market). Python ≥3.12 şart. Hız: 35k saatlik bar ≈ 0,5–2,7 sn
+  (önceki "~36 sn" bu sürümde geçerli değil). Funding sınır anı bir KABUL: T'deki dolumlar
+  settlement'tan sonra sayılır; Binance'in resmi metni sandbox'tan okunamadı (LIKELY, doğrulanmadı).
+  Funding aralığı 4/8 değil 1/2/4/8 saat olabilir (99 sembol 8 saat dışı).
 - **Eleme ile hakem uyumu:** vectorbt sıralamasının (hangi konfigürasyon iyi) hakemle
   örtüşüp örtüşmediği doğrulanmadı. Filtre iyi adayı eliyorsa eleme işe yaramaz
   (UNKNOWN — TARGETED EXPERIMENT REQUIRED).

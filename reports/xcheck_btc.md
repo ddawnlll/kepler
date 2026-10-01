@@ -7,4 +7,4 @@ Funding toplamı: hakem -37.707683, bağımsız -37.707683, fark 0.00e+00 USDT; 
 Hakem toplam net -4069.6842; fills 3773, likidasyon 0, reddedilen emir 0.
 
 Açıklama (varsayım, doğrulanmadı): fark neredeyse yalnızca çevirme (flip) dolumlarında; çevirmede komisyon iki pozisyona bölünür. Bağımsız hesap miktarla orantılı böler; Nautilus'un bölüşümü bundan ≤0,002 USDT/işlem sapıyor (muhtemelen farklı yuvarlama/ağırlık). Toplam komisyon iki tarafta aynı; fark yalnızca iki komşu pozisyon arasındaki paylaşımda.
-Sermaye bu karşılaştırma için 1.000.000 USDT (500 USD'lik hesap bu yüksek devirli fixture ile iflas eder: ilk denemede INITIAL_MARGIN_EXCEEDS_FREE_BALANCE ile binlerce emir reddedildi). Sermaye PnL'yi değiştirmez.
+Sermaye bu karşılaştırma için 1.000.000 USDT: 500 USD'lik hesap bu yüksek devirli fixture ile fee'den iflas eder (ilk denemede INITIAL_MARGIN_EXCEEDS_FREE_BALANCE ile binlerce emir reddedildi). Sermaye PnL'yi değiştirmez.

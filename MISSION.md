@@ -19,7 +19,7 @@ canlıya gitmez.
 | Sermaye | 500 USD; kanıt gelirse artırılır |
 | Araştırma verisi | Binance USDT-M, yalnızca ücretsiz (klines, funding, mark) |
 | Canlı işlem | MEXC (Binance → MEXC farkı aday çıkınca ölçülür) |
-| Evren | Top 10–20 major |
+| Evren | Top 10–20 major. Sinyalden önce sabit: kripto-dışı/stable/emtia/endeks kontratlar sıralamadan ÖNCE çıkar (`kepler/universe.py::EXCLUDE_BASES`); kline~mark ≥24 ardışık bar >%5 ayrışan sembolün verisi o andan sonra kullanılmaz (`kepler/qc.py::divergence_cutoff`) |
 | Yön | Long + short |
 | Tempo | Swing ağırlıklı, uzun vadeye açık (fee nedeniyle) |
 | Drawdown toleransı | %20–30 |
@@ -82,9 +82,11 @@ canlı (H5).
    altında kısa notlardır.
 6. **Bütçe.** Her blok için açık süre ve araç çağrısı/token tavanı yazılır; aşılınca dur ve
    raporla. Dış sınır: 1 hafta.
-7. **Kendi kodumuz küçük kalır** (≲300 satır). Yapıştırma kodu (funding, hedef→emir
-   adaptörü) bu tavana dahildir. Aşılırsa kullanıcıya sor; bakım maliyeti V8'de projeyi
-   bitirdi.
+7. **Kendi kodumuz küçük kalır; iki ayrı sayı, ikisi de raporlanır.** (a) Hakem + yapıştırma
+   (hedef→emir adaptörü, funding, likidasyon stopu, eleme, defter, sözleşme, denetim) ≲300
+   satır (G1 sonu: 268). (b) Veri/QC/mühür araçları (indirici, kalite kontrol, evren, mühür)
+   ≲500 satır (G1 sonu: ~470). Boş/yorum satırı ve testler sayılmaz. Biri aşılırsa kullanıcıya
+   sor; sessizce geçilmez. Bakım maliyeti V8'de projeyi bitirdi.
 8. **Geliştirme ajanları kilometre taşında onay bekler**, aralarda serbest çalışır.
 9. **Kritik kod** (değerlendirici, denetim) güçlü model + bağımsız inceleme ile yazılır
    (G0–G1: Claude Code + Sonnet 5.5 high); veri çekme ve toplu koşum ucuz modelle yapılabilir.
@@ -96,8 +98,9 @@ canlı (H5).
 ## Varsayılan stack (G1 sonunda testle doğrulanır)
 
 İki aşamalı değerlendirme: **vectorbt eleme** (hızlı filtre; sonuç sayılmaz) + **NautilusTrader
-hakem** (sonuç yalnızca buradan deftere girer). **Freqtrade yedek hakemdir**: Nautilus G1'i
-geçemezse hakem Freqtrade olur. Üstüne ince denetim katmanı (deney defteri, null kontroller,
+hakem** (sonuç yalnızca buradan deftere girer). **G1 sonucu: hakem = Nautilus + likidasyon
+yapıştırması** (Nautilus bar verisinde likide etmiyor; mark H/L ile tetiklenen reduce-only
+stop-market eklendi, elle doğrulandı). Freqtrade yedekte kalır, devreye girmedi. Üstüne ince denetim katmanı (deney defteri, null kontroller,
 mühürlü dönem, `arch` SPA/StepM, `skfolio` CPCV, DSR). Veri: Parquet + DuckDB. Qlib ve RD-Agent
 bu projeden çıkarıldı (short, funding ve likidasyon desteği yok; ayrıntı Phase 2 raporunda,
 repoda değil).

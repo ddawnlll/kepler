@@ -1,19 +1,20 @@
 # Veri kalite raporu (dev dönemi ≤ 2026-03; mühür ≥ 2026-04-01)
 
-Sembol sayısı: 179; aylık evren: 51 ay × top 20.
-Bulgu sayısı: 800 ({'WARN': 695, 'INFO': 105}). Hiçbir bulgu sessizce düzeltilmedi.
+Sembol sayısı: 178; aylık evren: 51 ay × top 20.
+Bulgu sayısı: 832 ({'WARN': 729, 'INFO': 103}). Hiçbir bulgu sessizce düzeltilmedi.
 
 ## Kontrole göre özet
 
 | kontrol | önem | sembol | kayıt |
 |---|---|---|---|
 | delisted | INFO | 6 | 0 |
-| funding_extreme | WARN | 76 | 961 |
-| funding_interval_not_8h | INFO | 99 | 296106 |
-| gap | WARN | 88 | 254 |
-| jump | WARN | 80 | 456 |
+| funding_extreme | WARN | 77 | 963 |
+| funding_interval_not_8h | INFO | 97 | 295140 |
+| gap | WARN | 89 | 256 |
+| jump | WARN | 81 | 475 |
 | mark_kline_divergence | WARN | 37 | 204189 |
-| wick_outlier | WARN | 156 | 586 |
+| usable_window_truncated | WARN | 28 | 0 |
+| wick_outlier | WARN | 157 | 615 |
 
 ## Ayrıntı (ERROR önce)
 
@@ -80,6 +81,7 @@ Bulgu sayısı: 800 ({'WARN': 695, 'INFO': 105}). Hiçbir bulgu sessizce düzelt
 | REEFUSDT | fundingRate | funding_extreme | WARN | 8 |  | |oran| > 0.01 |
 | RIVERUSDT | fundingRate | funding_extreme | WARN | 65 |  | |oran| > 0.01 |
 | RVNUSDT | fundingRate | funding_extreme | WARN | 2 |  | |oran| > 0.01 |
+| SIRENUSDT | fundingRate | funding_extreme | WARN | 2 |  | |oran| > 0.01 |
 | SOLUSDT | fundingRate | funding_extreme | WARN | 11 |  | |oran| > 0.01 |
 | STMXUSDT | fundingRate | funding_extreme | WARN | 17 |  | |oran| > 0.01 |
 | STORJUSDT | fundingRate | funding_extreme | WARN | 4 |  | |oran| > 0.01 |
@@ -211,6 +213,7 @@ Bulgu sayısı: 800 ({'WARN': 695, 'INFO': 105}). Hiçbir bulgu sessizce düzelt
 | WAVESUSDT | markPriceKlines | gap | WARN | 2 | 2022-10-03 00:00 | eksik bar: 48 adet, 2 boşluk |
 | XLMUSDT | klines | gap | WARN | 2 | 2022-03-01 00:00 | eksik bar: 120 adet, 2 boşluk |
 | XLMUSDT | markPriceKlines | gap | WARN | 2 | 2022-10-03 00:00 | eksik bar: 48 adet, 2 boşluk |
+| XMRUSDT | markPriceKlines | gap | WARN | 2 | 2022-10-03 00:00 | eksik bar: 48 adet, 2 boşluk |
 | XRPUSDT | klines | gap | WARN | 2 | 2022-03-01 00:00 | eksik bar: 120 adet, 2 boşluk |
 | XRPUSDT | markPriceKlines | gap | WARN | 2 | 2022-10-03 00:00 | eksik bar: 48 adet, 2 boşluk |
 | ZECUSDT | klines | gap | WARN | 2 | 2022-03-01 00:00 | eksik bar: 120 adet, 2 boşluk |
@@ -342,6 +345,8 @@ Bulgu sayısı: 800 ({'WARN': 695, 'INFO': 105}). Hiçbir bulgu sessizce düzelt
 | RSRUSDT | markPriceKlines | jump | WARN | 1 | 2024-12-04 17:00 | |saatlik getiri| > 30% |
 | RVNUSDT | klines | jump | WARN | 1 | 2025-06-05 07:00 | |saatlik getiri| > 30% |
 | RVNUSDT | markPriceKlines | jump | WARN | 1 | 2025-06-05 07:00 | |saatlik getiri| > 30% |
+| SIRENUSDT | klines | jump | WARN | 9 | 2025-06-21 03:00 | |saatlik getiri| > 30% |
+| SIRENUSDT | markPriceKlines | jump | WARN | 10 | 2025-06-21 03:00 | |saatlik getiri| > 30% |
 | SOMIUSDT | klines | jump | WARN | 1 | 2025-10-01 04:00 | |saatlik getiri| > 30% |
 | SOMIUSDT | markPriceKlines | jump | WARN | 1 | 2025-10-01 04:00 | |saatlik getiri| > 30% |
 | STMXUSDT | markPriceKlines | jump | WARN | 5 | 2023-07-23 04:00 | |saatlik getiri| > 30% |
@@ -406,6 +411,34 @@ Bulgu sayısı: 800 ({'WARN': 695, 'INFO': 105}). Hiçbir bulgu sessizce düzelt
 | VOXELUSDT | klines~mark | mark_kline_divergence | WARN | 2620 | 2025-12-10 18:00 | kline ile mark close farkı > 5% |
 | WAVESUSDT | klines~mark | mark_kline_divergence | WARN | 14930 | 2024-06-11 10:00 | kline ile mark close farkı > 5% |
 | YGGUSDT | klines~mark | mark_kline_divergence | WARN | 1 | 2023-08-07 12:00 | kline ile mark close farkı > 5% |
+| AGIXUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2024-06-27 14:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| AIAUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-12-12 02:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| ALPACAUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-04-30 09:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| BAKEUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-10-05 11:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| BLZUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2024-12-23 09:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| BNXUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-03-18 02:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| FLMUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-11-22 02:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| FTMUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-01-07 15:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| FTTUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2022-11-15 08:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| GALUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2024-07-17 04:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| HIFIUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-10-07 17:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| LINAUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-03-27 09:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| LOOMUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2024-12-09 09:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| MKRUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-09-12 00:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| NEIROETHUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-09-26 09:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| OCEANUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2024-06-27 11:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| OMUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2026-02-24 04:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| PERPUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-11-25 12:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| PUMPUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-06-15 17:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| REEFUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-01-22 10:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| RNDRUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2024-07-24 21:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| STMXUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-02-21 18:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| SXPUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-12-05 20:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| TOMOUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2023-11-16 06:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| UNFIUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2024-10-31 00:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| UXLINKUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-09-29 10:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| VOXELUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2025-12-12 15:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
+| WAVESUSDT | klines~mark | usable_window_truncated | WARN | 0 | 2024-06-11 10:00 | 24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz |
 | 1000BONKUSDT | klines | wick_outlier | WARN | 1 | 2025-10-10 21:00 | (high-low)/close > 50% |
 | 1000BONKUSDT | markPriceKlines | wick_outlier | WARN | 1 | 2025-10-10 21:00 | (high-low)/close > 50% |
 | 1000FLOKIUSDT | klines | wick_outlier | WARN | 1 | 2025-10-10 21:00 | (high-low)/close > 50% |
@@ -653,6 +686,8 @@ Bulgu sayısı: 800 ({'WARN': 695, 'INFO': 105}). Hiçbir bulgu sessizce düzelt
 | SANDUSDT | markPriceKlines | wick_outlier | WARN | 1 | 2025-10-10 21:00 | (high-low)/close > 50% |
 | SEIUSDT | klines | wick_outlier | WARN | 1 | 2025-10-10 21:00 | (high-low)/close > 50% |
 | SEIUSDT | markPriceKlines | wick_outlier | WARN | 1 | 2025-10-10 21:00 | (high-low)/close > 50% |
+| SIRENUSDT | klines | wick_outlier | WARN | 16 | 2025-06-21 03:00 | (high-low)/close > 50% |
+| SIRENUSDT | markPriceKlines | wick_outlier | WARN | 13 | 2025-06-21 03:00 | (high-low)/close > 50% |
 | SOMIUSDT | klines | wick_outlier | WARN | 3 | 2025-08-25 09:00 | (high-low)/close > 50% |
 | SOMIUSDT | markPriceKlines | wick_outlier | WARN | 2 | 2025-09-02 14:00 | (high-low)/close > 50% |
 | STMXUSDT | klines | wick_outlier | WARN | 1 | 2023-07-23 04:00 | (high-low)/close > 50% |
@@ -782,7 +817,6 @@ Bulgu sayısı: 800 ({'WARN': 695, 'INFO': 105}). Hiçbir bulgu sessizce düzelt
 | OMUSDT | fundingRate | funding_interval_not_8h | INFO | 4622 | 2024-02-13 16:00 | 8 saat dışı aralık kullanılmış: [1, 4, 8] |
 | ONGUSDT | fundingRate | funding_interval_not_8h | INFO | 5132 | 2023-11-27 16:00 | 8 saat dışı aralık kullanılmış: [4] |
 | ORDIUSDT | fundingRate | funding_interval_not_8h | INFO | 5252 | 2023-11-07 16:00 | 8 saat dışı aralık kullanılmış: [4] |
-| PAXGUSDT | fundingRate | funding_interval_not_8h | INFO | 2217 | 2025-03-27 12:00 | 8 saat dışı aralık kullanılmış: [4, 8] |
 | PENGUUSDT | fundingRate | funding_interval_not_8h | INFO | 2815 | 2024-12-17 20:00 | 8 saat dışı aralık kullanılmış: [4, 8] |
 | PERPUSDT | fundingRate | funding_interval_not_8h | INFO | 4626 | 2023-10-12 12:00 | 8 saat dışı aralık kullanılmış: [4, 8] |
 | PIPPINUSDT | fundingRate | funding_interval_not_8h | INFO | 3912 | 2025-01-24 12:00 | 8 saat dışı aralık kullanılmış: [1, 4] |
@@ -794,6 +828,7 @@ Bulgu sayısı: 800 ({'WARN': 695, 'INFO': 105}). Hiçbir bulgu sessizce düzelt
 | REEFUSDT | fundingRate | funding_interval_not_8h | INFO | 1477 | 2024-10-16 08:00 | 8 saat dışı aralık kullanılmış: [4, 8] |
 | RIVERUSDT | fundingRate | funding_interval_not_8h | INFO | 2024 | 2025-10-17 16:00 | 8 saat dışı aralık kullanılmış: [1, 4] |
 | RVNUSDT | fundingRate | funding_interval_not_8h | INFO | 2569 | 2025-06-05 17:00 | 8 saat dışı aralık kullanılmış: [1, 4, 8] |
+| SIRENUSDT | fundingRate | funding_interval_not_8h | INFO | 2415 | 2025-03-22 12:00 | 8 saat dışı aralık kullanılmış: [1, 4, 8] |
 | SOLUSDT | fundingRate | funding_interval_not_8h | INFO | 101 | 2022-11-09 20:00 | 8 saat dışı aralık kullanılmış: [2, 4, 8] |
 | SOMIUSDT | fundingRate | funding_interval_not_8h | INFO | 1311 | 2025-08-25 12:00 | 8 saat dışı aralık kullanılmış: [4] |
 | STMXUSDT | fundingRate | funding_interval_not_8h | INFO | 3722 | 2023-07-23 10:00 | 8 saat dışı aralık kullanılmış: [2, 4, 8] |
@@ -813,8 +848,6 @@ Bulgu sayısı: 800 ({'WARN': 695, 'INFO': 105}). Hiçbir bulgu sessizce düzelt
 | WCTUSDT | fundingRate | funding_interval_not_8h | INFO | 2970 | 2025-04-15 12:00 | 8 saat dışı aralık kullanılmış: [1, 4] |
 | WIFUSDT | fundingRate | funding_interval_not_8h | INFO | 4820 | 2024-01-18 16:00 | 8 saat dışı aralık kullanılmış: [4] |
 | WLFIUSDT | fundingRate | funding_interval_not_8h | INFO | 1323 | 2025-08-23 12:00 | 8 saat dışı aralık kullanılmış: [4] |
-| XAGUSDT | fundingRate | funding_interval_not_8h | INFO | 501 | 2026-01-07 08:00 | 8 saat dışı aralık kullanılmış: [4, 8] |
-| XAUUSDT | fundingRate | funding_interval_not_8h | INFO | 663 | 2025-12-11 08:00 | 8 saat dışı aralık kullanılmış: [4, 8] |
 | XPLUSDT | fundingRate | funding_interval_not_8h | INFO | 1329 | 2025-08-22 12:00 | 8 saat dışı aralık kullanılmış: [4] |
 | YGGUSDT | fundingRate | funding_interval_not_8h | INFO | 5421 | 2023-08-07 14:00 | 8 saat dışı aralık kullanılmış: [2, 4, 8] |
 | ZILUSDT | fundingRate | funding_interval_not_8h | INFO | 511 | 2026-02-02 17:00 | 8 saat dışı aralık kullanılmış: [1, 4, 8] |

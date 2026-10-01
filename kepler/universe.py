@@ -16,7 +16,15 @@ import pandas as pd
 from kepler import data
 
 START, RANK_START, TOP_N = "2022-01", "2021-12", 20
-STABLE_BASES = ("USDC", "BUSD", "TUSD", "FDUSD")  # stable/USDT çiftleri majör değil
+# EVREN KURALI (G2'den ÖNCE, sinyale bakmadan sabitlendi; sonradan değiştirilirse seçim sayılır): soru "kripto perp'te edge var mı".
+# Kripto dinamiği taşımayanlar sıralamadan ÖNCE çıkarılır (yerlerine sıradaki girer): stable/fiyatı sabit, emtia/değerli maden
+# (altın/gümüş izleyen kontratlar dahil), endeks perp'leri, hisse/FX. Sıra dışı tek istisna yok.
+EXCLUDE_BASES = frozenset({"USDC", "BUSD", "TUSD", "FDUSD", "USDP", "DAI", "EUR", "GBP", "XAU", "XAG", "XPT", "XPD", "PAXG", "XAUT",
+                           "BTCDOM", "DEFI", "TSLA", "NVDA", "AAPL", "COIN", "MSTR", "QQQ", "SPY", "CL", "BZ", "NATGAS"})
+
+
+def eligible(sym: str) -> bool:
+    return sym.removesuffix("USDT") not in EXCLUDE_BASES
 KINDS = ("klines", "markPriceKlines", "fundingRate")
 RAW = Path(os.environ.get("KEPLER_RAW", "/tmp/kepler_raw"))  # ham zip'ler konteyner diskinde; kalıcı olan Parquet + sha listesi
 
@@ -98,17 +106,17 @@ def main(root: Path, stage: str = "all", shard: str = "0/1", workers: int = 32) 
     i, n = map(int, shard.split("/"))
     tape = root / "tape"
     tape.mkdir(parents=True, exist_ok=True)
-    syms = [s for s in data.symbols() if s[: -len("USDT")] not in STABLE_BASES]
+    syms = data.symbols()
     if stage in ("rank", "all"):
         print(f"{len(syms)} USDT-M perp sembolü; parça {shard}", flush=True)
         monthly_volume(root, syms[i::n], workers).to_parquet(tape / f"vol_shard_{i}_of_{n}.parquet", index=False)
     if stage in ("universe", "all"):
         vol = pd.concat([pd.read_parquet(p) for p in sorted(tape.glob("vol_shard_*_of_*.parquet"))], ignore_index=True).drop_duplicates(["sym", "month"])
-        missing = {s for s in syms if not (tape / "vol" / f"{s}.parquet").exists()}  # boş (dev penceresinde verisi olmayan) semboller de dosya bırakır
+        missing = {s for s in syms if eligible(s) and not (tape / "vol" / f"{s}.parquet").exists()}  # boş (dev penceresinde verisi olmayan) semboller de dosya bırakır
         if missing:
             raise RuntimeError(f"rank parçaları eksik: {len(missing)} sembolün hacmi yok (örn. {sorted(missing)[:3]}); eksik parçaları çalıştır")
         vol.to_parquet(tape / "volume_1d.parquet", index=False)
-        build_universe(vol).to_parquet(tape / "universe.parquet", index=False)
+        build_universe(vol[vol.sym.map(eligible)]).to_parquet(tape / "universe.parquet", index=False)  # filtre sıralamadan önce
     if stage in ("build", "all"):
         need = sorted(pd.read_parquet(tape / "universe.parquet").sym.unique())
         print(f"evren: {len(need)} sembol dev döneminde üye oldu; parça {shard}", flush=True)

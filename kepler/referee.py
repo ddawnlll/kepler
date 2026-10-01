@@ -7,6 +7,8 @@ Dolum: kararın verildiği barın kapanış fiyatından, piyasa emriyle (Nautilu
 yapılan dolumlardan önce) tutulan pozisyon x mark fiyat; işaret: oran>0 iken long öder. Likidasyon: Nautilus bar
 verisinde likide etmiyor (tests/test_referee.py::test_nautilus_alone_does_not_liquidate); bu yüzden her pozisyon
 değişiminde likidasyon fiyatında reduce-only STOP_MARKET konur (Nautilus bar içi H/L'de tetikler, tetik fiyatından doldurur).
+Tetik MARK fiyatıyla: `mark` verilirse motora giden barların H/L'si mark H/L'sidir (O/C kline'dan; piyasa emirleri kapanıştan
+dolar, etkilenmez). Nautilus'un MARK_PRICE tetikleyicisi bar/MarkPriceUpdate ile çalışmadı, bu yüzden bu yol seçildi.
 """
 import math
 from bisect import bisect_left
@@ -132,8 +134,12 @@ def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.Da
     strat = Adapter(iid, spec, dict(zip([t + HOUR_NS for t in ns(target.index)], target.astype(float))))
     close_ns = [t + HOUR_NS for t in ns(kl.index)]
     f = lambda v, d: Price.from_str(f"{v:.{d}f}")  # noqa: E731
+    hi, lo = kl.high, kl.low
+    if mark is not None and {"high", "low"} <= set(mark.columns):  # likidasyon stopu MARK fiyatının H/L'siyle tetiklenir (Binance); eksik mark barında kline H/L
+        hi, lo = mark.high.reindex(kl.index).fillna(kl.high), mark.low.reindex(kl.index).fillna(kl.low)
+    hi, lo = pd.concat([hi, kl.open, kl.close], axis=1).max(axis=1), pd.concat([lo, kl.open, kl.close], axis=1).min(axis=1)  # O/C [L,H] içinde kalsın
     eng.add_data([Bar(strat.bt, f(o, pp), f(h, pp), f(l, pp), f(c, pp), Quantity.from_str(f"{v:.{sp}f}"), t, t)
-                  for o, h, l, c, v, t in zip(kl.open, kl.high, kl.low, kl.close, kl.volume, close_ns)])
+                  for o, h, l, c, v, t in zip(kl.open, hi, lo, kl.close, kl.volume, close_ns)])
     eng.add_strategy(strat)
     eng.run()
     bal = float(eng.portfolio.account(VENUE).balance_total(USDT))

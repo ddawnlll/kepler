@@ -5,6 +5,7 @@ Seri kl ile AYNI indeksli, float: t'deki değer = t barı kapandığında istene
 >0 long, <0 short, 0 flat, NaN = mevcut pozisyonu tut. Yalnızca t ve öncesi veriye bakabilir (C4 nedensellik testi denetler).
 vectorbt (eleme) ve Nautilus (hakem) aynı seriyi oynatır.
 """
+import json
 from pathlib import Path
 
 import duckdb
@@ -16,11 +17,25 @@ from kepler.qc import SEAL_START
 KINDS = {"klines": "klines", "mark": "markPriceKlines", "funding": "fundingRate"}
 
 
+def _usable(root) -> dict:
+    p = Path(root) / "tape" / "usable.json"
+    return json.loads(p.read_text()) if p.exists() else {}
+
+
+def membership(root) -> pd.DataFrame:
+    """Aylık evren (month, rank, sym): kullanılamaz hale gelen (divergence_cutoff) sembol o aydan itibaren çıkar, yerine yenisi konmaz."""
+    uni, cut = pd.read_parquet(Path(root) / "tape" / "universe.parquet"), _usable(root)
+    start = pd.to_datetime(uni.month + "-01", utc=True)
+    return uni[[(s not in cut or m <= pd.Timestamp(cut[s])) for s, m in zip(uni.sym, start)]].reset_index(drop=True)  # kesim ayı üye kalır; load() veriyi kesim anında keser
+
+
 def load(root, sym: str, start=None, end=None) -> dict[str, pd.DataFrame]:
     """{'klines','mark','funding'}: ts indeksli. `end` mühür sınırını aşamaz (dev dönemi dışı veri ajan ortamına girmez)."""
     lo, hi = pd.Timestamp(start or "1970-01-01", tz="UTC"), pd.Timestamp(end, tz="UTC") if end else SEAL_START
     if hi > SEAL_START:
         raise ValueError(f"end={hi} mühür başlangıcını ({SEAL_START}) aşıyor")
+    cut = _usable(root).get(sym)  # qc.divergence_cutoff: bayat/ölü kontrat verisi (kline~mark sapması) kullanıcıya hiç verilmez
+    hi = min(hi, pd.Timestamp(cut)) if cut else hi
     out = {}
     for name, kind in KINDS.items():
         p = Path(root) / "tape" / kind / f"{sym}.parquet"
