@@ -72,10 +72,10 @@ def run_symbol(a):
     res = ev.evaluate(sig, kl, specs, led, hyp, data_hash, funding, mark, NOTIONAL, job, dict(job=job), None)
     full = []
     for sp, r in zip(specs, res):
-        s = dict(r["res"]["summary"], fee=sp.fee_rt_bps, slip=sp.slip_rt_bps, traded=float((r["res"]["fills"].qty * r["res"]["fills"].px).sum()))
+        s = dict(r["res"]["summary"], fee_bps=sp.fee_rt_bps, slip_bps=sp.slip_rt_bps, traded=float((r["res"]["fills"].qty * r["res"]["fills"].px).sum()))
         d = daily_pnl(kl, mark, funding, r["res"]["fills"], sp)
         s["recon_diff"] = float(d.sum() - r["res"]["summary"]["net_pnl"])
-        s["daily"] = {str(k.date()): float(v) for k, v in d.items()} if (sp.fee_rt_bps, sp.slip_rt_bps) == (10, SLIP) else None
+        s["daily"] = {str(k.date()): float(v) for k, v in d.items()} if (sp.fee_rt_bps, sp.slip_rt_bps) == (10, SLIP) else None  # günlük seri yalnız temel senaryoda (Sharpe/DSR)
         full.append(s)
     wins = []
     base = spec_for(kl, 10, SLIP)
