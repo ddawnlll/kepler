@@ -23,7 +23,7 @@ def leaky(kl):  # BİLEREK sızdırır: bir SONRAKİ barın kapanışına bakar
     return pd.Series(np.where(kl.close.shift(-1) > kl.close, 1000.0, -1000.0), index=kl.index)
 
 
-SP = referee.Spec(tick="0.01", step="0.0001", capital=10000.0, liq=False)
+SP = referee.Spec(tick="0.01", step="0.0001", capital=10000.0, liq=False, slip_rt_bps=2.0)
 
 
 # ---- nedensellik
@@ -79,13 +79,28 @@ def test_flat_signal_is_exactly_zero():
 
 def test_random_signal_is_minus_cost_on_driftless_market():
     """Sıfır sürüklenmeli piyasada rastgele sinyal: brüt ~ 0 (3 SE içinde), net = brüt - maliyet < 0."""
-    gross, fee = [], []
+    gross, net = [], []
     for seed in range(30):
         kl = market(n=300, seed=seed)
         t = pd.Series(np.random.default_rng(1000 + seed).choice([-1000.0, 0.0, 1000.0], size=len(kl)), index=kl.index)
-        s = referee.run(kl, t, referee.Spec(tick="0.01", step="0.0001", capital=10000.0, liq=False, fee_rt_bps=10))["summary"]
+        s = referee.run(kl, t, referee.Spec(tick="0.01", step="0.0001", capital=10000.0, liq=False, fee_rt_bps=10, slip_rt_bps=2.0))["summary"]
         gross.append(s["gross_pnl"])
-        fee.append(s["fee"])
+        net.append(s["net_pnl"])
     g, se = np.mean(gross), np.std(gross, ddof=1) / np.sqrt(len(gross))
     assert abs(g) < 3 * se, (g, se)
-    assert np.mean(fee) > 0 and g - np.mean(fee) < 0
+    assert np.mean(net) < 0  # doğrudan motorun net sonucu; brüt-fee yeniden kurmak işaret hatasını gizler
+
+
+def test_random_signal_cost_has_an_independent_input_based_oracle():
+    # Sabit100 fiyatı: tüm miktarlar lot'a tam uyar, brüt0. Rastgele hedeflerde tek maliyet toplam devir.
+    # Giriş/flip/çıkış + kalan pozisyonun varsayımsal çıkışı: mutlak notional değişimi * (5fee+1slip)bps.
+    for seed in range(8):
+        kl = market(n=60, seed=seed, vol=0)
+        raw = np.random.default_rng(seed + 400).choice([-1000.0, 0.0, 1000.0], len(kl)).astype(float)
+        executed = np.r_[0.0, raw[:-1]]  # son kararın dolumu yok
+        turnover = np.abs(np.diff(executed)).sum() + abs(executed[-1])
+        s = referee.run(kl, pd.Series(raw, index=kl.index), SP)["summary"]
+        assert s["gross_pnl"] == A(0.0, abs=1e-9)
+        assert s["fee"] == A(turnover * 0.0005)
+        assert s["slippage"] == A(turnover * 0.0001)
+        assert s["net_pnl"] == A(-turnover * 0.0006, abs=1e-9)

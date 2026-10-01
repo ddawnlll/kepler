@@ -26,8 +26,8 @@ def test_long_10x_liquidated_when_mark_crosses_even_if_last_does_not():
     r = case([FLAT, (100, 100, 91, 95), FLAT], [FLAT, (100, 100, 90.0, 95), FLAT], 5000.0)  # mark düşüğü 90 <= 90.50; son fiyat 91
     f = r["fills"]
     assert list(f.liq) == [False, True] and f.qty.iloc[0] == A(50.0) and f.px.iloc[1] == A(90.50)
-    # kayıp -(100-90.5)*50 = -475; fee 2.5 + 50*90.5*0.0005 = 2.2625
-    assert r["summary"]["net_pnl"] == A(-479.7625) and r["summary"]["n_liq"] == 1 and r["summary"]["end_position"] == 0
+    # kayıp -475; giriş fee 2.5; açıkça sıfır likidasyon çıkış ücreti taker yerine geçer
+    assert r["summary"]["net_pnl"] == A(-477.5) and r["summary"]["n_liq"] == 1 and r["summary"]["end_position"] == 0
 
 
 def test_long_10x_not_liquidated_when_only_last_price_crosses():
@@ -39,7 +39,7 @@ def test_short_10x_liquidated_by_mark_high():
     r = case([FLAT, (100, 108, 100, 105), FLAT], [FLAT, (100, 110.0, 100, 105), FLAT], -5000.0)
     f = r["fills"]
     assert list(f.liq) == [False, True] and f.px.iloc[1] == A(109.40)
-    assert r["summary"]["net_pnl"] == A(-(109.40 - 100) * 50 - 2.5 - 50 * 109.40 * 0.0005)  # -475.235
+    assert r["summary"]["net_pnl"] == A(-472.5)  # -470 brüt -2.5 giriş; çıkış ücreti 0
 
 
 def test_short_10x_not_liquidated_when_only_last_price_crosses():

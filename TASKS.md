@@ -18,8 +18,8 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 | 1 | Veri hattı | ☑ | 2022-01 → 2026-03, 179 sembol, QC raporu, sha256 manifest, mühür ayrı (G0) |
 | 2 | Sinyal | ☐ | Gerçek sinyal kodu yok (momentum, Donchian, funding yazılmadı); yalnızca test fixture'ları |
 | 3 | Risk motoru | ☐ | Yok: vol hedefleme, boyutlama, kill switch yazılmadı. Hakemde yalnızca sabit `leverage=10` ve likidasyon benzetimi var. MISSION bunu G3 sonrasına bırakıyor; G2 için sabit boyut yeter |
-| 4 | Backtest/hakem (yürütme+muhasebe) | ◐ | Nautilus hakem: long/short, fee, funding, slippage, likidasyon; elle hesaplı testler + BTC'de 3773 işlem eşleşti. Eksik: iyimser dolum (kapanıştan, slippage 0), tek sembol, portföy yok |
-| 5 | Denetim | ◐ | Defter (ledger) ve nedensellik denetimi var, ama denetim deftere bağlı değil. Yok: walk-forward, null dağılımı, DSR, çoklu test düzeltmesi |
+| 4 | Backtest/hakem (yürütme+muhasebe) | ◐ | Altı G2 öncesi düzeltme tamam: sonraki açılış, zorunlu pozitif slippage, açık çıkış maliyeti, tek likidasyon ücreti; elle hesaplı testler. Eksik: funding live marjine işlemez; MARK–LAST O/C ayrışması; tek sembol/portföy yok. BTC 3773 eşleşme eski model ölçümü |
+| 5 | Denetim | ◐ | evaluate sözleşme/nedensellik kapısı deftere bağlı; bütün kesimler denetlenir, sayaç/append kilitli. Yok: walk-forward, null dağılımı, DSR, çoklu test düzeltmesi |
 | 6 | Rapor | ◐ | Elle yazılan Markdown raporlar; otomatik rapor yok |
 | 7 | Araştırma ajanı (7/24) | ☐ | Yalnızca talimat dosyaları (`factory/agents/`) |
 | 8 | Canlı emir katmanı | ☐ | Yok; MEXC desteği doğrulanmadı |
@@ -27,7 +27,7 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 | 10 | Sekreter/müdür (Hermes) | ◐ | Hermes sunucuda kurulmuş (başka oturumdan), sekreter talimatı henüz uygulanmadı; kuyruk kodu var (`factory/enqueue.py`) |
 
 **Döngü** (sinyal → boyut → backtest → denetim → rapor) bugün uçtan uca **çalışmıyor**: yalnızca 1 → 4 gerçek veride, fixture sinyalle koştu.
-**Sıradaki en kısa yol "edge var mı" cevabına:** hakem düzeltmesi (sonraki-bar dolum + slippage) → 3 sinyal → walk-forward + null + fee ızgarası (G2). Risk motoru bu cevap için gerekmiyor.
+**Sıradaki yol "edge var mı" cevabına:** istenen altı hakem düzeltmesi bitti; eski iki hakem sınırlaması raporda açık. Sonraki ayrı iş: 3 sinyal → walk-forward + null + fee ızgarası (G2). Risk motoru bu cevap için gerekmiyor.
 
 ## İlerleme (G0–G1 çekirdek görevleri)
 
@@ -39,10 +39,10 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 | B3 | Dönemsel hacim evreni + gerçek dev verisi | 8 | ☑ | data_manifest/manifest.json (178 sembol, 51 ay × top20; emtia/stable sıralamadan önce çıkarıldı, kline~mark ayrışma kesimi 28 sembol); son bar 2026-03-31 23:00; mühür ayı indirilmedi (tests/test_data.py::test_sealed_period_is_never_fetched, tests/test_universe_rules.py) |
 | B4 | Mühür aracı | 4 | ☑ | tests/test_seal.py: sentetik şifrele→aç birebir, yanlış özel anahtar açamaz, bozulmuş şifreli metin reddedilir, seal aracında özel anahtar yolu yok (5 test) |
 | C1 | Hedef-pozisyon sözleşmesi + veri yükleme + deney defteri | 6 | ☑ | kepler/tape.py + kepler/ledger.py; tests/test_tape_ledger.py (5): sözleşme doğrulama, mühür sınırı reddi, append-only defter, DuckDB sorgu, eleme result yazamaz |
-| C2 | Hakem motor (Nautilus; yedek Freqtrade) + bilinen-cevaplı testler | 25 | ☑ | tests/test_referee.py (26) + test_liq_mark.py (7: 10x, mark-tetikli) + test_review_fixes.py: elle hesap; likidasyon MARK H/L ile tetiklenir (yalnızca last geçince likide olmaz); test_nautilus_alone_does_not_liquidate. Sapma kullanıcı onaylı: hakem Nautilus + likidasyon yapıştırması (MISSION'da) |
+| C2 | Hakem motor (Nautilus; yedek Freqtrade) + bilinen-cevaplı testler | 25 | ☑ | G2 öncesi: tests/test_hardening.py (sonraki-açılış, zorunlu slippage, açık çıkış, tek likidasyon ücreti, funding gap); tests/test_referee.py (26) + test_liq_mark.py (7: 10x, mark-tetikli) + test_review_fixes.py: elle hesap; likidasyon MARK H/L ile tetiklenir (yalnızca last geçince likide olmaz); test_nautilus_alone_does_not_liquidate. Sapma kullanıcı onaylı: hakem Nautilus + likidasyon yapıştırması (MISSION'da) |
 | C3 | vectorbt eleme + eleme–hakem uyumu | 10 | ☑ | reports/screen_vs_referee.md: Spearman 1,000 (n=16; ızgara fee-baskın, zayıf kanıt); ledger/g1_ledger.jsonl 80 kayıt (eleme+hakem); tests/test_screen.py |
-| C4 | Nedensellik, determinizm, pencere denkliği, negatif kontroller | 10 | ☑ | tests/test_trust.py (7): nedensellik (nedensel geçer; sızdıran sinyal assert_causal'da AssertionError [120,200,280,360] — elle doğrulandı), determinizm hash, pencere=tam tape (funding sınırı dahil), flat=0, rastgele=brüt~0/net<0 |
-| C5 | Gerçek veride çapraz kontrol (hakem vs bağımsız elle hesap) | 5 | ☑ | reports/xcheck_btc.md: BTCUSDT 3773 işlem eşleşti, |net fark| maks 0,00207 USDT, funding birebir; tests/test_xcheck.py |
+| C4 | Nedensellik, determinizm, pencere denkliği, negatif kontroller | 10 | ☑ | G2 öncesi: evaluate kapısı, tüm kesimler + seyrek/tail sızıntı reddi, gerçek net ve bağımsız rastgele-devir maliyeti; tests/test_trust.py (7): nedensellik (nedensel geçer; sızdıran sinyal assert_causal'da AssertionError [120,200,280,360] — elle doğrulandı), determinizm hash, pencere=tam tape (funding sınırı dahil), flat=0, rastgele=brüt~0/net<0 |
+| C5 | Gerçek veride çapraz kontrol (hakem vs bağımsız elle hesap) | 5 | ☑ | G2 öncesi: tests/test_xcheck.py elle hesap gap/flip/funding/açık-son-döngü, zamanla eşleşme ve toplam net; eski gerçek-veri ölçümü yeni modelle yeniden koşulmadı; reports/xcheck_btc.md: BTCUSDT 3773 işlem eşleşti, |net fark| maks 0,00207 USDT, funding birebir; tests/test_xcheck.py |
 | D | Kitaplar: PDF → metin (paralel, düşük öncelik) | 3 | ☑ | books_text/ (125 metin) + books_text/QUALITY.md; kaynaklar PDF değil zaten düz metindi (0 PDF, sayfa bilgisi yok); 2 kitap bayraklı; scripts/books_quality.py |
 | E | Rapor + bağımsız inceleme | 8 | ☑ | reports/g0_g1.md; bağımsız inceleme (ayrı bağlam) bulguları raporda; 89 test yeşil |
 
@@ -152,19 +152,19 @@ Yalnızca G0–G1'i destekleyen, sinyal içermeyen işler:
 
 ## Devralma notu (Hermes / sonraki ajan) — çekirdek bitti, G2'ye geçilmedi
 
-**Durum:** G0 geçti, G1 geçti (99 test yeşil, 0 atlanan; gerçek ağ testi için `KEPLER_NET=1`). Sonuç ve açık bulgular: `reports/g0_g1.md`. **Dal: yalnızca `main`** (G0–G1 işi `49c3354` merge commit'iyle `main`'de; `g0-g1` ve `claude/blissful-ptolemy-4kmtvf` birleştirilip silindi). Yeni iş için `main`'den dal aç.
+**Durum (2026-10-02):** G2 öncesi istenen altı sertleştirme maddesi bitti; Modal tam paket **125 geçti, 1 atlandı** (gerçek indirme gerektiren `KEPLER_NET` testi bu kapsamda çalıştırılmadı), 0 kırmızı. Bağımsız kod/test incelemesi yapıldı; eski kapsam dışı iki hakem sınırlaması raporda. G2 sinyal araştırmasına geçilmedi. **Dal:** `claude/blissful-ptolemy-4kmtvf` (kullanıcının istediği dal; uzak dal silinmemişti). Sonuç/açık bulgular: `reports/g0_g1.md`.
 
 **Nerede ne var**
-- Her şey Modal'de çalışır: `modal run modal_app.py --cmd "pytest -q"` (gerçek ağ testi: `KEPLER_NET=1 pytest tests/test_data.py`). Yerel `.venv` boş; yerelde proje kodu koşulmuyor.
+- Çalıştırma komutları ve Modal erişimi için tek kaynak `AGENTS.md` → Nasıl çalıştırılır. Bu sertleştirme Modal'de doğrulandı; yerelde proje kodu koşulmadı.
 - Veri: Modal Volume `kepler-data:/tape/{klines,markPriceKlines,fundingRate}/SYM.parquet` + `universe.parquet`. Ham zip'ler konteyner diskinde (`/tmp/kepler_raw`), kalıcı değil; manifest `data_manifest/manifest.json` zip sha256'larını taşır. Yeniden kurmak: `python -m kepler.universe --stage rank|universe|build --shard i/12` (12 paralel `modal run --detach`; tek konteyner ≈10 dosya/sn, konteyner sayısıyla ölçekleniyor), sonra `python -m kepler.qc --root /data --out /data/manifest`. Yalnızca ≤ 2026-03 indirilir (`kepler/data.py::DEV_END`).
-- Hakem: `kepler/referee.py::run(kl, target, Spec, funding, mark)`; sözleşme `kepler/tape.py` başlığında. Sonuç deftere yalnızca `ledger.record(source="referee")` ile; eleme `kepler/screen.py` (defter zorunlu).
+- Hakem/defter için tek giriş: `referee.evaluate(kl, signal, Spec(slip_rt_bps=...), ledger_path, ..., funding, mark)`. Hedef sözleşmesi ve bütün kesimlerde nedensellik zorunlu; `next_open` ve pozitif slippage gerekir. `run()` düşük seviye muhasebe fixture'ı; `close`/sıfır slippage orada açıkça seçilebilir, evaluate kabul etmez. `ledger.record(source="referee")` tek başına reddedilir; eleme de sonraki açılış + terminal çıkış maliyeti kullanır. Defter sayaç/append/flush POSIX kilidiyle korunur (`test_ledger_lock_keeps_trials_unique_and_jsonl_complete`).
 - Mühür: `tools/seal_holdout.py` (genel anahtar) / `tools/open_holdout.py` (kullanıcı). **Gerçek veriyle kullanıcı çalıştıracak**; ajan çalıştırmaz.
 - Defter: `ledger/g1_ledger.jsonl` (fixture ızgarası; 112 kayıt = 16 eleme + 16 hakem × yeniden koşular; append-only olduğu için tekrarlar silinmez, deneme sayacına girer). G2 denemeleri ayrı dosyaya.
 - Veri notu: evren 178 sembol (emtia/stable sıralamadan önce çıkarıldı). Kuralla çıkarılan semboller (XAU, XAG, PAXG…) Volume'da eski Parquet olarak duruyor ama manifestte/evrende yok; kullanma.
 
-**Kullanıcı kararları (işlendi):** hakem = Nautilus + mark-tetikli likidasyon yapıştırması (MISSION'da); kural 7 iki sayıya bölündü (hakem+yapıştırma ≲300: 285; araçlar ≲500: 434); evren kuralı sabitlendi (emtia/stable/endeks sıralamadan önce çıkar, `EXCLUDE_BASES`; kline~mark ayrışma kesimi). Hâlâ kullanıcıda: mühür uzunluğu (6 ay, 2026-04-01 sınırı), mühür aracını gerçek veriyle ÇALIŞTIRMAK (özel anahtar ajanda/ortamda olmamalı), funding settlement anı kuralının Binance resmi SSS'inden teyidi (UNKNOWN; mark fiyatı kullanımı ve dinamik aralık geliştirici belgesinden KNOWN).
+**Kullanıcı kararları (işlendi):** hakem = Nautilus + mark-tetikli likidasyon yapıştırması (MISSION'da); kural 7 iki sayıya bölündü (hakem+yapıştırma ≲300: 297; araçlar ≲500: 434); evren kuralı sabitlendi (emtia/stable/endeks sıralamadan önce çıkar, `EXCLUDE_BASES`; kline~mark ayrışma kesimi). Hâlâ kullanıcıda: mühür uzunluğu (6 ay, 2026-04-01 sınırı), mühür aracını gerçek veriyle ÇALIŞTIRMAK (özel anahtar ajanda/ortamda olmamalı), funding settlement anı kuralının Binance resmi SSS'inden teyidi (UNKNOWN; mark fiyatı kullanımı ve dinamik aralık geliştirici belgesinden KNOWN).
 
-**G2'nin ilk adımı:** eleme↔hakem uyumunu fee-baskın olmayan geniş bir ızgarayla yeniden ölç (Spearman 1,000/n=16 anlamsız). **G2'den önce yapılacaklar (inceleme bulgularından):** sonraki-bar dolum modu ve zorunlu slippage; açık pozisyon çıkış maliyeti; likidasyon çifte sayım; `audit.assert_causal`/`check_target`'ı tek `evaluate()` girişine bağlamak; defter için dosya kilidi. Evren kullanımı: `tape.load` kesimi otomatik uygular, aylık üyelik için `tape.membership(root)`.
+**G2'nin ilk adımı:** eleme↔hakem uyumunu fee-baskın olmayan geniş bir ızgarayla yeniden ölç (Spearman 1,000/n=16 anlamsız). **Bu oturumda tamamlandı:** sonraki-bar açılışı ve zorunlu pozitif slippage; açık pozisyon tahmini çıkış fee/slippage; motor bakiyesine uygulanan tek likidasyon çıkış ücreti; nedensellik/sözleşme evaluate kapısı; süreçler arası defter kilidi; rastgele/xcheck bağımsız beklenen değerleri. Tüm kesim denetimi karesel maliyetlidir. **Kalan eski sınırlamalar:** funding live marjin/stop bakiyesine işlenmiyor; MARK H/L, LAST O/C ile genişletildiği için O/C ayrışmasında yanlış likidasyon mümkün (raporda). Evren kullanımı: `tape.load` kesimi otomatik uygular, aylık üyelik için `tape.membership(root)`.
 
 **Dikkat:** funding aralığı 1/2/4/8 saat olabilir (99 sembol 8 saat dışı); referee her aralıkta çalışır. 500 USD'lik hesap yüksek devirli sinyalde iflas eder → `n_rejected>0` koşular geçersiz.
 
@@ -184,7 +184,7 @@ Ağırlıklar kaba tahmindir (G0–G1 çekirdeği bunun 25'i). Durum: ☑ bitti,
 | F1 | Repo tarafı: kuyruk (`factory/enqueue.py`), ajan talimatları (`factory/agents/`), `AGENTS.md`/`CLAUDE.md`, Türkçe komut test seti, kurulum özeti, mimari bölümü | 10 | ☑ | tests/test_enqueue.py (5); `factory/commands_tr.yaml` henüz bir modelle koşulmadı |
 | F2 | Kurulum: VPS, Hermes, Telegram, anahtarlar, yazma sınırı, `state` dalı push'u | 15 | ☐ | Kullanıcıdan gerekenler `factory/README.md`'de; hiçbiri doğrulanmadı |
 | F3 | Aşama 1 çalışıyor: sekreter + güncelleme ajanı, salt okunur; test seti 10/10 | (F2'de) | ☐ | |
-| G2 | G2 öncesi sertleştirme (devralma notundaki 6 madde) + sinyaller, null, fee duyarlılığı | 20 | ☐ | |
+| G2 | G2 öncesi sertleştirme (devralma notundaki 6 madde) + sinyaller, null, fee duyarlılığı | 20 | ◐ | Altı sertleştirme maddesi tamam; Modal 125 geçti / 1 ağ testi atlandı; tests/test_hardening.py, test_trust.py, test_xcheck.py; bağımsız inceleme reports/g0_g1.md. Sinyaller/null/fee araştırması başlamadı; eski hakem sınırlamaları açık |
 | F4 | Aşama 2: müdür + işçiler | (H4'te) | ☐ | G2 hazır olunca |
 | H4 | 7/24 LLM arama vs rastgele | 15 | ☐ | |
 | G3 | Mühür açılışı (tek atış, kullanıcı komutuyla) | 5 | ☐ | Mühür uzunluğu ve aracı gerçek veriyle çalıştırmak kullanıcıda |

@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from kepler import ledger, tape
+from kepler import ledger, referee, tape
+from tests.test_hardening import flat, realistic
+from tests.test_referee import bars
 
 
 def write_tape(root, sym="TESTUSDT", n=48, start="2024-01-01"):
@@ -46,7 +48,7 @@ def test_target_contract(tmp_path):
 def test_ledger_append_only_counts_and_queries(tmp_path):
     p = tmp_path / "ledger.jsonl"
     ledger.record(p, "screen", "h1", {"n": 10}, "c", "d", score=0.3)
-    ledger.record(p, "referee", "h1", {"n": 10}, "c", "d", result={"net_pnl": 1.5})
+    referee.evaluate(bars([100] * 8), flat, realistic(), p, hypothesis="h1", config={"n": 10}, data_hash="d")
     before = p.read_text().splitlines()
     ledger.record(p, "screen", "h2", {"n": 20}, "c", "d", score=0.1)
     after = p.read_text().splitlines()
@@ -54,7 +56,7 @@ def test_ledger_append_only_counts_and_queries(tmp_path):
     assert ledger.trial_count(p) == 3
     q = ledger.query(p, "select trial, source, config_hash from ledger order by trial")
     assert list(q.trial) == [1, 2, 3] and list(q.source) == ["screen", "referee", "screen"]
-    assert q.config_hash[0] == q.config_hash[1] != q.config_hash[2]  # aynı config -> aynı hash
+    assert q.config_hash[0] != q.config_hash[1] != q.config_hash[2]  # aynı config -> aynı hash
     assert ledger.query(p, "select count(*) n from ledger where source='screen'").n[0] == 2  # eleme denemeleri de sayılıyor
 
 

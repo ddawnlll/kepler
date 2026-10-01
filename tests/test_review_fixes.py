@@ -40,9 +40,9 @@ def test_referee_result_with_rejections_or_missing_funding_is_not_ledgered(tmp_p
     p = tmp_path / "l.jsonl"
     for bad in ({"net_pnl": 1.0, "n_rejected": 2}, {"net_pnl": 1.0, "funding_missed": 1}, {"net_pnl": float("nan"), "n_rejected": 0}):
         with pytest.raises(ValueError):
-            ledger.record(p, "referee", "h", {}, "c", "d", result=bad)
+            ledger.record(p, "referee", "h", {}, "c", "d", result=bad, _token=ledger._REFEREE_TOKEN)
     assert ledger.trial_count(p) == 0
-    ledger.record(p, "referee", "h", {}, "c", "d", result={"net_pnl": 1.0, "n_rejected": 0, "funding_missed": 0})
+    ledger.record(p, "referee", "h", {}, "c", "d", result={"net_pnl": 1.0, "n_rejected": 0, "funding_missed": 0}, _token=ledger._REFEREE_TOKEN)
     assert ledger.trial_count(p) == 1
 
 

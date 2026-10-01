@@ -1,16 +1,14 @@
-"""C4: güven denetimi — nedensellik ve determinizm. G2 boru hattının her yeni sinyal için ÇAĞIRMASI gereken kapı
-(şu an yalnızca testlerden çağrılıyor; ledger.record'a bağlı DEĞİL — G2'de tek `evaluate()` girişine bağlanacak)."""
+"""Güven denetimi: referee.evaluate() nedensellik ve hedef sözleşmesi kapısını uygular."""
 import numpy as np
 import pandas as pd
 
 from kepler import ledger
 
 
-def check_causal(signal, kl: pd.DataFrame, fracs=tuple(np.linspace(0.1, 0.95, 16)), seed: int = 0) -> list[int]:
+def check_causal(signal, kl: pd.DataFrame, fracs=None, seed: int = 0) -> list[int]:
     """k'dan sonraki barlar bozulunca (ve k'da kesilince) [:k] kararları değişen kesim noktaları. Boş liste = nedensel."""
     rng, base, bad = np.random.default_rng(seed), signal(kl), []
-    for f in fracs:
-        k = int(len(kl) * f)
+    for k in range(1, len(kl)) if fracs is None else (int(len(kl) * f) for f in fracs):
         alt = kl.copy()
         for col in ("open", "high", "low", "close", "volume"):
             alt.iloc[k:, alt.columns.get_loc(col)] = kl[col].iloc[k:].to_numpy() * rng.uniform(0.5, 1.5, len(kl) - k)
@@ -22,7 +20,8 @@ def check_causal(signal, kl: pd.DataFrame, fracs=tuple(np.linspace(0.1, 0.95, 16
 
 def assert_causal(signal, kl: pd.DataFrame) -> None:
     bad = check_causal(signal, kl)
-    assert not bad, f"sinyal geleceğe bakıyor: geçmiş kararlar kesim noktalarında değişti {bad}"
+    if bad:
+        raise AssertionError(f"sinyal geleceğe bakıyor: geçmiş kararlar kesim noktalarında değişti {bad}")
 
 
 def result_hash(res: dict) -> str:

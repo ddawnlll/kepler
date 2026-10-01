@@ -28,7 +28,7 @@ def tgt(kl, **at):
 
 
 def spec(**kw):
-    return Spec(**{**dict(tick="0.01", step="0.001", capital=10000.0, liq=False, fee_rt_bps=10.0), **kw})
+    return Spec(**{**dict(tick="0.01", step="0.001", capital=10000.0, liq=False, fee_rt_bps=10.0, slip_rt_bps=0.0, fill_mode="close"), **kw})
 
 
 def test_long_round_trip():
@@ -49,7 +49,7 @@ def test_short_round_trip():
 def test_open_position_is_marked_to_last_close():
     kl = bars([100, 100, 110])
     s = run(kl, tgt(kl, b0=100.0), spec())["summary"]
-    assert s["end_position"] == 1.0 and s["net_pnl"] == A(10.0 - 0.05)  # realize edilmemiş +10, yalnız giriş fee'si
+    assert s["end_position"] == 1.0 and s["net_pnl"] == A(10.0 - 0.05 - 0.055)  # realize edilmemiş +10, giriş ve tahmini çıkış fee'si
 
 
 @pytest.mark.parametrize("rt,expect", [(4, -0.04), (9, -0.09), (10, -0.10), (11, -0.11), (16, -0.16)])
@@ -149,8 +149,8 @@ def test_long_liquidated_at_formula_price_intrabar():
     f = r["fills"]
     assert list(f.liq) == [False, True] and f.px.iloc[1] == A(94.79) and f.qty.iloc[1] == A(100.0)
     assert r["summary"]["n_liq"] == 1 and r["summary"]["end_position"] == 0
-    # net = -(100-94.79)*100 - 5 - 100*94.79*0.0005 = -521 - 5 - 4.7395
-    assert r["summary"]["net_pnl"] == A(-530.7395)
+    # Likidasyon çıkış ücreti açıkça 0; taker yerine geçer: -521 - 5 = -526
+    assert r["summary"]["net_pnl"] == A(-526.0)
 
 
 def test_long_not_liquidated_above_lp():
@@ -164,13 +164,13 @@ def test_short_liquidated_at_formula_price():
     kl = crash(100.0, high=106.0)
     r = run(kl, tgt(kl, b0=-10000.0), spec(**LIQ))
     assert r["fills"].px.iloc[1] == A(104.71) and r["summary"]["n_liq"] == 1
-    assert r["summary"]["net_pnl"] == A(-(104.71 - 100) * 100 - 5 - 100 * 104.71 * 0.0005)  # -481.2355
+    assert r["summary"]["net_pnl"] == A(-476.0)  # -471 brüt -5 giriş; likidasyon çıkış ücreti 0
 
 
 def test_liquidation_fee_default_is_mmr_of_notional():
     kl = crash(94.0)
     s = run(kl, tgt(kl, b0=10000.0), spec(**{**LIQ, "liq_fee_rate": None}))["summary"]
-    assert s["liq_fee"] == A(100 * 94.79 * 0.05) and s["net_pnl"] == A(-530.7395 - 473.95)
+    assert s["liq_fee"] == A(100 * 94.79 * 0.05) and s["net_pnl"] == A(-999.95)  # -521 brüt -5 giriş -473.95 likidasyon; ikinci çıkış fee yok
 
 
 def test_nautilus_alone_does_not_liquidate():

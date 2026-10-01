@@ -1,10 +1,6 @@
-"""C1: tape yükleme (Parquet -> DuckDB) + hedef-pozisyon sözleşmesi.
-
-Sinyal = saf fonksiyon: signal(kl: DataFrame) -> Series. kl: UTC bar-açılış zamanı indeksli open/high/low/close/volume.
-Seri kl ile AYNI indeksli, float: t'deki değer = t barı kapandığında istenen işaretli notional (USDT);
->0 long, <0 short, 0 flat, NaN = mevcut pozisyonu tut. Yalnızca t ve öncesi veriye bakabilir (C4 nedensellik testi denetler).
-vectorbt (eleme) ve Nautilus (hakem) aynı seriyi oynatır.
-"""
+"""Tape yükleme (Parquet→DuckDB) ve nedensel hedef-pozisyon sözleşmesi."""
+# Saf signal(kl)->Series: aynı UTC bar-açılış indeksi, float notional; +long/-short/0 flat/NaN tut.
+# Hedef kapanışta bilinir; hakem evaluate() denetleyip sonraki bar açılışında yürütür.
 import json
 from pathlib import Path
 
