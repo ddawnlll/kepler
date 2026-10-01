@@ -110,7 +110,7 @@ def main():
             Path(a.out, f"search_{a.family}.json").write_text(json.dumps(dict(family=a.family, cfgs=dict(cfgs), res=res, screen=scr)))
         else:
             best = {}
-            for fam in FAMILIES:
+            for fam in ([a.family] if a.family else FAMILIES):
                 d = json.loads(Path(a.out, f"search_{fam}.json").read_text())
                 nm = max(d["res"], key=lambda n: sum(v["net_pnl"] for v in d["res"][n].values()))
                 best[fam] = (nm, d["cfgs"][nm])
@@ -124,7 +124,7 @@ def main():
             for fam, (nm, p) in best.items():
                 for sym, i, r in ex.map(null_one, [(fam, nm, p, s, VAL, i) for i in range(a.b) for s in g2.EXT], chunksize=4):
                     null[nm][sym][i] = r
-            Path(a.out, "validate.json").write_text(json.dumps(dict(best={f: b[0] for f, b in best.items()}, real=real, null=null, b=a.b)))
+            Path(a.out, f"validate_{a.family or 'all'}.json").write_text(json.dumps(dict(best={f: b[0] for f, b in best.items()}, real=real, null=null, b=a.b)))
     print(f"bitti {time.time() - t0:.0f}s", flush=True)
 
 

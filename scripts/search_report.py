@@ -13,7 +13,7 @@ NOT, G = 1000.0, 0.5772156649
 
 
 def stats(daily_by_sym, n):
-    r = pd.DataFrame(daily_by_sym).T.sum(axis=1).sort_index() / (n * NOT)
+    r = pd.DataFrame(daily_by_sym).sum(axis=1).sort_index() / (n * NOT)  # sütun = sembol, indeks = gün
     sr = r.mean() / r.std() if r.std() > 0 else 0.0
     return sr, float(((r - r.mean()) ** 3).mean() / r.std(ddof=0) ** 3) if r.std() > 0 else 0.0, float(((r - r.mean()) ** 4).mean() / r.std(ddof=0) ** 4) if r.std() > 0 else 3.0, len(r)
 
@@ -42,10 +42,16 @@ for f in FAMS:
     for r in df[df.fam == f].sort_values("net", ascending=False).head(3).itertuples():
         md.append(f"| {f} | {r.name} | {r.net:.0f} | {r.gbps:.0f} | {r.funding:.0f} | {r.sr:.2f} | {r.dsr:.2f} | {r.rt:.0f} |")
 md += ["", f"Arama döneminde net>0 olan yapılandırma: {int((df.net > 0).sum())}/{N}; ortalama net {df.net.mean():.0f}; medyan {df.net.median():.0f}."]
-vp = OUT / "validate.json"
+vps = sorted(OUT.glob("validate_*.json"))
 summ = {}
-if vp.exists():
-    v = json.loads(vp.read_text())
+if vps:
+    v = dict(best={}, real={}, null={}, b=0)
+    for vp in vps:
+        w = json.loads(vp.read_text())
+        v["best"] |= w["best"]
+        v["real"] |= w["real"]
+        v["null"] |= w["null"]
+        v["b"] = w["b"]
     md += ["", "## Doğrulama dönemi (2025-01→2026-04): aile-başına arama-seçilmiş yapılandırma, tek atış", "| aile | yapılandırma | brüt | net @fee4/9/10/11/16 (slip2) | net @10 slip6 | p(brüt, ortak-ofset null) | Bonf.(×6) p | Sharpe(y) | DSR(N=6) | karar |", "|---|---|---|---|---|---|---|---|---|---|"]
     vs, valsr = {}, {}
     for fam, nm in v["best"].items():
