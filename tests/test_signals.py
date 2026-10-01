@@ -79,3 +79,26 @@ def test_all_signals_are_causal_and_unit_bounded(name):
     sig = dict(s1=sg.turtle(20, 10), s2=sg.turtle(55, 20), trend=sg.turtle(20, 10, True), tsmom=sg.tsmom(), carry=sg.carry_funding(), dual=sg.dual_mom(panel, "X"))[name]
     assert audit.check_causal(sig, kl) == []
     assert set(sig(kl).dropna().unique()) <= {-1.0, 0.0, 1.0}
+
+
+def test_xs_signal_is_dollar_neutral_and_picks_leaders_laggards():
+    days = 120
+    idx = pd.date_range("2022-01-01", periods=days, freq="1D", tz="UTC")
+    panel = pd.DataFrame({f"S{i}": 100 * np.cumprod(np.full(days, 1 + 0.001 * (i - 4))) for i in range(9)}, index=idx)  # S8 en hızlı, S0 en yavaş
+    kl = hourly(list(panel.S0))
+    sig = {s: sg.xs_signal(panel, s, "mom", 14, 7)(kl).dropna() for s in panel}
+    net = pd.concat(sig, axis=1).sum(axis=1)
+    assert (net == 0).all() and sig["S8"].eq(1).all() and sig["S0"].eq(-1).all() and sig["S4"].eq(0).all()  # n=9: 3 long, 3 short
+    assert (sig["S8"].index.normalize() - pd.Timestamp("2022-01-01", tz="UTC")).days.isin(range(6, 400, 7)).all()  # haftalık takvim
+    rev = sg.xs_signal(panel, "S8", "rev", 14, 7)(kl).dropna()
+    assert rev.eq(-1).all()  # ters yönlü: lider short
+    fund = panel.pct_change().fillna(0) * 0 + np.arange(9)  # S8 en yüksek funding
+    assert sg.xs_signal(fund, "S8", "carry", 7, 7)(kl).dropna().eq(-1).all() and sg.xs_signal(fund, "S0", "carry", 7, 7)(kl).dropna().eq(1).all()
+
+
+def test_ema_trend_and_tsmom_every_k_days():
+    kl = hourly([100 + d for d in range(80)])
+    e = decisions(sg.ema_trend(5, 50)(kl))
+    assert e.index[0] == pd.Timestamp("2022-01-01", tz="UTC") + pd.Timedelta(days=49) and e.eq(1).all()  # yavaş EMA (50 gün) ısınınca ilk karar; yükselen seri -> long
+    d = decisions(sg.tsmom(14, every=7)(kl))
+    assert ((d.index - pd.Timestamp("2022-01-01", tz="UTC")).days % 7 == 6).all() and d.eq(1).all()
