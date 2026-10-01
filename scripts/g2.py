@@ -5,6 +5,7 @@ Her sonuç yalnızca `evaluate` üzerinden deftere girer (nedensellik denetimi d
 import argparse
 import json
 import math
+import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
 from decimal import Decimal
@@ -86,10 +87,11 @@ def run_symbol(a):
 
 
 def null_draw(a):
-    job, sym, i, seed = a
+    job, sym, i, seed, common = a
     kl, mark, funding = D[sym]
     unit = make_signal(job, sym)(kl).ffill().fillna(0.0).to_numpy()
-    off = int(np.random.default_rng([seed, i, sum(map(ord, sym))]).integers(int(0.05 * len(unit)), int(0.95 * len(unit))))
+    u = np.random.default_rng([seed, i] + ([] if common else [sum(map(ord, sym))])).uniform(0.05, 0.95)  # common: tüm semboller aynı oranda kayar (sembol-arası korelasyon korunur)
+    off = int(u * len(unit))
     s = referee.run(kl, pd.Series(np.roll(unit, off) * NOTIONAL, index=kl.index), spec_for(kl, 10, SLIP), funding, mark)["summary"]
     return sym, i, {k: s[k] for k in ("gross_pnl", "net_pnl", "fee", "slippage", "funding", "exit_cost", "n_fills", "n_rejected")}
 
@@ -102,6 +104,7 @@ if __name__ == "__main__":
     ap.add_argument("--out", default="/data/g2")
     ap.add_argument("--procs", type=int, default=4)
     ap.add_argument("--syms", default="")
+    ap.add_argument("--common", action="store_true", help="null: ortak ofset; yalnız null koşar, mevcut gerçek sonuçları kullanır, deftere yazmaz")
     a = ap.parse_args()
     Path(a.out).mkdir(parents=True, exist_ok=True)
     syms = a.syms.split(",") if a.syms else (CORE if a.job.endswith("_5") else EXT)
@@ -109,10 +112,13 @@ if __name__ == "__main__":
     dh = ledger.sha(Path("/repo/data_manifest/manifest.json").read_text())
     t0 = time.time()
     with ProcessPoolExecutor(a.procs) as ex:
-        real = dict(ex.map(run_symbol, [(a.job, s, a.out, dh) for s in syms]))
+        real = json.loads(Path(a.out, f"{a.job}.json").read_text())["real"] if a.common else dict(ex.map(run_symbol, [(a.job, s, a.out, dh) for s in syms]))
         print(f"gerçek koşu {time.time() - t0:.0f}s", flush=True)
         null = {s: {} for s in syms}
-        for s, i, r in ex.map(null_draw, [(a.job, s, i, 0) for i in range(a.b) for s in syms], chunksize=4):
+        for s, i, r in ex.map(null_draw, [(a.job, s, i, 0, a.common) for i in range(a.b) for s in syms], chunksize=4):
             null[s][i] = r
+    if a.common:
+        Path(a.out, f"{a.job}_common.json").write_text(json.dumps(dict(job=a.job, syms=syms, null=null, b=a.b)))
+        sys.exit(0)
     Path(a.out, f"{a.job}.json").write_text(json.dumps(dict(job=a.job, syms=syms, real=real, null=null, b=a.b, secs=time.time() - t0)))
     print(f"bitti {time.time() - t0:.0f}s", flush=True)

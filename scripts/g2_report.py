@@ -11,7 +11,12 @@ from scipy.stats import norm
 OUT = Path(sys.argv[1] if len(sys.argv) > 1 else "/data/g2")
 CORE = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT"]
 NOTIONAL = 1000.0
-J = {p.stem: json.loads(p.read_text()) for p in OUT.glob("*.json") if p.stem not in ("summary",)}
+J = {p.stem: json.loads(p.read_text()) for p in OUT.glob("*.json") if p.stem not in ("summary",) and not p.stem.endswith("_common")}
+for j in J:  # ortak-ofset null (daha sert: sembol-arası korelasyon korunur) varsa birincil null odur; bağımsız-ofset null ikincil
+    c = OUT / f"{j}_common.json"
+    J[j]["null_indep"] = J[j]["null"]
+    if c.exists():
+        J[j]["null"] = json.loads(c.read_text())["null"]
 CFG = {}  # (ad, evren) -> (job, semboller)
 for j, d in J.items():
     if j.startswith("dual_mom"):
@@ -47,7 +52,7 @@ N = len(CFG)
 g = 0.5772156649
 sr0 = np.std([v[0] for v in S.values()], ddof=1) * ((1 - g) * norm.ppf(1 - 1 / N) + g * norm.ppf(1 - 1 / (N * np.e)))
 md = ["# G2 tabloları (otomatik)", f"Yapılandırma sayısı N={N}; DSR eşiği SR0={sr0:.4f} (günlük, yıllık {sr0 * np.sqrt(365):.2f}); null çekiliş sayısı B={next(iter(J.values()))['b']}.", ""]
-head = "| sinyal | evren | brüt PnL | brüt bps/RT | net PnL @fee4/9/10/11/16 (slip 2) | net @fee10 slip6 | funding | p(brüt) | p(net@10) | Bonf. p | Sharpe(y) | DSR | karar |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|"
+head = "| sinyal | evren | brüt PnL | brüt bps/RT | net PnL @fee4/9/10/11/16 (slip 2) | net @fee10 slip6 | funding | p(brüt, ortak-ofset null) | p(net@10) | Bonf. p | Sharpe(y) | DSR | karar |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|"
 md.append(head)
 summ = {}
 for (name, uni), (job, syms) in CFG.items():
@@ -56,12 +61,14 @@ for (name, uni), (job, syms) in CFG.items():
     base = sc[10]
     ng = np.array([sum(J[job]["null"][s][str(i)]["gross_pnl"] for s in syms) for i in range(J[job]["b"])])
     nn = np.array([sum(J[job]["null"][s][str(i)]["net_pnl"] for s in syms) for i in range(J[job]["b"])])
+    ni = np.array([sum(J[job]["null_indep"][s][str(i)]["gross_pnl"] for s in syms) for i in range(J[job]["b"])])
+    summ_pi = (1 + (ni >= base["gross_pnl"]).sum()) / (len(ni) + 1)
     pg, pn = (1 + (ng >= base["gross_pnl"]).sum()) / (len(ng) + 1), (1 + (nn >= base["net_pnl"]).sum()) / (len(nn) + 1)
     sr, sk, ku, T = S[(name, uni)]
     dsr = norm.cdf((sr - sr0) * np.sqrt(T - 1) / np.sqrt(1 - sk * sr + (ku - 1) / 4 * sr**2))
     rt = base["traded"] / 2
     cand = pg <= 0.05 and any(v["net_pnl"] > 0 for v in sc.values())
-    summ[f"{name}|{uni}"] = dict(cand=bool(cand), p_gross=pg, p_net=pn, dsr=float(dsr), sharpe=float(sr * np.sqrt(365)), gross=base["gross_pnl"], rt_notional=rt, sc=sc, hi=hi,
+    summ[f"{name}|{uni}"] = dict(p_gross_indep=summ_pi, null_sd_indep=float(ni.std()), cand=bool(cand), p_gross=pg, p_net=pn, dsr=float(dsr), sharpe=float(sr * np.sqrt(365)), gross=base["gross_pnl"], rt_notional=rt, sc=sc, hi=hi,
                                  null_gross_mean=float(ng.mean()), null_gross_sd=float(ng.std()), null_gross_q95=float(np.quantile(ng, .95)), null_net_mean=float(nn.mean()))
     md.append(f"| {name} | {uni} | {base['gross_pnl']:.0f} | {base['gross_pnl'] / rt * 1e4:.1f} | " + " / ".join(f"{sc[f]['net_pnl']:.0f}" for f in (4, 9, 10, 11, 16))
               + f" | {hi['net_pnl']:.0f} | {base['funding']:.0f} | {pg:.3f} | {pn:.3f} | {min(1, pg * N):.2f} | {sr * np.sqrt(365):.2f} | {dsr:.2f} | {'ADAY' if cand else 'yok'} |")
