@@ -26,8 +26,8 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 | 9 | Güncelleme (15–20 dk) | ☐ | Yalnızca talimat |
 | 10 | Sekreter/müdür (Hermes) | ◐ | Hermes sunucuda kurulmuş (başka oturumdan), sekreter talimatı henüz uygulanmadı; kuyruk kodu var (`factory/enqueue.py`) |
 
-**Döngü** (sinyal → boyut → backtest → denetim → rapor) bugün uçtan uca **çalışmıyor**: yalnızca 1 → 4 gerçek veride, fixture sinyalle koştu.
-**Sıradaki en kısa yol "edge var mı" cevabına:** hakem düzeltmesi (sonraki-bar dolum + slippage) → 3 sinyal → walk-forward + null + fee ızgarası (G2). Risk motoru bu cevap için gerekmiyor.
+**Döngü** (sinyal → boyut → backtest → denetim → rapor): boyut (risk motoru) hariç uçtan uca çalıştı (G2: `scripts/g2.py` + `g2_report.py`, Modal'de); rapor elle yazıldı.
+**G2 cevabı: NO_EDGE** (kitap sinyalleri, 4–16 bps fee, gerçekçi hakem; en iyi turtle_s2 p=0,06 sert null'da, Bonferroni 0,72). Sıradaki: yeni hipotez (MISSION: aynı altyapıyla başka fikre geç). Açık: hakem+yapıştırma 347 satır (>300, kullanıcı kararı); G2 işçisi/null/DSR kodu `scripts/`te (sayılmadı).
 
 ## İlerleme (G0–G1 çekirdek görevleri)
 
@@ -184,8 +184,14 @@ Ağırlıklar kaba tahmindir (G0–G1 çekirdeği bunun 25'i). Durum: ☑ bitti,
 | F1 | Repo tarafı: kuyruk (`factory/enqueue.py`), ajan talimatları (`factory/agents/`), `AGENTS.md`/`CLAUDE.md`, Türkçe komut test seti, kurulum özeti, mimari bölümü | 10 | ☑ | tests/test_enqueue.py (5); `factory/commands_tr.yaml` henüz bir modelle koşulmadı |
 | F2 | Kurulum: VPS, Hermes, Telegram, anahtarlar, yazma sınırı, `state` dalı push'u | 15 | ☐ | Kullanıcıdan gerekenler `factory/README.md`'de; hiçbiri doğrulanmadı |
 | F3 | Aşama 1 çalışıyor: sekreter + güncelleme ajanı, salt okunur; test seti 10/10 | (F2'de) | ☐ | |
-| G2 | G2 öncesi sertleştirme (devralma notundaki 6 madde) + sinyaller, null, fee duyarlılığı | 20 | ☐ | |
+| G2 | G2 öncesi sertleştirme (devralma notundaki 6 madde) + sinyaller, null, fee duyarlılığı | 20 | ☑ | **Sonuç: NO_EDGE** (`reports/g2.md`; sinyaller `reports/book_signals.md`; 767 hakem kaydı `ledger/g2/`; tablolar `reports/g2_data/`). 130 test yeşil. G3 açılmadı (aday yok) |
 | F4 | Aşama 2: müdür + işçiler | (H4'te) | ☐ | G2 hazır olunca |
 | H4 | 7/24 LLM arama vs rastgele | 15 | ☐ | |
 | G3 | Mühür açılışı (tek atış, kullanıcı komutuyla) | 5 | ☐ | Mühür uzunluğu ve aracı gerçek veriyle çalıştırmak kullanıcıda |
 | H5 | Küçük gerçek para | 7 | ☐ | |
+
+
+## G2 devralma notu (güncel)
+- **Durum:** hakem gerçekçi (next_open, slippage ≥1 bps zorunlu, çıkış maliyeti, likidasyon çifte sayım yok, likidasyon sonrası hesap ölü); `kepler/evaluate.py` tek giriş (denetim→hakem→defter; ledger flock + `audit_causal` korkuluğu — kendi beyan eden bayrak, güvenlik değil); `kepler/signals.py` 6 sinyal. G2 = **NO_EDGE** (`reports/g2.md`). Mühür açılmadı, G3 yok.
+- **Yeniden koşmak:** `modal run modal_app.py --cmd "python scripts/g2.py --job turtle_s2 --b 300 --out /data/g2"` (ve `--common` null için), sonra `python scripts/g2_report.py /data/g2`. 7 iş paralel ~12 dk. İşler: turtle_s1 turtle_s2 donchian_trend tsmom carry_funding dual_mom_5 dual_mom_9. Not: `modal run` için `pip install 'modal[api-proxy-support]'` gerekebilir (proxy altında).
+- **Açık/atlanan:** 4h/1d türetme yapılmadı; kitap stopları/boyutlama yok; inceleme bulguları 8 (gap'te stop dolum fiyatı, doğrulanmadı), 9 (reddedilen koşular deneme sayacına girmiyor), `audit_causal` bayrağı elle yazılabilir; `scripts/g1_real.py` bayrağı elle True yazıyor (fixture). Hakem+yapıştırma 347 satır (MISSION 7a ≲300): kullanıcı karar versin.
