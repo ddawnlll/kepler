@@ -23,7 +23,7 @@ def hourly_pnl(kl: pd.DataFrame, mark: pd.DataFrame | None, funding: pd.DataFram
 
 
 def trades(fills: pd.DataFrame) -> pd.DataFrame:
-    """Pozisyon yaşam döngüsü başına bir satır: açılış, kapanış, yön, notional, tutma süresi (saat), brüt bps (fee'siz fiyat getirisi). Çevirmeler iki işlem sayılır."""
+    """Her kapanış/azaltma olayı başına bir satır (kısmi azaltmalar ayrı satır): açılış, kapanış, yön, notional, tutma süresi (saat), brüt bps (fee'siz fiyat getirisi). Çevirmeler iki işlem sayılır."""
     rows, pos, cost, qty_open, t0 = [], 0.0, 0.0, 0.0, None
     for r in fills.itertuples():
         d = r.qty if r.side == "BUY" else -r.qty

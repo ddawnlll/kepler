@@ -23,6 +23,7 @@ def status(ledgers: list[str], summary: dict | None = None, queue=enqueue.QUEUE)
     else:
         lines.append("defter boş: deneme 0")
     if summary:
+        summary = summary.get("summary", summary) if isinstance(summary.get("summary", None), dict) else summary  # arama özeti {summary, search} biçimi
         cands = [k for k, v in summary.items() if v.get("cand")]
         lines.append(f"aday: {len(cands)}" + (f" ({', '.join(cands)})" if cands else "") + f"; yapılandırma {len(summary)}")
     q = enqueue.latest(queue)

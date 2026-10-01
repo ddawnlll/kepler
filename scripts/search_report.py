@@ -73,5 +73,7 @@ if vps:
     md.append("")
     md.append(f"Doğrulama DSR (N=88 arama eşiğiyle): " + ", ".join(f"{f} {s['dsr88']:.2f}" for f, s in summ.items()))
 (OUT / "tables.md").write_text("\n".join(md))
+for s_ in summ.values():
+    s_["net"] = {f"{k[0]}|{k[1]}": x for k, x in s_["net"].items()}
 (OUT / "summary.json").write_text(json.dumps(dict(summary=summ, search=df.drop(columns=["sk", "ku"]).to_dict("records")), indent=1))
 print("\n".join(md))

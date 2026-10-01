@@ -94,3 +94,8 @@ def test_status_is_query_only_and_counts_queue(tmp_path):
     out = status.status([str(p)], {"x|y": {"cand": False}, "z|y": {"cand": True}}, queue=q)
     assert out[0].startswith("deneme: 3 (hakem 2, eleme 1)") and "a 12.5" in out[1] and "aday: 1 (z|y)" in out[2] and "kullanıcı bekleyen 1" in out[3]
     assert len(out) <= 6 and status.status([], None, queue=tmp_path / "none.jsonl")[0] == "defter boş: deneme 0"
+
+
+def test_status_accepts_search_summary_shape(tmp_path):
+    out = status.status([], {"summary": {"donchian": {"cand": False}}, "search": []}, queue=tmp_path / "q.jsonl")
+    assert any(l.startswith("aday: 0") and "yapılandırma 1" in l for l in out)

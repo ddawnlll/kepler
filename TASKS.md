@@ -17,13 +17,13 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 |---|---|---|---|
 | 1 | Veri hattı | ☑ | 2022-01 → 2026-03, 179 sembol, QC raporu, sha256 manifest, mühür ayrı (G0) |
 | 2 | Sinyal | ☑ | `kepler/signals.py`: 6 kitap sinyali (Turtle S1/S2, Donchian Trend, tsmom, dual momentum, carry→funding), parametreleri `reports/book_signals.md`'de veriye bakmadan sabit; tests/test_signals.py (12: elle hesaplı kural + nedensellik) |
-| 3 | Risk motoru | ☐ | Yok: vol hedefleme, boyutlama, kill switch yazılmadı. Hakemde yalnızca sabit `leverage=10` ve likidasyon benzetimi var. MISSION bunu G3 sonrasına bırakıyor; G2 için sabit boyut yeter |
+| 3 | Risk motoru | ◐ | `kepler/risk.py`: vol hedefleme, kaldıraç tavanı, rebalance bandı, kill switch; `evaluate(size=, kill_dd=)`; tests/test_ops.py (elle hesaplı + nedensellik); gerçek veride duman testi. Parametreler ayarlanmadı; "sabit boyuta karşı" karşılaştırma G3 sonrası (aday yok) |
 | 4 | Backtest/hakem (yürütme+muhasebe) | ☑ | Nautilus hakem gerçekçi: sonraki-bar açılış dolumu, zorunlu slippage (`evaluate`), açık pozisyon çıkış maliyeti, likidasyon çifte sayımı yok, likidasyon sonrası hesap ölü (tests/test_realistic.py, test_referee.py). Tek sembol: portföy = sembol başına bağımsız koşu toplamı (G2'de) |
-| 5 | Denetim | ◐ | `evaluate()` tek giriş: nedensellik denetimi → hakem → defter (ledger flock + `audit_causal` korkuluğu); walk-forward, rotasyon null'ı, DSR `scripts/g2.py` + `g2_report.py`'de (G2 işinde). Yok: SPA/StepM, purge/embargo (etiket çakışması yok: sabit kural) |
-| 6 | Rapor | ◐ | Elle yazılan Markdown raporlar; otomatik rapor yok |
+| 5 | Denetim | ☑ | `evaluate()` tek giriş: nedensellik denetimi → hakem → defter (ledger flock + `audit_causal` korkuluğu); walk-forward, rotasyon null'ı, DSR `scripts/g2.py` + `g2_report.py`'de (G2 işinde). Yok: SPA/StepM (yerine Bonferroni + DSR + dev-içi doğrulama bölmesi), purge/embargo (etiket çakışması yok) |
+| 6 | Rapor | ☑ | `kepler/report.py` (işlem tablosu, saatlik PnL), `scripts/g2_report.py`, `scripts/search_report.py` (otomatik tablolar); özet raporlar elle |
 | 7 | Araştırma ajanı (7/24) | ☐ | Yalnızca talimat dosyaları (`factory/agents/`) |
 | 8 | Canlı emir katmanı | ☐ | Yok; MEXC desteği doğrulanmadı |
-| 9 | Güncelleme (15–20 dk) | ☐ | Yalnızca talimat |
+| 9 | Güncelleme (15–20 dk) | ◐ | `factory/status.py` deterministik özet (LLM yok; tests/test_ops.py); `state/STATUS.md` üretildi. Zamanlama (cron) + Telegram gönderimi F2'ye (sunucu) bağlı |
 | 10 | Sekreter/müdür (Hermes) | ◐ | Hermes sunucuda kurulmuş (başka oturumdan), sekreter talimatı henüz uygulanmadı; kuyruk kodu var (`factory/enqueue.py`) |
 
 **Döngü** (sinyal → boyut → backtest → denetim → rapor): boyut (risk motoru) hariç uçtan uca çalıştı (G2: `scripts/g2.py` + `g2_report.py`, Modal'de); rapor elle yazıldı.
@@ -195,3 +195,9 @@ Ağırlıklar kaba tahmindir (G0–G1 çekirdeği bunun 25'i). Durum: ☑ bitti,
 - **Durum:** hakem gerçekçi (next_open, slippage ≥1 bps zorunlu, çıkış maliyeti, likidasyon çifte sayım yok, likidasyon sonrası hesap ölü); `kepler/evaluate.py` tek giriş (denetim→hakem→defter; ledger flock + `audit_causal` korkuluğu — kendi beyan eden bayrak, güvenlik değil); `kepler/signals.py` 6 sinyal. G2 = **NO_EDGE** (`reports/g2.md`). Mühür açılmadı, G3 yok.
 - **Yeniden koşmak:** `modal run modal_app.py --cmd "python scripts/g2.py --job turtle_s2 --b 300 --out /data/g2"` (ve `--common` null için), sonra `python scripts/g2_report.py /data/g2`. 7 iş paralel ~12 dk. İşler: turtle_s1 turtle_s2 donchian_trend tsmom carry_funding dual_mom_5 dual_mom_9. Not: `modal run` için `pip install 'modal[api-proxy-support]'` gerekebilir (proxy altında).
 - **Açık/atlanan:** 4h/1d türetme yapılmadı; kitap stopları/boyutlama yok; inceleme bulguları 8 (gap'te stop dolum fiyatı, doğrulanmadı), 9 (reddedilen koşular deneme sayacına girmiyor), `audit_causal` bayrağı elle yazılabilir; `scripts/g1_real.py` bayrağı elle True yazıyor (fixture). Hakem+yapıştırma 347 satır (MISSION 7a ≲300): kullanıcı karar versin.
+
+
+## Arama sonrası durum (kullanıcı beklenen işler dışında her şey bitti)
+- **Yapıldı:** G2 (NO_EDGE), geniş arama + dev-içi doğrulama (`reports/search.md`: aday yok), risk motoru, otomatik rapor/durum, 4h/1d türetme (`tape.aggregate`), eleme–hakem uyumu ölçümü (0,871, n=88). 141 test yeşil.
+- **Kullanıcı/dış girdi gerektirdiği için YAPILAMAYAN:** F2/F3 (VPS, Hermes, Telegram, anahtarlar; `factory/README.md` "Senden gerekenler"), H4 (7/24 LLM arama; sağlayıcı anahtarı + F2), G3 (mühür açılışı yalnızca kullanıcı komutu + özel anahtar; aday da yok), H5 (gerçek para), MEXC emir katmanı/MEXC farkı (karar verilmedi), mühür kaynağı sağlaması (inceleme 33; mühür aracına dokunulmadı).
+- **"Pozitif backtest" hedefi:** üretilmedi. Doğrulama dönemi tek atış tüketildi; aynı veriyle daha fazla arama yanlış pozitif üretir (bkz. `reports/search.md` dürüstlük notu).
