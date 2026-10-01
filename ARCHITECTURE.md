@@ -84,32 +84,43 @@ yoksa yazmadan önce kanıtlı engel gösterilir (`MISSION.md` kural 4, 7).
 ## Operasyon katmanı (7/24, telefondan yönetim)
 
 Amaç: sistemi bir kez kurarsın; araştırma 7/24 sürer, durum sana düzenli gelir, telefondan
-direktif verirsin. Bilgisayar başında olman gerekmez.
+direktif verirsin. Bilgisayar başında olman gerekmez. Dört rol, hepsi LLM; talimatları
+`factory/agents/`, kurulum özeti `factory/README.md`.
 
-| Parça | Ne yapar | LLM |
+| Rol | Ne yapar | Model |
 |---|---|---|
-| **Araştırma ajanı** | Sinyal ve parametre önerir; hakemde ölçer; deftere yazar | Evet (ucuz model) |
-| **Güncelleme katmanı** | 15–20 dk'da bir durum: deneme sayısı, en iyi adaylar, null'a göre durum, harcama, hatalar. Sayılar defterden kodla üretilir | Hayır |
-| **Müdür ajan** | Seninle sohbet eder; direktifini araştırma ajanının kuyruğuna yapılandırılmış komut olarak iletir; durumu açıklar; önemli olayda (hata, aday, harcama sıçraması) seni kendisi uyarır | Evet |
+| **Sekreter** | Telegram'da tek muhatabın: Türkçe sohbeti kuyruğa yapılandırılmış isteğe çevirir, durumu açıklar. Karar vermez | Ucuz / ChatGPT Plus |
+| **Müdür** | Seyrek uyanır (zamanlı + olay üzerine), taze bağlam; yön belirler, işçilere brif yazar, sorunları çözer, B/C isteğinde "hangi engel?" diye sorar | En zeki model |
+| **İşçiler** | Tek brifi koşar, ≤1500 token özet döner; kısa ömürlü, taze bağlam, ayrı worktree | Ucuz |
+| **Güncelleme ajanı** | 15–20 dk'da bir ledger'a DuckDB sorgusu atıp kısa durum mesajı yazar | Ucuz |
+
+İş türleri: **A** araştırma direktifi (serbest, bütçe içinde), **B** yeni özellik (ayrı dalda; birleşmeden
+önce senin onayın), **C** korumalı çekirdek (hakem, denetim, mühür: yalnızca sen + güçlü model +
+bağımsız inceleme, bilgisayar başında).
 
 Kurallar:
-- **Rapor sayıları LLM'den gelmez.** Güncelleme katmanı deftere bakan deterministik bir
-  betiktir; müdür yorum ekleyebilir ama sayıyı o üretmez. Değişiklik yoksa mesaj kısa
-  ("değişiklik yok") veya saatlik nabza seyreltilir (öneri; dersteyken spam'i önler).
-- **Yazma sınırı.** Araştırma ve müdür ajanı değerlendiriciyi, denetim katmanını, risk
-  parametrelerini ve mühür dosyasını **değiştiremez**; yalnızca `signals/` ve deney
-  yapılandırmalarına yazar. Hermes kendi "skill"lerini yazabildiği için yazma izni ayrıca
-  sınırlanır.
-- **Telefondan komutlar** (hepsi sohbetle): durum/rapor, duraklat/devam/durdur, yön ver
-  (hipotez/odak), aday onay/red. Müdür bunları yapılandırılmış komuta çevirir.
+- **Sayı hafızadan değil, sorgudan gelir.** Ajanlar rakamı ledger'a/`state/STATUS.md`'ye araç
+  çağrısıyla bakıp yazar; sorguda yoksa "bilmiyorum".
+- **İletişim ortak çalışma alanından.** Ajanlar birbirine sohbet etmez; `state/queue.jsonl` (tek giriş
+  `factory/enqueue.py`, append-only, bir id'nin durumu son satırı), ledger ve raporlar üzerinden konuşur.
+  Çıktı dosyada kalır, ajan yalnızca özet ve referans taşır. Her ajan taze bağlamla başlar, çıkarken
+  durumu temiz bırakır; uzun oturum yok.
+- **Yazma sınırı.** Sekreter, müdür ve işçiler değerlendiriciyi, denetim katmanını, risk
+  parametrelerini ve mühür dosyasını **değiştiremez**; işçiler yalnızca `signals/` ve deney
+  yapılandırmalarına yazar. Hermes kendi "skill"lerini yazabildiği için yazma izni ayrıca (ayrı OS
+  kullanıcısı, salt okunur bağlama) sınırlanır; doğrulanmadı.
 - **Geri dönüşsüz komutlar** (mühürlü dönemi açmak, gerçek para işlemi) sohbet yorumuyla
-  yürümez. Müdür yalnızca "şunu yapmak üzere onay iste" der; asıl tetik, ajanların
-  erişemediği ayrı ve LLM'siz bir onay adımıdır (ör. tek kullanımlık kod).
+  yürümez. Sekreter yalnızca "onay gerekir" der; asıl tetik, ajanların erişemediği ayrı ve LLM'siz
+  bir onay adımıdır (ör. tek kullanımlık kod).
+- **Sen aktifken.** Yerel bir ajanla çalışırken sekretere "ben devralıyorum" dersin; müdür o süre
+  yeni B/C işi açmaz. İşçiler kendi worktree'sinde sürer; çakışmada insan kazanır.
+- **Dışarıdan okuma.** Sunucu `state` dalına özet push'lar; yerel ajanlar (`AGENTS.md`) oturum
+  başında çeker, canlı ledger için salt okunur SSH kullanır.
 - **Erişim:** Telegram yalnızca senin kullanıcı kimliğine yanıt verir.
-- **Harcama:** tavan yok, yalnızca uyarı (kullanıcı kararı). Öneri, karar sende: derste
-  müdahale edemeyebileceğin için acil, yüksek bir sert üst sınır da konsun.
-- **Runtime:** Hermes Agent (Nous Research; kalıcı servis, Telegram geçidi, cron, bellek;
-  doğrulanmadı) veya RD-Agent. Runtime değiştirilebilir; sözleşme bu bölümdür.
+- **Harcama:** kullanıcı kararı tavan yok, yalnızca uyarı. Öneri: derste müdahale edemeyeceğin
+  için sağlayıcı anahtarı seviyesinde sert bir günlük limit de koy.
+- **Runtime:** Hermes Agent (Nous Research; kalıcı servis, Telegram geçidi, cron, bellek, alt ajan
+  devri; dokümana göre, kurulup denenmedi). Runtime değiştirilebilir; sözleşme bu bölümdür.
 
 ## Laboratuvar (araçlar ve çalışma şekli)
 

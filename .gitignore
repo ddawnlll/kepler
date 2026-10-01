@@ -41,3 +41,7 @@ books/
 data/
 lab/
 *.zip
+
+# Fabrika canli durumu (sunucuda; `state` dalina ozet push edilir)
+state/*
+!state/.gitkeep

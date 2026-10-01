@@ -153,3 +153,18 @@ Yalnızca G0–G1'i destekleyen, sinyal içermeyen işler:
 - Kredi/limit doldu → ilerleme tablosunu güncelle, commit + push, dur.
 - Gerçek engel (ör. anahtar yok, Modal erişimi yok) → engeli ilerleme tablosuna ve rapora yaz, yapabildiğine
   devam et; soru sorup bekleme.
+
+# Fabrika (7/24 işletme) ve sonraki kapılar
+
+Ağırlıklar kaba tahmindir (G0–G1 çekirdeği bunun 25'i). Durum: ☑ bitti, ◐ kısmen, ☐ başlanmadı.
+
+| # | Görev | Ağırlık | Durum | Kanıt / not |
+|---|---|---|---|---|
+| F1 | Repo tarafı: kuyruk (`factory/enqueue.py`), ajan talimatları (`factory/agents/`), `AGENTS.md`/`CLAUDE.md`, Türkçe komut test seti, kurulum özeti, mimari bölümü | 10 | ☑ | tests/test_enqueue.py (5); `factory/commands_tr.yaml` henüz bir modelle koşulmadı |
+| F2 | Kurulum: VPS, Hermes, Telegram, anahtarlar, yazma sınırı, `state` dalı push'u | 15 | ☐ | Kullanıcıdan gerekenler `factory/README.md`'de; hiçbiri doğrulanmadı |
+| F3 | Aşama 1 çalışıyor: sekreter + güncelleme ajanı, salt okunur; test seti 10/10 | (F2'de) | ☐ | |
+| G2 | G2 öncesi sertleştirme (devralma notundaki 6 madde) + sinyaller, null, fee duyarlılığı | 20 | ☐ | |
+| F4 | Aşama 2: müdür + işçiler | (H4'te) | ☐ | G2 hazır olunca |
+| H4 | 7/24 LLM arama vs rastgele | 15 | ☐ | |
+| G3 | Mühür açılışı (tek atış, kullanıcı komutuyla) | 5 | ☐ | Mühür uzunluğu ve aracı gerçek veriyle çalıştırmak kullanıcıda |
+| H5 | Küçük gerçek para | 7 | ☐ | |
