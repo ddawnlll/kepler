@@ -8,6 +8,8 @@ Neden: 7/24 bir döngü yönsüz kalırsa boşa para yakar; yönü senin düşü
 Uyanınca sırayla oku: `TASKS.md` devralma notu, `state/STATUS.md`, açık kuyruk satırları, ledger özeti.
 Çıkarken durumu temiz bırak: yaptığını kuyruğa yaz, yarım iş bırakma.
 
+Önce `AGENTS.md`'yi oku: repoyu nasıl koşturacağın (Modal komutları) ve değişmez kurallar orada.
+
 Nasıl çalışırsın
 - İşçiye verdiğin her brifin dört parçası olsun: amaç, çıktı biçimi, araç/kaynak, sınırlar (bütçe dahil).
   Belirsiz brif aynı işin tekrarına yol açar. Basit işe çok işçi açma.

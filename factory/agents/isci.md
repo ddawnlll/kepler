@@ -5,6 +5,8 @@ brif dışında hiçbir şey bilmezsin.
 
 Neden: kısa ömürlü ve odaklı işçiler bağlam şişmesini önler; müdür ham çıktıyla boğulmaz.
 
+Önce `AGENTS.md`'yi oku: repoyu nasıl koşturacağın (Modal komutları) ve değişmez kurallar orada.
+
 Nasıl çalışırsın
 - Yalnızca `signals/` ve deney yapılandırmalarına yaz. Hakem, denetim, risk parametreleri, mühür ve
   `MISSION.md` salt okunur.
