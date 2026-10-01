@@ -51,3 +51,12 @@ def check_target(kl: pd.DataFrame, target: pd.Series) -> pd.Series:
     if not pd.api.types.is_float_dtype(target) or np.isinf(target.to_numpy()).any():
         raise ValueError("hedef float olmalı ve sonsuz değer içermemeli (NaN = tut)")
     return target
+
+
+def aggregate(kl: pd.DataFrame, freq: str = "4h") -> pd.DataFrame:
+    """Saatlik tape'ten 4h/1d türetir (UTC'ye hizalı; eksik bar içeren pencere de üretilir, tam pencere = bar sayısı kontrolü `n` sütununda). Sinyal bu çubuklarda
+    hesaplanıp saatlik hedefe `signals._put` benzeri son-bar yerleşimiyle indirilir."""
+    g = kl.resample(freq)
+    out = g.agg(dict(open="first", high="max", low="min", close="last", volume="sum"))
+    out["n"] = g.close.count()
+    return out[out.n > 0]

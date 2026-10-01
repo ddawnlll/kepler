@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 from kepler import evaluate as ev
-from kepler import ledger, referee, tape
+from kepler import ledger, referee, report, tape
 from kepler import signals as sg
 
 CORE = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT"]
@@ -49,19 +49,7 @@ def make_signal(job, sym):
 
 
 def daily_pnl(kl, mark, funding, fills, spec) -> pd.Series:
-    """Günlük net PnL'yi hakem dolumlarından yeniden kurar (Sharpe/DSR için); toplamı hakem net'ine eşit olmalı (çapraz kontrol: run_symbol)."""
-    t = pd.to_datetime(fills.ts, unit="ns", utc=True)
-    pos = pd.Series(np.where(fills.side == "BUY", fills.qty, -fills.qty), index=t).groupby(level=0).sum().reindex(kl.index, fill_value=0.0).cumsum()
-    nxt = kl.open.shift(-1).fillna(kl.close.iloc[-1])
-    pnl = pos * (nxt - kl.open) - pd.Series(fills.commission.to_numpy(), index=t).groupby(level=0).sum().reindex(kl.index, fill_value=0.0)
-    rate = funding.last_funding_rate.copy()
-    rate.index = rate.index.round("1min")
-    for T, r in rate.items():
-        b = T - pd.Timedelta("1h")
-        if b in pos.index:
-            pnl[b] += -pos[b] * (mark.close.get(b, kl.close[b])) * r  # T öncesi tutulan pozisyon x mark kapanışı (hakemle aynı kural)
-    pnl.iloc[-1] -= abs(pos.iloc[-1]) * kl.close.iloc[-1] * (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4  # çıkış maliyeti
-    return pnl.resample("1D").sum()
+    return report.hourly_pnl(kl, mark, funding, fills, spec).resample("1D").sum()
 
 
 def run_symbol(a):
