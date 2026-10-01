@@ -14,10 +14,10 @@ import pandas as pd
 
 import g2
 from kepler import evaluate as ev
-from kepler import ledger, referee, report, screen
+from kepler import ledger, referee, report, screen, tape
 from kepler import signals as sg
 
-SEARCH, VAL = ("2022-01-01", "2025-01-01"), ("2025-01-01", "2026-04-01")
+SEARCH, VAL, REPL = ("2022-01-01", "2025-01-01"), ("2025-01-01", "2026-04-01"), ("2023-07-01", "2026-04-01")
 FAMILIES = ("donchian", "ema", "tsmom", "xs_mom", "xs_carry", "xs_rev")
 P = {}  # panel'ler (fork ile paylaşılır)
 
@@ -77,7 +77,7 @@ def null_one(a):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=["search", "validate"])
+    ap.add_argument("--stage", required=True, choices=["search", "validate", "replicate"])
     ap.add_argument("--family", default="")
     ap.add_argument("--b", type=int, default=300)
     ap.add_argument("--root", default="/data")
@@ -85,9 +85,14 @@ def main():
     ap.add_argument("--procs", type=int, default=4)
     a = ap.parse_args()
     Path(a.out).mkdir(parents=True, exist_ok=True)
-    g2.load(a.root, g2.EXT)
-    P["close"] = pd.DataFrame({s: sg._daily(g2.D[s][0]).close for s in g2.EXT})
-    P["fund"] = pd.DataFrame({s: g2.D[s][0].fund_hr.resample("1D").mean() for s in g2.EXT})
+    universe = g2.EXT
+    if a.stage == "replicate":  # sinyalden bağımsız kural (protokol): üyelik >= 8 ay, EXT dışı, ilk bar <= 2023-07-01, kesim yok
+        m = tape.membership(a.root).groupby("sym").month.nunique()
+        universe = sorted(s for s, n in m.items() if n >= 8 and s not in g2.EXT and s not in tape._usable(a.root) and tape.load(a.root, s)["klines"].index[0] <= pd.Timestamp("2023-07-01", tz="UTC"))
+        print("replikasyon evreni:", universe, flush=True)
+    g2.load(a.root, universe)
+    P["close"] = pd.DataFrame({s: sg._daily(g2.D[s][0]).close for s in universe})
+    P["fund"] = pd.DataFrame({s: g2.D[s][0].fund_hr.resample("1D").mean() for s in universe})
     dh, t0 = ledger.sha(Path("/repo/data_manifest/manifest.json").read_text()), time.time()
     S = lambda kl, fee, slip: g2.spec_for(kl, fee, slip)  # noqa: E731
     with ProcessPoolExecutor(a.procs) as ex:
@@ -108,6 +113,20 @@ def main():
                 for n, v in sc.items():
                     scr.setdefault(n, {})[sym] = float(v)
             Path(a.out, f"search_{a.family}.json").write_text(json.dumps(dict(family=a.family, cfgs=dict(cfgs), res=res, screen=scr)))
+        elif a.stage == "replicate":
+            best = {}
+            for fam in FAMILIES:
+                nm = json.loads(Path(a.out, f"validate_{fam}.json").read_text())["best"][fam]
+                best[fam] = (nm, json.loads(Path(a.out, f"search_{fam}.json").read_text())["cfgs"][nm])
+            specs = lambda kl: [S(kl, f, g2.SLIP) for f in g2.FEES] + [S(kl, 10, 6.0)]  # noqa: E731
+            real = {}
+            for name, sym, rows in ex.map(one, [(fam, nm, p, s, REPL, specs(g2.D[s][0]), a.out, dh, "repl") for fam, (nm, p) in best.items() for s in universe], chunksize=1):
+                real.setdefault(name, {})[sym] = rows
+            null = {nm: {s: {} for s in universe} for nm, _ in best.values()}
+            for fam, (nm, p) in best.items():
+                for sym, i, r in ex.map(null_one, [(fam, nm, p, s, REPL, i) for i in range(a.b) for s in universe], chunksize=4):
+                    null[nm][sym][i] = r
+            Path(a.out, "replicate.json").write_text(json.dumps(dict(best={f: b[0] for f, b in best.items()}, universe=universe, real=real, null=null, b=a.b)))
         else:
             best = {}
             for fam in ([a.family] if a.family else FAMILIES):

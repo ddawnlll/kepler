@@ -19,3 +19,6 @@ Toplam N = 88 yapılandırma; hepsi deftere yazılır (hakem satırı: arama dö
 **Seçim kuralı:** aile başına arama dönemi net PnL (fee 10) en yüksek yapılandırma.
 **Doğrulama kriteri (ADAY):** (i) doğrulama brüt PnL'si ortak-ofset rotasyon null'ında (B=300) tek yönlü p ≤ 0,05/6 (aile sayısına Bonferroni) **ve** (ii) doğrulama neti fee 10'da > 0 **ve** (iii) fee 16'da da > 0. DSR (N=88 deneme) ayrıca raporlanır. Kriter sonuçlara göre değiştirilmez.
 **Eleme–hakem uyumu:** aynı ızgara eleme ve hakemle koşulur; Spearman raporlanır (G1'in n=16 ölçümü zayıftı).
+
+## Replikasyon (tek atış; doğrulama sonuçları görüldükten sonra eklendi, sembol kuralı sinyalden bağımsız)
+Doğrulamada aday çıkmadı. Aile-seçilmiş 6 yapılandırma (don_80_20, ema_10_100, tsmom_14_1, xscarry_7, xsmom_7, xsrev_3; yeniden seçim YOK) arama/doğrulamada **hiç kullanılmamış** semboller üzerinde bir kez koşulur: kural = aylık evren üyeliği (top-20) en az 8 ay olan, genişletilmiş-9 dışındaki, ilk bar ≤ 2023-07-01 olan, `usable` kesimi olmayan semboller. Pencere 2023-07-01 → 2026-04-01 (mühür hariç). Kesitsel aileler için evren = bu semboller. Kriter aynı: brüt PnL ortak-ofset rotasyon null'ında (B=300) p ≤ 0,05/6 ve fee 10 ile fee 16'da net > 0. Sonuç ne olursa olsun rapora yazılır; bundan sonra aynı verilerle yeni arama yapılmaz.

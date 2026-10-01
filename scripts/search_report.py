@@ -72,6 +72,19 @@ if vps:
         md.append(f"| {fam} | {s['name']} | {s['gross']:.0f} | " + " / ".join(f"{s['net'][(f, 2.0)]:.0f}" for f in (4, 9, 10, 11, 16)) + f" | {s['net'][(10, 6.0)]:.0f} | {s['p']:.3f} | {min(1, s['p'] * 6):.2f} | {s['sr']:.2f} | {s['dsr6']:.2f} | {'ADAY' if s['cand'] else 'yok'} |")
     md.append("")
     md.append(f"Doğrulama DSR (N=88 arama eşiğiyle): " + ", ".join(f"{f} {s['dsr88']:.2f}" for f, s in summ.items()))
+rp = OUT / "replicate.json"
+if rp.exists():
+    v = json.loads(rp.read_text())
+    md += ["", f"## Replikasyon (tek atış, kullanılmamış semboller: {', '.join(v['universe'])}; 2023-07→2026-04)", "| aile | yapılandırma | brüt | net @fee4/9/10/11/16 (slip2) | net @10 slip6 | p(brüt, ortak-ofset null) | Bonf.(×6) p | karar |", "|---|---|---|---|---|---|---|---|"]
+    for fam, nm in v["best"].items():
+        rr = v["real"][nm]
+        net = {(x["fee_bps"], x["slip_bps"]): sum(rr[s][i]["net_pnl"] for s in rr) for i in range(6) for x in [rr[next(iter(rr))][i]]}
+        gross = sum(rr[s][2]["gross_pnl"] for s in rr)
+        ng = np.array([sum(v["null"][nm][s][str(i)]["gross_pnl"] for s in rr) for i in range(v["b"])])
+        p = (1 + (ng >= gross).sum()) / (len(ng) + 1)
+        cand = p <= 0.05 / 6 and net[(10, 2.0)] > 0 and net[(16, 2.0)] > 0
+        summ["repl_" + fam] = dict(name=nm, gross=gross, p=p, cand=bool(cand), net={f"{k[0]}|{k[1]}": x for k, x in net.items()})
+        md.append(f"| {fam} | {nm} | {gross:.0f} | " + " / ".join(f"{net[(f, 2.0)]:.0f}" for f in (4, 9, 10, 11, 16)) + f" | {net[(10, 6.0)]:.0f} | {p:.3f} | {min(1, p * 6):.2f} | {'ADAY' if cand else 'yok'} |")
 (OUT / "tables.md").write_text("\n".join(md))
 for s_ in summ.values():
     s_["net"] = {f"{k[0]}|{k[1]}": x for k, x in s_["net"].items()}
