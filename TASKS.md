@@ -15,16 +15,16 @@ devralacak.
 |---|---|---|---|---|
 | A | Ortam, proje iskeleti, görev takibi | 5 | ☑ | Modal imajı (modal_app.py, uv.lock), `modal run modal_app.py --cmd 'pytest -q'`; tests/test_env.py 3 geçti |
 | B1 | Binance arşiv istemcisi (liste, indirme, checksum) | 8 | ☑ | tests/test_data.py: bozuk sha256 reddi + yeniden indirme, idempotent, mühür koruması (SealedError), gerçek uçtan uca (KEPLER_NET=1, Modal) |
-| B2 | Kalite kontrolü + manifest | 8 | ◐ | kod + tests/test_qc.py (21 test: her kontrol sentetik bozuk veride tetikleniyor) ✓; gerçek veri raporu B3 indirmesini bekliyor |
-| B3 | Dönemsel hacim evreni + gerçek dev verisi | 8 | ☐ | |
+| B2 | Kalite kontrolü + manifest | 8 | ☑ | tests/test_qc.py+test_review_fixes.py: her kontrol sentetik bozuk veride tetikleniyor; gerçek veri: data_manifest/quality_report.md (0 ERROR, 695 WARN, 105 INFO, hiçbiri düzeltilmedi) |
+| B3 | Dönemsel hacim evreni + gerçek dev verisi | 8 | ☑ | data_manifest/manifest.json (179 sembol, 51 ay × top20 evren, dosya sha256'ları, mühür sınırı 2026-04-01); son bar 2026-03-31 23:00; mühür ayı indirilmedi (tests/test_data.py::test_sealed_period_is_never_fetched) |
 | B4 | Mühür aracı | 4 | ☑ | tests/test_seal.py: sentetik şifrele→aç birebir, yanlış özel anahtar açamaz, bozulmuş şifreli metin reddedilir, seal aracında özel anahtar yolu yok (5 test) |
 | C1 | Hedef-pozisyon sözleşmesi + veri yükleme + deney defteri | 6 | ☑ | kepler/tape.py + kepler/ledger.py; tests/test_tape_ledger.py (5): sözleşme doğrulama, mühür sınırı reddi, append-only defter, DuckDB sorgu, eleme result yazamaz |
 | C2 | Hakem motor (Nautilus; yedek Freqtrade) + bilinen-cevaplı testler | 25 | ☑ | tests/test_referee.py (26 test, hepsi elle hesap): long/short, fee 4/9/10/11/16, slippage, lot+min notional, NaN tutma, flip, funding ±oran + sınır anı, likidasyon long/short, test_nautilus_alone_does_not_liquidate. SAPMA: Nautilus bar verisinde likide etmiyor -> likidasyon stop-market yapıştırması (belge: geçemezse Freqtrade; karar kullanıcıda) |
-| C3 | vectorbt eleme + eleme–hakem uyumu | 10 | ◐ | kepler/screen.py + tests/test_screen.py (3): eleme≈hakem (sentetik), her konfigürasyon deftere/deneme sayacına; gerçek veride sıralama korelasyonu B3 indirmesini bekliyor |
+| C3 | vectorbt eleme + eleme–hakem uyumu | 10 | ☑ | reports/screen_vs_referee.md: Spearman 1,000 (n=16; ızgara fee-baskın, zayıf kanıt); ledger/g1_ledger.jsonl 80 kayıt (eleme+hakem); tests/test_screen.py |
 | C4 | Nedensellik, determinizm, pencere denkliği, negatif kontroller | 10 | ☑ | tests/test_trust.py (7): nedensellik (nedensel geçer; sızdıran sinyal assert_causal'da AssertionError [120,200,280,360] — elle doğrulandı), determinizm hash, pencere=tam tape (funding sınırı dahil), flat=0, rastgele=brüt~0/net<0 |
-| C5 | Gerçek veride çapraz kontrol (hakem vs bağımsız elle hesap) | 5 | ☐ | |
+| C5 | Gerçek veride çapraz kontrol (hakem vs bağımsız elle hesap) | 5 | ☑ | reports/xcheck_btc.md: BTCUSDT 3773 işlem eşleşti, |net fark| maks 0,00207 USDT, funding birebir; tests/test_xcheck.py |
 | D | Kitaplar: PDF → metin (paralel, düşük öncelik) | 3 | ☑ | books_text/ (125 metin) + books_text/QUALITY.md; kaynaklar PDF değil zaten düz metindi (0 PDF, sayfa bilgisi yok); 2 kitap bayraklı; scripts/books_quality.py |
-| E | Rapor + bağımsız inceleme | 8 | ☐ | |
+| E | Rapor + bağımsız inceleme | 8 | ☑ | reports/g0_g1.md; bağımsız inceleme (ayrı bağlam) bulguları raporda; 89 test yeşil |
 
 Toplam 100. **Çekirdek = A–C5 + E.** D paralel ve çekirdeği bekletmez.
 
@@ -129,6 +129,23 @@ Yalnızca G0–G1'i destekleyen, sinyal içermeyen işler:
 - İlerleme tablosunun son hali ve "devralma notu": bir sonraki ajan (Hermes) nereden devam eder.
 
 **G2'ye (sinyaller, null, fee duyarlılığı) geçme.** Kapı sonunda dur ve raporla.
+
+## Devralma notu (Hermes / sonraki ajan) — çekirdek bitti, G2'ye geçilmedi
+
+**Durum:** G0 geçti, G1 geçti (89 test yeşil). Sonuç ve açık bulgular: `reports/g0_g1.md`. Dal: `g0-g1`.
+
+**Nerede ne var**
+- Her şey Modal'de çalışır: `modal run modal_app.py --cmd "pytest -q"` (gerçek ağ testi: `KEPLER_NET=1 pytest tests/test_data.py`). Yerel `.venv` boş; yerelde proje kodu koşulmuyor.
+- Veri: Modal Volume `kepler-data:/tape/{klines,markPriceKlines,fundingRate}/SYM.parquet` + `universe.parquet`. Ham zip'ler konteyner diskinde (`/tmp/kepler_raw`), kalıcı değil; manifest `data_manifest/manifest.json` zip sha256'larını taşır. Yeniden kurmak: `python -m kepler.universe --stage rank|universe|build --shard i/12` (12 paralel `modal run --detach`; tek konteyner ≈10 dosya/sn, konteyner sayısıyla ölçekleniyor), sonra `python -m kepler.qc --root /data --out /data/manifest`. Yalnızca ≤ 2026-03 indirilir (`kepler/data.py::DEV_END`).
+- Hakem: `kepler/referee.py::run(kl, target, Spec, funding, mark)`; sözleşme `kepler/tape.py` başlığında. Sonuç deftere yalnızca `ledger.record(source="referee")` ile; eleme `kepler/screen.py` (defter zorunlu).
+- Mühür: `tools/seal_holdout.py` (genel anahtar) / `tools/open_holdout.py` (kullanıcı). **Gerçek veriyle kullanıcı çalıştıracak**; ajan çalıştırmaz.
+- Defter: `ledger/g1_ledger.jsonl` (fixture ızgarası; G2 denemeleri ayrı dosyaya).
+
+**Kullanıcı kararı bekleyenler:** (1) Nautilus likidasyonu yapıştırma stopuyla çözüldü, Freqtrade'e geçilmedi; (2) ≲300 satır tavanı yorumu (çekirdek 268, tüm araçlar 686); (3) evrende emtia/token perp'leri (XAUUSDT, XAGUSDT, PAXGUSDT) kalsın mı; (4) mühür uzunluğu (6 ay, bu koşuda 2026-04-01 sınırı).
+
+**G2'den önce yapılacaklar (inceleme bulgularından):** evren üyelik maskesi + mark/kline sapan bar filtresi; mark-bazlı likidasyon; sonraki-bar dolum modu ve zorunlu slippage; açık pozisyon çıkış maliyeti; `audit.assert_causal`/`check_target`'ı tek `evaluate()` girişine bağlamak; defter için dosya kilidi.
+
+**Dikkat:** funding aralığı 1/2/4/8 saat olabilir (99 sembol 8 saat dışı); referee her aralıkta çalışır. 500 USD'lik hesap yüksek devirli sinyalde iflas eder → `n_rejected>0` koşular geçersiz.
 
 ## Durma koşulları
 

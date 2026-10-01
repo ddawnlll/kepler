@@ -26,6 +26,8 @@ def seal(data_dir: Path, pubkey_pem: bytes) -> bytes:
     pub = serialization.load_pem_public_key(pubkey_pem)
     if not isinstance(pub, rsa.RSAPublicKey):
         raise ValueError("RSA genel anahtarı bekleniyor")
+    if pub.key_size < 3072:
+        raise ValueError("RSA anahtarı en az 3072 bit olmalı")
     buf = io.BytesIO()
     with tarfile.open(fileobj=buf, mode="w") as tar:
         tar.add(data_dir, arcname=".")

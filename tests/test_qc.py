@@ -71,7 +71,7 @@ def test_each_funding_check_fires(name):
 def test_funding_4h_interval_is_accepted_not_gap():
     d = clean(kind="fundingRate").assign(funding_interval_hours=4)
     d["ts"] = pd.date_range("2024-01-01", periods=len(d), freq="4h", tz="UTC")
-    assert qc.check_frame(d, "fundingRate") == []
+    assert [g["check"] for g in qc.check_frame(d, "fundingRate")] == ["funding_interval_not_8h"]  # yalnızca bilgi, boşluk yok
 
 
 def test_mark_kline_divergence():

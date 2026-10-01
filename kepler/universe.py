@@ -104,6 +104,9 @@ def main(root: Path, stage: str = "all", shard: str = "0/1", workers: int = 32) 
         monthly_volume(root, syms[i::n], workers).to_parquet(tape / f"vol_shard_{i}_of_{n}.parquet", index=False)
     if stage in ("universe", "all"):
         vol = pd.concat([pd.read_parquet(p) for p in sorted(tape.glob("vol_shard_*_of_*.parquet"))], ignore_index=True).drop_duplicates(["sym", "month"])
+        missing = {s for s in syms if not (tape / "vol" / f"{s}.parquet").exists()}  # boş (dev penceresinde verisi olmayan) semboller de dosya bırakır
+        if missing:
+            raise RuntimeError(f"rank parçaları eksik: {len(missing)} sembolün hacmi yok (örn. {sorted(missing)[:3]}); eksik parçaları çalıştır")
         vol.to_parquet(tape / "volume_1d.parquet", index=False)
         build_universe(vol).to_parquet(tape / "universe.parquet", index=False)
     if stage in ("build", "all"):

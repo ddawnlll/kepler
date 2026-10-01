@@ -101,6 +101,7 @@ def fetch(k: str, root: Path, retries: int = 4) -> Path:
             want.raise_for_status()
             sha = want.text.split()[0].lower()
             if dst.exists() and hashlib.sha256(dst.read_bytes()).hexdigest() == sha:
+                side.write_text(sha)  # sidecar eksikse (yarım kalmış önceki koşu) tamamla
                 return dst
             r = _get(f"{CDN}/{k}")
             r.raise_for_status()

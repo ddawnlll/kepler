@@ -13,7 +13,9 @@ import pandas as pd
 from kepler import ledger, qc, referee, screen, tape
 
 SYM = "BTCUSDT"
-SPEC = referee.Spec(tick="0.1", step="0.001", min_notional=100.0, fee_rt_bps=10.0, capital=500.0)
+# Muhasebe/sıralama karşılaştırması için büyük sermaye: yüksek devirli fixture sinyalleri 500 USD'lik hesabı fee ile bitirir
+# (ilk denemede INITIAL_MARGIN_EXCEEDS_FREE_BALANCE ile reddedilen binlerce emir -> geçersiz koşu). Sermaye PnL'yi değiştirmez.
+SPEC = referee.Spec(tick="0.1", step="0.001", min_notional=100.0, fee_rt_bps=10.0, capital=1_000_000.0)
 
 
 def mom(kl, n, sign=1.0, size=1000.0):
@@ -40,20 +42,25 @@ def corr(root, out):
     kl, fund, mark = t["klines"], t["funding"], t["mark"]
     led, dh, code = Path(out) / "ledger.jsonl", data_hash(root), ledger.code_hash(referee.__file__)
     g = grid(kl)
-    scr = screen.screen(kl, g, SPEC.fee_rt_bps, capital=1e5, ledger_path=led, hypothesis="G1 eleme-hakem uyumu (fixture ızgarası)", data_hash=dh)
-    ref = {}
+    scr = screen.screen(kl, g, SPEC.fee_rt_bps, led, capital=1e5, hypothesis="G1 eleme-hakem uyumu (fixture ızgarası)", data_hash=dh)
+    ref, bad = {}, {}
     for name, tg in g.items():
         r = referee.run(kl, tg, SPEC, funding=fund, mark=mark)
-        ledger.record(led, "referee", "G1 eleme-hakem uyumu (fixture ızgarası)", dict(name=name, **SPEC.__dict__), code, dh, result=r["summary"])
-        ref[name] = r["summary"]["net_pnl"]
-    df = pd.DataFrame({"screen": scr, "referee": pd.Series(ref)})
+        s = r["summary"]
+        if s["n_rejected"] or s["funding_missed"]:  # geçersiz koşu: deftere ve korelasyona girmez, raporda sayılır
+            bad[name] = (s["n_rejected"], s["funding_missed"], (r["rejected"] or [""])[0][:200])
+            continue
+        ledger.record(led, "referee", "G1 eleme-hakem uyumu (fixture ızgarası)", dict(name=name, **SPEC.__dict__), code, dh, result=s)
+        ref[name] = s["net_pnl"]
+    df = pd.DataFrame({"screen": scr, "referee": pd.Series(ref)}).dropna()
     rho = df.screen.corr(df.referee, method="spearman")
     md = ["# Eleme (vectorbt) ↔ hakem (Nautilus) uyumu", "", f"Sembol {SYM}, {kl.index[0].date()} → {kl.index[-1].date()}, {len(g)} fixture konfigürasyonu, gidiş-dönüş fee {SPEC.fee_rt_bps} bps.",
           f"**Spearman sıralama korelasyonu: {rho:.3f}** (öneri eşiği ≥0,8 — doğrulanmadı, eşik konmadı; yalnızca raporlanır). Pearson: {df.screen.corr(df.referee):.3f}.",
           "Fark kaynakları: eleme lot/min-notional yuvarlamasını, funding'i ve likidasyonu içermez; hakem içerir.", "",
           "| config | eleme PnL | hakem net PnL |", "|---|---|---|"] + [f"| {k} | {r.screen:.2f} | {r.referee:.2f} |" for k, r in df.sort_values("referee").iterrows()]
+    md += ["", f"Geçersiz hakem koşusu (reddedilen emir / eksik funding; deftere ve korelasyona girmedi): {len(bad)} — {bad}"]
     Path(out, "screen_vs_referee.md").write_text("\n".join(md))
-    print(f"spearman={rho:.3f}")
+    print(f"spearman={rho:.3f} n={len(df)} invalid={len(bad)} {bad}")
 
 
 def independent(kl, target, funding, mark, spec):
@@ -62,13 +69,27 @@ def independent(kl, target, funding, mark, spec):
     step = Decimal(spec.step)
     pos, avg, last = Decimal(0), Decimal(0), 0.0
     trades, cur, fund = [], None, 0.0
-    fmap = {t.round("1min"): r for t, r in funding["last_funding_rate"].items()}
+    events = sorted((t.round("1min"), float(r)) for t, r in funding["last_funding_rate"].items())
+    mk = {t + pd.Timedelta("1h"): float(c) for t, c in mark.close.items()}  # T'de biten barın mark kapanışı
+    kc = {t + pd.Timedelta("1h"): float(c) for t, c in kl.close.items()}
+    first, j, missed = kl.index[0] + pd.Timedelta("1h"), 0, 0
     for i, t in enumerate(kl.index):
         close_ts, px = t + pd.Timedelta("1h"), Decimal(str(kl.close.iloc[i]))
-        if close_ts in fmap and cur is not None:  # T'de, T öncesi pozisyon: long öder (oran>0)
-            f = -float(pos) * float(mark.close.iloc[i]) * float(fmap[close_ts])
+        while j < len(events) and events[j][0] <= close_ts:  # bu barın kapanışına kadar olan funding olayları (boşluktakiler dahil)
+            T, rate = events[j]
+            j += 1
+            if T < first:
+                continue
+            m = mk.get(T, np.nan)
+            if np.isnan(m):  # mark barı eksik: kline kapanışına düş (hakemle aynı kural)
+                m = kc.get(T, np.nan)
+            if np.isnan(m):
+                missed += 1
+                continue
+            f = -float(pos) * m * rate  # T öncesi (bu barın kararlarından önceki) pozisyon: long öder (oran>0)
             fund += f
-            cur["funding"] += f
+            if cur is not None:
+                cur["funding"] += f
         tg = target.iloc[i]
         if np.isnan(tg) or tg == last:
             continue
@@ -95,7 +116,7 @@ def independent(kl, target, funding, mark, spec):
                 avg = (avg * abs(pos) + px * o) / (abs(pos) + o)
             cur["net"] -= float(fee * o / abs(d))
             pos += sgn * o
-    return trades, fund, cur
+    return trades, fund, cur, missed
 
 
 def xcheck(root, out):
@@ -103,7 +124,7 @@ def xcheck(root, out):
     kl, fund, mark = t["klines"], t["funding"], t["mark"]
     tg = mom(kl, 24)
     r = referee.run(kl, tg, SPEC, funding=fund, mark=mark)
-    trades, ifund, cur = independent(kl, tg, fund, mark, SPEC)
+    trades, ifund, cur, imissed = independent(kl, tg, fund, mark, SPEC)
     if cur is not None:  # açık kalan son döngü
         trades.append(cur)
     ref = r["positions"].assign(opened=lambda d: d.opened.dt.round("1min"))
@@ -112,13 +133,16 @@ def xcheck(root, out):
     both = m[m._merge == "both"]
     diff = (both.realized - both.net).abs()
     s = r["summary"]
+    flip = both.opened.isin(set(pd.to_datetime(both.closed, utc=True).dropna().dt.round("1min")))  # önceki pozisyonun kapandığı anda açılan = çevirme dolumu
+    big = diff > 1e-6
     md = ["# Gerçek veri çapraz kontrolü (BTCUSDT, mom24 fixture, 1000 USDT notional)", "",
           f"Hakem işlem (pozisyon) sayısı {len(ref)}, bağımsız hesap {len(ind)}, eşleşen {len(both)}; eşleşmeyen {int((m._merge != 'both').sum())}.",
           f"**İşlem başına |net fark|: maks {diff.max():.6f} USDT, ort {diff.mean():.6f}** (net = brüt − fee; funding hariç).",
-          f"Funding toplamı: hakem {s['funding']:.6f}, bağımsız {ifund:.6f}, fark {s['funding'] - ifund:.2e} USDT.",
+          f"|fark|>1e-6 olan {int(big.sum())} işlemin {int((big & flip).sum())}'i çevirme dolumunda açılmış; tüm işlemlerde işaretli toplam fark {(both.realized - both.net).sum():.6f} USDT.",
+          f"Funding toplamı: hakem {s['funding']:.6f}, bağımsız {ifund:.6f}, fark {s['funding'] - ifund:.2e} USDT; eksik funding olayı hakem {s['funding_missed']}, bağımsız {imissed}.",
           f"Hakem toplam net {s['net_pnl']:.4f}; fills {s['n_fills']}, likidasyon {s['n_liq']}, reddedilen emir {len(r['rejected'])}.", "",
-          "Not: çevirme (flip) dolumunun komisyonu iki pozisyon arasında miktarla orantılı bölünür (Nautilus da böyle yapıyor); bağımsız hesap aynı kuralı kullanır.",
-          "Fark sıfıra yakınsa iki hesap aynı muhasebeyi yapıyor demektir; sıfırdan farklıysa kaynağı aşağıda açıklanır."]
+          "Açıklama (varsayım, doğrulanmadı): fark neredeyse yalnızca çevirme (flip) dolumlarında; çevirmede komisyon iki pozisyona bölünür. Bağımsız hesap miktarla orantılı böler; "
+          "Nautilus'un bölüşümü bundan ≤0,002 USDT/işlem sapıyor (muhtemelen farklı yuvarlama/ağırlık). Toplam komisyon iki tarafta aynı; fark yalnızca iki komşu pozisyon arasındaki paylaşımda."]
     Path(out, "xcheck_btc.md").write_text("\n".join(md))
     print(md[2], md[3], md[4], sep="\n")
 

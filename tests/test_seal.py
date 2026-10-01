@@ -13,7 +13,7 @@ from tools import open_holdout, seal_holdout
 
 
 def keypair():
-    k = rsa.generate_private_key(65537, 2048)
+    k = rsa.generate_private_key(65537, 3072)
     priv = k.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption())
     pub = k.public_key().public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo)
     return priv, pub
@@ -53,6 +53,13 @@ def test_tampered_ciphertext_rejected(synth):
     blob[-5] ^= 1
     with pytest.raises(InvalidTag):
         open_holdout.unseal(bytes(blob), priv)
+
+
+def test_weak_rsa_key_rejected(synth):
+    k = rsa.generate_private_key(65537, 2048)
+    pub = k.public_key().public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo)
+    with pytest.raises(ValueError, match="3072"):
+        seal_holdout.seal(synth, pub)
 
 
 def test_seal_tool_has_no_private_key_path():

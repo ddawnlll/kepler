@@ -9,6 +9,7 @@ verisinde likide etmiyor (tests/test_referee.py::test_nautilus_alone_does_not_li
 değişiminde likidasyon fiyatında reduce-only STOP_MARKET konur (Nautilus bar içi H/L'de tetikler, tetik fiyatından doldurur).
 """
 import math
+from bisect import bisect_left
 from dataclasses import dataclass
 from decimal import ROUND_DOWN, Decimal
 
@@ -19,6 +20,8 @@ from nautilus_trader.model import (AccountType, AggregationSource, Bar, BarAggre
                                    CryptoPerpetual, Currency, CurrencyType, InstrumentId, Money, OmsType, OrderSide,
                                    Price, PriceType, Quantity, Symbol, Venue)
 from nautilus_trader.trading import Strategy
+
+from kepler import tape
 
 HOUR_NS = 3_600_000_000_000
 USDT = Currency("USDT", 8, 0, "Tether", CurrencyType.CRYPTO)
@@ -111,6 +114,11 @@ class Adapter(Strategy):
 
 def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.DataFrame | None = None, mark: pd.DataFrame | None = None) -> dict:
     """kl: ts(bar açılışı, UTC) indeksli open/high/low/close/volume. Dönüş: {'summary', 'fills', 'rejected'}."""
+    if not (kl.index.is_monotonic_increasing and kl.index.is_unique):
+        raise ValueError("kl indeksi artan ve tekil olmalı")
+    tape.check_target(kl, target)  # yanlış hizalı/tz'siz hedef sessizce sıfır işleme dönüşmesin
+    if funding is not None and funding["last_funding_rate"].isna().any():
+        raise ValueError("funding oranında NaN var (QC'den geçmemiş veri)")
     pp, sp = _dp(spec.tick), _dp(spec.step)
     iid = InstrumentId(Symbol("SYM-PERP"), VENUE)
     side_fee = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
@@ -140,14 +148,25 @@ def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.Da
     fee, slip = notional * spec.fee_rt_bps / 2 / 1e4, notional * spec.slip_rt_bps / 2 / 1e4
     lq = fills[fills.liq]
     liq_fee = float((lq.qty * lq.px).sum()) * (spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate)
-    fund = 0.0
+    fund, missed, fallback = 0.0, 0, 0
     if funding is not None and len(funding):
-        mk = (mark if mark is not None else kl).close
-        by_close = {t: c for t, c in zip(close_ns, mk.reindex(kl.index).astype(float))}
+        mk = (mark if mark is not None else kl).close.astype(float)
+        by_close = dict(zip([t + HOUR_NS for t in ns(mk.index)], mk))  # T'de biten barın mark kapanışı
+        keys = sorted(strat.before)
         for ts, rate in zip(ns(pd.DatetimeIndex(funding.index).round("1min")), funding["last_funding_rate"].astype(float)):
-            if ts in strat.before and ts in by_close:
-                fund += -float(strat.before[ts]) * by_close[ts] * rate
+            if not close_ns[0] <= ts <= close_ns[-1]:
+                continue
+            j = bisect_left(keys, ts)  # T'de bar yoksa (boşluk) pozisyon bir sonraki barın öncesidir: boşlukta dolum olmaz
+            c = by_close.get(ts, math.nan)
+            if math.isnan(c) and mark is not None:  # mark barı eksik (gerçek veri: BTC'de 3 boşluk): kline kapanışına düş, özette say
+                c = float(kl.close.get(pd.Timestamp(ts, unit="ns", tz="UTC") - pd.Timedelta("1h"), math.nan))
+                fallback += not math.isnan(c)
+            if math.isnan(c) or j == len(keys):
+                missed += 1  # mark da kline da yok: sessizce atlanmaz, özette sayılır
+                continue
+            fund += -float(strat.before[keys[j]]) * c * rate
     net = bal + unreal - spec.capital + fund - liq_fee
     return dict(summary=dict(net_pnl=net, gross_pnl=net + fee + slip - fund + liq_fee, fee=fee, slippage=slip, funding=fund, liq_fee=liq_fee,
-                             n_fills=len(fills), n_liq=int(fills.liq.sum()), end_position=end_pos, engine_commission=float(fills.commission.sum())),
+                             n_fills=len(fills), n_liq=int(fills.liq.sum()), end_position=end_pos, engine_commission=float(fills.commission.sum()),
+                             n_rejected=len(strat.rejected), funding_missed=missed, funding_mark_fallback=fallback),
                 fills=fills, positions=positions, rejected=strat.rejected)

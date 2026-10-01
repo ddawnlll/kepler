@@ -1,11 +1,12 @@
-"""C4: güven denetimi — nedensellik ve determinizm. Her yeni sinyal deftere girmeden bu iki kontrolden geçer."""
+"""C4: güven denetimi — nedensellik ve determinizm. G2 boru hattının her yeni sinyal için ÇAĞIRMASI gereken kapı
+(şu an yalnızca testlerden çağrılıyor; ledger.record'a bağlı DEĞİL — G2'de tek `evaluate()` girişine bağlanacak)."""
 import numpy as np
 import pandas as pd
 
 from kepler import ledger
 
 
-def check_causal(signal, kl: pd.DataFrame, fracs=(0.3, 0.5, 0.7, 0.9), seed: int = 0) -> list[int]:
+def check_causal(signal, kl: pd.DataFrame, fracs=tuple(np.linspace(0.1, 0.95, 16)), seed: int = 0) -> list[int]:
     """k'dan sonraki barlar bozulunca (ve k'da kesilince) [:k] kararları değişen kesim noktaları. Boş liste = nedensel."""
     rng, base, bad = np.random.default_rng(seed), signal(kl), []
     for f in fracs:

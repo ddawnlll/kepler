@@ -18,7 +18,8 @@ def test_referee_equals_independent_accounting(seed, n):
     tg = g1_real.mom(kl, 12)
     sp = referee.Spec(tick="0.1", step="0.001", min_notional=100.0, fee_rt_bps=10.0, capital=500.0)
     r = referee.run(kl, tg, sp, funding=fund, mark=mark)
-    trades, ifund, cur = g1_real.independent(kl, tg, fund, mark, sp)
+    trades, ifund, cur, imissed = g1_real.independent(kl, tg, fund, mark, sp)
+    assert imissed == r["summary"]["funding_missed"] == 0
     if cur is not None:
         trades.append(cur)
     ref = r["positions"]

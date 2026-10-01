@@ -32,12 +32,15 @@ def record(path, source: str, hypothesis: str, config: dict, code: str, data: st
         raise ValueError("eleme (vectorbt) sonuç yazamaz; yalnızca score")
     if source == "referee" and result is None:
         raise ValueError("hakem kaydı result içermeli")
+    if source == "referee" and (result.get("n_rejected", 0) or result.get("funding_missed", 0)):
+        raise ValueError("reddedilen emir / eksik funding olan koşu geçerli sonuç değildir; deftere yazılmaz")
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
+    json.dumps([config, result, score], default=str, allow_nan=False)  # satır sayacı artmadan önce doğrula
     row = dict(trial=trial_count(p) + 1, time=time.time(), source=source, hypothesis=hypothesis, config=config,
                config_hash=sha(config), code_hash=code, data_hash=data, result=result, score=score)
     with p.open("a") as f:  # append-only: mevcut satırlar asla yeniden yazılmaz
-        f.write(json.dumps(row, default=str) + "\n")
+        f.write(json.dumps(row, default=str, allow_nan=False) + "\n")  # NaN/inf sessizce yazılmaz (JSONL bozulmasın)
         f.flush()
     return row
 

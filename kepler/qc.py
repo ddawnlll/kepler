@@ -15,6 +15,7 @@ HOUR = pd.Timedelta("1h")
 JUMP = 0.30  # saatlik |close/önceki close - 1| bu değerden büyükse "anormal sıçrama"
 MARK_DIV = 0.05  # kline close ile mark close arası göreli fark
 FUND_MAX = 0.01  # |funding oranı| > %1 şüpheli
+WICK = 0.5  # (high-low)/close > %50 tek saatlik mum: aşırı fitil
 SEAL_START = pd.Timestamp(f"{pd.Period(data.DEV_END, 'M') + 1}-01", tz="UTC")
 
 
@@ -39,12 +40,16 @@ def check_frame(df: pd.DataFrame, kind: str) -> list[dict]:
     d = ts.sort_values().drop_duplicates().diff()
     if kind == "fundingRate":
         iv = df["funding_interval_hours"]
-        if not iv.isin([4, 8]).all():
-            out.append(_i("funding_interval", "ERROR", f"funding aralığı 4/8 saat dışında: {sorted(iv.unique())}", (~iv.isin([4, 8])).sum()))
+        if not iv.isin([1, 2, 4, 8]).all():  # gerçek veri: volatil semboller 1/2/4 saatlik aralığa geçiyor (TASKS "4 veya 8" varsayımı yanlış)
+            out.append(_i("funding_interval", "ERROR", f"funding aralığı 1/2/4/8 saat dışında: {sorted(iv.unique())}", (~iv.isin([1, 2, 4, 8])).sum()))
+        elif (iv != 8).any():
+            out.append(_i("funding_interval_not_8h", "INFO", f"8 saat dışı aralık kullanılmış: {sorted(int(x) for x in iv.unique())}", (iv != 8).sum(), df.ts[iv != 8].iloc[0]))
+        if df["last_funding_rate"].isna().any():
+            out.append(_i("nan_funding_rate", "ERROR", "funding oranı NaN", df["last_funding_rate"].isna().sum()))
         f = df.drop_duplicates("ts").sort_values("ts").reset_index(drop=True)
         exp = pd.to_timedelta(f["funding_interval_hours"].values, unit="h")
         exp = pd.concat([pd.Series(exp), pd.Series(exp).shift()], axis=1).max(axis=1)
-        gaps = f.ts.diff() > exp
+        gaps = f.ts.diff() > exp + pd.Timedelta("1min")  # calc_time ms sapması boşluk sayılmaz
         if gaps.any():
             out.append(_i("gap", "WARN", "funding kaydı eksik (aralık > bildirilen)", gaps.sum(), f.ts[gaps].iloc[0]))
         if (df["last_funding_rate"].abs() > FUND_MAX).any():
@@ -63,8 +68,11 @@ def check_frame(df: pd.DataFrame, kind: str) -> list[dict]:
     bad = (h < l) | (h < o.combine(c, max)) | (l > o.combine(c, min))
     if bad.any():
         out.append(_i("inconsistent_candle", "ERROR", "high<low veya open/close [low,high] dışında", bad.sum(), ts[bad].iloc[0]))
-    if "volume" in df and (df["volume"] < 0).any():
-        out.append(_i("negative_volume", "ERROR", "hacim < 0", (df["volume"] < 0).sum()))
+    if "volume" in df and ((df["volume"] < 0) | df["volume"].isna()).any():
+        out.append(_i("negative_volume", "ERROR", "hacim < 0 veya NaN", ((df["volume"] < 0) | df["volume"].isna()).sum()))
+    wick = ((h - l) / c) > WICK
+    if wick.any():  # tutarlı ama aşırı geniş mum (hatalı print fitili): likidasyon stopunu yanlış tetikler
+        out.append(_i("wick_outlier", "WARN", f"(high-low)/close > {WICK:.0%}", wick.sum(), ts[wick].iloc[0]))
     jump = (c / c.shift() - 1).abs() > JUMP
     # yalnızca komşu bar ise sıçrama say (boşluktan sonraki fark zaten 'gap' olarak raporlu)
     jump &= ts.diff() == HOUR
