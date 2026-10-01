@@ -35,7 +35,7 @@ def record(path, source: str, hypothesis: str, config: dict, code: str, data: st
         raise ValueError("hakem kaydı result içermeli")
     if source == "referee" and (result.get("n_rejected", 0) or result.get("funding_missed", 0)):
         raise ValueError("reddedilen emir / eksik funding olan koşu geçerli sonuç değildir; deftere yazılmaz")
-    if source == "referee" and config.get("audit_causal") is not True:
+    if source == "referee" and config.get("audit_causal") is not True:  # korkuluk (güvenlik değil): bayrağı evaluate koyar; elle yazan bunu atlatabilir
         raise ValueError("hakem kaydı nedensellik denetiminden (evaluate) geçmemiş: config.audit_causal=True yok")
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)

@@ -22,7 +22,8 @@ def check_causal(signal, kl: pd.DataFrame, fracs=tuple(np.linspace(0.1, 0.95, 16
 
 def assert_causal(signal, kl: pd.DataFrame) -> None:
     bad = check_causal(signal, kl)
-    assert not bad, f"sinyal geleceğe bakıyor: geçmiş kararlar kesim noktalarında değişti {bad}"
+    if bad:  # assert değil: python -O ile atlanamaz
+        raise AssertionError(f"sinyal geleceğe bakıyor: geçmiş kararlar kesim noktalarında değişti {bad}")
 
 
 def result_hash(res: dict) -> str:

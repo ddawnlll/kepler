@@ -12,8 +12,8 @@ from kepler.referee import Spec, run
 from tests.test_referee import A, bars, tgt
 
 
-def sp(**kw):  # varsayılan = gerçekçi (next_open, close_out)
-    return Spec(**{**dict(tick="0.01", step="0.001", capital=10000.0, liq=False, fee_rt_bps=10.0), **kw})
+def sp(**kw):  # varsayılan = gerçekçi (next_open, close_out); likidasyon açık, sermaye büyük (LP yok sayılır)
+    return Spec(**{**dict(tick="0.01", step="0.001", capital=10000.0, liq=True, fee_rt_bps=10.0), **kw})
 
 
 def test_fill_is_next_bar_open_not_decision_close():
@@ -54,6 +54,28 @@ def test_liquidation_inside_the_fill_bar_and_no_double_fee():
     assert s["n_liq"] == 1 and s["liq_fee"] == A(469.2105) and s["net_pnl"] == A(-521 - 5 - 473.95)
 
 
+def test_funding_in_kline_gap_is_charged_to_pre_fill_position():
+    kl = bars([100] * 12).drop([pd.Timestamp("2024-01-01 07:00", tz="UTC"), pd.Timestamp("2024-01-01 08:00", tz="UTC")])  # 07:00 ve 08:00 barları yok
+    f = pd.DataFrame({"last_funding_rate": [0.0001]}, index=[pd.Timestamp("2024-01-01 08:00", tz="UTC")])
+    r = run(kl, tgt(kl, b6=100.0, b8=0.0), sp(fee_rt_bps=0), funding=f, mark=kl)  # karar 07:00'de, ilk dolum 09:00 (T=08:00'den SONRA) -> funding yok
+    assert list(r["fills"].ts)[0] == int(pd.Timestamp("2024-01-01 09:00", tz="UTC").value) and r["summary"]["funding"] == 0
+
+
+def test_no_trading_after_liquidation():
+    kl = bars([100, 100, 100, 120], rows=[(100, 100, 100, 100), (100, 100, 94, 100), (100, 100, 100, 100), (120, 120, 120, 120)])
+    r = run(kl, tgt(kl, b0=10000.0, b2=10000.0), sp(capital=1000.0, mmr=0.05, leverage=10))  # b2'de aynı hedefle yeniden giriş denemesi
+    assert r["summary"]["n_liq"] == 1 and len(r["fills"]) == 2 and r["summary"]["end_position"] == 0
+    assert r["summary"]["net_pnl"] == A(-999.95)  # hesap sıfırlandı; sonraki +%20 hayalet bakiyeyle kâr yazmaz
+
+
+def test_evaluate_rejects_liq_off_and_oversized_signal(tmp_path):
+    kl = walk()
+    with pytest.raises(ValueError, match="gerçekçi"):
+        ev.evaluate(mom, kl, [sp(slip_rt_bps=2.0, liq=False)], tmp_path / "l.jsonl", "h", "d")
+    with pytest.raises(ValueError, match="birim"):
+        ev.evaluate(lambda k: 3 * mom(k), kl, [sp(slip_rt_bps=2.0)], tmp_path / "l.jsonl", "h", "d")
+
+
 def walk(n=600, seed=1):
     r = np.random.default_rng(seed).normal(0, 0.004, n)
     return bars(list(100 * np.exp(np.cumsum(r))))
@@ -80,7 +102,8 @@ def test_evaluate_window_runs_signal_on_full_series(tmp_path):
     kl = walk()
     full = mom(kl)
     w = ev.evaluate(mom, kl, [sp(slip_rt_bps=2.0)], tmp_path / "w.jsonl", "h", "d", window=(kl.index[300], kl.index[500]))[0]["res"]
-    assert w["fills"].ts.min() >= int(kl.index[300].value) and full.iloc[:300].notna().sum() > 0  # ısınma: ilk pencere barında zaten sinyal var
+    # sinyal pencerenin 300. barında zaten tanımlı (24 bar ısınma tam seride hesaplandı): ilk dolum 300. barın kararından, 301. barın açılışında
+    assert full.iloc[300] != 0 and w["fills"].ts.min() == int(kl.index[301].value)
 
 
 def _writer(args):

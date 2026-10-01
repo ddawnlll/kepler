@@ -4,7 +4,7 @@ Sözleşme: target[t] = t barı (açılış zamanı t) KAPANDIĞINDA istenen iş
 Miktar yalnızca hedef DEĞİŞTİĞİNDE dolum fiyatından yeniden hesaplanır (lot adımına aşağı yuvarlanır); aynı hedef sürdükçe işlem yok.
 Dolum (varsayılan fill="next_open"): karar t barının kapanışında bilinir, SONRAKİ barın açılış fiyatından dolar (her bar motora iki parça gider:
 (o,o,o,o) açılış tiki = karar anı, (o,h,l,c) = bar gövdesi; likidasyon stopu gövdede tetiklenir). fill="close" (eski, iyimser: karar barının
-kapanışından) yalnızca testler içindir; `evaluate` reddeder. Son barın hedefi dolmaz. Açık pozisyonun çıkış maliyeti (fee+slip) son kapanıştan
+kapanışından) yalnızca testler içindir; `evaluate` reddeder. Son barın hedefi dolmaz. Likidasyondan sonra hesap ölü: yeni işlem yok (kalan marj likidasyon ücretiyle kaybedilir). Açık pozisyonun çıkış maliyeti (fee+slip) son kapanıştan
 düşülür (close_out). Maliyet: taker fee + slippage
 (bps, gidiş-dönüş; yan başına yarısı) Nautilus komisyonuna girer. Funding: T anındaki oran, T'den ÖNCE (T'de
 yapılan dolumlardan önce) tutulan pozisyon x mark fiyat; işaret: oran>0 iken long öder. Likidasyon: Nautilus bar
@@ -18,6 +18,7 @@ from bisect import bisect_left
 from dataclasses import dataclass
 from decimal import ROUND_DOWN, Decimal
 
+import numpy as np
 import pandas as pd
 from nautilus_trader.backtest import BacktestEngine, BacktestEngineConfig
 from nautilus_trader.execution import MakerTakerFeeModel
@@ -76,7 +77,7 @@ class Adapter(Strategy):
         self.bt = BarType(iid, BarSpecification(1, BarAggregation.HOUR, PriceType.LAST), AggregationSource.EXTERNAL)
         self.step, self.tick = Decimal(spec.step), Decimal(spec.tick)
         self.before, self.fills, self.rejected, self.stops, self.last = {}, [], [], set(), 0.0
-        self.split = spec.fill == "next_open"
+        self.split, self.dead = spec.fill == "next_open", False  # dead: likidasyondan sonra hesap sıfırlandı, işlem yok
 
     def pos(self) -> Decimal:
         return sum((Decimal(str(p.signed_qty)).quantize(self.step) for p in self.cache.positions_open()), Decimal(0))  # float gürültüsünü at
@@ -89,8 +90,9 @@ class Adapter(Strategy):
         if self.split and t % HOUR_NS:  # bar gövdesi (ts = kapanış-1ns): karar yok; funding anı T = kapanış
             self.before[t + 1] = pos  # funding için: bu barın içindeki likidasyonlar düşülmüş, T'deki kararlardan önceki pozisyon
             return
-        if not self.split:
-            self.before[t] = pos
+        self.before[t] = pos  # (karar öncesi; açılış tikinde de tutulur: boşluktan sonraki ilk bar için funding anı doğru pozisyonu görür)
+        if self.dead:
+            return
         tgt = self.targets.get(t)
         if tgt is None or math.isnan(tgt) or tgt == self.last:  # hedef değişmedikçe yeniden boyutlama yok (fiyat gürültüsü churn yapmasın)
             return
@@ -104,6 +106,7 @@ class Adapter(Strategy):
 
     def on_order_filled(self, e):
         liq = str(e.client_order_id) in self.stops
+        self.dead |= liq
         self.fills.append(dict(ts=e.ts_event, side=str(e.order_side), qty=float(e.last_qty), px=float(e.last_px), commission=float(e.commission), liq=liq))
         self.cancel_all_orders(self.iid)
         pos = self.pos()
@@ -128,6 +131,8 @@ def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.Da
     """kl: ts(bar açılışı, UTC) indeksli open/high/low/close/volume. Dönüş: {'summary', 'fills', 'rejected'}."""
     if not (kl.index.is_monotonic_increasing and kl.index.is_unique):
         raise ValueError("kl indeksi artan ve tekil olmalı")
+    if len(kl) == 0 or any(d % HOUR_NS for d in np.diff(ns(kl.index))) or ns(kl.index)[0] % HOUR_NS:
+        raise ValueError("kl boş ya da saatlik hizalı değil")
     tape.check_target(kl, target)  # yanlış hizalı/tz'siz hedef sessizce sıfır işleme dönüşmesin
     if funding is not None and funding["last_funding_rate"].isna().any():
         raise ValueError("funding oranında NaN var (QC'den geçmemiş veri)")
