@@ -13,6 +13,9 @@ Aşama 1 (şimdi): sekreter + güncelleme ajanı, salt okunur. Aşama 2 (G2 haz�
 4. Modal token'ı (ağır koşum) ve mühür anahtar çifti (özel anahtar yalnızca sende).
 
 ## Kurulum sırası
+0. Hızlı yol: sunucuda `factory/setup_hermes.sh` (gizli değerler ortam değişkeniyle; doğrulanmadı, hiç koşulmadı).
+   Telegram için BotFather **bot token'ı** ve @userinfobot'tan **sayısal kullanıcı id** gerekir; my.telegram.org'daki
+   `api_id/api_hash` Hermes geçidi için kullanılmaz.
 1. VPS'te ayrı bir OS kullanıcısı (`kepler-agent`): repoya yazabilir ama hakem, denetim, mühür ve
    MISSION dosyaları salt okunur (sahip: sen). Mühür anahtarı bu kullanıcıda yok.
 2. Hermes'i resmî dokümandan kur; sekreter ve müdür için ayrı profil, güncelleme ajanı için cron.
