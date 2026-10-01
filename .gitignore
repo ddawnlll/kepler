@@ -32,3 +32,12 @@ Users/
 # macOS
 .DS_Store
 
+
+# PDF kitaplar (yalniz yerelde; metin books_text/ altinda)
+books/
+*.pdf
+
+# Ham veri ve atilabilir lab (Phase 2 spike; repoda yok)
+data/
+lab/
+*.zip

@@ -1,0 +1,833 @@
+sym,kind,check,severity,detail,count,first
+1000BONKUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1000BONKUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1000BONKUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],5162,2023-11-22 16:00:00+00:00
+1000FLOKIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1000FLOKIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1000FLOKIUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,1,
+1000LUNCUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1000LUNCUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2022-09-26 09:00:00+00:00
+1000LUNCUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+1000LUNCUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1000LUNCUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2022-09-26 09:00:00+00:00
+1000PEPEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1000PEPEUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2024-11-13 13:00:00+00:00
+1000PEPEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1000PEPEUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2024-11-13 13:00:00+00:00
+1000RATSUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1000RATSUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+1000RATSUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1000RATSUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+1000RATSUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],5024,2023-12-15 16:00:00+00:00
+1000SATSUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-03-25 18:00:00+00:00
+1000SATSUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+1000SATSUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-03-25 18:00:00+00:00
+1000SATSUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+1000SATSUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],5042,2023-12-12 16:00:00+00:00
+1000SHIBUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+1MBABYDOGEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1MBABYDOGEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+1MBABYDOGEUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3369,2024-09-16 12:00:00+00:00
+AAVEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+AAVEUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+AAVEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ACTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-04-01 10:00:00+00:00
+ACTUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2025-04-01 10:00:00+00:00
+ACTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-04-01 10:00:00+00:00
+ACTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2025-04-01 10:00:00+00:00
+ACTUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3032,2024-11-11 16:00:00+00:00
+ADAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ADAUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-03-02 15:00:00+00:00
+ADAUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+ADAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ADAUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-03-02 15:00:00+00:00
+AGIXUSDT,markPriceKlines,gap,WARN,"eksik bar: 24 adet, 1 boşluk",1,2023-02-25 00:00:00+00:00
+AGIXUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,15429,2024-06-25 19:00:00+00:00
+AGIXUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2024-06-27 14:00:00+00:00
+AIAUSDT,klines,gap,WARN,"eksik bar: 11 adet, 1 boşluk",1,2026-01-20 11:00:00+00:00
+AIAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,9,2025-09-18 09:00:00+00:00
+AIAUSDT,klines,jump,WARN,|saatlik getiri| > 30%,9,2025-09-18 09:00:00+00:00
+AIAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,8,2025-09-18 09:00:00+00:00
+AIAUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,12,2025-10-02 22:00:00+00:00
+AIAUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",1940,2025-09-18 08:00:00.002000+00:00
+AIAUSDT,fundingRate,gap,WARN,funding kaydı eksik (aralık > bildirilen),1,2026-01-20 07:00:00+00:00
+AIAUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,8,
+AIAUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,941,2025-12-11 11:00:00+00:00
+AIAUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-12-12 02:00:00+00:00
+ALPACAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,9,2025-04-24 04:00:00+00:00
+ALPACAUSDT,klines,jump,WARN,|saatlik getiri| > 30%,8,2024-11-10 06:00:00+00:00
+ALPACAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,9,2025-04-24 04:00:00+00:00
+ALPACAUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,24,2024-11-10 06:00:00+00:00
+ALPACAUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 2, 4]",2801,2024-08-22 12:00:00.001000+00:00
+ALPACAUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,51,
+ALPACAUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,8056,2025-04-24 15:00:00+00:00
+ALPACAUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-04-30 09:00:00+00:00
+APEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+APEUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+APEUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+APEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-03-17 14:00:00+00:00
+APEUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+APTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+APTUSDT,markPriceKlines,gap,WARN,"eksik bar: 24 adet, 1 boşluk",1,2023-02-25 00:00:00+00:00
+APTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-10-19 01:00:00+00:00
+ARBUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ARBUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2023-03-23 13:00:00+00:00
+ARKUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ARKUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",2458,2025-02-17 16:00:00+00:00
+ARKUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,24,
+ARPAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ARPAUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+ARPAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ARPAUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,4,
+ASTERUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-09-19 12:00:00+00:00
+ASTERUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ASTERUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],1161,2025-09-19 12:00:00+00:00
+ATOMUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ATOMUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+ATOMUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+AUCTIONUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+AUCTIONUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2024-05-29 09:00:00+00:00
+AUCTIONUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+AUCTIONUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2024-05-29 09:00:00+00:00
+AUCTIONUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",5086,2023-12-15 16:00:00+00:00
+AUCTIONUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,16,
+AVAXUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-05-11 12:00:00+00:00
+AVAXUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+AVAXUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+AVNTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-09-09 15:00:00+00:00
+AVNTUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2025-09-09 19:00:00+00:00
+AVNTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-09-09 15:00:00+00:00
+AVNTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-09-15 05:00:00+00:00
+AVNTUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],1220,2025-09-09 16:00:00+00:00
+AVNTUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,4,
+AXSUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-11-13 13:00:00+00:00
+AXSUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2022-05-11 13:00:00+00:00
+AXSUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+AXSUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-11-13 13:00:00+00:00
+AXSUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2022-05-11 13:00:00+00:00
+AXSUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",595,2026-01-17 17:00:00.002000+00:00
+AXSUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,4,
+BABYUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-04-09 08:00:00+00:00
+BABYUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BABYUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],2162,2025-04-05 16:00:00+00:00
+BABYUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,7,
+BAKEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-09-03 03:00:00+00:00
+BAKEUSDT,klines,jump,WARN,|saatlik getiri| > 30%,4,2025-02-12 15:00:00+00:00
+BAKEUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+BAKEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,3,2025-09-03 03:00:00+00:00
+BAKEUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,6,2025-02-12 15:00:00+00:00
+BAKEUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,3,
+BAKEUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,4261,2025-10-03 15:00:00+00:00
+BAKEUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-10-05 11:00:00+00:00
+BANDUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BANDUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+BANDUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BANDUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,3,
+BBUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BBUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BBUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],4124,2024-05-13 16:00:00+00:00
+BCHUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+BEATUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-11-20 13:00:00+00:00
+BEATUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2025-11-12 14:00:00+00:00
+BEATUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-11-20 13:00:00+00:00
+BEATUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2025-11-12 14:00:00+00:00
+BEATUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",1173,2025-11-12 12:00:00+00:00
+BEATUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,12,
+BELUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,4,2022-05-29 00:00:00+00:00
+BELUSDT,klines,jump,WARN,|saatlik getiri| > 30%,4,2022-05-29 00:00:00+00:00
+BELUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+BELUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,4,2022-05-29 00:00:00+00:00
+BELUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,4,2022-05-29 00:00:00+00:00
+BELUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
+BELUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,3,2022-05-28 23:00:00+00:00
+BERAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BERAUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2026-02-11 20:00:00+00:00
+BERAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BERAUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2026-02-11 20:00:00+00:00
+BERAUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],2510,2025-02-06 16:00:00+00:00
+BERAUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,6,
+BIGTIMEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2024-01-03 12:00:00+00:00
+BIGTIMEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BIGTIMEUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],5408,2023-10-12 16:00:00+00:00
+BIGTIMEUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2023-12-02 02:00:00+00:00
+BIOUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BIOUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BIOUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",3526,2025-01-03 16:00:00+00:00
+BIOUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,4,
+BLURUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BLURUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BLURUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,3,
+BLZUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-06-07 20:00:00+00:00
+BLZUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2022-08-24 20:00:00+00:00
+BLZUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+BLZUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-06-07 20:00:00+00:00
+BLZUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2022-08-24 20:00:00+00:00
+BLZUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",3844,2023-08-14 12:00:00+00:00
+BLZUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,33,
+BLZUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,11096,2024-12-23 09:00:00+00:00
+BLZUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2024-12-23 09:00:00+00:00
+BNBUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+BNTUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,4,
+BNXUSDT,klines,gap,WARN,"eksik bar: 638 adet, 4 boşluk",4,2022-04-18 00:00:00+00:00
+BNXUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2023-06-10 04:00:00+00:00
+BNXUSDT,klines,jump,WARN,|saatlik getiri| > 30%,3,2025-02-08 14:00:00+00:00
+BNXUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 4 boşluk",4,2022-06-20 00:00:00+00:00
+BNXUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,3,2023-02-22 08:00:00+00:00
+BNXUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,4,2023-02-22 08:00:00+00:00
+BNXUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",779,2025-02-09 16:00:00+00:00
+BNXUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,5,
+BNXUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,9110,2025-03-17 08:00:00+00:00
+BNXUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-03-18 02:00:00+00:00
+BOMEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BOMEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+BOMEUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2024-03-16 09:00:00+00:00
+BOMEUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",4472,2024-03-16 16:00:00+00:00
+BTCUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+CFXUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+CFXUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-07-20 16:00:00+00:00
+CFXUSDT,markPriceKlines,gap,WARN,"eksik bar: 24 adet, 1 boşluk",1,2023-02-25 00:00:00+00:00
+CFXUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+CFXUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-07-20 16:00:00+00:00
+CHZUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+CHZUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+CHZUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+CKBUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+CKBUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+CKBUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
+COAIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,7,2025-09-25 07:00:00+00:00
+COAIUSDT,klines,jump,WARN,|saatlik getiri| > 30%,5,2025-10-06 08:00:00+00:00
+COAIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,7,2025-09-25 07:00:00+00:00
+COAIUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,5,2025-10-06 07:00:00+00:00
+COAIUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",1916,2025-09-25 08:00:00.001000+00:00
+COAIUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,75,
+COMPUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-04-01 07:00:00+00:00
+COMPUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+COMPUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-04-01 07:00:00+00:00
+COMPUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
+CRVUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+CRVUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+CRVUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+CTSIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+CTSIUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2022-05-11 13:00:00+00:00
+CTSIUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+CTSIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+CTSIUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2022-05-11 13:00:00+00:00
+CTSIUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,1,
+CYBERUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2023-09-02 08:00:00+00:00
+CYBERUSDT,klines,jump,WARN,|saatlik getiri| > 30%,3,2023-08-29 21:00:00+00:00
+CYBERUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-08-12 07:00:00+00:00
+CYBERUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2023-08-29 21:00:00+00:00
+CYBERUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [2, 4, 8]",5445,2023-08-31 12:00:00+00:00
+CYBERUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,10,
+CYBERUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2023-09-02 08:00:00+00:00
+DASHUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+DASHUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,9,
+DOGEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+DOGEUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+DOGEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+DOGSUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+DOGSUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2024-08-26 12:00:00+00:00
+DOGSUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3494,2024-08-26 16:00:00+00:00
+DOTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+DOTUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+DOTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+DYDXUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+DYDXUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+DYDXUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+DYDXUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+DYDXUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+EDUUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+EDUUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2024-03-18 17:00:00+00:00
+EDUUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+EDUUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2024-03-18 17:00:00+00:00
+ENAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ENAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ENAUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],4370,2024-04-02 16:00:00+00:00
+ENSUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ENSUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2024-01-03 13:00:00+00:00
+ENSUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+ENSUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ENSUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2024-01-03 13:00:00+00:00
+EOSUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+EOSUSDT,klines,delisted,INFO,son bar 2025-05-21 09:00:00+00:00; delist/duraklatma,0,2025-05-21 09:00:00+00:00
+ETCUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ETCUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+ETCUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ETHFIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ETHFIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ETHFIUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],4460,2024-03-18 16:00:00.001000+00:00
+ETHUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+FARTCOINUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+FARTCOINUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+FARTCOINUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],2797,2024-12-20 20:00:00+00:00
+FETUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+FETUSDT,markPriceKlines,gap,WARN,"eksik bar: 24 adet, 1 boşluk",1,2023-02-25 00:00:00+00:00
+FETUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+FILUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+FILUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2022-12-16 22:00:00+00:00
+FILUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+FILUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+FLMUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+FLMUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,8,2022-06-12 06:00:00+00:00
+FLMUSDT,klines,jump,WARN,|saatlik getiri| > 30%,3,2023-06-21 17:00:00+00:00
+FLMUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+FLMUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,9,2022-06-12 06:00:00+00:00
+FLMUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,3,2022-06-12 22:00:00+00:00
+FLMUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [2, 4, 8]",5167,2023-09-05 20:00:00.001000+00:00
+FLMUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,3,
+FLMUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,3037,2022-06-12 21:00:00+00:00
+FLMUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-11-22 02:00:00+00:00
+FOLKSUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,5,2025-11-06 15:00:00+00:00
+FOLKSUSDT,klines,jump,WARN,|saatlik getiri| > 30%,7,2025-11-06 14:00:00+00:00
+FOLKSUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,5,2025-11-06 15:00:00+00:00
+FOLKSUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,6,2025-11-06 14:00:00+00:00
+FOLKSUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",1230,2025-11-06 12:00:00.001000+00:00
+FOLKSUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,5,
+FTMUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+FTMUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2022-05-11 12:00:00+00:00
+FTMUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+FTMUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2022-05-11 12:00:00+00:00
+FTMUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,10761,2025-01-06 16:00:00+00:00
+FTMUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-01-07 15:00:00+00:00
+FTTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,5,2022-11-08 17:00:00+00:00
+FTTUSDT,klines,jump,WARN,|saatlik getiri| > 30%,4,2022-11-08 17:00:00+00:00
+FTTUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+FTTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,5,2022-11-08 17:00:00+00:00
+FTTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,8,2022-11-08 17:00:00+00:00
+FTTUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [2, 8]",48,2022-11-10 04:00:00.011000+00:00
+FTTUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,15,
+FTTUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,27506,2022-11-14 07:00:00+00:00
+FTTUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2022-11-15 08:00:00+00:00
+FUNUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+FUNUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+FUNUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 2, 4]",2736,2025-03-31 12:00:00+00:00
+FUNUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,41,
+GALAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GALAUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+GALAUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+GALAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GALAUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+GALUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2022-05-11 12:00:00+00:00
+GALUSDT,klines,jump,WARN,|saatlik getiri| > 30%,3,2022-05-11 12:00:00+00:00
+GALUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+GALUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-05-05 12:00:00+00:00
+GALUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2022-05-11 13:00:00+00:00
+GALUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,1,
+GALUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,335,2024-07-12 06:00:00+00:00
+GALUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2024-07-17 04:00:00+00:00
+GALUSDT,klines,delisted,INFO,son bar 2024-07-30 06:00:00+00:00; delist/duraklatma,0,2024-07-30 06:00:00+00:00
+GASUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GASUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GASUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [2, 4, 8]",5370,2023-10-25 04:00:00+00:00
+GASUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,26,
+GIGGLEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2025-10-25 03:00:00+00:00
+GIGGLEUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2025-10-25 03:00:00+00:00
+GIGGLEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,3,2025-10-25 03:00:00+00:00
+GIGGLEUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2025-10-25 03:00:00+00:00
+GIGGLEUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],1041,2025-10-09 12:00:00.002000+00:00
+GIGGLEUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,1,
+GMTUSDT,klines,gap,WARN,"eksik bar: 48 adet, 1 boşluk",1,2022-04-03 00:00:00+00:00
+GMTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GMTUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+GMTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GMTUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",577,2026-01-09 17:00:00.006000+00:00
+GMTUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,4,
+GOATUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GOATUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+GOATUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GOATUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+GOATUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3140,2024-10-24 16:00:00+00:00
+GRTUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+GRTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GRTUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+GRTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GUNUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GUNUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+GUNUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],2192,2025-03-31 16:00:00+00:00
+HBARUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+HBARUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+HBARUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+HBARUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+HIFIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,4,2025-05-08 18:00:00+00:00
+HIFIUSDT,klines,jump,WARN,|saatlik getiri| > 30%,4,2025-05-08 18:00:00+00:00
+HIFIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,5,2025-05-08 18:00:00+00:00
+HIFIUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,5,2025-05-08 18:00:00+00:00
+HIFIUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",4339,2023-09-17 08:00:00+00:00
+HIFIUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,1,
+HIFIUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,4225,2023-09-16 17:00:00+00:00
+HIFIUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-10-07 17:00:00+00:00
+HIGHUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+HIGHUSDT,markPriceKlines,gap,WARN,"eksik bar: 24 adet, 1 boşluk",1,2023-02-25 00:00:00+00:00
+HIGHUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+HIGHUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
+HYPERUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-07-10 03:00:00+00:00
+HYPERUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-07-10 03:00:00+00:00
+HYPERUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-07-10 03:00:00+00:00
+HYPERUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-07-10 03:00:00+00:00
+HYPERUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",2210,2025-04-22 16:00:00+00:00
+HYPERUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,19,
+HYPEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+HYPEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+HYPEUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],1833,2025-05-30 12:00:00.006000+00:00
+IDUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+IDUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2024-02-07 04:00:00+00:00
+IDUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+IDUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2024-02-07 04:00:00+00:00
+IDUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,3,
+INJUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+INJUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+INJUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+INJUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
+IOUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+IOUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+IOUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+IOUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3950,2024-06-11 16:00:00+00:00
+IPUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-02-20 20:00:00+00:00
+IPUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2025-02-20 20:00:00+00:00
+IPUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-02-20 20:00:00+00:00
+IPUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2025-02-20 20:00:00+00:00
+IPUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",3038,2025-02-13 20:00:00+00:00
+IPUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,5,
+JASMYUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+JASMYUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+JASMYUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+JUPUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+JUPUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-01-26 12:00:00+00:00
+JUPUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+JUPUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-01-26 12:00:00+00:00
+JUPUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],4739,2024-02-01 04:00:00+00:00
+KAITOUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-02-20 13:00:00+00:00
+KAITOUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-02-20 21:00:00+00:00
+KAITOUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-02-20 12:00:00+00:00
+KAITOUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-02-20 21:00:00+00:00
+KAITOUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],2426,2025-02-20 16:00:00+00:00
+KAITOUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,7,
+KNCUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+KNCUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2022-09-18 16:00:00+00:00
+KNCUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+KNCUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2022-09-18 16:00:00+00:00
+KNCUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,6,
+LDOUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2023-01-08 20:00:00+00:00
+LDOUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+LDOUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+LIGHTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,6,2025-10-21 16:00:00+00:00
+LIGHTUSDT,klines,jump,WARN,|saatlik getiri| > 30%,7,2025-10-21 16:00:00+00:00
+LIGHTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,6,2025-09-27 11:00:00+00:00
+LIGHTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,7,2025-10-21 16:00:00+00:00
+LIGHTUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",1184,2025-09-26 16:00:00.008000+00:00
+LIGHTUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,14,
+LINAUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+LINAUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+LINAUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,7,
+LINAUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,8871,2025-03-27 09:00:00+00:00
+LINAUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-03-27 09:00:00+00:00
+LINKUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+LINKUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+LINKUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+LOOMUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-03-18 06:00:00+00:00
+LOOMUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,8,2025-04-04 16:00:00+00:00
+LOOMUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",3701,2023-10-11 16:00:00+00:00
+LOOMUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,19,
+LOOMUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,11463,2024-12-09 09:00:00+00:00
+LOOMUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2024-12-09 09:00:00+00:00
+LPTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+LPTUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2022-07-28 18:00:00+00:00
+LPTUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+LPTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+LPTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2022-07-28 18:00:00+00:00
+LPTUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",6345,2023-08-13 12:00:00.001000+00:00
+LPTUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,35,
+LQTYUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+LQTYUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+LQTYUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
+LTCUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+LTCUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+LTCUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+LTCUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+LUNA2USDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-09-14 07:00:00+00:00
+LUNA2USDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2024-05-30 15:00:00+00:00
+LUNA2USDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+LUNA2USDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+LUNA2USDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2024-05-30 15:00:00+00:00
+LUNA2USDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",1246,2025-12-05 17:00:00+00:00
+LUNA2USDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,1,
+LUNAUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+LUNAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,24,2022-05-10 21:00:00+00:00
+LUNAUSDT,klines,jump,WARN,|saatlik getiri| > 30%,17,2022-05-10 21:00:00+00:00
+LUNAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,29,2022-05-10 21:00:00+00:00
+LUNAUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,24,2022-05-10 21:00:00+00:00
+LUNAUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,23,2022-05-11 12:00:00+00:00
+LUNAUSDT,klines,delisted,INFO,son bar 2022-05-13 06:00:00+00:00; delist/duraklatma,0,2022-05-13 06:00:00+00:00
+MANAUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+MANAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+MANAUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+MANAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+MASKUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+MASKUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-06-06 16:00:00+00:00
+MASKUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2022-11-02 04:00:00+00:00
+MASKUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+MASKUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-06-06 16:00:00+00:00
+MASKUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2022-11-02 04:00:00+00:00
+MASKUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",2537,2025-06-07 01:00:00.006000+00:00
+MATICUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+MATICUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-07-08 22:00:00+00:00
+MATICUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,12,2024-09-05 12:00:00+00:00
+MATICUSDT,klines,delisted,INFO,son bar 2024-09-11 09:00:00+00:00; delist/duraklatma,0,2024-09-11 09:00:00+00:00
+MEMEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+MEMEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+MEMEUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],5276,2023-11-03 16:00:00+00:00
+MEMEUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
+MEWUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+MEWUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+MEWUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3914,2024-06-17 16:00:00+00:00
+MKRUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+MKRUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2022-05-11 09:00:00+00:00
+MKRUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+MKRUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2022-05-11 09:00:00+00:00
+MKRUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,4857,2025-09-09 07:00:00+00:00
+MKRUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-09-12 00:00:00+00:00
+MMTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,4,2025-11-04 20:00:00+00:00
+MMTUSDT,klines,jump,WARN,|saatlik getiri| > 30%,6,2025-11-04 13:00:00+00:00
+MMTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,4,2025-11-04 20:00:00+00:00
+MMTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,6,2025-11-04 13:00:00+00:00
+MMTUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],885,2025-11-04 12:00:00+00:00
+MMTUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
+MOODENGUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2024-12-02 15:00:00+00:00
+MOODENGUSDT,klines,jump,WARN,|saatlik getiri| > 30%,3,2024-11-15 08:00:00+00:00
+MOODENGUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,3,2024-12-02 15:00:00+00:00
+MOODENGUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,3,2024-11-15 08:00:00+00:00
+MOODENGUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3135,2024-10-25 12:00:00+00:00
+MTLUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+MTLUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+MTLUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+MTLUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",6,2023-06-07 20:00:00.011000+00:00
+MTLUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,15,
+MYXUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-09-08 10:00:00+00:00
+MYXUSDT,klines,jump,WARN,|saatlik getiri| > 30%,5,2025-08-05 04:00:00+00:00
+MYXUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-09-08 10:00:00+00:00
+MYXUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,5,2025-08-05 04:00:00+00:00
+MYXUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",3186,2025-06-18 12:00:00.003000+00:00
+MYXUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,95,
+MYXUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2025-08-05 10:00:00+00:00
+NEARUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+NEARUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-05-11 12:00:00+00:00
+NEARUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2022-05-11 13:00:00+00:00
+NEARUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+NEARUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+NEIROETHUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2025-09-22 07:00:00+00:00
+NEIROETHUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2025-04-23 03:00:00+00:00
+NEIROETHUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,3,2025-09-22 07:00:00+00:00
+NEIROETHUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,3,2025-04-23 03:00:00+00:00
+NEIROETHUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],2309,2024-09-06 16:00:00+00:00
+NEIROETHUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,4479,2025-09-26 09:00:00+00:00
+NEIROETHUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-09-26 09:00:00+00:00
+NEIROUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+NEIROUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2024-09-17 15:00:00+00:00
+NEIROUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+NEIROUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2024-09-17 15:00:00+00:00
+NEIROUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3369,2024-09-16 12:00:00+00:00
+NEOUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+NEOUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+NEOUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+NIGHTUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],669,2025-12-10 12:00:00+00:00
+NOTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+NOTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+NOTUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],4106,2024-05-16 16:00:00+00:00
+NOTUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,1,
+NXPCUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+NXPCUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-05-15 06:00:00+00:00
+NXPCUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],1924,2025-05-15 08:00:00.003000+00:00
+OCEANUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+OCEANUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+OCEANUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,15433,2024-06-25 18:00:00+00:00
+OCEANUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2024-06-27 11:00:00+00:00
+OMUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,4,2025-04-13 18:00:00+00:00
+OMUSDT,klines,jump,WARN,|saatlik getiri| > 30%,4,2025-04-13 18:00:00+00:00
+OMUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,4,2025-04-13 18:00:00+00:00
+OMUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,4,2025-04-13 18:00:00+00:00
+OMUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",4622,2024-02-13 16:00:00+00:00
+OMUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,8,
+OMUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,66,2026-02-23 20:00:00+00:00
+OMUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2026-02-24 04:00:00+00:00
+ONEUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+ONEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-05-11 12:00:00+00:00
+ONEUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2022-05-11 12:00:00+00:00
+ONEUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+ONEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2022-05-11 12:00:00+00:00
+ONEUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2022-05-11 12:00:00+00:00
+ONGUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ONGUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ONGUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],5132,2023-11-27 16:00:00+00:00
+ONGUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,8,
+OPUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+OPUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+OPUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ORDIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ORDIUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+ORDIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ORDIUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+ORDIUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],5252,2023-11-07 16:00:00+00:00
+PENGUUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+PENGUUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+PENGUUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",2815,2024-12-17 20:00:00+00:00
+PEOPLEUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+PEOPLEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,5,2022-05-11 12:00:00+00:00
+PEOPLEUSDT,klines,jump,WARN,|saatlik getiri| > 30%,7,2022-05-11 12:00:00+00:00
+PEOPLEUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+PEOPLEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,5,2022-05-11 12:00:00+00:00
+PEOPLEUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,7,2022-05-11 12:00:00+00:00
+PERPUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+PERPUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+PERPUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2025-12-08 00:00:00+00:00
+PERPUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",4626,2023-10-12 12:00:00.001000+00:00
+PERPUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,4,
+PERPUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,2976,2025-11-21 11:00:00+00:00
+PERPUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-11-25 12:00:00+00:00
+PIPPINUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,6,2025-10-10 21:00:00+00:00
+PIPPINUSDT,klines,jump,WARN,|saatlik getiri| > 30%,10,2025-10-10 21:00:00+00:00
+PIPPINUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,4,2025-10-10 21:00:00+00:00
+PIPPINUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,9,2025-10-10 21:00:00+00:00
+PIPPINUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",3912,2025-01-24 12:00:00.001000+00:00
+PIPPINUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,16,
+PNUTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+PNUTUSDT,klines,jump,WARN,|saatlik getiri| > 30%,3,2024-11-13 02:00:00+00:00
+PNUTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+PNUTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,3,2024-11-13 02:00:00+00:00
+PNUTUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3032,2024-11-11 16:00:00+00:00
+POPCATUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+POPCATUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+POPCATUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3518,2024-08-22 16:00:00.008000+00:00
+POWERUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2026-02-26 08:00:00+00:00
+POWERUSDT,klines,jump,WARN,|saatlik getiri| > 30%,3,2026-02-24 14:00:00+00:00
+POWERUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,3,2026-02-26 08:00:00+00:00
+POWERUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,4,2025-12-06 09:00:00+00:00
+POWERUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",878,2025-12-06 12:00:00+00:00
+POWERUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,14,
+PUMPUSDT,klines,gap,WARN,"eksik bar: 7 adet, 1 boşluk",1,2025-07-10 07:00:00+00:00
+PUMPUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+PUMPUSDT,markPriceKlines,gap,WARN,"eksik bar: 7 adet, 1 boşluk",1,2025-07-10 07:00:00+00:00
+PUMPUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-07-10 07:00:00+00:00
+PUMPUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],1995,2025-04-12 16:00:00+00:00
+PUMPUSDT,fundingRate,gap,WARN,funding kaydı eksik (aralık > bildirilen),1,2025-07-10 08:00:00+00:00
+PUMPUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,589,2025-06-13 16:00:00+00:00
+PUMPUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-06-15 17:00:00+00:00
+RAREUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+RAREUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+RAREUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+RAREUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+RAREUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3560,2024-08-15 16:00:00+00:00
+RAREUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,38,
+REEFUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+REEFUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",1477,2024-10-16 08:00:00.001000+00:00
+REEFUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,8,
+REEFUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,10406,2025-01-22 10:00:00+00:00
+REEFUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-01-22 10:00:00+00:00
+RIVERUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2026-02-01 23:00:00+00:00
+RIVERUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2026-02-01 23:00:00+00:00
+RIVERUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",2024,2025-10-17 16:00:00.003000+00:00
+RIVERUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,65,
+RNDRUSDT,markPriceKlines,gap,WARN,"eksik bar: 24 adet, 1 boşluk",1,2023-02-25 00:00:00+00:00
+RNDRUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,72,2024-07-17 19:00:00+00:00
+RNDRUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2024-07-24 21:00:00+00:00
+RNDRUSDT,klines,delisted,INFO,son bar 2024-07-30 06:00:00+00:00; delist/duraklatma,0,2024-07-30 06:00:00+00:00
+RSRUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+RSRUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+RSRUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2024-12-04 17:00:00+00:00
+RSRUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+RSRUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+RSRUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2024-12-04 17:00:00+00:00
+RUNEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+RUNEUSDT,markPriceKlines,gap,WARN,"eksik bar: 72 adet, 3 boşluk",3,2022-08-01 00:00:00+00:00
+RUNEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+RVNUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+RVNUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-06-05 07:00:00+00:00
+RVNUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-06-05 07:00:00+00:00
+RVNUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+RVNUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-06-05 07:00:00+00:00
+RVNUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-06-05 07:00:00+00:00
+RVNUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",2569,2025-06-05 17:00:00.003000+00:00
+RVNUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
+SANDUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+SANDUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+SANDUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+SANDUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+SEIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+SEIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+SIRENUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,16,2025-06-21 03:00:00+00:00
+SIRENUSDT,klines,jump,WARN,|saatlik getiri| > 30%,9,2025-06-21 03:00:00+00:00
+SIRENUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,13,2025-06-21 03:00:00+00:00
+SIRENUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,10,2025-06-21 03:00:00+00:00
+SIRENUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",2415,2025-03-22 12:00:00.013000+00:00
+SIRENUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
+SOLUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+SOLUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+SOLUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [2, 4, 8]",101,2022-11-09 20:00:00.018000+00:00
+SOLUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,11,
+SOMIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2025-08-25 09:00:00+00:00
+SOMIUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-01 04:00:00+00:00
+SOMIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-09-02 14:00:00+00:00
+SOMIUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-01 04:00:00+00:00
+SOMIUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],1311,2025-08-25 12:00:00+00:00
+SOMIUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2025-09-01 08:00:00+00:00
+STMXUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2023-07-23 04:00:00+00:00
+STMXUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+STMXUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,4,2022-08-11 15:00:00+00:00
+STMXUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,5,2023-07-23 04:00:00+00:00
+STMXUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [2, 4, 8]",3722,2023-07-23 10:00:00+00:00
+STMXUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,17,
+STMXUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,8911,2022-12-03 08:00:00+00:00
+STMXUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-02-21 18:00:00+00:00
+STORJUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+STORJUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+STORJUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+STORJUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+STORJUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",695,2025-12-28 01:00:00+00:00
+STORJUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,4,
+STXUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+STXUSDT,markPriceKlines,gap,WARN,"eksik bar: 24 adet, 1 boşluk",1,2023-02-25 00:00:00+00:00
+STXUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+SUIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+SUIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+SUNUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3518,2024-08-22 16:00:00.008000+00:00
+SUSHIUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+SUSHIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+SUSHIUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+SUSHIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+SXPUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+SXPUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+SXPUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+SXPUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2026-02-21 06:00:00+00:00
+SXPUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,9,
+SXPUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,2253,2025-12-05 16:00:00+00:00
+SXPUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-12-05 20:00:00+00:00
+TIAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+TIAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+TIAUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],5293,2023-10-31 20:00:00+00:00
+TOMOUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2023-05-28 22:00:00+00:00
+TOMOUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+TOMOUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2023-05-28 22:00:00+00:00
+TOMOUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,4647,2023-11-16 06:00:00+00:00
+TOMOUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2023-11-16 06:00:00+00:00
+TOMOUSDT,klines,delisted,INFO,son bar 2024-05-28 07:00:00+00:00; delist/duraklatma,0,2024-05-28 07:00:00+00:00
+TONUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+TONUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+TONUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",4562,2024-03-01 16:00:00+00:00
+TRBUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+TRBUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,5,2022-06-07 21:00:00+00:00
+TRBUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2022-06-07 21:00:00+00:00
+TRBUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+TRBUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,4,2022-06-07 21:00:00+00:00
+TRBUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2022-06-07 21:00:00+00:00
+TRBUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",5409,2023-10-12 12:00:00.001000+00:00
+TRBUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,51,
+TRBUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,2,2023-12-31 21:00:00+00:00
+TRUMPUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-01-19 21:00:00+00:00
+TRUMPUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2025-01-18 14:00:00+00:00
+TRUMPUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-01-19 21:00:00+00:00
+TRUMPUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2025-01-18 14:00:00+00:00
+TRUMPUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],2624,2025-01-18 16:00:00+00:00
+TRXUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+TRXUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+TSTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2025-05-30 17:00:00+00:00
+TSTUSDT,klines,jump,WARN,|saatlik getiri| > 30%,3,2025-02-22 16:00:00+00:00
+TSTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,3,2025-05-30 17:00:00+00:00
+TSTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,4,2025-02-22 16:00:00+00:00
+TSTUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],2492,2025-02-09 16:00:00+00:00
+TURBOUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+TURBOUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+TURBOUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],4022,2024-05-30 16:00:00+00:00
+TURBOUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,4,
+UMAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+UMAUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+UMAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+UMAUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+UMAUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",4812,2024-01-20 00:00:00+00:00
+UMAUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,14,
+UNFIUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+UNFIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,6,2022-05-11 12:00:00+00:00
+UNFIUSDT,klines,jump,WARN,|saatlik getiri| > 30%,7,2022-06-07 19:00:00+00:00
+UNFIUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+UNFIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,5,2022-06-07 20:00:00+00:00
+UNFIUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,7,2022-06-07 19:00:00+00:00
+UNFIUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [4, 8]",3696,2023-10-12 12:00:00.001000+00:00
+UNFIUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,9,
+UNFIUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,12394,2024-10-31 00:00:00+00:00
+UNFIUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2024-10-31 00:00:00+00:00
+UNIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+UNIUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2024-02-23 14:00:00+00:00
+UNIUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+UNIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+UNIUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2024-02-23 14:00:00+00:00
+UXLINKUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-09-22 17:00:00+00:00
+UXLINKUSDT,klines,jump,WARN,|saatlik getiri| > 30%,4,2024-12-25 02:00:00+00:00
+UXLINKUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-09-22 17:00:00+00:00
+UXLINKUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,6,2024-12-25 02:00:00+00:00
+UXLINKUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],2255,2024-09-15 16:00:00+00:00
+UXLINKUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,14,
+UXLINKUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,4420,2025-09-26 12:00:00+00:00
+UXLINKUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-09-29 10:00:00+00:00
+VIRTUALUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+VIRTUALUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+VIRTUALUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],2858,2024-12-10 16:00:00+00:00
+VOXELUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+VOXELUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-04-30 09:00:00+00:00
+VOXELUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-04-20 02:00:00+00:00
+VOXELUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2025-04-03 07:00:00+00:00
+VOXELUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 2, 4]",4475,2024-08-20 12:00:00+00:00
+VOXELUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,20,
+VOXELUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,2620,2025-12-10 18:00:00+00:00
+VOXELUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2025-12-12 15:00:00+00:00
+WAVESUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+WAVESUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2022-05-11 13:00:00+00:00
+WAVESUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+WAVESUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+WAVESUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2022-05-11 13:00:00+00:00
+WAVESUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,14930,2024-06-11 10:00:00+00:00
+WAVESUSDT,klines~mark,usable_window_truncated,WARN,24+ ardışık bar kline~mark >5%: veri bu andan itibaren kullanılamaz,0,2024-06-11 10:00:00+00:00
+WCTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+WCTUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-04-16 05:00:00+00:00
+WCTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+WCTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-04-16 05:00:00+00:00
+WCTUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4]",2970,2025-04-15 12:00:00+00:00
+WCTUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,7,
+WIFUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+WIFUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-10 21:00:00+00:00
+WIFUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+WIFUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],4820,2024-01-18 16:00:00+00:00
+WLDUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+WLDUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+WLFIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-08-23 08:00:00+00:00
+WLFIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2025-08-23 08:00:00+00:00
+WLFIUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],1323,2025-08-23 12:00:00+00:00
+XLMUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+XLMUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+XLMUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+XLMUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+XMRUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+XPLUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+XPLUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+XPLUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],1329,2025-08-22 12:00:00.001000+00:00
+XRPUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+XRPUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+XRPUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+XRPUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+YGGUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2023-08-05 14:00:00+00:00
+YGGUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-15 05:00:00+00:00
+YGGUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,3,2023-08-05 14:00:00+00:00
+YGGUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2025-10-15 05:00:00+00:00
+YGGUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [2, 4, 8]",5421,2023-08-07 14:00:00+00:00
+YGGUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,3,
+YGGUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2023-08-07 12:00:00+00:00
+ZECUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+ZECUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+ZECUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,4,
+ZILUSDT,klines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2022-03-01 00:00:00+00:00
+ZILUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ZILUSDT,markPriceKlines,gap,WARN,"eksik bar: 48 adet, 2 boşluk",2,2022-10-03 00:00:00+00:00
+ZILUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ZILUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [1, 4, 8]",511,2026-02-02 17:00:00+00:00
+ZILUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
+ZROUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ZROUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2025-10-10 21:00:00+00:00
+ZROUSDT,fundingRate,funding_interval_not_8h,INFO,8 saat dışı aralık kullanılmış: [4],3896,2024-06-20 16:00:00+00:00
+ZROUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,2,
