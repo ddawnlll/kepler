@@ -75,7 +75,7 @@ yazar ve deneme sayacına girer (§6.6).
   endeks sıralamadan önce çıkarılır.
 - **Kullanılabilirlik kesimi:** kline–mark ≥24 ardışık bar >%5 ayrışırsa sembolün verisi o andan sonra kullanılmaz
   (`qc.divergence_cutoff`, `tape.load` uygular). 28 sembol kesildi.
-- **Türetme:** `tape.aggregate(kl, "4h" | "1D")`; eksik bar sayısı `n` sütununda.
+- **Türetme:** `tape.aggregate(kl, "4h" | "1D")`; eksik bar sayısı `n` sütununda. Gerçek veride (BTCUSDT 37 224 saat → 9 306 4h / 1 551 1D) hacim, ilk açılış, son kapanış, high/low ve bar sayısı korunuyor (`reports/backtest_completion.md` madde 4b).
 - **Bilinen sınırlar:** klines'ta %0,10 eksik bar; 77 sembolde |funding| > %1 anları (gerçek mi hata mı UNKNOWN);
   sembol kuralları (tick, lot, min notional, bakım marjı kademeleri) **UNKNOWN**, arşivde yok.
 - **Hayatta kalma yanlılığı:** çekirdek-5 / genişletilmiş-9 bugün bilinen "hayatta kalan" majörlerdir; sonuçları
@@ -227,6 +227,7 @@ Sonuç: dış OOS parçaları birleştirilir; başarı kartı bu birleşik OOS s
 
 ### 8.3 Purge / embargo / CPCV [YOK, koşullu]
 - Kural tabanlı sinyallerde ileri getiri etiketi yoktur; sızıntıyı §7 nedensellik denetimi engeller. Purge/embargo gerekmez.
+- **[YOK] gerekçesi:** purge/embargo/CPCV ileri getiri etiketi çakışmasını giderir; kural tabanlı sinyallerde etiket yok, sızıntıyı §7 nedensellik denetimi (geleceği bozunca geçmiş kararlar değişmez) engeller. Bilinen artık: CSCV ve nested yarıyıl bloklarında pozisyon blok sınırını aşar (komşu bloklar arasında seri bağımlılık; etkisi ölçülmedi, UNKNOWN).
 - **Koşul:** ileri getiri etiketi kullanan ML modeli eklenirse: purge = eğitimde etiket aralığı test aralığıyla kesişen örnekler atılır;
   embargo = her test bloğundan sonra en uzun etiket ufku kadar (en az 1 gün) eğitim örneği atılır; Purged K-fold yalnızca model
   karşılaştırması için, kronolojik walk-forward'un yerine değil, ona ek olarak; CPCV ek sağlamlık incelemesi olarak yorumlanır.
@@ -400,11 +401,16 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 | Hayatta kalma yanlılığı | Evrenler bugünkü majörler; iyimser yön |
 | Tek rejim | 2022–2026, çoğunlukla ayı sonrası boğa |
 | Panel sinyallerinde nedensellik denetimi | `audit.check_causal_book` (tüm panel bozulur), tests/test_trust.py'de |
+| Stop dolum kayması | UNKNOWN; hakem stopu seviyeden doldurur (gap hariç), slippage komisyon kalemi. Üst gösterge: stop dolum barının seviyeyi aşma payı ort. 50–230 bps, FTX'te maks 563 bps; PnL etkisi hesaplanmadı |
+| Karekök etki katsayısı Y | UNKNOWN; Y = 1 birincil, 0,5/2 duyarlılık. Etki maliyeti 100k'da bile brüt PnL'nin %1–2'si; kapasiteyi belirleyen katılım payı (> %0,1) |
+| İşlem sırası MC varsayımı | İşlem getirileri bağımsız varsayılır; gerçek ardışık zarar serisi MC %99'unun üstünde (zarar kümelenmesi, S1 32 > 31, S2 38 > 33); işlem-seviyesi equity yalnızca gerçekleşmiş PnL (saatlik DD ≈ 2–2,5x), s* iyimser |
+| Kill switch eşiği | Planlanan %1 risk/birimde %25 eşik hafta içinde tetiklenir (tam Turtle S1 2022-04-11, S2 2022-05/08); ölçekli boyut (s* ≈ 0,15–0,17) önerisi test edilmedi |
 
 ## 15. Değişiklik kaydı
 
 | Tarih | Değişiklik |
 |---|---|
+| 2026-10-02 | Tamamlama: tarihsel stres, işlem sırası MC, kapasite/karekök etki, `Spec.equity_scale` + portföy kill switch, PBO/CSCV, SPA, nested walk-forward kodlandı, testlendi ve gerçek veride kullanıldı (`reports/backtest_completion.md`); [PLANLI]/[KISMEN] kalmadı; yeni [YOK] gerekçeleri (limit emir, cross-margin, purge/CPCV, StepM/MCS, sentetik) yazıldı; `vol_target`/`aggregate`/`sharpe_series` gerçek veride kullanıldı (ön kayıt 4b) |
 | 2026-10-02 | Tam Turtle koşusu: NO_EDGE (K1); kart değişmedi |
 | 2026-10-02 | Bağımsız inceleme (Motor v2) 6 bulgu giderildi: `report.hourly_pnl` gövde dolumları, brüt tavan artıran hedefi azaltmaya çeviremez, funding'de gap stopu, kısmi stop dolumunda yeniden emir yok, turtle veri boşlukları + mark H/L + tick + iki geçiş; regresyon testleri |
 | 2026-10-02 | Değerlendirme araçları (`stats.py`, `robust.py`): PSR/DSR/MinTRL, block bootstrap, NW alfa, al-tut, komşuluk, başlangıç kaydırma, nedensel rejim, rotasyon kaydırma, karar kuralı; testler madde 19–24 |
