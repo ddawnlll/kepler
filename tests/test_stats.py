@@ -144,7 +144,7 @@ def test_nw_lrv_and_spa_hand_values():
     rng = np.random.default_rng(3)
     z = rng.normal(0, 1, (300, 6))
     a, b = stats.spa(z, B=400, seed=1), stats.spa(z, B=400, seed=1)
-    assert a == {**b, "t": a["t"]} or all(a[k] == b[k] for k in ("stat", "p_lower", "p_consistent", "p_upper"))
+    assert all(a[k] == b[k] for k in ("stat", "p_lower", "p_consistent", "p_upper"))
     assert a["p_lower"] <= a["p_consistent"] <= a["p_upper"] and a["p_consistent"] > 0.05  # sinyalsiz gürültü: reddedilmez
     z[:, 2] += 0.5  # t ≈ √300·0.5 = 8,7: güçlü üstünlük -> p ≈ 0
     s = stats.spa(z, B=400, seed=1)

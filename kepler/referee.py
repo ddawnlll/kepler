@@ -52,6 +52,7 @@ class Spec:
     close_out: bool = True  # açık pozisyonu son kapanıştan çıkış fee+slip ile değerle
     delay: int = 0  # ek gecikme (bar): dolum karardan sonraki (1 + delay). mevcut barda; stres testi (K3)
     gross_cap: float | None = None  # toplam brüt notional tavanı (USDT); artıran emir kalan alana küçülür (portföy, §6.5)
+    equity_scale: bool = False  # True: yeni/değişen hedef notional (ve gross_cap) x equity / capital, equity = bakiye + gerçekleşmemiş PnL, emir anında (BACKTEST §5.1)
 
 
 def ns(index) -> list[int]:
@@ -84,6 +85,11 @@ class Adapter(Strategy):
     def pos(self, k) -> Decimal:
         return sum((Decimal(str(p.signed_qty)).quantize(self.B[k]["step"]) for p in self.cache.positions_open(instrument_id=self.B[k]["iid"])), Decimal(0))  # float gürültüsünü at
 
+    def equity(self) -> float:
+        """Bakiye + gerçekleşmemiş PnL (son görülen fiyatla); hakem özetindeki net = equity - capital ile aynı tanım."""
+        return float(self.portfolio.account(VENUE).balance_total(USDT)) + sum(float(self.pos(j)) * (self.px[j] - float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open))
+                                                                                  for j in self.B if self.pos(j) != 0 and self.px.get(j))
+
     def on_start(self):
         for b in self.B.values():
             self.subscribe_bars(b["bt"])
@@ -107,9 +113,10 @@ class Adapter(Strategy):
                 del self.halt[k]  # ters ya da flat sinyal: stop kilidi açılır
             if k not in self.halt and tgt != self.last[k]:  # hedef değişmedikçe yeniden boyutlama yok (fiyat gürültüsü churn yapmasın)
                 self.last[k] = tgt
-                want = (Decimal(str(abs(tgt))) / px).quantize(b["step"], rounding=ROUND_DOWN) * d
+                f = max(self.equity() / self.spec.capital, 0.0) if self.spec.equity_scale else 1.0
+                want = (Decimal(str(abs(tgt) * f)) / px).quantize(b["step"], rounding=ROUND_DOWN) * d
                 if self.spec.gross_cap and abs(want) > abs(pos):  # toplam brüt tavan: artıran emir kalan alana küçülür
-                    room = self.spec.gross_cap - sum(abs(float(self.pos(j))) * self.px[j] for j in self.B if j != k and self.px.get(j))
+                    room = self.spec.gross_cap * f - sum(abs(float(self.pos(j))) * self.px[j] for j in self.B if j != k and self.px.get(j))
                     want = max(min(abs(want), (Decimal(str(max(room, 0.0))) / px).quantize(b["step"], rounding=ROUND_DOWN)), abs(pos) if pos * d > 0 else 0) * d  # mevcut pozisyon küçülmez
                 delta = want - pos
                 reducing = want == 0 or (want * pos > 0 and abs(want) < abs(pos))
