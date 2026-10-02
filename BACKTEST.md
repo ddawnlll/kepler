@@ -202,7 +202,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 Parametre seçimi yoksa eğitim de yoktur. Karar **tüm dev dönemi** üzerinden null'a karşı verilir; walk-forward pencereleri
 yalnızca **zamansal dağılımı** göstermek için raporlanır (K6).
 - Raporlama pencereleri (anchored değil, ardışık yarıyıllar): 2023-H1, 2023-H2, 2024-H1, 2024-H2, 2025-H1, 2025-H2, 2026-Q1.
-- Isınma: en uzun geri bakış (ör. 365 gün) kadar başlangıç işlemsiz kalır; DSR günlük serisinde ısınma günleri dışlanır [PLANLI düzeltme; G2'de sıfır PnL olarak dahildi].
+- Isınma: en uzun geri bakış (ör. 365 gün) kadar başlangıç işlemsiz kalır; DSR/Sharpe günlük serisinde ısınma günleri dışlanır [VAR: `stats.sharpe_series(warmup_days)`; G2'de sıfır PnL olarak dahildi, o sonuçlar değişmedi].
 
 ### 8.2 Seçim yapan araştırma: nested walk-forward [PLANLI]
 Parametre veya model seçen her test bu yapıyı kullanır; seçim prosedürünün kendisi test edilir.
@@ -249,18 +249,18 @@ yeni veridir.
   SR = ort(r)/std(r), çarpıklık γ3, basıklık γ4, gözlem T;
   SR0 = std(denemelerin SR'leri) × [(1−γ)·Φ⁻¹(1 − 1/N) + γ·Φ⁻¹(1 − 1/(N·e))], γ = 0,5772;
   DSR = Φ( (SR − SR0)·√(T−1) / √(1 − γ3·SR + (γ4−1)/4·SR²) ). Eşik ≥ 0,95.
-- **PSR [PLANLI]:** aynı formül, SR0 = 0 (ya da belirlenen eşik).
-- **MinTRL [PLANLI, raporda]:** MinTRL = 1 + (1 − γ3·SR + (γ4−1)/4·SR²)·(z_α / (SR − SR*))². Normal getiri, SR* = 0, α = %5 için
+- **PSR [VAR]** (`stats.psr`): aynı formül, SR0 = 0 (ya da belirlenen eşik). `stats.dsr(r, trial_srs)`, `stats.sr0_from_trials`.
+- **MinTRL [VAR, `stats.min_trl`; raporda]:** MinTRL = 1 + (1 − γ3·SR + (γ4−1)/4·SR²)·(z_α / (SR − SR*))². Normal getiri, SR* = 0, α = %5 için
   yaklaşık: yıllık SR 0,7 → ~5,5 yıl; 1,0 → ~2,7 yıl; 1,5 → ~1,2 yıl. Elimizde ~3 yıl OOS benzeri veri var: SR ≲ 1 kanıtlanamaz.
 - **Reality Check / SPA / StepM / MCS [YOK, koşullu]:** çok sayıda aday benchmark'a karşı karşılaştırılırsa (H4, 7/24 arama) SPA eklenir (`arch` paketi).
 - **PBO / CSCV [PLANLI, H4]:** otomatik aramada eğitim kazananının testte medyanın altına düşme olasılığı; arama-tabanlı her rapor için.
 
-### 9.3 Block bootstrap [PLANLI]
+### 9.3 Block bootstrap [VAR] (`stats.stationary_bootstrap`, `stats.bootstrap_summary`)
 - Stationary bootstrap (Politis–Romano), günlük net getiri, ortalama blok 20 gün, 2000 tekrar, sabit tohum.
-- Çıktı: yıllık Sharpe %5/%50/%95, maks DD %50/%95, toplam getiri aralığı. K4 bu çıktıyla değerlendirilir.
+- Çıktı: yıllık Sharpe %5/%50/%95, maks DD %50/%95, toplam getiri aralığı. K4 bu çıktıyla değerlendirilir. DD tanımı: toplamsal equity (sabit sermaye = 1, bileşik yok), tepe (başlangıç 0 dahil) − equity'nin en büyüğü.
 - Blok uzunluğu duyarlılığı (10/20/40 gün) raporlanır, karar 20 günle verilir.
 
-### 9.4 Benchmark [PLANLI]
+### 9.4 Benchmark [VAR] (`robust.buy_hold`, `stats.nw_alpha`)
 - **Al-tut:** aynı evrende eşit notional long, aynı toplam notional, aynı hakemle (fee, slip, funding dahil), pencere başında al, sonunda kapat.
 - **Alfa:** günlük r_strateji = a + b · r_al-tut + e; a'nın t istatistiği Newey–West (gecikme 5) ile. K2: t(a) ≥ 2 ve SR_strateji > SR_al-tut.
 - Ayrıca "nakit" (sıfır) referansı her tabloda.
@@ -272,13 +272,13 @@ Her test: ne yapılır, ön kayıtta ne yazılır, hangi karta bağlı, N'ye gir
 | Test | Prosedür (sabit) | Kart | N'ye girer | Durum |
 |---|---|---|---|---|
 | Null / placebo | §9.1 | K1 | Hayır | [VAR] |
-| Maliyet stresi | Fee 4/9/10/11/16 × slip 2/6; ek: 1 bar gecikme (dolum 2. sonraki açılış) | K3 | Hayır | [KISMEN] gecikme [PLANLI] |
-| Block bootstrap | §9.3 | K4 | Hayır | [PLANLI] |
-| Parametre duyarlılığı | Seçilen her parametre ±%10 ve ±%20 (tamsayıya yuvarlanmış, tekrarlar atılır); tam ızgara ön kayıtta | K5 | Hayır (seçim yapılmazsa) | [PLANLI] |
-| Pencere / başlangıç | Yarıyıl pencereleri (§8.1) + başlangıç 0/1/2/3 ay kaydırma | K6 | Hayır | [KISMEN] kaydırma [PLANLI] |
+| Maliyet stresi | Fee 4/9/10/11/16 × slip 2/6; ek: 1 bar gecikme (dolum 2. sonraki açılış; `Spec.delay=1`) | K3 | Hayır | [VAR] |
+| Block bootstrap | §9.3 | K4 | Hayır | [VAR] |
+| Parametre duyarlılığı | Seçilen her parametre ±%10 ve ±%20 (tamsayıya yuvarlanmış, tekrarlar atılır); tam ızgara ön kayıtta (`robust.neighbors`: tam kartezyen, seçilen hariç) | K5 | Hayır (seçim yapılmazsa) | [VAR] |
+| Pencere / başlangıç | Yarıyıl pencereleri (§8.1) + başlangıç 0/1/2/3 ay kaydırma | K6 | Hayır | [VAR] (`robust.shift_windows`) |
 | Çapraz varlık | Ön kayıtlı, kullanılmamış sembol kümesi (kural: aylık top-20'de ≥ 8 ay, evren dışı, ilk bar ≤ 2023-07-01, kesim yok); korele olduğu için tek başına kanıt değil | K7 | Hayır | [VAR] (replikasyon) |
-| Ablasyon | Stop, boyutlama, filtre, piramitleme tek tek kapatılır; aynı seçim prosedürü | K8 | Evet (her varyant bir deneme) | [PLANLI] |
-| Rejim | Nedensel rejim: 200 günlük EMA'nın 30 günlük eğimi ve fiyatın EMA'ya göre konumu → boğa / ayı / yatay; BTC'ye göre tanımlanır, o an bilinen veriyle | K9 | Hayır | [PLANLI] |
+| Ablasyon | Stop, boyutlama, filtre, piramitleme tek tek kapatılır; aynı seçim prosedürü | K8 | Evet (her varyant bir deneme) | [VAR: Turtle'da `turtle_book` bayrakları stop/pyramid/limits/fixed] |
+| Rejim | Nedensel rejim: 200 günlük EMA'nın 30 günlük eğimi ve fiyatın EMA'ya göre konumu → boğa / ayı / yatay; BTC'ye göre tanımlanır, o an bilinen veriyle (`robust.regime`: etiket[d] ≤ d−1 verisi; eğim > 0 & EMA üstü = bull, eğim < 0 & EMA altı = bear, diğer = range) | K9 | Hayır | [VAR] |
 | Tarihsel stres | 2022-05 LUNA, 2022-11 FTX, 2024-08 çöküşü, dev dönemindeki en büyük 3 likidasyon dalgası (veriden: en büyük günlük düşüş) | Rapor | Hayır | [PLANLI] |
 | İşlem sırası Monte Carlo | İşlem PnL'leri 5000 kez karıştırılır; DD ve en uzun kayıp serisi dağılımı; kill switch eşiğinin girdisi | Rapor | Hayır | [PLANLI] |
 | Kapasite | Her emrin notional'ı / o saatin quote hacmi ≤ %0,1; aşan emir sayısı raporlanır | Rapor | Hayır | [PLANLI] |
@@ -327,7 +327,7 @@ Arama + doğrulama + replikasyon: K1 kalıyor → NO_EDGE.
 
 Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle karşılaştıran test sayılmaz.
 
-### 12.2 Motor v2 testleri [VAR: 1–18, 25 yazıldı] (her birinin beklenen değeri elle)
+### 12.2 Motor v2 testleri [VAR: 1–25 yazıldı; 1–8 tests/test_stops.py, 9–13 + 25 test_portfolio.py, 14–18 test_turtle.py, 19–24 test_stats.py] (her birinin beklenen değeri elle)
 **Strateji stopu (V1)**
 1. Long 100'den, stop 95; gövde L = 94, açılış 99 → dolum 95 − slip; PnL elle.
 2. Gap: açılış 90 (stopun altında) → dolum 90 (açılış), 95 değil.
@@ -387,5 +387,6 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 
 | Tarih | Değişiklik |
 |---|---|
+| 2026-10-02 | Değerlendirme araçları (`stats.py`, `robust.py`): PSR/DSR/MinTRL, block bootstrap, NW alfa, al-tut, komşuluk, başlangıç kaydırma, nedensel rejim, rotasyon kaydırma, karar kuralı; testler madde 19–24 |
 | 2026-10-02 | Motor v2 (V1–V3) kodlandı: §4 kitap sözleşmesi, §5.2, §6.4 (tek koruyucu emir, gap, halt), §6.5 (brüt tavan hakemde), Spec.delay/gross_cap; madde 1–18 ve 25 testleri |
 | 2026-10-02 | v1: G0–G2 ve arama sonrası mevcut mimari, Motor v2 tasarımı, başarı kartı (MISSION'dan taşındı), test senaryoları |
