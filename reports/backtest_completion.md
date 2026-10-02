@@ -7,7 +7,7 @@
 ## Doğrulama ve sayımlar
 - Taban koşu tam Turtle S1/S2'yi birebir yeniden üretti: net 39 397,7 / 27 641,1 (beklenen 39 398 / 27 641); saatlik PnL yeniden kurulumu farkı 1,06 / 0,00 USDT.
 - Testler: `modal run modal_app.py --cmd "pytest -q"` → **202 geçti, 1 atlandı** (gerçek ağ testi; önceki 187 + 15 yeni). Yeni testler (elle hesaplı): `tests/test_stats.py` (+3), `test_stress.py` (2), `test_capacity.py` (2), `test_nested.py` (4), `test_portfolio.py` (+2, `equity_scale`), `test_ops.py` (+1, açık bacak).
-- Hakem+yapıştırma satırı: **473** (Motor v2 sonu 467; referee.py +6: `Spec.equity_scale`, `Adapter.equity()`); tavan 600. Veri/QC/mühür araçlarına dokunulmadı.
+- Hakem+yapıştırma satırı: **473** (Motor v2 sonu 467; referee.py +6: `Spec.equity_scale`, `Adapter.equity()`); satır tavanı sonradan kullanıcı kararıyla kaldırıldı, sayı raporlanmaya devam eder. Veri/QC/mühür araçlarına dokunulmadı.
 - Kümülatif deneme: önceki defterler 3 311 satır + risk 6 + BTC duman testi 3 + nested 792 = **4 112**. Stres, MC, kapasite, PBO/SPA ve taban koşuları deftersiz kontroldür, N'ye girmez.
 
 ## 1. Tarihsel stres [VAR] (`kepler/stress.py`)

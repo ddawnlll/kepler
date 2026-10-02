@@ -34,7 +34,7 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 1. PR #2 main'e birleşti (gerçekçi hakem, G2, arama). Benim dalımdaki paralel sertleştirme (`b8ec86e`, `claude/blissful-ptolemy-4kmtvf`) birleştirilmez, arşiv olarak dalda kalır.
 2. G2 sonucu geçerli: kitap sinyallerinin kırpılmış sürümleri için `NO_EDGE`. Kapı ölçütü MISSION'da sabit: ortak-ofset rotasyon null'ı + Bonferroni (N = deneme sayısı) + fee 10 ve 16'da net > 0.
 3. Risk motoru ve trade yönetimi stratejinin parçası: G3'ten önce kullanılır.
-4. Satır tavanı: hakem+yapıştırma ≲600 (450'den çıkarıldı, kullanıcı kararı 2026-10-02); araştırma kodu tavansız ama testli ve kullanılıyor olmalı. Kullanılmayan `scripts/probe.py` silindi.
+4. Satır tavanı: hakem+yapıştırma tavanı **kaldırıldı** (kullanıcı kararı 2026-10-02; önceki 300→450→600), sayı raporlanmaya devam eder; araştırma kodu tavansız ama testli ve kullanılıyor olmalı. Kullanılmayan `scripts/probe.py` silindi.
 5. Aynı veride serbest arama yok (MISSION kural 11).
 
 ## Motor v2 + tam sistem testi (hepsi tamam; kullanıcı görevi 2026-10-02)
@@ -238,6 +238,6 @@ Ağırlıklar kaba tahmindir (G0–G1 çekirdeği bunun 25'i). Durum: ☑ bitti,
 ## BACKTEST tamamlama devralma notu (2026-10-02)
 - **Yapıldı (hepsi ön kayıtlı, Modal'de koşuldu, testli):** tarihsel stres, işlem sırası MC + kill switch önerisi, kapasite + karekök etki (500/10k/100k), risk motoru (equity_scale + portföy kill switch; 6 deneme) + BTC `vol_target` duman testi (3 deneme), PBO/CSCV + SPA (88 yapılandırma), nested walk-forward (792 hakem satırı). Ön kayıtlar: `reports/backtest_completion_protocol.md`, `reports/nested_wf_protocol.md`. Sonuç: `reports/backtest_completion.md`; tablolar/ham JSON `reports/backtest_completion_data/`; defterler `ledger/backtest_completion/`. **BACKTEST.md'de [PLANLI]/[KISMEN] kalmadı.** Bağımsız inceleme (tek, ayrı bağlam) yapıldı, bulgular giderildi/belgelendi; 202 test yeşil, 1 atlandı.
 - **Yeniden koşmak:** `modal run modal_app.py --cmd "python scripts/completion.py --stage base|capacity|risk|misc|pbo --out /data/completion"`; nested: `--stage nested --family <aile>` (6 aile paralel) sonra `--stage nested_report`; tablo: `python scripts/completion_report.py reports/backtest_completion_data`. Not: Modal log çıktısı Nautilus gürültüsü nedeniyle satır düşürür; sonuçlar `/data/completion/*.json`'da (`modal volume get kepler-data completion/<dosya> .`).
-- **Hakem+yapıştırma satırı:** 473 (referee 240: +6 `equity_scale`/`equity()`); tavan 600.
+- **Hakem+yapıştırma satırı:** 473 (referee 240: +6 `equity_scale`/`equity()`); tavan kaldırıldı (kullanıcı kararı), sayı raporlanır.
 - **Yeni deneme sayısı:** önceki 3 311 satır + risk 6 + misc 3 + nested 792 = **4 112**.
 - **Açık / öneri (yapılmadı):** bkz. `reports/backtest_completion.md` "Öneri".
