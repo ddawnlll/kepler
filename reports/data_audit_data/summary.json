@@ -1,0 +1,781 @@
+{
+  "seal_start": "2026-04-01 00:00:00+00:00",
+  "file_count_seen": 2531,
+  "files_scanned": 2531,
+  "schemas": [
+    {
+      "columns": [
+        "ts",
+        "funding_interval_hours",
+        "last_funding_rate",
+        "ts_unit"
+      ],
+      "files": 246
+    },
+    {
+      "columns": [
+        "ts",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "quote_volume",
+        "count",
+        "taker_buy_volume",
+        "taker_buy_quote_volume",
+        "ts_unit"
+      ],
+      "files": 494
+    },
+    {
+      "columns": [
+        "month",
+        "rank",
+        "sym",
+        "prev_quote_volume"
+      ],
+      "files": 2
+    },
+    {
+      "columns": [
+        "sym",
+        "month",
+        "quote_volume",
+        "days"
+      ],
+      "files": 1789
+    }
+  ],
+  "coverage": [
+    {
+      "universe": "pre2022/tape/universe.parquet",
+      "months": 23,
+      "universe_symbols": 66,
+      "actual_klines": 66,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "universe": "tape/universe.parquet",
+      "months": 51,
+      "universe_symbols": 178,
+      "actual_klines": 181,
+      "missing": [],
+      "extra": [
+        "PAXGUSDT",
+        "XAGUSDT",
+        "XAUUSDT"
+      ]
+    }
+  ],
+  "summary": {
+    "empty_file": {
+      "symbols": 762,
+      "records": 943,
+      "examples": [
+        {
+          "check": "empty_file",
+          "file": "pre2022/tape/vol/0GUSDT.parquet",
+          "sym": "0GUSDT",
+          "count": 1,
+          "example": [],
+          "impact": "girdi yok"
+        },
+        {
+          "check": "empty_file",
+          "file": "pre2022/tape/vol/1000000BOBUSDT.parquet",
+          "sym": "1000000BOBUSDT",
+          "count": 1,
+          "example": [],
+          "impact": "girdi yok"
+        },
+        {
+          "check": "empty_file",
+          "file": "pre2022/tape/vol/1000000MOGUSDT.parquet",
+          "sym": "1000000MOGUSDT",
+          "count": 1,
+          "example": [],
+          "impact": "girdi yok"
+        }
+      ]
+    },
+    "ended_before_root_end": {
+      "symbols": 7,
+      "records": 7,
+      "examples": [
+        {
+          "check": "ended_before_root_end",
+          "file": "pre2022/tape/klines/LENDUSDT.parquet",
+          "sym": "LENDUSDT",
+          "count": 1,
+          "example": [
+            {
+              "last": "2020-11-10 08:00:00+00:00",
+              "root_last": "2021-12-31 23:00:00+00:00",
+              "days_before_end": 416.625
+            }
+          ],
+          "impact": "veri sonu erken; delist resmi kaynaktan doğrulanmadı, kesik tape ile karıştırılmamalı"
+        },
+        {
+          "check": "ended_before_root_end",
+          "file": "tape/klines/EOSUSDT.parquet",
+          "sym": "EOSUSDT",
+          "count": 1,
+          "example": [
+            {
+              "last": "2025-05-21 09:00:00+00:00",
+              "root_last": "2026-03-31 23:00:00+00:00",
+              "days_before_end": 314.5833333333333
+            }
+          ],
+          "impact": "veri sonu erken; delist resmi kaynaktan doğrulanmadı, kesik tape ile karıştırılmamalı"
+        },
+        {
+          "check": "ended_before_root_end",
+          "file": "tape/klines/GALUSDT.parquet",
+          "sym": "GALUSDT",
+          "count": 1,
+          "example": [
+            {
+              "last": "2024-07-30 06:00:00+00:00",
+              "root_last": "2026-03-31 23:00:00+00:00",
+              "days_before_end": 609.7083333333334
+            }
+          ],
+          "impact": "veri sonu erken; delist resmi kaynaktan doğrulanmadı, kesik tape ile karıştırılmamalı"
+        }
+      ]
+    },
+    "funding_declared_not_8h": {
+      "symbols": 101,
+      "records": 298527,
+      "examples": [
+        {
+          "check": "funding_declared_not_8h",
+          "file": "pre2022/tape/fundingRate/OMGUSDT.parquet",
+          "sym": "OMGUSDT",
+          "count": 6,
+          "example": [
+            {
+              "_t": "2021-11-11 14:00:00.004000+00:00",
+              "funding_interval_hours": "2",
+              "last_funding_rate": "-0.024"
+            },
+            {
+              "_t": "2021-11-11 16:00:00.007000+00:00",
+              "funding_interval_hours": "2",
+              "last_funding_rate": "-0.024"
+            }
+          ],
+          "impact": "1/2/4h oranlarını 8h sanmak maliyeti saptırır"
+        },
+        {
+          "check": "funding_declared_not_8h",
+          "file": "tape/fundingRate/1000BONKUSDT.parquet",
+          "sym": "1000BONKUSDT",
+          "count": 5162,
+          "example": [
+            {
+              "_t": "2023-11-22 16:00:00+00:00",
+              "funding_interval_hours": "4",
+              "last_funding_rate": "0.00056702"
+            },
+            {
+              "_t": "2023-11-22 20:00:00+00:00",
+              "funding_interval_hours": "4",
+              "last_funding_rate": "0.0004449"
+            }
+          ],
+          "impact": "1/2/4h oranlarını 8h sanmak maliyeti saptırır"
+        },
+        {
+          "check": "funding_declared_not_8h",
+          "file": "tape/fundingRate/1000RATSUSDT.parquet",
+          "sym": "1000RATSUSDT",
+          "count": 5024,
+          "example": [
+            {
+              "_t": "2023-12-15 16:00:00+00:00",
+              "funding_interval_hours": "4",
+              "last_funding_rate": "0.00392931"
+            },
+            {
+              "_t": "2023-12-15 20:00:00.001000+00:00",
+              "funding_interval_hours": "4",
+              "last_funding_rate": "0.00279311"
+            }
+          ],
+          "impact": "1/2/4h oranlarını 8h sanmak maliyeti saptırır"
+        }
+      ]
+    },
+    "funding_extreme": {
+      "symbols": 78,
+      "records": 975,
+      "examples": [
+        {
+          "check": "funding_extreme",
+          "file": "pre2022/tape/fundingRate/OMGUSDT.parquet",
+          "sym": "OMGUSDT",
+          "count": 12,
+          "example": [
+            {
+              "_t": "2021-11-09 16:00:00.001000+00:00",
+              "last_funding_rate": "-0.018"
+            },
+            {
+              "_t": "2021-11-10 00:00:00+00:00",
+              "last_funding_rate": "-0.018"
+            }
+          ],
+          "impact": "tek settlement >%1; funding getiriye baskın olabilir"
+        },
+        {
+          "check": "funding_extreme",
+          "file": "tape/fundingRate/1000FLOKIUSDT.parquet",
+          "sym": "1000FLOKIUSDT",
+          "count": 1,
+          "example": [
+            {
+              "_t": "2024-08-30 00:00:00+00:00",
+              "last_funding_rate": "-0.02034567"
+            }
+          ],
+          "impact": "tek settlement >%1; funding getiriye baskın olabilir"
+        },
+        {
+          "check": "funding_extreme",
+          "file": "tape/fundingRate/AIAUSDT.parquet",
+          "sym": "AIAUSDT",
+          "count": 8,
+          "example": [
+            {
+              "_t": "2025-10-04 20:00:00.003000+00:00",
+              "last_funding_rate": "-0.0105411"
+            },
+            {
+              "_t": "2025-10-09 08:00:00+00:00",
+              "last_funding_rate": "-0.02"
+            }
+          ],
+          "impact": "tek settlement >%1; funding getiriye baskın olabilir"
+        }
+      ]
+    },
+    "funding_interval_mismatch": {
+      "symbols": 36,
+      "records": 50,
+      "examples": [
+        {
+          "check": "funding_interval_mismatch",
+          "file": "pre2022/tape/fundingRate/OMGUSDT.parquet",
+          "sym": "OMGUSDT",
+          "count": 1,
+          "example": [
+            {
+              "_t": "2021-11-11 14:00:00.004000+00:00",
+              "funding_interval_hours": "2"
+            }
+          ],
+          "impact": "eksik settlement veya geçiş; olay aralığı metadata ile uyuşmuyor"
+        },
+        {
+          "check": "funding_interval_mismatch",
+          "file": "tape/fundingRate/AIAUSDT.parquet",
+          "sym": "AIAUSDT",
+          "count": 3,
+          "example": [
+            {
+              "_t": "2025-10-30 16:00:00.001000+00:00",
+              "funding_interval_hours": "4"
+            },
+            {
+              "_t": "2026-01-20 07:00:00+00:00",
+              "funding_interval_hours": "1"
+            }
+          ],
+          "impact": "eksik settlement veya geçiş; olay aralığı metadata ile uyuşmuyor"
+        },
+        {
+          "check": "funding_interval_mismatch",
+          "file": "tape/fundingRate/ALPACAUSDT.parquet",
+          "sym": "ALPACAUSDT",
+          "count": 1,
+          "example": [
+            {
+              "_t": "2025-04-25 08:00:00.002000+00:00",
+              "funding_interval_hours": "1"
+            }
+          ],
+          "impact": "eksik settlement veya geçiş; olay aralığı metadata ile uyuşmuyor"
+        }
+      ]
+    },
+    "funding_off_clock": {
+      "symbols": 201,
+      "records": 332165,
+      "examples": [
+        {
+          "check": "funding_off_clock",
+          "file": "pre2022/tape/fundingRate/1000SHIBUSDT.parquet",
+          "sym": "1000SHIBUSDT",
+          "count": 492,
+          "example": [
+            "2021-05-10 16:00:00.013000+00:00",
+            "2021-05-11 16:00:00.002000+00:00"
+          ],
+          "impact": "bar ile settlement eşleşmesi değişebilir"
+        },
+        {
+          "check": "funding_off_clock",
+          "file": "pre2022/tape/fundingRate/AAVEUSDT.parquet",
+          "sym": "AAVEUSDT",
+          "count": 840,
+          "example": [
+            "2020-10-16 08:00:00.003000+00:00",
+            "2020-10-17 00:00:00.006000+00:00"
+          ],
+          "impact": "bar ile settlement eşleşmesi değişebilir"
+        },
+        {
+          "check": "funding_off_clock",
+          "file": "pre2022/tape/fundingRate/ADAUSDT.parquet",
+          "sym": "ADAUSDT",
+          "count": 1083,
+          "example": [
+            "2020-01-22 08:00:00.001000+00:00",
+            "2020-01-24 16:00:00.001000+00:00"
+          ],
+          "impact": "bar ile settlement eşleşmesi değişebilir"
+        }
+      ]
+    },
+    "funding_timestamp_not_8h": {
+      "symbols": 101,
+      "records": 298456,
+      "examples": [
+        {
+          "check": "funding_timestamp_not_8h",
+          "file": "pre2022/tape/fundingRate/OMGUSDT.parquet",
+          "sym": "OMGUSDT",
+          "count": 6,
+          "example": [
+            {
+              "ts": "2021-11-11 14:00:00.004000+00:00",
+              "interval_hours": 5.999997777777778
+            },
+            {
+              "ts": "2021-11-11 16:00:00.007000+00:00",
+              "interval_hours": 2.0000008333333334
+            }
+          ],
+          "impact": "8h sabit varsayımı funding maliyetini yanlış hesaplar; değişken aralık tek başına hata değildir"
+        },
+        {
+          "check": "funding_timestamp_not_8h",
+          "file": "tape/fundingRate/1000BONKUSDT.parquet",
+          "sym": "1000BONKUSDT",
+          "count": 5161,
+          "example": [
+            {
+              "ts": "2023-11-22 20:00:00+00:00",
+              "interval_hours": 4.0
+            },
+            {
+              "ts": "2023-11-23 00:00:00+00:00",
+              "interval_hours": 4.0
+            }
+          ],
+          "impact": "8h sabit varsayımı funding maliyetini yanlış hesaplar; değişken aralık tek başına hata değildir"
+        },
+        {
+          "check": "funding_timestamp_not_8h",
+          "file": "tape/fundingRate/1000RATSUSDT.parquet",
+          "sym": "1000RATSUSDT",
+          "count": 5023,
+          "example": [
+            {
+              "ts": "2023-12-15 20:00:00.001000+00:00",
+              "interval_hours": 4.000000277777778
+            },
+            {
+              "ts": "2023-12-16 00:00:00+00:00",
+              "interval_hours": 3.9999997222222223
+            }
+          ],
+          "impact": "8h sabit varsayımı funding maliyetini yanlış hesaplar; değişken aralık tek başına hata değildir"
+        }
+      ]
+    },
+    "gap": {
+      "symbols": 100,
+      "records": 324,
+      "examples": [
+        {
+          "check": "gap",
+          "file": "pre2022/tape/markPriceKlines/AVAXUSDT.parquet",
+          "sym": "AVAXUSDT",
+          "count": 2,
+          "example": [
+            {
+              "after": "2021-07-02 00:00:00+00:00",
+              "hours": 25.0,
+              "missing": 24.0
+            },
+            {
+              "after": "2021-07-28 00:00:00+00:00",
+              "hours": 97.0,
+              "missing": 96.0
+            }
+          ],
+          "impact": "dolum gecikmesi, ATR/oynaklık ve hedef ömrü sapması"
+        },
+        {
+          "check": "gap",
+          "file": "pre2022/tape/markPriceKlines/AXSUSDT.parquet",
+          "sym": "AXSUSDT",
+          "count": 2,
+          "example": [
+            {
+              "after": "2021-07-02 00:00:00+00:00",
+              "hours": 25.0,
+              "missing": 24.0
+            },
+            {
+              "after": "2021-07-28 00:00:00+00:00",
+              "hours": 97.0,
+              "missing": 96.0
+            }
+          ],
+          "impact": "dolum gecikmesi, ATR/oynaklık ve hedef ömrü sapması"
+        },
+        {
+          "check": "gap",
+          "file": "pre2022/tape/markPriceKlines/BANDUSDT.parquet",
+          "sym": "BANDUSDT",
+          "count": 2,
+          "example": [
+            {
+              "after": "2021-07-02 00:00:00+00:00",
+              "hours": 25.0,
+              "missing": 24.0
+            },
+            {
+              "after": "2021-07-28 00:00:00+00:00",
+              "hours": 97.0,
+              "missing": 96.0
+            }
+          ],
+          "impact": "dolum gecikmesi, ATR/oynaklık ve hedef ömrü sapması"
+        }
+      ]
+    },
+    "jump_over_50pct": {
+      "symbols": 65,
+      "records": 251,
+      "examples": [
+        {
+          "check": "jump_over_50pct",
+          "file": "pre2022/tape/klines/ALICEUSDT.parquet",
+          "sym": "ALICEUSDT",
+          "count": 1,
+          "example": [
+            {
+              "_t": "2021-05-19 12:00:00+00:00",
+              "open": "8.888",
+              "high": "9.144",
+              "low": "4.125",
+              "close": "4.84"
+            }
+          ],
+          "impact": "uç fiyat gerçek olay mı hata mı doğrulanmadı; stop/null/vol etkilenir"
+        },
+        {
+          "check": "jump_over_50pct",
+          "file": "pre2022/tape/klines/AXSUSDT.parquet",
+          "sym": "AXSUSDT",
+          "count": 1,
+          "example": [
+            {
+              "_t": "2021-05-19 12:00:00+00:00",
+              "open": "5.021",
+              "high": "5.141",
+              "low": "2.882",
+              "close": "3.138"
+            }
+          ],
+          "impact": "uç fiyat gerçek olay mı hata mı doğrulanmadı; stop/null/vol etkilenir"
+        },
+        {
+          "check": "jump_over_50pct",
+          "file": "pre2022/tape/klines/CHRUSDT.parquet",
+          "sym": "CHRUSDT",
+          "count": 1,
+          "example": [
+            {
+              "_t": "2021-05-19 12:00:00+00:00",
+              "open": "0.2283",
+              "high": "0.2354",
+              "low": "0.132",
+              "close": "0.148"
+            }
+          ],
+          "impact": "uç fiyat gerçek olay mı hata mı doğrulanmadı; stop/null/vol etkilenir"
+        }
+      ]
+    },
+    "klines_outside_universe": {
+      "symbols": 3,
+      "records": 3,
+      "examples": [
+        {
+          "check": "klines_outside_universe",
+          "file": "tape/universe.parquet",
+          "sym": "PAXGUSDT",
+          "count": 1,
+          "example": [
+            "PAXGUSDT"
+          ],
+          "impact": "üyelik ile disk sembolleri farklı; fazladan dosya tek başına araştırma evrenine alınmaz"
+        },
+        {
+          "check": "klines_outside_universe",
+          "file": "tape/universe.parquet",
+          "sym": "XAGUSDT",
+          "count": 1,
+          "example": [
+            "XAGUSDT"
+          ],
+          "impact": "üyelik ile disk sembolleri farklı; fazladan dosya tek başına araştırma evrenine alınmaz"
+        },
+        {
+          "check": "klines_outside_universe",
+          "file": "tape/universe.parquet",
+          "sym": "XAUUSDT",
+          "count": 1,
+          "example": [
+            "XAUUSDT"
+          ],
+          "impact": "üyelik ile disk sembolleri farklı; fazladan dosya tek başına araştırma evrenine alınmaz"
+        }
+      ]
+    },
+    "mark_last_divergence_over_5pct": {
+      "symbols": 54,
+      "records": 204216,
+      "examples": [
+        {
+          "check": "mark_last_divergence_over_5pct",
+          "file": "pre2022/tape/klines/AAVEUSDT.parquet",
+          "sym": "AAVEUSDT",
+          "count": 1,
+          "example": [
+            {
+              "_t": "2021-05-19 12:00:00+00:00",
+              "close_last": "438.03",
+              "close_mark": "393.30512783"
+            }
+          ],
+          "impact": "veri kullanılabilirlik kesimi ve hayali PnL riski"
+        },
+        {
+          "check": "mark_last_divergence_over_5pct",
+          "file": "pre2022/tape/klines/ALICEUSDT.parquet",
+          "sym": "ALICEUSDT",
+          "count": 2,
+          "example": [
+            {
+              "_t": "2021-05-19 13:00:00+00:00",
+              "close_last": "6.489",
+              "close_mark": "6.14503413"
+            },
+            {
+              "_t": "2021-09-07 14:00:00+00:00",
+              "close_last": "11.292",
+              "close_mark": "12.36054745"
+            }
+          ],
+          "impact": "veri kullanılabilirlik kesimi ve hayali PnL riski"
+        },
+        {
+          "check": "mark_last_divergence_over_5pct",
+          "file": "pre2022/tape/klines/AVAXUSDT.parquet",
+          "sym": "AVAXUSDT",
+          "count": 1,
+          "example": [
+            {
+              "_t": "2021-05-19 12:00:00+00:00",
+              "close_last": "20.995",
+              "close_mark": "19.88847744"
+            }
+          ],
+          "impact": "veri kullanılabilirlik kesimi ve hayali PnL riski"
+        }
+      ]
+    },
+    "mark_last_timestamp_mismatch": {
+      "symbols": 188,
+      "records": 65409,
+      "examples": [
+        {
+          "check": "mark_last_timestamp_mismatch",
+          "file": "pre2022/tape/klines/1000SHIBUSDT.parquet",
+          "sym": "1000SHIBUSDT",
+          "count": 8,
+          "example": [
+            {
+              "_t": "2021-05-10 09:00:00+00:00",
+              "_merge": "right_only"
+            },
+            {
+              "_t": "2021-05-10 10:00:00+00:00",
+              "_merge": "right_only"
+            }
+          ],
+          "impact": "eksik mark barlarında fallback ve likidasyon ölçümü"
+        },
+        {
+          "check": "mark_last_timestamp_mismatch",
+          "file": "pre2022/tape/klines/AAVEUSDT.parquet",
+          "sym": "AAVEUSDT",
+          "count": 4,
+          "example": [
+            {
+              "_t": "2020-10-16 03:00:00+00:00",
+              "_merge": "right_only"
+            },
+            {
+              "_t": "2020-10-16 04:00:00+00:00",
+              "_merge": "right_only"
+            }
+          ],
+          "impact": "eksik mark barlarında fallback ve likidasyon ölçümü"
+        },
+        {
+          "check": "mark_last_timestamp_mismatch",
+          "file": "pre2022/tape/klines/ADAUSDT.parquet",
+          "sym": "ADAUSDT",
+          "count": 287,
+          "example": [
+            {
+              "_t": "2020-01-19 09:00:00+00:00",
+              "_merge": "right_only"
+            },
+            {
+              "_t": "2020-01-19 10:00:00+00:00",
+              "_merge": "right_only"
+            }
+          ],
+          "impact": "eksik mark barlarında fallback ve likidasyon ölçümü"
+        }
+      ]
+    },
+    "persistent_divergence_24h": {
+      "symbols": 28,
+      "records": 169905,
+      "examples": [
+        {
+          "check": "persistent_divergence_24h",
+          "file": "tape/klines/AGIXUSDT.parquet",
+          "sym": "AGIXUSDT",
+          "count": 15418,
+          "example": [
+            {
+              "start": "2024-06-27 14:00:00+00:00",
+              "max_consecutive_hours": 15418
+            }
+          ],
+          "impact": "ham veride kontrat sonu/ölçek değişimi şüphesi; tape.load kesimi önemlidir"
+        },
+        {
+          "check": "persistent_divergence_24h",
+          "file": "tape/klines/AIAUSDT.parquet",
+          "sym": "AIAUSDT",
+          "count": 763,
+          "example": [
+            {
+              "start": "2025-12-12 02:00:00+00:00",
+              "max_consecutive_hours": 763
+            }
+          ],
+          "impact": "ham veride kontrat sonu/ölçek değişimi şüphesi; tape.load kesimi önemlidir"
+        },
+        {
+          "check": "persistent_divergence_24h",
+          "file": "tape/klines/ALPACAUSDT.parquet",
+          "sym": "ALPACAUSDT",
+          "count": 8055,
+          "example": [
+            {
+              "start": "2025-04-30 09:00:00+00:00",
+              "max_consecutive_hours": 8055
+            }
+          ],
+          "impact": "ham veride kontrat sonu/ölçek değişimi şüphesi; tape.load kesimi önemlidir"
+        }
+      ]
+    },
+    "wick_over_50pct": {
+      "symbols": 157,
+      "records": 350,
+      "examples": [
+        {
+          "check": "wick_over_50pct",
+          "file": "pre2022/tape/klines/1000SHIBUSDT.parquet",
+          "sym": "1000SHIBUSDT",
+          "count": 1,
+          "example": [
+            {
+              "_t": "2021-05-19 13:00:00+00:00",
+              "open": "0.007424",
+              "high": "0.012071",
+              "low": "0.00475",
+              "close": "0.008735"
+            }
+          ],
+          "impact": "uç fiyat gerçek olay mı hata mı doğrulanmadı; stop/null/vol etkilenir"
+        },
+        {
+          "check": "wick_over_50pct",
+          "file": "pre2022/tape/klines/AAVEUSDT.parquet",
+          "sym": "AAVEUSDT",
+          "count": 1,
+          "example": [
+            {
+              "_t": "2021-05-19 12:00:00+00:00",
+              "open": "565.92",
+              "high": "579.63",
+              "low": "253.56",
+              "close": "438.03"
+            }
+          ],
+          "impact": "uç fiyat gerçek olay mı hata mı doğrulanmadı; stop/null/vol etkilenir"
+        },
+        {
+          "check": "wick_over_50pct",
+          "file": "pre2022/tape/klines/ADAUSDT.parquet",
+          "sym": "ADAUSDT",
+          "count": 1,
+          "example": [
+            {
+              "_t": "2020-02-28 17:00:00+00:00",
+              "open": "0.04856",
+              "high": "0.04869",
+              "low": "0.02286",
+              "close": "0.04802"
+            }
+          ],
+          "impact": "uç fiyat gerçek olay mı hata mı doğrulanmadı; stop/null/vol etkilenir"
+        }
+      ]
+    }
+  },
+  "skipped": [],
+  "errors": [],
+  "method_notes": [
+    "Aylık yardımcı hacim tablolarında benzersizlik anahtarı (sym,month); farklı sembolde aynı month çift bar değildir.",
+    "duplicate/unsorted kontrolü tape timestamp dosyaları için raporlanır; aylık shard fiziksel sıra zorunluluğu yoktur."
+  ]
+}
