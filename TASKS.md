@@ -242,3 +242,10 @@ Ağırlıklar kaba tahmindir (G0–G1 çekirdeği bunun 25'i). Durum: ☑ bitti,
 - **Hakem+yapıştırma satırı:** 473 (referee 240: +6 `equity_scale`/`equity()`); tavan kaldırıldı (kullanıcı kararı), sayı raporlanır.
 - **Yeni deneme sayısı:** önceki 3 311 satır + risk 6 + misc 3 + nested 792 + ölçekli kill 4 = **4 116** (ölçekli kill: `reports/scaled_kill_protocol.md`; sonuç: öneri iyimser, S2'de kill 2025-08-02 tetiklendi).
 - **Açık / öneri (yapılmadı):** bkz. `reports/backtest_completion.md` "Öneri".
+
+
+## 2020–2021 replikasyonu (pre2022; kullanıcı görevi 2026-10-02; ön kayıt `reports/pre2022_protocol.md`, N = 10)
+Durum (adım adım güncellenir; dal `claude/serene-carson-tvrcs8`, main'e push yok):
+- ☑ `kepler/universe.py` parametreleştirildi (`--start/--rank-start/--end/--root`; varsayılanlar aynı; veri/QC/mühür araçları (b) 434 → 439 satır, ≲500 altında). Test: 203 geçti, 1 atlandı (Modal).
+- ☐ veri indirme (`/data/pre2022`, 2019-09 → 2021-12) · ☐ QC (`manifest_pre2022.json`) · ☐ Blok A · ☐ Blok B · ☐ rapor `reports/pre2022.md`
+Yeniden koşmak / ayrıntılar işler bitince buraya yazılır.
