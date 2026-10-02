@@ -14,14 +14,20 @@ Dev dönemi (2022-01 → 2026-03) araştırmasında seçilmiş/ön kayıtlı sis
 ## Kod değişikliği (küçük; hakem/denetim/risk/mühür koduna DOKUNULMAZ)
 `kepler/universe.py`: `START`, `RANK_START` ve kök parametreleştirilir (CLI `--start 2019-09 --rank-start 2019-08 --root /data/pre2022`; varsayılanlar aynı, davranış değişmez; mevcut testler yeşil kalmalı). `scripts/pre2022.py`: araştırma kodu (tavansız): mevcut işçi kodunu (`scripts/full_systems.py`, `scripts/search.py`, `scripts/completion.py`) yeni pencere/evrenle çağırır. Hakem+yapıştırma satırı değişmez (473).
 
-## Blok A — tam Turtle S1 / S2 (N = 2)
+## Blok A — tam Turtle S1 / S2 ve takvim düzeltmeli S1c / S2c (N = 4)
+**Takvim düzeltmesi (2026-10-02 eklendi, veriye bakmadan):** kitaptaki 20/10 ve 55/20 günler ile N = ATR(20)
+**işlem günüdür** (haftada 5). Dev dönemindeki S1/S2 bunları kripto takvim günü (haftada 7) olarak kullandı, yani
+orijinalden ~%30 hızlıydı. S1c/S2c aynı kuralları 7/5 oranıyla takvim gününe çevirir: **S1c giriş 28 / çıkış 14,
+S2c giriş 77 / çıkış 28, ikisinde N = Wilder ATR(28)**; stop 2N, ekleme 0,5N, birim sınırları, gruplar, Spec ve
+dönem S1/S2 ile birebir aynı. S1c/S2c dev döneminde hiç koşulmadı. S1/S2 dev sonuçlarıyla karşılaştırma için,
+S1c/S2c orijinale sadık sürümdür.
 Sistem, yönetici, gruplar ({BTC,ETH,BNB} {SOL,AVAX,ADA} {XRP,DOGE,LINK}), Spec (fee 10 + slip 2, mmr 0,005, kaldıraç limiti 10, gross_cap 4 × sermaye, sermaye 10 000, tick/step kuralı), `equity_scale` kapalı, kill yok: `reports/full_systems_protocol.md` ile **birebir**. Evren: genişletilmiş-9 içinden pencerede verisi olanlar. Dönem **2020-03-01 → 2022-01-01** (kitap tam seride hesaplanır, pencere başında tutulan pozisyon açık hedef; geç listelenen sembol ilk verisinden itibaren işlem görür).
 Kart K1–K9 (`BACKTEST.md` §11, eşikler aynı), uygulama ayrıntıları:
-- **K1:** ortak-ofset rotasyon null'u (B = 500, `default_rng([0, i])`), brüt p ≤ **0,05/2 = 0,025** ve DSR ≥ 0,95 (deneme Sharpe'ları = S1, S2). Katı raporlama: p ayrıca 0,05/12 (dev N'si) ve DSR kümülatif N = 14 ile yazılır (karar 0,025 ve N = 2 ile; ablasyonlar seçim değil kontroldür).
+- **K1:** ortak-ofset rotasyon null'u (B = 500, `default_rng([0, i])`), brüt p ≤ **0,05/4 = 0,0125** ve DSR ≥ 0,95 (deneme Sharpe'ları = S1, S2, S1c, S2c). Katı raporlama: p ayrıca 0,05/12 (dev N'si) ve DSR kümülatif N = 16 ile yazılır (karar 0,0125 ve N = 4 ile; ablasyonlar seçim değil kontroldür).
 - **K2:** eşit notional al-tut (pencerede verisi olan semboller, aynı hakem/Spec); Sharpe > al-tut **ve** NW alfa t ≥ 2.
 - **K3:** net Sharpe ≥ 1,0; net > 0 hem fee 16 + slip 6'da hem 1 bar gecikmede.
-- **K4:** planlanan boyut = `reports/backtest_completion.md` madde 2'deki ölçekli risk (S1 0,0017, S2 0,0016); kartın tanımıyla maks DD ≤ %25 ve bootstrap DD %95 ≤ %30 (blok 20, B = 2000, seed 0). %1 risk için DD bilgi olarak yazılır.
-- **K5:** 24 komşu (S1 giriş {16,18,20,22,24} × çıkış {8,…,12}; S2 {44,50,55,61,66} × {16,…,24}), ≥ %70 net > 0 ve komşu medyan Sharpe ≥ seçilenin yarısı.
+- **K4:** planlanan boyut = `reports/backtest_completion.md` madde 2'deki ölçekli risk (S1 0,0017, S2 0,0016; S1c S1'inkini, S2c S2'ninkini kullanır, ayrıca türetilmez); kartın tanımıyla maks DD ≤ %25 ve bootstrap DD %95 ≤ %30 (blok 20, B = 2000, seed 0). %1 risk için DD bilgi olarak yazılır.
+- **K5:** 24 komşu (S1 giriş {16,18,20,22,24} × çıkış {8,…,12}; S2 {44,50,55,61,66} × {16,…,24}; S1c {22,25,28,31,34} × {11,13,14,15,17}; S2c {62,69,77,85,92} × {22,25,28,31,34}; ATR penceresi sabit), ≥ %70 net > 0 ve komşu medyan Sharpe ≥ seçilenin yarısı.
 - **K6:** yarıyıl pencereleri 2020-07→2021-01, 2021-01→2021-07, 2021-07→2022-01 (3 adet; ≥ 2'sinde net > 0) **ve** başlangıç 2020-03-01 / 04-01 / 05-01 / 06-01 (bitiş 2022-01-01) dördünde net > 0.
 - **K7:** sinyalden bağımsız kural: aylık top-20'de ≥ 8 ay, genişletilmiş-9 dışı, ilk bar ≤ 2020-07-01, kesim yok; her sembol kendi grubu; fee 16 + slip 2'de net > 0.
 - **K8:** 4 ablasyon (stop, N-boyutlama, piramit, birim sınırı kapalı) kontrol olarak koşulur (defter dışı); `full` Sharpe'ı her birinden büyük olmalı.
@@ -39,10 +45,10 @@ Replikasyon "başarılı" ⇔ Blok A'da bir sistem ADAY (K1–K9 hepsi) **veya**
 2020-21 güçlü bir boğa döngüsüdür (BTC ≈ 7 000 → 69 000); trend sistemlerinin net pozitif çıkması beklenir. Asıl sorular null (K1), al-tut (K2) ve rejim tek-kaynaklılığı (K9). K2 ve K9'un kalma olasılığı yüksek; K4 (ölçekli boyutta bile) dev dönemi gibi kalabilir.
 
 ## Sınırlar / UNKNOWN
-(1) Rejim: çoğunlukla boğa; trend-takip lehine yanlı. (2) Hayatta kalma yanlılığı: evren bugünün majörleri (iyimser); K7 kısmen düzeltir. (3) **Kör değil:** araştırmacı 2020–21 piyasa tarihini biliyor; yalnızca bu veri hiçbir testte/ayarda kullanılmadı. (4) 2020 hacim ve spread'i bugünkünden kötü: slippage 2 bps iyimser olabilir (K3 stresi 6 bps). (5) Sembol kuralları, mmr kademeleri, likidasyon ücreti UNKNOWN (dev ile aynı). (6) Funding aralığı 8 saat varsayımı veriden doğrulanır.
+(0) S1/S2'nin dev sonuçları takvim günüyle (orijinalden ~%30 hızlı) alındı; bu sapma dev raporlarında yazılı değildi, burada kayda geçti. (1) Rejim: çoğunlukla boğa; trend-takip lehine yanlı. (2) Hayatta kalma yanlılığı: evren bugünün majörleri (iyimser); K7 kısmen düzeltir. (3) **Kör değil:** araştırmacı 2020–21 piyasa tarihini biliyor; yalnızca bu veri hiçbir testte/ayarda kullanılmadı. (4) 2020 hacim ve spread'i bugünkünden kötü: slippage 2 bps iyimser olabilir (K3 stresi 6 bps). (5) Sembol kuralları, mmr kademeleri, likidasyon ücreti UNKNOWN (dev ile aynı). (6) Funding aralığı 8 saat varsayımı veriden doğrulanır.
 
 ## Deneme sayısı ve bütçe
-Yeni hipotez 8 (A: 2, B: 6; ablasyon/komşuluk/null/stres kontrol); kümülatif defter 4 116 + A'nın defter satırları (2) + B'nin hakem satırları (6 yapılandırma × 9 sembol × 6 maliyet senaryosu). Bütçe tahmini (UNKNOWN): veri indirme ve QC ≈ 30–40 dk Modal (12 paralel), koşular ≈ 1–2 saat; ≲ 150 araç çağrısı, dış sınır 1 gün. Aşılırsa dur ve raporla.
+Yeni hipotez 10 (A: 4, B: 6; ablasyon/komşuluk/null/stres kontrol); kümülatif defter 4 116 + A'nın defter satırları (2) + B'nin hakem satırları (6 yapılandırma × 9 sembol × 6 maliyet senaryosu). Bütçe tahmini (UNKNOWN): veri indirme ve QC ≈ 30–40 dk Modal (12 paralel), koşular ≈ 1–2 saat; ≲ 150 araç çağrısı, dış sınır 1 gün. Aşılırsa dur ve raporla.
 
 ## Onay istenenler
-(a) Bu protokol (kart eşikleri, N, pencereler, evren kuralı). (b) Binance arşivinden 2019-09 → 2021-12 indirme (ağ izni). (c) `universe.py` parametreleştirme (veri aracı; satır sayısı (b) tavanı ≲500 altında kalmalı, sayıyı raporlarım).
+(a) Bu protokol (kart eşikleri, N, pencereler, evren kuralı; takvim düzeltmeli S1c/S2c dahil). (b) Binance arşivinden 2019-09 → 2021-12 indirme (ağ izni). (c) `universe.py` parametreleştirme (veri aracı; satır sayısı (b) tavanı ≲500 altında kalmalı, sayıyı raporlarım).

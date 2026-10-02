@@ -394,6 +394,7 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 
 | Konu | Durum |
 |---|---|
+| Turtle pencereleri | Dev dönemindeki S1/S2 20/10, 55/20 ve ATR(20)'yi kripto takvim günü olarak kullandı; kitapta işlem günü (≈ ×7/5 takvim günü). Sadık sürüm S1c/S2c `reports/pre2022_protocol.md`'de ön kayıtlı |
 | Slippage gerçek değeri | UNKNOWN; 2 bps alt sınır, 6 bps stres |
 | Funding settlement anındaki dolumun funding'e dahil olup olmadığı | UNKNOWN; kabul: T'deki dolumlar settlement'tan sonra |
 | Sembol kuralları (tick, lot, min notional, mmr kademeleri) | UNKNOWN; `fapi` bulut ortamından 451, sunucudan çekilmeli |
