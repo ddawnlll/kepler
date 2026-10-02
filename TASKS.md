@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: İş C — Deneme envanteri ve Volume flock | durum: devam | protokol: reports/trial_inventory.md
+Aktif iş: A/B/C denetimleri — sekiz saatlik pencere kontrolü | durum: devam | protokol: reports/data_audit.md; reports/account_reality.md; reports/trial_inventory.md
 
 Bu dosya görev planıdır, spec değil. Hedef, kapılar ve kurallar `MISSION.md`'de; sistem haritası
 `ARCHITECTURE.md`'de. Çelişki olursa o iki belge kazanır; çelişkiyi raporla.
@@ -263,7 +263,9 @@ Yeniden koşmak / ayrıntılar işler bitince buraya yazılır.
 - Dal: `codex/kepler-audits-20261003` (güncel main `5e93e12` tabanından); mimari yalnız BACKTEST §15.8'e yazıldı ve `70b5971` ile push edildi. Korunan kodda değişiklik yok.
 - Kullanıcı çalışma penceresi: 3 Ekim 2026 01:45–09:45 Europe/Istanbul. Saatlik devam ve 09:45 kapanış kontrolü kaydedildi. Bir sonraki çalışma mevcut koşuyu kontrol eder, tekrar başlatmaz.
 - Sıra: A → B → C. A Modal `kepler-data` Volume'unu salt okunur tarar; /data'da 2531 Parquet (şema kontrolü tamamlandı). ≥2026-04-01 zamanları olan dosyada fiyat sütunları okunmaz. Token veya mühür anahtarı dosyaya yazılmaz.
-- Devralmada mevcut A sonucu için `/tmp/kepler_data_audit_result.json` ve devam eden Modal sandbox `sb-epmSR4xi0Q4CHqrGQuuk5x` kontrol edilir. Geçici bağlantı betiği `/tmp/modal_http_transport.py`, SDK `/tmp/modal-legacy/bin/python`; bunlar çalışma ortamı araçlarıdır, repoya girmez. A tamamlandı: `reports/data_audit.md` + `data_audit_data/` (2531/2531 dosya, veri riskleri kırmızı).
+- Devralmada mevcut A sonucu için `/tmp/kepler_data_audit_result.json` ve devam eden Modal sandbox `sb-epmSR4xi0Q4CHqrGQuuk5x` kontrol edilir. Geçici bağlantı betiği `/tmp/modal_http_transport.py`, SDK `/tmp/modal-legacy/bin/python`; bunlar çalışma ortamı araçlarıdır, repoya girmez. A tamamlandı: `reports/data_audit.md` + `data_audit_data/` (2531/2531 dosya, veri riskleri kırmızı); koşu bitti, yeniden başlatma.
 - Her rapor tamamlanınca TASKS ve rapor commit/push; engel varsa engelli raporla, sıradakine geç. Hakem, denetim, risk, mühür, ledger ve evaluate değiştirilmez. C'nin test dosyası yalnız scratchpad'e yazılabilir.
 
 - İş B: `reports/account_reality.md`; EV1 $500 hedef hesabı bitti. Güncel MEXC kuralları/hesap ücreti ve funding SSS doğrulaması engelli (proxy CONNECT 403); tüm semboller doğrulanmadı, C'ye geçildi.
+
+- İş C tamamlandı: `reports/trial_inventory.md`; repo4117/Modal5434 satır, 1317 fark. Volume flock iki turda da iki exclusive lock'u aynı anda verdi (kırmızı), yerel kontrol yeşil. Test yalnız scratchpad. A/B/C ilk geçişi tamamlandı; 09:45 kapanışına kadar yalnız çözülmüş engel/yeni kanıt varsa rapor güncellenir, aynı koşu tekrar başlatılmaz.

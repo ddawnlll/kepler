@@ -71,4 +71,4 @@ Henüz Zone Fade uygulaması veya gerçekleşmiş aday/pozisyon çıktısı yok.
 
 Kod sayısı: hakem+yapıştırma 473; veri/QC/mühür 439, artış 0. Proje testleri **atlandı** (üretim kodu değişmedi); deftere yeni satır 0; mühürlü dönem/anahtar **atlandı**.
 
-**İş durumları:** A **kırmızı** (tamamlandı); B **kırmızı** (hesap tamam, güncel borsa doğrulaması engelli); C **atlandı** (henüz başlamadı).
+**İş durumları:** A **kırmızı** (tamamlandı); B **kırmızı** (hesap tamam, güncel MEXC doğrulaması engelli); C **kırmızı** (tamamlandı, Volume flock/deneme envanteri bulguları).

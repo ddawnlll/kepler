@@ -56,4 +56,4 @@ Tam dosya envanteri + zaman bağımsız kontrolü tamamlandı (**yeşil**). Sıf
 
 Kod sayıları (boş/yorum satırı hariç mevcut yöntem): hakem+yapıştırma 473; veri/QC/mühür araçları 439. Artış 0. Dokümantasyon için proje testleri **atlandı**; üretim kodunda değişiklik yok.
 
-**İş durumları:** A **kırmızı** (denetim tamam; bulgular var); B **atlandı** (henüz başlamadı); C **atlandı** (henüz başlamadı).
+**İş durumları:** A **kırmızı** (tamamlandı); B **kırmızı** (hesap tamam, güncel MEXC doğrulaması engelli); C **kırmızı** (tamamlandı, Volume flock/deneme envanteri bulguları).

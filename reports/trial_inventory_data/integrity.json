@@ -1,0 +1,22 @@
+{
+  "baseline_commit": "5e93e12299949da1eb90bbb073be5fec83c089f9",
+  "repo_ledger_files_unchanged": 44,
+  "modal_ledger_files_unchanged": 73,
+  "protected_source_hashes": {
+    "kepler/referee.py": "9ad70fad60c743c4892477289317ab69f6f6dc05641bc16041f2745690db6445",
+    "kepler/audit.py": "eab0d3486ee0b9adef021e14fd95e2be5aaf92427f0894abdb3a59ae6f24b117",
+    "kepler/risk.py": "b479e16f3fdeb7b42695780447e375768596988d7154ba67a0fa8a1a1dd22916",
+    "kepler/ledger.py": "a5f8e83414125d805ed87357d7edad7fb472aed13dea77c46791f5941c630303",
+    "kepler/evaluate.py": "1ce88bdf64fd7f69cdd4fe4cdd22b3128d9b52d234fadd260a4e8306e0086a14",
+    "kepler/tape.py": "ab343919e3733f215c366aac0558c9f39f005dc0f88ebf333c56075d2c5bc09f",
+    "kepler/qc.py": "c687e4fce69d6e1985fd2c772899c7e5aac39032132d803c0fc62bee887e4228",
+    "tools/seal_holdout.py": "1bde560a95ed423d8bcda8e1b68619a9c7db3f7d08c8c82f9bcbc5bf2569e003",
+    "tools/open_holdout.py": "7deb56438c09813b9db1e62f3100e396b5d137902f36f312bd35222810543c8a"
+  },
+  "all_protected_sources_match_baseline": true,
+  "no_holdout_key_or_seal_command": true,
+  "production_test_suite": "atlandı",
+  "flock_rounds": 2,
+  "flock_exclusion": "kırmızı",
+  "same_container_negative_control": "yeşil"
+}

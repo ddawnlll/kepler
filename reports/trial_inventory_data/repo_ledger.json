@@ -1,0 +1,1450 @@
+{
+  "ledger_files": 44,
+  "ledger_rows": 4117,
+  "sources": {
+    "referee": 3245,
+    "screen": 872
+  },
+  "files": [
+    {
+      "file": "ledger/backtest_completion/ledger_misc.jsonl",
+      "rows": 3,
+      "bad_lines": [],
+      "sources": {
+        "referee": 3
+      },
+      "trial_unique": 3,
+      "trial_min": 1,
+      "trial_max": 3,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 0,
+      "hypotheses": {
+        "risk motoru duman testi BTC turtle(20,10) fixed_1000 (reports/backtest_completion_protocol.md madde 4b)": 1,
+        "risk motoru duman testi BTC turtle(20,10) vol_target (reports/backtest_completion_protocol.md madde 4b)": 1,
+        "risk motoru duman testi BTC turtle(20,10) vol_target_kill25 (reports/backtest_completion_protocol.md madde 4b)": 1
+      },
+      "config_names": {
+        "fixed_1000": 1,
+        "vol_target": 1,
+        "vol_target_kill25": 1
+      },
+      "sha256": "aed2068ea168a24b8b7e97ba12710285aaa1bfc7fde118f1c4a3caaf305de4b9"
+    },
+    {
+      "file": "ledger/backtest_completion/ledger_nested_donchian.jsonl",
+      "rows": 270,
+      "bad_lines": [],
+      "sources": {
+        "referee": 270
+      },
+      "trial_unique": 270,
+      "trial_min": 1,
+      "trial_max": 270,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 90,
+      "hypotheses": {
+        "nested donchian: don_10_5": 9,
+        "nested donchian: don_20_5": 9,
+        "nested donchian: don_20_10": 9,
+        "nested donchian: don_30_5": 9,
+        "nested donchian: don_30_10": 9,
+        "nested donchian: don_30_20": 9,
+        "nested donchian: don_40_5": 9,
+        "nested donchian: don_40_10": 9,
+        "nested donchian: don_40_20": 9,
+        "nested donchian: don_40_30": 9,
+        "nested donchian: don_55_5": 9,
+        "nested donchian: don_55_10": 9,
+        "nested donchian: don_55_20": 9,
+        "nested donchian: don_55_30": 9,
+        "nested donchian: don_55_40": 9,
+        "nested donchian: don_80_5": 9,
+        "nested donchian: don_80_10": 9,
+        "nested donchian: don_80_20": 9,
+        "nested donchian: don_80_30": 9,
+        "nested donchian: don_80_40": 9,
+        "nested donchian: don_100_5": 9,
+        "nested donchian: don_100_10": 9,
+        "nested donchian: don_100_20": 9,
+        "nested donchian: don_100_30": 9,
+        "nested donchian: don_100_40": 9,
+        "nested donchian: don_120_5": 9,
+        "nested donchian: don_120_10": 9,
+        "nested donchian: don_120_20": 9,
+        "nested donchian: don_120_30": 9,
+        "nested donchian: don_120_40": 9
+      },
+      "config_names": {
+        "don_10_5": 9,
+        "don_20_5": 9,
+        "don_20_10": 9,
+        "don_30_5": 9,
+        "don_30_10": 9,
+        "don_30_20": 9,
+        "don_40_5": 9,
+        "don_40_10": 9,
+        "don_40_20": 9,
+        "don_40_30": 9,
+        "don_55_5": 9,
+        "don_55_10": 9,
+        "don_55_20": 9,
+        "don_55_30": 9,
+        "don_55_40": 9,
+        "don_80_5": 9,
+        "don_80_10": 9,
+        "don_80_20": 9,
+        "don_80_30": 9,
+        "don_80_40": 9,
+        "don_100_5": 9,
+        "don_100_10": 9,
+        "don_100_20": 9,
+        "don_100_30": 9,
+        "don_100_40": 9,
+        "don_120_5": 9,
+        "don_120_10": 9,
+        "don_120_20": 9,
+        "don_120_30": 9,
+        "don_120_40": 9
+      },
+      "sha256": "08a90ffcc1d966ea9bf7c42c710a49259dcbc4f5f1823a7a05e781cbc81fb3f9"
+    },
+    {
+      "file": "ledger/backtest_completion/ledger_nested_ema.jsonl",
+      "rows": 216,
+      "bad_lines": [],
+      "sources": {
+        "referee": 216
+      },
+      "trial_unique": 216,
+      "trial_min": 1,
+      "trial_max": 216,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 72,
+      "hypotheses": {
+        "nested ema: ema_5_50": 9,
+        "nested ema: ema_5_100": 9,
+        "nested ema: ema_5_150": 9,
+        "nested ema: ema_5_200": 9,
+        "nested ema: ema_5_350": 9,
+        "nested ema: ema_10_50": 9,
+        "nested ema: ema_10_100": 9,
+        "nested ema: ema_10_150": 9,
+        "nested ema: ema_10_200": 9,
+        "nested ema: ema_10_350": 9,
+        "nested ema: ema_20_50": 9,
+        "nested ema: ema_20_100": 9,
+        "nested ema: ema_20_150": 9,
+        "nested ema: ema_20_200": 9,
+        "nested ema: ema_20_350": 9,
+        "nested ema: ema_30_50": 9,
+        "nested ema: ema_30_100": 9,
+        "nested ema: ema_30_150": 9,
+        "nested ema: ema_30_200": 9,
+        "nested ema: ema_30_350": 9,
+        "nested ema: ema_50_100": 9,
+        "nested ema: ema_50_150": 9,
+        "nested ema: ema_50_200": 9,
+        "nested ema: ema_50_350": 9
+      },
+      "config_names": {
+        "ema_5_50": 9,
+        "ema_5_100": 9,
+        "ema_5_150": 9,
+        "ema_5_200": 9,
+        "ema_5_350": 9,
+        "ema_10_50": 9,
+        "ema_10_100": 9,
+        "ema_10_150": 9,
+        "ema_10_200": 9,
+        "ema_10_350": 9,
+        "ema_20_50": 9,
+        "ema_20_100": 9,
+        "ema_20_150": 9,
+        "ema_20_200": 9,
+        "ema_20_350": 9,
+        "ema_30_50": 9,
+        "ema_30_100": 9,
+        "ema_30_150": 9,
+        "ema_30_200": 9,
+        "ema_30_350": 9,
+        "ema_50_100": 9,
+        "ema_50_150": 9,
+        "ema_50_200": 9,
+        "ema_50_350": 9
+      },
+      "sha256": "cbfa6af3e3a898ed58e3199f5ec0465a62d8869d33438054f91fe161e27ed27e"
+    },
+    {
+      "file": "ledger/backtest_completion/ledger_nested_tsmom.jsonl",
+      "rows": 189,
+      "bad_lines": [],
+      "sources": {
+        "referee": 189
+      },
+      "trial_unique": 189,
+      "trial_min": 1,
+      "trial_max": 189,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 63,
+      "hypotheses": {
+        "nested tsmom: tsmom_7_1": 9,
+        "nested tsmom: tsmom_7_7": 9,
+        "nested tsmom: tsmom_7_30": 9,
+        "nested tsmom: tsmom_14_1": 9,
+        "nested tsmom: tsmom_14_7": 9,
+        "nested tsmom: tsmom_14_30": 9,
+        "nested tsmom: tsmom_30_1": 9,
+        "nested tsmom: tsmom_30_7": 9,
+        "nested tsmom: tsmom_30_30": 9,
+        "nested tsmom: tsmom_60_1": 9,
+        "nested tsmom: tsmom_60_7": 9,
+        "nested tsmom: tsmom_60_30": 9,
+        "nested tsmom: tsmom_90_1": 9,
+        "nested tsmom: tsmom_90_7": 9,
+        "nested tsmom: tsmom_90_30": 9,
+        "nested tsmom: tsmom_180_1": 9,
+        "nested tsmom: tsmom_180_7": 9,
+        "nested tsmom: tsmom_180_30": 9,
+        "nested tsmom: tsmom_365_1": 9,
+        "nested tsmom: tsmom_365_7": 9,
+        "nested tsmom: tsmom_365_30": 9
+      },
+      "config_names": {
+        "tsmom_7_1": 9,
+        "tsmom_7_7": 9,
+        "tsmom_7_30": 9,
+        "tsmom_14_1": 9,
+        "tsmom_14_7": 9,
+        "tsmom_14_30": 9,
+        "tsmom_30_1": 9,
+        "tsmom_30_7": 9,
+        "tsmom_30_30": 9,
+        "tsmom_60_1": 9,
+        "tsmom_60_7": 9,
+        "tsmom_60_30": 9,
+        "tsmom_90_1": 9,
+        "tsmom_90_7": 9,
+        "tsmom_90_30": 9,
+        "tsmom_180_1": 9,
+        "tsmom_180_7": 9,
+        "tsmom_180_30": 9,
+        "tsmom_365_1": 9,
+        "tsmom_365_7": 9,
+        "tsmom_365_30": 9
+      },
+      "sha256": "cf631afddad379d4305254a8121f5244df14d85eca3cd56d6a8e3eb9f7907aa7"
+    },
+    {
+      "file": "ledger/backtest_completion/ledger_nested_xs_carry.jsonl",
+      "rows": 27,
+      "bad_lines": [],
+      "sources": {
+        "referee": 27
+      },
+      "trial_unique": 27,
+      "trial_min": 1,
+      "trial_max": 27,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 9,
+      "hypotheses": {
+        "nested xs_carry: xscarry_7": 9,
+        "nested xs_carry: xscarry_14": 9,
+        "nested xs_carry: xscarry_30": 9
+      },
+      "config_names": {
+        "xscarry_7": 9,
+        "xscarry_14": 9,
+        "xscarry_30": 9
+      },
+      "sha256": "f178190e52f343dc7796127fa37f8a177f91a13b10691c23f04193ba6e14ba56"
+    },
+    {
+      "file": "ledger/backtest_completion/ledger_nested_xs_mom.jsonl",
+      "rows": 54,
+      "bad_lines": [],
+      "sources": {
+        "referee": 54
+      },
+      "trial_unique": 54,
+      "trial_min": 1,
+      "trial_max": 54,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 18,
+      "hypotheses": {
+        "nested xs_mom: xsmom_7": 9,
+        "nested xs_mom: xsmom_14": 9,
+        "nested xs_mom: xsmom_30": 9,
+        "nested xs_mom: xsmom_60": 9,
+        "nested xs_mom: xsmom_90": 9,
+        "nested xs_mom: xsmom_180": 9
+      },
+      "config_names": {
+        "xsmom_7": 9,
+        "xsmom_14": 9,
+        "xsmom_30": 9,
+        "xsmom_60": 9,
+        "xsmom_90": 9,
+        "xsmom_180": 9
+      },
+      "sha256": "3a771602edcc5ee139f6ec064567bffd1581a923097337c9523da59227396ec2"
+    },
+    {
+      "file": "ledger/backtest_completion/ledger_nested_xs_rev.jsonl",
+      "rows": 36,
+      "bad_lines": [],
+      "sources": {
+        "referee": 36
+      },
+      "trial_unique": 36,
+      "trial_min": 1,
+      "trial_max": 36,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 12,
+      "hypotheses": {
+        "nested xs_rev: xsrev_1": 9,
+        "nested xs_rev: xsrev_2": 9,
+        "nested xs_rev: xsrev_3": 9,
+        "nested xs_rev: xsrev_5": 9
+      },
+      "config_names": {
+        "xsrev_1": 9,
+        "xsrev_2": 9,
+        "xsrev_3": 9,
+        "xsrev_5": 9
+      },
+      "sha256": "aba62f500a79b74b6d12a5ffa5e565c1ba7449ff17df3cccec00adea512ec9c5"
+    },
+    {
+      "file": "ledger/backtest_completion/ledger_risk.jsonl",
+      "rows": 6,
+      "bad_lines": [],
+      "sources": {
+        "referee": 6
+      },
+      "trial_unique": 6,
+      "trial_min": 1,
+      "trial_max": 6,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 0,
+      "hypotheses": {
+        "risk motoru S1 eq_scale (reports/backtest_completion_protocol.md madde 4)": 1,
+        "risk motoru S1 fixed_kill25 (reports/backtest_completion_protocol.md madde 4)": 1,
+        "risk motoru S1 eq_scale_kill25 (reports/backtest_completion_protocol.md madde 4)": 1,
+        "risk motoru S2 eq_scale (reports/backtest_completion_protocol.md madde 4)": 1,
+        "risk motoru S2 fixed_kill25 (reports/backtest_completion_protocol.md madde 4)": 1,
+        "risk motoru S2 eq_scale_kill25 (reports/backtest_completion_protocol.md madde 4)": 1
+      },
+      "config_names": {
+        "S1_eq_scale": 1,
+        "S1_fixed_kill25": 1,
+        "S1_eq_scale_kill25": 1,
+        "S2_eq_scale": 1,
+        "S2_fixed_kill25": 1,
+        "S2_eq_scale_kill25": 1
+      },
+      "sha256": "5198ff95a33e0a12cb23d1537c9f803eb142c647b6572447d7b1a7b1c16cff24"
+    },
+    {
+      "file": "ledger/backtest_completion/ledger_scaled.jsonl",
+      "rows": 4,
+      "bad_lines": [],
+      "sources": {
+        "referee": 4
+      },
+      "trial_unique": 4,
+      "trial_min": 1,
+      "trial_max": 4,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 0,
+      "hypotheses": {
+        "ölçekli boyut kill S1 scaled (reports/scaled_kill_protocol.md)": 1,
+        "ölçekli boyut kill S1 scaled_kill (reports/scaled_kill_protocol.md)": 1,
+        "ölçekli boyut kill S2 scaled (reports/scaled_kill_protocol.md)": 1,
+        "ölçekli boyut kill S2 scaled_kill (reports/scaled_kill_protocol.md)": 1
+      },
+      "config_names": {
+        "S1_scaled": 1,
+        "S1_scaled_kill": 1,
+        "S2_scaled": 1,
+        "S2_scaled_kill": 1
+      },
+      "sha256": "ce30b92d96d7673db3e2129f5a3c2c280e85ce02b2da45c57d4cf951c90a65a6"
+    },
+    {
+      "file": "ledger/ensemble/ledger_ev1.jsonl",
+      "rows": 1,
+      "bad_lines": [],
+      "sources": {
+        "referee": 1
+      },
+      "trial_unique": 1,
+      "trial_min": 1,
+      "trial_max": 1,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 0,
+      "hypotheses": {
+        "Ensemble v1: piyasa durumu -> uzmanlar -> aday -> risk motoru (reports/ensemble_protocol.md)": 1
+      },
+      "config_names": {
+        "EV1": 1
+      },
+      "sha256": "3d51ba395b20f4313111d7ea296cd538326a3d305fce464088e51bde808ecd43"
+    },
+    {
+      "file": "ledger/full_systems/ledger_attempt1.jsonl",
+      "rows": 10,
+      "bad_lines": [],
+      "sources": {
+        "referee": 10
+      },
+      "trial_unique": 10,
+      "trial_min": 1,
+      "trial_max": 10,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 0,
+      "hypotheses": {
+        "V4 S1 no_stop: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S1 no_pyramid: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S1 full: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S1 fixed_size: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S1 g2_equiv: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S1 no_limits: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S2 full: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S2 g2_equiv: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S2 no_pyramid: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S2 no_limits: tam Turtle (reports/full_systems_protocol.md)": 1
+      },
+      "config_names": {
+        "S1_no_stop": 1,
+        "S1_no_pyramid": 1,
+        "S1_full": 1,
+        "S1_fixed_size": 1,
+        "S1_g2_equiv": 1,
+        "S1_no_limits": 1,
+        "S2_full": 1,
+        "S2_g2_equiv": 1,
+        "S2_no_pyramid": 1,
+        "S2_no_limits": 1
+      },
+      "sha256": "1d754bce0a407e6547120f6abf748e018c18794f3a8bf973b3384375d1a2c094"
+    },
+    {
+      "file": "ledger/full_systems/ledger_run2.jsonl",
+      "rows": 10,
+      "bad_lines": [],
+      "sources": {
+        "referee": 10
+      },
+      "trial_unique": 10,
+      "trial_min": 1,
+      "trial_max": 10,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 0,
+      "hypotheses": {
+        "V4 S1 no_stop: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S1 no_pyramid: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S1 full: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S1 fixed_size: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S1 g2_equiv: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S1 no_limits: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S2 full: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S2 g2_equiv: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S2 no_pyramid: tam Turtle (reports/full_systems_protocol.md)": 1,
+        "V4 S2 no_limits: tam Turtle (reports/full_systems_protocol.md)": 1
+      },
+      "config_names": {
+        "S1_no_stop": 1,
+        "S1_no_pyramid": 1,
+        "S1_full": 1,
+        "S1_fixed_size": 1,
+        "S1_g2_equiv": 1,
+        "S1_no_limits": 1,
+        "S2_full": 1,
+        "S2_g2_equiv": 1,
+        "S2_no_pyramid": 1,
+        "S2_no_limits": 1
+      },
+      "sha256": "3887f23ce6cc9122976935b671edbdcbe4fb89a010cb1db38cdec2eb7d483034"
+    },
+    {
+      "file": "ledger/g1_ledger.jsonl",
+      "rows": 112,
+      "bad_lines": [],
+      "sources": {
+        "screen": 80,
+        "referee": 32
+      },
+      "trial_unique": 112,
+      "trial_min": 1,
+      "trial_max": 112,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 64,
+      "hypotheses": {
+        "G1 eleme-hakem uyumu (fixture ızgarası)": 112
+      },
+      "config_names": {
+        "mom6": 7,
+        "mom12": 7,
+        "mom24": 7,
+        "mom48": 7,
+        "mom96": 7,
+        "mom168": 7,
+        "rev6": 7,
+        "rev12": 7,
+        "rev24": 7,
+        "rev48": 7,
+        "rev96": 7,
+        "rev168": 7,
+        "trend24": 7,
+        "trend72": 7,
+        "trend168": 7,
+        "trend336": 7
+      },
+      "sha256": "f6c87ac14ed0897d95be673c02064702fcd3747f6a5ead795aaad35398b4af14"
+    },
+    {
+      "file": "ledger/g2/ledger_carry_funding.jsonl",
+      "rows": 117,
+      "bad_lines": [],
+      "sources": {
+        "referee": 117
+      },
+      "trial_unique": 117,
+      "trial_min": 1,
+      "trial_max": 117,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 39,
+      "hypotheses": {
+        "G2 carry_funding: kitap sinyali, sabit parametre (reports/book_signals.md)": 117
+      },
+      "config_names": {
+        "carry_funding": 117
+      },
+      "sha256": "af83fe645e6ceb8fadd150a0e152e621d8dc9ef56e0f55450443947076c3225e"
+    },
+    {
+      "file": "ledger/g2/ledger_donchian_trend.jsonl",
+      "rows": 117,
+      "bad_lines": [],
+      "sources": {
+        "referee": 117
+      },
+      "trial_unique": 117,
+      "trial_min": 1,
+      "trial_max": 117,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 39,
+      "hypotheses": {
+        "G2 donchian_trend: kitap sinyali, sabit parametre (reports/book_signals.md)": 117
+      },
+      "config_names": {
+        "donchian_trend": 117
+      },
+      "sha256": "24534a211c499c2d5226a5f8cd1c616e8a395495e339573bca8648987effddab"
+    },
+    {
+      "file": "ledger/g2/ledger_dual_mom_5.jsonl",
+      "rows": 65,
+      "bad_lines": [],
+      "sources": {
+        "referee": 65
+      },
+      "trial_unique": 65,
+      "trial_min": 1,
+      "trial_max": 65,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 13,
+      "hypotheses": {
+        "G2 dual_mom_5: kitap sinyali, sabit parametre (reports/book_signals.md)": 65
+      },
+      "config_names": {
+        "dual_mom_5": 65
+      },
+      "sha256": "6f2ecd2b7bb4b3dd6563daef0d73fd38ec8a6f81fa17a3843adb2eb1cb0d9f9e"
+    },
+    {
+      "file": "ledger/g2/ledger_dual_mom_9.jsonl",
+      "rows": 117,
+      "bad_lines": [],
+      "sources": {
+        "referee": 117
+      },
+      "trial_unique": 117,
+      "trial_min": 1,
+      "trial_max": 117,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 39,
+      "hypotheses": {
+        "G2 dual_mom_9: kitap sinyali, sabit parametre (reports/book_signals.md)": 117
+      },
+      "config_names": {
+        "dual_mom_9": 117
+      },
+      "sha256": "e04f286a0d429fe4773ab541cfc9ce225542852aa0e9a424e928f3160f81473b"
+    },
+    {
+      "file": "ledger/g2/ledger_tsmom.jsonl",
+      "rows": 117,
+      "bad_lines": [],
+      "sources": {
+        "referee": 117
+      },
+      "trial_unique": 117,
+      "trial_min": 1,
+      "trial_max": 117,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 39,
+      "hypotheses": {
+        "G2 tsmom: kitap sinyali, sabit parametre (reports/book_signals.md)": 117
+      },
+      "config_names": {
+        "tsmom": 117
+      },
+      "sha256": "31e57861b25bfec4ced0bf5a7d4f87cda4a6f27d463e46c63e1c6507f87a6705"
+    },
+    {
+      "file": "ledger/g2/ledger_turtle_s1.jsonl",
+      "rows": 117,
+      "bad_lines": [],
+      "sources": {
+        "referee": 117
+      },
+      "trial_unique": 117,
+      "trial_min": 1,
+      "trial_max": 117,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 39,
+      "hypotheses": {
+        "G2 turtle_s1: kitap sinyali, sabit parametre (reports/book_signals.md)": 117
+      },
+      "config_names": {
+        "turtle_s1": 117
+      },
+      "sha256": "25b6f86245f3c747c94ab0b56af8ecfe1052ce440e3426f6456c9bc64ec29dbf"
+    },
+    {
+      "file": "ledger/g2/ledger_turtle_s2.jsonl",
+      "rows": 117,
+      "bad_lines": [],
+      "sources": {
+        "referee": 117
+      },
+      "trial_unique": 117,
+      "trial_min": 1,
+      "trial_max": 117,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 39,
+      "hypotheses": {
+        "G2 turtle_s2: kitap sinyali, sabit parametre (reports/book_signals.md)": 117
+      },
+      "config_names": {
+        "turtle_s2": 117
+      },
+      "sha256": "51a25b988b5452a2aeee2a6b1f87ec8f9e158891857ab6066aadbf618702d519"
+    },
+    {
+      "file": "ledger/search/ledger_repl_donchian.jsonl",
+      "rows": 84,
+      "bad_lines": [],
+      "sources": {
+        "referee": 84
+      },
+      "trial_unique": 84,
+      "trial_min": 1,
+      "trial_max": 84,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 30,
+      "hypotheses": {
+        "repl donchian: don_80_20": 84
+      },
+      "config_names": {
+        "don_80_20": 84
+      },
+      "sha256": "2699e4609a158d0628a2b20948eed59c09991cd7d728eea97b747f166628cb5f"
+    },
+    {
+      "file": "ledger/search/ledger_repl_ema.jsonl",
+      "rows": 84,
+      "bad_lines": [],
+      "sources": {
+        "referee": 84
+      },
+      "trial_unique": 84,
+      "trial_min": 1,
+      "trial_max": 84,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 30,
+      "hypotheses": {
+        "repl ema: ema_10_100": 84
+      },
+      "config_names": {
+        "ema_10_100": 84
+      },
+      "sha256": "9c144a5e8b56844570c92e1b20321c1317e2bf0bfbd2e540730c5909757bb73c"
+    },
+    {
+      "file": "ledger/search/ledger_repl_tsmom.jsonl",
+      "rows": 84,
+      "bad_lines": [],
+      "sources": {
+        "referee": 84
+      },
+      "trial_unique": 84,
+      "trial_min": 1,
+      "trial_max": 84,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 30,
+      "hypotheses": {
+        "repl tsmom: tsmom_14_1": 84
+      },
+      "config_names": {
+        "tsmom_14_1": 84
+      },
+      "sha256": "1ab3d825714c40b042c2b1d673cdb26b8315c52882bf110b9a711640fe41503a"
+    },
+    {
+      "file": "ledger/search/ledger_repl_xs_carry.jsonl",
+      "rows": 84,
+      "bad_lines": [],
+      "sources": {
+        "referee": 84
+      },
+      "trial_unique": 84,
+      "trial_min": 1,
+      "trial_max": 84,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 30,
+      "hypotheses": {
+        "repl xs_carry: xscarry_7": 84
+      },
+      "config_names": {
+        "xscarry_7": 84
+      },
+      "sha256": "51c99a4a838f30e6a865f6fae399d70b197809d7f35b6ad5bba77f86b460ea24"
+    },
+    {
+      "file": "ledger/search/ledger_repl_xs_mom.jsonl",
+      "rows": 84,
+      "bad_lines": [],
+      "sources": {
+        "referee": 84
+      },
+      "trial_unique": 84,
+      "trial_min": 1,
+      "trial_max": 84,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 30,
+      "hypotheses": {
+        "repl xs_mom: xsmom_7": 84
+      },
+      "config_names": {
+        "xsmom_7": 84
+      },
+      "sha256": "ff1b9a1fc5e0623f5770006f99f7d86d6d23ac1e9444567cea9072486ddc770a"
+    },
+    {
+      "file": "ledger/search/ledger_repl_xs_rev.jsonl",
+      "rows": 84,
+      "bad_lines": [],
+      "sources": {
+        "referee": 84
+      },
+      "trial_unique": 84,
+      "trial_min": 1,
+      "trial_max": 84,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 30,
+      "hypotheses": {
+        "repl xs_rev: xsrev_3": 84
+      },
+      "config_names": {
+        "xsrev_3": 84
+      },
+      "sha256": "014386450ae31d55722bf41c8b4fd3097b92fd6a94962daa3b39697dddbb5f2b"
+    },
+    {
+      "file": "ledger/search/ledger_screen_donchian.jsonl",
+      "rows": 270,
+      "bad_lines": [],
+      "sources": {
+        "screen": 270
+      },
+      "trial_unique": 270,
+      "trial_min": 1,
+      "trial_max": 270,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 0,
+      "hypotheses": {
+        "eleme donchian": 270
+      },
+      "config_names": {
+        "don_10_5": 9,
+        "don_20_5": 9,
+        "don_20_10": 9,
+        "don_30_5": 9,
+        "don_30_10": 9,
+        "don_30_20": 9,
+        "don_40_5": 9,
+        "don_40_10": 9,
+        "don_40_20": 9,
+        "don_40_30": 9,
+        "don_55_5": 9,
+        "don_55_10": 9,
+        "don_55_20": 9,
+        "don_55_30": 9,
+        "don_55_40": 9,
+        "don_80_5": 9,
+        "don_80_10": 9,
+        "don_80_20": 9,
+        "don_80_30": 9,
+        "don_80_40": 9,
+        "don_100_5": 9,
+        "don_100_10": 9,
+        "don_100_20": 9,
+        "don_100_30": 9,
+        "don_100_40": 9,
+        "don_120_5": 9,
+        "don_120_10": 9,
+        "don_120_20": 9,
+        "don_120_30": 9,
+        "don_120_40": 9
+      },
+      "sha256": "1ae9f06c076737021b5410869bac342508229a86b02f0f1a50d7935110ea28c6"
+    },
+    {
+      "file": "ledger/search/ledger_screen_ema.jsonl",
+      "rows": 216,
+      "bad_lines": [],
+      "sources": {
+        "screen": 216
+      },
+      "trial_unique": 216,
+      "trial_min": 1,
+      "trial_max": 216,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 0,
+      "hypotheses": {
+        "eleme ema": 216
+      },
+      "config_names": {
+        "ema_5_50": 9,
+        "ema_5_100": 9,
+        "ema_5_150": 9,
+        "ema_5_200": 9,
+        "ema_5_350": 9,
+        "ema_10_50": 9,
+        "ema_10_100": 9,
+        "ema_10_150": 9,
+        "ema_10_200": 9,
+        "ema_10_350": 9,
+        "ema_20_50": 9,
+        "ema_20_100": 9,
+        "ema_20_150": 9,
+        "ema_20_200": 9,
+        "ema_20_350": 9,
+        "ema_30_50": 9,
+        "ema_30_100": 9,
+        "ema_30_150": 9,
+        "ema_30_200": 9,
+        "ema_30_350": 9,
+        "ema_50_100": 9,
+        "ema_50_150": 9,
+        "ema_50_200": 9,
+        "ema_50_350": 9
+      },
+      "sha256": "c21534941ad9323c3b8f7e3d162b9d580da2156765a5140f8d24bc8149a49530"
+    },
+    {
+      "file": "ledger/search/ledger_screen_tsmom.jsonl",
+      "rows": 189,
+      "bad_lines": [],
+      "sources": {
+        "screen": 189
+      },
+      "trial_unique": 189,
+      "trial_min": 1,
+      "trial_max": 189,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 2,
+      "hypotheses": {
+        "eleme tsmom": 189
+      },
+      "config_names": {
+        "tsmom_7_1": 9,
+        "tsmom_7_7": 9,
+        "tsmom_7_30": 9,
+        "tsmom_14_1": 9,
+        "tsmom_14_7": 9,
+        "tsmom_14_30": 9,
+        "tsmom_30_1": 9,
+        "tsmom_30_7": 9,
+        "tsmom_30_30": 9,
+        "tsmom_60_1": 9,
+        "tsmom_60_7": 9,
+        "tsmom_60_30": 9,
+        "tsmom_90_1": 9,
+        "tsmom_90_7": 9,
+        "tsmom_90_30": 9,
+        "tsmom_180_1": 9,
+        "tsmom_180_7": 9,
+        "tsmom_180_30": 9,
+        "tsmom_365_1": 9,
+        "tsmom_365_7": 9,
+        "tsmom_365_30": 9
+      },
+      "sha256": "705d36eba1ed0145cb189d3e956700f324bde477900a86e62410ac3d96643198"
+    },
+    {
+      "file": "ledger/search/ledger_screen_xs_carry.jsonl",
+      "rows": 27,
+      "bad_lines": [],
+      "sources": {
+        "screen": 27
+      },
+      "trial_unique": 27,
+      "trial_min": 1,
+      "trial_max": 27,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 0,
+      "hypotheses": {
+        "eleme xs_carry": 27
+      },
+      "config_names": {
+        "xscarry_7": 9,
+        "xscarry_14": 9,
+        "xscarry_30": 9
+      },
+      "sha256": "2ea350c1921a307b566f27a0c4829ae166a32d6745939ff824ea70cb7e093252"
+    },
+    {
+      "file": "ledger/search/ledger_screen_xs_mom.jsonl",
+      "rows": 54,
+      "bad_lines": [],
+      "sources": {
+        "screen": 54
+      },
+      "trial_unique": 54,
+      "trial_min": 1,
+      "trial_max": 54,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 0,
+      "hypotheses": {
+        "eleme xs_mom": 54
+      },
+      "config_names": {
+        "xsmom_7": 9,
+        "xsmom_14": 9,
+        "xsmom_30": 9,
+        "xsmom_60": 9,
+        "xsmom_90": 9,
+        "xsmom_180": 9
+      },
+      "sha256": "b4a35634cc53a403d9a59048eb9cda37dd1657cebcddfcb3d758224cba037421"
+    },
+    {
+      "file": "ledger/search/ledger_screen_xs_rev.jsonl",
+      "rows": 36,
+      "bad_lines": [],
+      "sources": {
+        "screen": 36
+      },
+      "trial_unique": 36,
+      "trial_min": 1,
+      "trial_max": 36,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 0,
+      "hypotheses": {
+        "eleme xs_rev": 36
+      },
+      "config_names": {
+        "xsrev_1": 9,
+        "xsrev_2": 9,
+        "xsrev_3": 9,
+        "xsrev_5": 9
+      },
+      "sha256": "2e73e03792e48a403b8c0599cefbea2a66f0c2da11c2dd5b03e4b22ac920c891"
+    },
+    {
+      "file": "ledger/search/ledger_search_donchian.jsonl",
+      "rows": 270,
+      "bad_lines": [],
+      "sources": {
+        "referee": 270
+      },
+      "trial_unique": 270,
+      "trial_min": 1,
+      "trial_max": 270,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 90,
+      "hypotheses": {
+        "search donchian: don_10_5": 9,
+        "search donchian: don_20_5": 9,
+        "search donchian: don_20_10": 9,
+        "search donchian: don_30_5": 9,
+        "search donchian: don_30_10": 9,
+        "search donchian: don_30_20": 9,
+        "search donchian: don_40_5": 9,
+        "search donchian: don_40_10": 9,
+        "search donchian: don_40_20": 9,
+        "search donchian: don_40_30": 9,
+        "search donchian: don_55_5": 9,
+        "search donchian: don_55_10": 9,
+        "search donchian: don_55_20": 9,
+        "search donchian: don_55_30": 9,
+        "search donchian: don_55_40": 9,
+        "search donchian: don_80_5": 9,
+        "search donchian: don_80_10": 9,
+        "search donchian: don_80_20": 9,
+        "search donchian: don_80_30": 9,
+        "search donchian: don_80_40": 9,
+        "search donchian: don_100_5": 9,
+        "search donchian: don_100_10": 9,
+        "search donchian: don_100_20": 9,
+        "search donchian: don_100_30": 9,
+        "search donchian: don_100_40": 9,
+        "search donchian: don_120_5": 9,
+        "search donchian: don_120_10": 9,
+        "search donchian: don_120_20": 9,
+        "search donchian: don_120_30": 9,
+        "search donchian: don_120_40": 9
+      },
+      "config_names": {
+        "don_10_5": 9,
+        "don_20_5": 9,
+        "don_20_10": 9,
+        "don_30_5": 9,
+        "don_30_10": 9,
+        "don_30_20": 9,
+        "don_40_5": 9,
+        "don_40_10": 9,
+        "don_40_20": 9,
+        "don_40_30": 9,
+        "don_55_5": 9,
+        "don_55_10": 9,
+        "don_55_20": 9,
+        "don_55_30": 9,
+        "don_55_40": 9,
+        "don_80_5": 9,
+        "don_80_10": 9,
+        "don_80_20": 9,
+        "don_80_30": 9,
+        "don_80_40": 9,
+        "don_100_5": 9,
+        "don_100_10": 9,
+        "don_100_20": 9,
+        "don_100_30": 9,
+        "don_100_40": 9,
+        "don_120_5": 9,
+        "don_120_10": 9,
+        "don_120_20": 9,
+        "don_120_30": 9,
+        "don_120_40": 9
+      },
+      "sha256": "fabfa6c716f9ef57b63aaa97e5ae62bd7f8652970e8e3d3f3711345a94ecb55e"
+    },
+    {
+      "file": "ledger/search/ledger_search_ema.jsonl",
+      "rows": 216,
+      "bad_lines": [],
+      "sources": {
+        "referee": 216
+      },
+      "trial_unique": 216,
+      "trial_min": 1,
+      "trial_max": 216,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 72,
+      "hypotheses": {
+        "search ema: ema_5_50": 9,
+        "search ema: ema_5_100": 9,
+        "search ema: ema_5_150": 9,
+        "search ema: ema_5_200": 9,
+        "search ema: ema_5_350": 9,
+        "search ema: ema_10_50": 9,
+        "search ema: ema_10_100": 9,
+        "search ema: ema_10_150": 9,
+        "search ema: ema_10_200": 9,
+        "search ema: ema_10_350": 9,
+        "search ema: ema_20_50": 9,
+        "search ema: ema_20_100": 9,
+        "search ema: ema_20_150": 9,
+        "search ema: ema_20_200": 9,
+        "search ema: ema_20_350": 9,
+        "search ema: ema_30_50": 9,
+        "search ema: ema_30_100": 9,
+        "search ema: ema_30_150": 9,
+        "search ema: ema_30_200": 9,
+        "search ema: ema_30_350": 9,
+        "search ema: ema_50_100": 9,
+        "search ema: ema_50_150": 9,
+        "search ema: ema_50_200": 9,
+        "search ema: ema_50_350": 9
+      },
+      "config_names": {
+        "ema_5_50": 9,
+        "ema_5_100": 9,
+        "ema_5_150": 9,
+        "ema_5_200": 9,
+        "ema_5_350": 9,
+        "ema_10_50": 9,
+        "ema_10_100": 9,
+        "ema_10_150": 9,
+        "ema_10_200": 9,
+        "ema_10_350": 9,
+        "ema_20_50": 9,
+        "ema_20_100": 9,
+        "ema_20_150": 9,
+        "ema_20_200": 9,
+        "ema_20_350": 9,
+        "ema_30_50": 9,
+        "ema_30_100": 9,
+        "ema_30_150": 9,
+        "ema_30_200": 9,
+        "ema_30_350": 9,
+        "ema_50_100": 9,
+        "ema_50_150": 9,
+        "ema_50_200": 9,
+        "ema_50_350": 9
+      },
+      "sha256": "a134c42c7805597024343285a27bd231bca338750b46e9d94f69165dd8b0065a"
+    },
+    {
+      "file": "ledger/search/ledger_search_tsmom.jsonl",
+      "rows": 189,
+      "bad_lines": [],
+      "sources": {
+        "referee": 189
+      },
+      "trial_unique": 189,
+      "trial_min": 1,
+      "trial_max": 189,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 63,
+      "hypotheses": {
+        "search tsmom: tsmom_7_1": 9,
+        "search tsmom: tsmom_7_7": 9,
+        "search tsmom: tsmom_7_30": 9,
+        "search tsmom: tsmom_14_1": 9,
+        "search tsmom: tsmom_14_7": 9,
+        "search tsmom: tsmom_14_30": 9,
+        "search tsmom: tsmom_30_1": 9,
+        "search tsmom: tsmom_30_7": 9,
+        "search tsmom: tsmom_30_30": 9,
+        "search tsmom: tsmom_60_1": 9,
+        "search tsmom: tsmom_60_7": 9,
+        "search tsmom: tsmom_60_30": 9,
+        "search tsmom: tsmom_90_1": 9,
+        "search tsmom: tsmom_90_7": 9,
+        "search tsmom: tsmom_90_30": 9,
+        "search tsmom: tsmom_180_1": 9,
+        "search tsmom: tsmom_180_7": 9,
+        "search tsmom: tsmom_180_30": 9,
+        "search tsmom: tsmom_365_1": 9,
+        "search tsmom: tsmom_365_7": 9,
+        "search tsmom: tsmom_365_30": 9
+      },
+      "config_names": {
+        "tsmom_7_1": 9,
+        "tsmom_7_7": 9,
+        "tsmom_7_30": 9,
+        "tsmom_14_1": 9,
+        "tsmom_14_7": 9,
+        "tsmom_14_30": 9,
+        "tsmom_30_1": 9,
+        "tsmom_30_7": 9,
+        "tsmom_30_30": 9,
+        "tsmom_60_1": 9,
+        "tsmom_60_7": 9,
+        "tsmom_60_30": 9,
+        "tsmom_90_1": 9,
+        "tsmom_90_7": 9,
+        "tsmom_90_30": 9,
+        "tsmom_180_1": 9,
+        "tsmom_180_7": 9,
+        "tsmom_180_30": 9,
+        "tsmom_365_1": 9,
+        "tsmom_365_7": 9,
+        "tsmom_365_30": 9
+      },
+      "sha256": "6a6deb3d5225bdc0b8e92daff1c33c56d579442771ce72a729700fd7d6bc82e9"
+    },
+    {
+      "file": "ledger/search/ledger_search_xs_carry.jsonl",
+      "rows": 27,
+      "bad_lines": [],
+      "sources": {
+        "referee": 27
+      },
+      "trial_unique": 27,
+      "trial_min": 1,
+      "trial_max": 27,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 9,
+      "hypotheses": {
+        "search xs_carry: xscarry_7": 9,
+        "search xs_carry: xscarry_14": 9,
+        "search xs_carry: xscarry_30": 9
+      },
+      "config_names": {
+        "xscarry_7": 9,
+        "xscarry_14": 9,
+        "xscarry_30": 9
+      },
+      "sha256": "5c1bd26a1ebdac5103043fc6c6fb05cb5085d0600dfb5361dde0e88d73ae74ed"
+    },
+    {
+      "file": "ledger/search/ledger_search_xs_mom.jsonl",
+      "rows": 54,
+      "bad_lines": [],
+      "sources": {
+        "referee": 54
+      },
+      "trial_unique": 54,
+      "trial_min": 1,
+      "trial_max": 54,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 18,
+      "hypotheses": {
+        "search xs_mom: xsmom_7": 9,
+        "search xs_mom: xsmom_14": 9,
+        "search xs_mom: xsmom_30": 9,
+        "search xs_mom: xsmom_60": 9,
+        "search xs_mom: xsmom_90": 9,
+        "search xs_mom: xsmom_180": 9
+      },
+      "config_names": {
+        "xsmom_7": 9,
+        "xsmom_14": 9,
+        "xsmom_30": 9,
+        "xsmom_60": 9,
+        "xsmom_90": 9,
+        "xsmom_180": 9
+      },
+      "sha256": "0be31cd1d62d2b5f0df904369f2813bddd853bb715dee19721875555cd309675"
+    },
+    {
+      "file": "ledger/search/ledger_search_xs_rev.jsonl",
+      "rows": 36,
+      "bad_lines": [],
+      "sources": {
+        "referee": 36
+      },
+      "trial_unique": 36,
+      "trial_min": 1,
+      "trial_max": 36,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 12,
+      "hypotheses": {
+        "search xs_rev: xsrev_1": 9,
+        "search xs_rev: xsrev_2": 9,
+        "search xs_rev: xsrev_3": 9,
+        "search xs_rev: xsrev_5": 9
+      },
+      "config_names": {
+        "xsrev_1": 9,
+        "xsrev_2": 9,
+        "xsrev_3": 9,
+        "xsrev_5": 9
+      },
+      "sha256": "50fb4666930911ae3e9fafd92c451b2ce2c49102fa6d6b1d0c78e4a269d9f698"
+    },
+    {
+      "file": "ledger/search/ledger_val_donchian.jsonl",
+      "rows": 54,
+      "bad_lines": [],
+      "sources": {
+        "referee": 54
+      },
+      "trial_unique": 54,
+      "trial_min": 1,
+      "trial_max": 54,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 18,
+      "hypotheses": {
+        "val donchian: don_80_20": 54
+      },
+      "config_names": {
+        "don_80_20": 54
+      },
+      "sha256": "cc7e28232de349bb8a5a1936aec8aa8772ca4186342a48395772e6b3f18b90bf"
+    },
+    {
+      "file": "ledger/search/ledger_val_ema.jsonl",
+      "rows": 54,
+      "bad_lines": [],
+      "sources": {
+        "referee": 54
+      },
+      "trial_unique": 54,
+      "trial_min": 1,
+      "trial_max": 54,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 18,
+      "hypotheses": {
+        "val ema: ema_10_100": 54
+      },
+      "config_names": {
+        "ema_10_100": 54
+      },
+      "sha256": "213dd58166fbe7278c01dd79812d2a58ee8bac0bdc22ef36f7e6f421005b1223"
+    },
+    {
+      "file": "ledger/search/ledger_val_tsmom.jsonl",
+      "rows": 54,
+      "bad_lines": [],
+      "sources": {
+        "referee": 54
+      },
+      "trial_unique": 54,
+      "trial_min": 1,
+      "trial_max": 54,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 18,
+      "hypotheses": {
+        "val tsmom: tsmom_14_1": 54
+      },
+      "config_names": {
+        "tsmom_14_1": 54
+      },
+      "sha256": "7ccb8c57a8f4ced8fa55f7bf0e967057027332257782e1c91e028781b434a641"
+    },
+    {
+      "file": "ledger/search/ledger_val_xs_carry.jsonl",
+      "rows": 54,
+      "bad_lines": [],
+      "sources": {
+        "referee": 54
+      },
+      "trial_unique": 54,
+      "trial_min": 1,
+      "trial_max": 54,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 18,
+      "hypotheses": {
+        "val xs_carry: xscarry_7": 54
+      },
+      "config_names": {
+        "xscarry_7": 54
+      },
+      "sha256": "5f3ae7cf4fb99864b5bc10613cc397b6e864cb4d736ad862628e1faa4a3695a0"
+    },
+    {
+      "file": "ledger/search/ledger_val_xs_mom.jsonl",
+      "rows": 54,
+      "bad_lines": [],
+      "sources": {
+        "referee": 54
+      },
+      "trial_unique": 54,
+      "trial_min": 1,
+      "trial_max": 54,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 18,
+      "hypotheses": {
+        "val xs_mom: xsmom_7": 54
+      },
+      "config_names": {
+        "xsmom_7": 54
+      },
+      "sha256": "89e38a44060e0b3f356d1439e37bdfbcf569805dee6448304069ca5a9325620d"
+    },
+    {
+      "file": "ledger/search/ledger_val_xs_rev.jsonl",
+      "rows": 54,
+      "bad_lines": [],
+      "sources": {
+        "referee": 54
+      },
+      "trial_unique": 54,
+      "trial_min": 1,
+      "trial_max": 54,
+      "trials_equal_1_to_n": true,
+      "repeated_identical_source_config_code_data_rows": 18,
+      "hypotheses": {
+        "val xs_rev: xsrev_3": 54
+      },
+      "config_names": {
+        "xsrev_3": 54
+      },
+      "sha256": "9a83a2f5275c2de627fe93b2459556719f34bec00ec0c5c24a661c89659debe9"
+    }
+  ],
+  "reports_files": [
+    "reports/account_reality.md",
+    "reports/account_reality_data/sizing.json",
+    "reports/account_reality_data/sources.json",
+    "reports/account_reality_data/symbol_rules.csv",
+    "reports/backtest_completion.md",
+    "reports/backtest_completion_data/base.json",
+    "reports/backtest_completion_data/capacity.json",
+    "reports/backtest_completion_data/misc.json",
+    "reports/backtest_completion_data/nested_report.json",
+    "reports/backtest_completion_data/pbo.json",
+    "reports/backtest_completion_data/risk.json",
+    "reports/backtest_completion_data/scaled.json",
+    "reports/backtest_completion_data/tables.md",
+    "reports/backtest_completion_protocol.md",
+    "reports/backtest_modern/metrics.yaml",
+    "reports/book_signals.md",
+    "reports/data_audit.md",
+    "reports/data_audit_data/files.csv",
+    "reports/data_audit_data/findings.json",
+    "reports/data_audit_data/summary.json",
+    "reports/data_audit_data/time_checks.json",
+    "reports/ensemble.md",
+    "reports/ensemble_data/btc_close.json",
+    "reports/ensemble_data/k7.json",
+    "reports/ensemble_data/null_0_50.json",
+    "reports/ensemble_data/null_100_150.json",
+    "reports/ensemble_data/null_150_200.json",
+    "reports/ensemble_data/null_200_250.json",
+    "reports/ensemble_data/null_250_300.json",
+    "reports/ensemble_data/null_50_100.json",
+    "reports/ensemble_data/primary.json",
+    "reports/ensemble_data/summary.json",
+    "reports/ensemble_data/tables.md",
+    "reports/ensemble_protocol.md",
+    "reports/full_systems.md",
+    "reports/full_systems_data/summary.json",
+    "reports/full_systems_data/tables.md",
+    "reports/full_systems_protocol.md",
+    "reports/g0_g1.md",
+    "reports/g2.md",
+    "reports/g2_data/summary.json",
+    "reports/g2_data/tables.md",
+    "reports/nested_wf_protocol.md",
+    "reports/pre2022.md",
+    "reports/pre2022_data/summary.json",
+    "reports/pre2022_data/tables.md",
+    "reports/pre2022_protocol.md",
+    "reports/scaled_kill_protocol.md",
+    "reports/screen_vs_referee.md",
+    "reports/search.md",
+    "reports/search_data/summary.json",
+    "reports/search_data/tables.md",
+    "reports/search_protocol.md",
+    "reports/smoke.md",
+    "reports/xcheck_btc.md",
+    "reports/zone_fade_protocol.md"
+  ],
+  "scripts_files": [
+    "scripts/backtest_only.py",
+    "scripts/backtest_only.sh",
+    "scripts/books_quality.py",
+    "scripts/completion.py",
+    "scripts/completion_report.py",
+    "scripts/ensemble.py",
+    "scripts/ensemble_report.py",
+    "scripts/full_systems.py",
+    "scripts/full_systems_report.py",
+    "scripts/g1_real.py",
+    "scripts/g2.py",
+    "scripts/g2_report.py",
+    "scripts/pre2022.py",
+    "scripts/pre2022_report.py",
+    "scripts/search.py",
+    "scripts/search_report.py",
+    "scripts/smoke_qlib.sh",
+    "scripts/smoke_rdagent.sh"
+  ]
+}

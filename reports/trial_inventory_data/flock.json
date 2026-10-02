@@ -1,0 +1,80 @@
+{
+  "volume": "kepler-data",
+  "runs": [
+    {
+      "round": 0,
+      "shared_path": "scratchpad/flock_0_3cdeda3206b84997b695774fd47e05dd/shared.lock",
+      "scheduled_at": 1790982791.8907566,
+      "containers": [
+        {
+          "role": "A",
+          "pid": 2,
+          "path": "/data/scratchpad/flock_0_3cdeda3206b84997b695774fd47e05dd/shared.lock",
+          "file_sha256": "c332a181a7566742dd58becf2609a561819177887324fd5ac8aaec62f3430c51",
+          "attempt_at": 1790982791.8917487,
+          "acquired_at": 1790982791.8918862,
+          "acquired": true,
+          "same_container_second_open_blocked": true,
+          "released_at": 1790982803.901735,
+          "sandbox_id": "sb-zZqUHcFww5cTg7g3SkCzH8",
+          "stderr": ""
+        },
+        {
+          "role": "B",
+          "pid": 2,
+          "path": "/data/scratchpad/flock_0_3cdeda3206b84997b695774fd47e05dd/shared.lock",
+          "file_sha256": "c332a181a7566742dd58becf2609a561819177887324fd5ac8aaec62f3430c51",
+          "attempt_at": 1790982791.8914883,
+          "acquired_at": 1790982791.8916225,
+          "acquired": true,
+          "same_container_second_open_blocked": true,
+          "released_at": 1790982803.901029,
+          "sandbox_id": "sb-JBypLGm0vAdqoO4XJ6zDjK",
+          "stderr": ""
+        }
+      ],
+      "valid_concurrent_attempt": true,
+      "overlapping_exclusive_locks": true,
+      "cross_container_exclusion_pass": false
+    },
+    {
+      "round": 1,
+      "shared_path": "scratchpad/flock_1_bf194049fd4e4300821d950af7878f16/shared.lock",
+      "scheduled_at": 1790982835.3331132,
+      "containers": [
+        {
+          "role": "A",
+          "pid": 2,
+          "path": "/data/scratchpad/flock_1_bf194049fd4e4300821d950af7878f16/shared.lock",
+          "file_sha256": "c332a181a7566742dd58becf2609a561819177887324fd5ac8aaec62f3430c51",
+          "attempt_at": 1790982835.3337061,
+          "acquired_at": 1790982835.3338244,
+          "acquired": true,
+          "same_container_second_open_blocked": true,
+          "released_at": 1790982847.3431468,
+          "sandbox_id": "sb-hIjHP2SsvR26KozenW5yWN",
+          "stderr": ""
+        },
+        {
+          "role": "B",
+          "pid": 2,
+          "path": "/data/scratchpad/flock_1_bf194049fd4e4300821d950af7878f16/shared.lock",
+          "file_sha256": "c332a181a7566742dd58becf2609a561819177887324fd5ac8aaec62f3430c51",
+          "attempt_at": 1790982835.333554,
+          "acquired_at": 1790982835.3336625,
+          "acquired": true,
+          "same_container_second_open_blocked": true,
+          "released_at": 1790982847.343579,
+          "sandbox_id": "sb-drMdEYC1PhH7vQsu6ZLLhl",
+          "stderr": ""
+        }
+      ],
+      "valid_concurrent_attempt": true,
+      "overlapping_exclusive_locks": true,
+      "cross_container_exclusion_pass": false
+    }
+  ],
+  "pass": false,
+  "ledger_untouched": true,
+  "test_files_retained": true
+}

@@ -1,0 +1,7279 @@
+{
+  "files": [
+    {
+      "file": "g2/carry_funding.json",
+      "sha256": "68f89ba70f098c6bc05131b91d45f424e4c77c2e83aa80ef641011a4fb235c00",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "real",
+        "null",
+        "b",
+        "secs"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2817
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/carry_funding_common.json",
+      "sha256": "3f759c0af74307a715da99f119bbcb597885f320206ad253cbc4f445345b3058",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/donchian_trend.json",
+      "sha256": "1ba9e77382f4c4c5f01e20a383b8ee11bf6d58d8a0924b20b7603c18e3f966ea",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "real",
+        "null",
+        "b",
+        "secs"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2817
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/donchian_trend_common.json",
+      "sha256": "077a06a9f42e2eeb3480ab41b691baa2ed9454708d5ad66468b4495f72be8d1f",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/dual_mom_5.json",
+      "sha256": "28eaad6429d126ae4044b24072d5660d400cfc5ed67b91934f1033541ec9eaf9",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "real",
+        "null",
+        "b",
+        "secs"
+      ],
+      "counts": {
+        "pnl_leaf_results": 1565
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/dual_mom_5_common.json",
+      "sha256": "69f7cfde7f084222bd3c903fad11783da7cae74bbca7d4da2770dd7c173c09e0",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 1500
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/dual_mom_9.json",
+      "sha256": "29f7808b6a008b4791150886c4f361947a4ad26fb286cf243e63ac09c305b00d",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "real",
+        "null",
+        "b",
+        "secs"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2817
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/dual_mom_9_common.json",
+      "sha256": "0e6f79ab0770348983b245de0ba90c99cdb120ed85d4ec9214b007958238b3b5",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/summary.json",
+      "sha256": "b60766b2f9213112bec69be9e7d242658212c840c67b770bba199e392fb0d902",
+      "top_level_keys": [
+        "carry_funding|çekirdek-5",
+        "carry_funding|genişletilmiş-9",
+        "donchian_trend|çekirdek-5",
+        "donchian_trend|genişletilmiş-9",
+        "dual_mom_5|5",
+        "dual_mom_9|9",
+        "tsmom|çekirdek-5",
+        "tsmom|genişletilmiş-9",
+        "turtle_s1|çekirdek-5",
+        "turtle_s1|genişletilmiş-9",
+        "turtle_s2|çekirdek-5",
+        "turtle_s2|genişletilmiş-9"
+      ],
+      "counts": {
+        "pnl_leaf_results": 72
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "carry_funding|çekirdek-5/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        },
+        {
+          "path": "carry_funding|genişletilmiş-9/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        },
+        {
+          "path": "donchian_trend|çekirdek-5/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        },
+        {
+          "path": "donchian_trend|genişletilmiş-9/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        },
+        {
+          "path": "dual_mom_5|5/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        },
+        {
+          "path": "dual_mom_9|9/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        },
+        {
+          "path": "tsmom|çekirdek-5/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        },
+        {
+          "path": "tsmom|genişletilmiş-9/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        },
+        {
+          "path": "turtle_s1|çekirdek-5/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        },
+        {
+          "path": "turtle_s1|genişletilmiş-9/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        },
+        {
+          "path": "turtle_s2|çekirdek-5/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        },
+        {
+          "path": "turtle_s2|genişletilmiş-9/sc",
+          "count": 5,
+          "min": 4,
+          "max": 16,
+          "contiguous": false
+        }
+      ]
+    },
+    {
+      "file": "g2/tsmom.json",
+      "sha256": "757ca1423aed525d4028e397c7f310314d44132b51a803e4c99be01b091822c8",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "real",
+        "null",
+        "b",
+        "secs"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2817
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/tsmom_common.json",
+      "sha256": "7f927403d4e2ee131c4dbe8540b3083f09f1a241495b82b2ae0d6f4a95290f0e",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/turtle_s1.json",
+      "sha256": "2b10494a6acacce4462125584e9ed42ef542d0ede872edbaab20c30f40b45fc3",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "real",
+        "null",
+        "b",
+        "secs"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2817
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/turtle_s1_common.json",
+      "sha256": "853c153492ede7f4808c861a33166cb3c7c16b047c4ae4ecc51fd74f0a134ff6",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/turtle_s2.json",
+      "sha256": "647b48f9c6d7196c33f5cb88857e00b951ab3ae398264cf000ac5b31a8fe1ccf",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "real",
+        "null",
+        "b",
+        "secs"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2817
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "g2/turtle_s2_common.json",
+      "sha256": "b4b765fda3ff09d7c38a7c77d3f5c6b1cda2d4087511b5209d873f3e4c427304",
+      "top_level_keys": [
+        "job",
+        "syms",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "search/replicate.json",
+      "sha256": "889646e0352b56840ec1beaf5e4a99a4a329f050cdaedcf3155288ef75bbb5b6",
+      "top_level_keys": [
+        "best",
+        "universe",
+        "real",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 25704
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/don_80_20/1000PEPEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/1000SHIBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/APEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/APTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/ARBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/BCHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/ETCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/FILUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/GMTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/LTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/MATICUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/NEARUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/OPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/SUIUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/1000PEPEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/1000SHIBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/APEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/APTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/ARBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/BCHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/ETCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/FILUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/GMTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/LTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/MATICUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/NEARUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/OPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/SUIUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/1000PEPEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/1000SHIBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/APEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/APTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/ARBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/BCHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/ETCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/FILUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/GMTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/LTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/MATICUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/NEARUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/OPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/SUIUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/1000PEPEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/1000SHIBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/APEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/APTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/ARBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/BCHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/ETCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/FILUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/GMTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/LTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/MATICUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/NEARUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/OPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/SUIUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/1000PEPEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/1000SHIBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/APEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/APTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/ARBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/BCHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/ETCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/FILUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/GMTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/LTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/MATICUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/NEARUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/OPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/SUIUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/1000PEPEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/1000SHIBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/APEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/APTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/ARBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/BCHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/ETCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/FILUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/GMTUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/LTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/MATICUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/NEARUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/OPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/SUIUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "search/search_donchian.json",
+      "sha256": "7f1902bd8376ab4db66357091800edbcdb26f059012257f156213a38265f7d4e",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res",
+        "screen"
+      ],
+      "counts": {
+        "pnl_leaf_results": 270
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "search/search_ema.json",
+      "sha256": "3581493e0d7623dc6f98488a6741ec5e2b6937d0fd6423037f30c7d0d0c35d22",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res",
+        "screen"
+      ],
+      "counts": {
+        "pnl_leaf_results": 216
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "search/search_tsmom.json",
+      "sha256": "c7f0d76efe8381ff7e941085573a3a404ea8baebd8d24d232425957cd3b157f6",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res",
+        "screen"
+      ],
+      "counts": {
+        "pnl_leaf_results": 189
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "search/search_xs_carry.json",
+      "sha256": "ba7f341434e01e2721a10d22c4f009b46830441e5b713afc910b6944dc921d68",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res",
+        "screen"
+      ],
+      "counts": {
+        "pnl_leaf_results": 27
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "search/search_xs_mom.json",
+      "sha256": "55421ced5c7b03ca84581b9cad193668fd936ea9b7189fe69a8f7e6e2c5c9ae0",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res",
+        "screen"
+      ],
+      "counts": {
+        "pnl_leaf_results": 54
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "search/search_xs_rev.json",
+      "sha256": "c6b229560b2361425a5812cef01d52e553e79030d333ff3b394947d57de0ac60",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res",
+        "screen"
+      ],
+      "counts": {
+        "pnl_leaf_results": 36
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "search/summary.json",
+      "sha256": "4cc689eac76e5d06334464e4a6e33b3c2de1899e41c6fa2d25678ca95f170718",
+      "top_level_keys": [
+        "summary",
+        "search"
+      ],
+      "counts": {
+        "summary_results": 1
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "search/validate_donchian.json",
+      "sha256": "547a22e0dbe0305204c165b2921e41e9213a8f114d855d89fbe4a4093fca1641",
+      "top_level_keys": [
+        "best",
+        "real",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2754
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/don_80_20/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "search/validate_ema.json",
+      "sha256": "aa59e8952d3cd45a12ef60de2c14acc4d82ed0506465b5b48666d5fd413365da",
+      "top_level_keys": [
+        "best",
+        "real",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2754
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/ema_10_100/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "search/validate_tsmom.json",
+      "sha256": "f410f64acd8adcecd06c41d80969a502a77ad40639f0c3e795cdf7b52ac80874",
+      "top_level_keys": [
+        "best",
+        "real",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2754
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/tsmom_14_1/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "search/validate_xs_carry.json",
+      "sha256": "d697c3ef2cd0e37136a47e05c8f6b4f3d19edaeef071ef02faffa495d81ae27a",
+      "top_level_keys": [
+        "best",
+        "real",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2754
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/xscarry_7/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "search/validate_xs_mom.json",
+      "sha256": "4e985e9177ed118be39f1056a59a741d3423032fad55b8a46c19bf3289de4621",
+      "top_level_keys": [
+        "best",
+        "real",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2754
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/xsmom_7/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "search/validate_xs_rev.json",
+      "sha256": "5cc215c1ee4605deefe1125a56989cf71a62ea1279e245ccc1bbe9cad46920f6",
+      "top_level_keys": [
+        "best",
+        "real",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2754
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/xsrev_3/BTCUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/ETHUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/SOLUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/XRPUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/BNBUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/DOGEUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/ADAUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/LINKUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/AVAXUSDT",
+          "count": 300,
+          "min": 0,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "full/k7.json",
+      "sha256": "bea65dae44fd1c3ec3feaf49e23b013ebeacf2be1fc2a1fdfd919f0ee7a9d533",
+      "top_level_keys": [
+        "k7_S1",
+        "k7_S2"
+      ],
+      "counts": {
+        "summary_results": 2,
+        "pnl_leaf_results": 2
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "full/null_0_100.json",
+      "sha256": "a6dd3f040882848833ca9c027a2dbef4b002c8c891db3c79561f2437c95948e7",
+      "top_level_keys": [
+        "S1",
+        "S2"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 100,
+          "min": 0,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 100,
+          "min": 0,
+          "max": 99,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "full/null_100_200.json",
+      "sha256": "2cc0b68e1377f0ce65d16bde33860fe65336420d5e1e7a605b7ae8c4d3abc1b3",
+      "top_level_keys": [
+        "S1",
+        "S2"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 100,
+          "min": 100,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 100,
+          "min": 100,
+          "max": 199,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "full/null_200_300.json",
+      "sha256": "3d1a68b4c4bb4c8109e0c9dfadf7da58b51d1daa9d36233aa1347dbd3fe2583a",
+      "top_level_keys": [
+        "S1",
+        "S2"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 100,
+          "min": 200,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 100,
+          "min": 200,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "full/null_300_400.json",
+      "sha256": "7ab1209e215749933e01e203f5eab499ccc528ce917b3d708abe9d1b64757ff9",
+      "top_level_keys": [
+        "S1",
+        "S2"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 100,
+          "min": 300,
+          "max": 399,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 100,
+          "min": 300,
+          "max": 399,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "full/null_400_500.json",
+      "sha256": "fc0e93287576693adf4273a843dcb33ca588473dcc64994c434a1afceafc17bc",
+      "top_level_keys": [
+        "S1",
+        "S2"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 100,
+          "min": 400,
+          "max": 499,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 100,
+          "min": 400,
+          "max": 499,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "full/primary.json",
+      "sha256": "40c6296e809f637450086c6afa4c09501b3922be0863bf556a8fa6c7139b0e0e",
+      "top_level_keys": [
+        "S1_full",
+        "S1_no_stop",
+        "S1_fixed_size",
+        "S1_no_pyramid",
+        "S1_no_limits",
+        "S1_g2_equiv",
+        "S2_full",
+        "S2_no_stop",
+        "S2_fixed_size",
+        "S2_no_pyramid",
+        "S2_no_limits",
+        "S2_g2_equiv"
+      ],
+      "counts": {
+        "summary_results": 12,
+        "pnl_leaf_results": 12
+      },
+      "defter_disina_isaretlenen": [
+        {
+          "path": "S2_no_stop",
+          "ledger": null,
+          "invalid": true,
+          "row_trial": null,
+          "n_rejected": 109.0,
+          "funding_missed": 0.0
+        },
+        {
+          "path": "S2_fixed_size",
+          "ledger": null,
+          "invalid": true,
+          "row_trial": null,
+          "n_rejected": 48.0,
+          "funding_missed": 0.0
+        }
+      ],
+      "numeric_groups": []
+    },
+    {
+      "file": "full/robust.json",
+      "sha256": "41c29dc84f51ac24158ca615748fbfe8be04be12e4f200d16331e34c67a6c9dc",
+      "top_level_keys": [
+        "bh",
+        "cost_S1_4_2_0",
+        "cost_S1_9_2_0",
+        "cost_S1_10_2_0",
+        "cost_S1_11_2_0",
+        "cost_S1_16_2_0",
+        "cost_S1_10_6_0",
+        "cost_S1_16_6_0",
+        "cost_S1_10_2_1",
+        "cost_S2_4_2_0",
+        "cost_S2_9_2_0",
+        "cost_S2_10_2_0",
+        "cost_S2_11_2_0",
+        "cost_S2_16_2_0",
+        "cost_S2_10_6_0",
+        "cost_S2_16_6_0",
+        "cost_S2_10_2_1",
+        "win_S1_2023-01-01_2023-07-01",
+        "win_S1_2023-07-01_2024-01-01",
+        "win_S1_2024-01-01_2024-07-01",
+        "win_S1_2024-07-01_2025-01-01",
+        "win_S1_2025-01-01_2025-07-01",
+        "win_S1_2025-07-01_2026-01-01",
+        "win_S1_2026-01-01_2026-04-01",
+        "win_S1_2022-03-01_2026-04-01",
+        "win_S1_2022-04-01_2026-04-01",
+        "win_S1_2022-05-01_2026-04-01",
+        "win_S1_2022-06-01_2026-04-01",
+        "win_S2_2023-01-01_2023-07-01",
+        "win_S2_2023-07-01_2024-01-01",
+        "win_S2_2024-01-01_2024-07-01",
+        "win_S2_2024-07-01_2025-01-01",
+        "win_S2_2025-01-01_2025-07-01",
+        "win_S2_2025-07-01_2026-01-01",
+        "win_S2_2026-01-01_2026-04-01",
+        "win_S2_2022-03-01_2026-04-01",
+        "win_S2_2022-04-01_2026-04-01",
+        "win_S2_2022-05-01_2026-04-01",
+        "win_S2_2022-06-01_2026-04-01",
+        "nb_S1_16_8",
+        "nb_S1_16_9",
+        "nb_S1_16_10",
+        "nb_S1_16_11",
+        "nb_S1_16_12",
+        "nb_S1_18_8",
+        "nb_S1_18_9",
+        "nb_S1_18_10",
+        "nb_S1_18_11",
+        "nb_S1_18_12",
+        "nb_S1_20_8",
+        "nb_S1_20_9",
+        "nb_S1_20_11",
+        "nb_S1_20_12",
+        "nb_S1_22_8",
+        "nb_S1_22_9",
+        "nb_S1_22_10",
+        "nb_S1_22_11",
+        "nb_S1_22_12",
+        "nb_S1_24_8",
+        "nb_S1_24_9",
+        "nb_S1_24_10",
+        "nb_S1_24_11",
+        "nb_S1_24_12",
+        "nb_S2_44_16",
+        "nb_S2_44_18",
+        "nb_S2_44_20",
+        "nb_S2_44_22",
+        "nb_S2_44_24",
+        "nb_S2_50_16",
+        "nb_S2_50_18",
+        "nb_S2_50_20",
+        "nb_S2_50_22",
+        "nb_S2_50_24",
+        "nb_S2_55_16",
+        "nb_S2_55_18",
+        "nb_S2_55_22",
+        "nb_S2_55_24",
+        "nb_S2_61_16",
+        "nb_S2_61_18",
+        "nb_S2_61_20",
+        "nb_S2_61_22",
+        "nb_S2_61_24",
+        "nb_S2_66_16",
+        "nb_S2_66_18",
+        "nb_S2_66_20",
+        "nb_S2_66_22",
+        "nb_S2_66_24"
+      ],
+      "counts": {
+        "summary_results": 87,
+        "pnl_leaf_results": 87
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "full_smoke/k7.json",
+      "sha256": "81d0b9b2bb63b60a87adf57ae0839f4c813d67d85c715a2f0446c1f470e7b6a9",
+      "top_level_keys": [
+        "k7_S1",
+        "k7_S2"
+      ],
+      "counts": {
+        "summary_results": 2,
+        "pnl_leaf_results": 2
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "full_smoke/null_0_2.json",
+      "sha256": "ee202fd91207fdfe6b3d519152e2caa6022632cc63fa9156a925559e7f847d55",
+      "top_level_keys": [
+        "S1",
+        "S2"
+      ],
+      "counts": {
+        "pnl_leaf_results": 4
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 2,
+          "min": 0,
+          "max": 1,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 2,
+          "min": 0,
+          "max": 1,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "full_smoke/primary.json",
+      "sha256": "edafbd9ceb6557db022c1d92bb4931b4621dfbd76be014914bae506308c69666",
+      "top_level_keys": [
+        "S1_full",
+        "S1_no_stop",
+        "S1_fixed_size",
+        "S1_no_pyramid",
+        "S1_no_limits",
+        "S1_g2_equiv",
+        "S2_full",
+        "S2_no_stop",
+        "S2_fixed_size",
+        "S2_no_pyramid",
+        "S2_no_limits",
+        "S2_g2_equiv"
+      ],
+      "counts": {
+        "summary_results": 12,
+        "pnl_leaf_results": 12
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "full_smoke/robust.json",
+      "sha256": "f4ab89e23959ac8d1767fc847f85d4635c9f26ba7ba86edb2571036fecc70b3e",
+      "top_level_keys": [
+        "bh",
+        "cost_S1_4_2_0",
+        "cost_S1_9_2_0",
+        "cost_S1_10_2_0",
+        "cost_S1_11_2_0",
+        "cost_S1_16_2_0",
+        "cost_S1_10_6_0",
+        "cost_S1_16_6_0",
+        "cost_S1_10_2_1",
+        "cost_S2_4_2_0",
+        "cost_S2_9_2_0",
+        "cost_S2_10_2_0",
+        "cost_S2_11_2_0",
+        "cost_S2_16_2_0",
+        "cost_S2_10_6_0",
+        "cost_S2_16_6_0",
+        "cost_S2_10_2_1",
+        "win_S1_2022-03-01_2022-04-15",
+        "win_S1_2022-04-15_2022-06-01",
+        "win_S1_2022-03-01_2022-06-01",
+        "win_S1_2022-04-01_2022-06-01",
+        "win_S1_2022-05-01_2022-06-01",
+        "win_S1_2022-06-01_2022-06-01",
+        "win_S2_2022-03-01_2022-04-15",
+        "win_S2_2022-04-15_2022-06-01",
+        "win_S2_2022-03-01_2022-06-01",
+        "win_S2_2022-04-01_2022-06-01",
+        "win_S2_2022-05-01_2022-06-01",
+        "win_S2_2022-06-01_2022-06-01",
+        "nb_S1_16_8",
+        "nb_S1_16_9",
+        "nb_S2_44_16",
+        "nb_S2_44_18"
+      ],
+      "counts": {
+        "summary_results": 33,
+        "pnl_leaf_results": 33
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "pre2022_out/blockb_null_0_50.json",
+      "sha256": "1c712996e9ca789766799140951637f98eb9e05e30b5ed90a880b264b52c88a0",
+      "top_level_keys": [
+        "don_80_20",
+        "ema_10_100",
+        "tsmom_14_1",
+        "xscarry_7",
+        "xsmom_7",
+        "xsrev_3"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "don_80_20/BTCUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ETHUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/SOLUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/XRPUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/BNBUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/DOGEUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ADAUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/LINKUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/AVAXUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BTCUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ETHUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/SOLUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/XRPUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BNBUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/DOGEUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ADAUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/LINKUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/AVAXUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BTCUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ETHUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/SOLUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/XRPUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BNBUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/DOGEUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ADAUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/LINKUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/AVAXUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BTCUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ETHUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/SOLUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/XRPUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BNBUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/DOGEUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ADAUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/LINKUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/AVAXUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BTCUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ETHUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/SOLUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/XRPUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BNBUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/DOGEUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ADAUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/LINKUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/AVAXUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BTCUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ETHUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/SOLUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/XRPUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BNBUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/DOGEUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ADAUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/LINKUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/AVAXUSDT",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/blockb_null_100_150.json",
+      "sha256": "afdbfb8c16e1914d203164b6c1584997322718ece27b45c4bc7d67d83bc33fea",
+      "top_level_keys": [
+        "don_80_20",
+        "ema_10_100",
+        "tsmom_14_1",
+        "xscarry_7",
+        "xsmom_7",
+        "xsrev_3"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "don_80_20/BTCUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ETHUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/SOLUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/XRPUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/BNBUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/DOGEUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ADAUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/LINKUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/AVAXUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BTCUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ETHUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/SOLUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/XRPUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BNBUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/DOGEUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ADAUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/LINKUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/AVAXUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BTCUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ETHUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/SOLUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/XRPUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BNBUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/DOGEUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ADAUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/LINKUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/AVAXUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BTCUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ETHUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/SOLUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/XRPUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BNBUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/DOGEUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ADAUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/LINKUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/AVAXUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BTCUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ETHUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/SOLUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/XRPUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BNBUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/DOGEUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ADAUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/LINKUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/AVAXUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BTCUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ETHUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/SOLUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/XRPUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BNBUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/DOGEUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ADAUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/LINKUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/AVAXUSDT",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/blockb_null_150_200.json",
+      "sha256": "de263a2c3fd6d94ae18ef8384fb381a6088831f7df64e2d40378481c677cae2c",
+      "top_level_keys": [
+        "don_80_20",
+        "ema_10_100",
+        "tsmom_14_1",
+        "xscarry_7",
+        "xsmom_7",
+        "xsrev_3"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "don_80_20/BTCUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ETHUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/SOLUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/XRPUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/BNBUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/DOGEUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ADAUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/LINKUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/AVAXUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BTCUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ETHUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/SOLUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/XRPUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BNBUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/DOGEUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ADAUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/LINKUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/AVAXUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BTCUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ETHUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/SOLUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/XRPUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BNBUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/DOGEUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ADAUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/LINKUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/AVAXUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BTCUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ETHUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/SOLUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/XRPUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BNBUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/DOGEUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ADAUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/LINKUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/AVAXUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BTCUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ETHUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/SOLUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/XRPUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BNBUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/DOGEUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ADAUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/LINKUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/AVAXUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BTCUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ETHUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/SOLUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/XRPUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BNBUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/DOGEUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ADAUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/LINKUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/AVAXUSDT",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/blockb_null_200_250.json",
+      "sha256": "675ca73969c6324b2a8d89e9e2e5fb5ff3c58a3fdbffe85939719e0834e9fa86",
+      "top_level_keys": [
+        "don_80_20",
+        "ema_10_100",
+        "tsmom_14_1",
+        "xscarry_7",
+        "xsmom_7",
+        "xsrev_3"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "don_80_20/BTCUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ETHUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/SOLUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/XRPUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/BNBUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/DOGEUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ADAUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/LINKUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/AVAXUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BTCUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ETHUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/SOLUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/XRPUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BNBUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/DOGEUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ADAUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/LINKUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/AVAXUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BTCUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ETHUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/SOLUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/XRPUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BNBUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/DOGEUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ADAUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/LINKUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/AVAXUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BTCUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ETHUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/SOLUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/XRPUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BNBUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/DOGEUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ADAUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/LINKUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/AVAXUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BTCUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ETHUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/SOLUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/XRPUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BNBUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/DOGEUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ADAUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/LINKUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/AVAXUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BTCUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ETHUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/SOLUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/XRPUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BNBUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/DOGEUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ADAUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/LINKUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/AVAXUSDT",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/blockb_null_250_300.json",
+      "sha256": "26f98e08599d9b76d95589d22bf222a294949d6db86e4c1da4d7f8d75a81cc7b",
+      "top_level_keys": [
+        "don_80_20",
+        "ema_10_100",
+        "tsmom_14_1",
+        "xscarry_7",
+        "xsmom_7",
+        "xsrev_3"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "don_80_20/BTCUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ETHUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/SOLUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/XRPUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/BNBUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/DOGEUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ADAUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/LINKUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/AVAXUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BTCUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ETHUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/SOLUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/XRPUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BNBUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/DOGEUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ADAUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/LINKUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/AVAXUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BTCUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ETHUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/SOLUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/XRPUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BNBUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/DOGEUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ADAUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/LINKUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/AVAXUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BTCUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ETHUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/SOLUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/XRPUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BNBUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/DOGEUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ADAUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/LINKUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/AVAXUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BTCUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ETHUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/SOLUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/XRPUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BNBUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/DOGEUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ADAUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/LINKUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/AVAXUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BTCUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ETHUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/SOLUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/XRPUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BNBUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/DOGEUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ADAUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/LINKUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/AVAXUSDT",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/blockb_null_50_100.json",
+      "sha256": "411d2ed2abf38fb279818802218b6b58bd56526e1673e7eda55de841733d6351",
+      "top_level_keys": [
+        "don_80_20",
+        "ema_10_100",
+        "tsmom_14_1",
+        "xscarry_7",
+        "xsmom_7",
+        "xsrev_3"
+      ],
+      "counts": {
+        "pnl_leaf_results": 2700
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "don_80_20/BTCUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ETHUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/SOLUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/XRPUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/BNBUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/DOGEUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ADAUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/LINKUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/AVAXUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BTCUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ETHUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/SOLUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/XRPUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BNBUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/DOGEUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ADAUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/LINKUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/AVAXUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BTCUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ETHUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/SOLUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/XRPUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BNBUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/DOGEUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ADAUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/LINKUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/AVAXUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BTCUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ETHUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/SOLUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/XRPUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BNBUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/DOGEUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ADAUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/LINKUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/AVAXUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BTCUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ETHUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/SOLUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/XRPUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BNBUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/DOGEUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ADAUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/LINKUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/AVAXUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BTCUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ETHUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/SOLUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/XRPUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BNBUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/DOGEUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ADAUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/LINKUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/AVAXUSDT",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/blockb_real.json",
+      "sha256": "86928b3d31d07b04fdd94de9e59f3dfc2341f06aa6392215e7739f9ffcdc2e0e",
+      "top_level_keys": [
+        "best",
+        "universe",
+        "real"
+      ],
+      "counts": {
+        "pnl_leaf_results": 324
+      },
+      "defter_disina_isaretlenen": [
+        {
+          "path": "real/xsrev_3/BTCUSDT/3",
+          "ledger": false,
+          "invalid": null,
+          "row_trial": null,
+          "n_rejected": 50,
+          "funding_missed": 0
+        }
+      ],
+      "numeric_groups": []
+    },
+    {
+      "file": "pre2022_out/null_0_50.json",
+      "sha256": "9dbf689206318dfc343234ae9c20c4e6de041b0b3e967c75b9511b28d8fabe35",
+      "top_level_keys": [
+        "S1",
+        "S2",
+        "S1c",
+        "S2c"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "S1c",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        },
+        {
+          "path": "S2c",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/null_100_150.json",
+      "sha256": "03665aa5133ff207577dd032dd63c7777012793953d0d2941a4b381f3c944ed0",
+      "top_level_keys": [
+        "S1",
+        "S2",
+        "S1c",
+        "S2c"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "S1c",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        },
+        {
+          "path": "S2c",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/null_150_200.json",
+      "sha256": "7e5e417a4d77e16e951fc4402626d7e9f1757477315047830a9147602dccd5ba",
+      "top_level_keys": [
+        "S1",
+        "S2",
+        "S1c",
+        "S2c"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "S1c",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        },
+        {
+          "path": "S2c",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/null_200_250.json",
+      "sha256": "2b990d2e556da0aed6f7d404fae8bf13766bfe1a5f6968430581be3a73a284a2",
+      "top_level_keys": [
+        "S1",
+        "S2",
+        "S1c",
+        "S2c"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "S1c",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        },
+        {
+          "path": "S2c",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/null_250_300.json",
+      "sha256": "b2e2a68b194d52834b80106d5942ad59320eafad9607240aae9ddce888230c26",
+      "top_level_keys": [
+        "S1",
+        "S2",
+        "S1c",
+        "S2c"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "S1c",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        },
+        {
+          "path": "S2c",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/null_300_350.json",
+      "sha256": "691cb884c5ac0492d0c98fbe099ee8d6607114b34b7509d974a5b2d634c524dd",
+      "top_level_keys": [
+        "S1",
+        "S2",
+        "S1c",
+        "S2c"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 50,
+          "min": 300,
+          "max": 349,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 50,
+          "min": 300,
+          "max": 349,
+          "contiguous": true
+        },
+        {
+          "path": "S1c",
+          "count": 50,
+          "min": 300,
+          "max": 349,
+          "contiguous": true
+        },
+        {
+          "path": "S2c",
+          "count": 50,
+          "min": 300,
+          "max": 349,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/null_350_400.json",
+      "sha256": "3a3542b4a2b6c03be8d64cba08b4e5998daa1b964985db396ef6c9fa413e6e6f",
+      "top_level_keys": [
+        "S1",
+        "S2",
+        "S1c",
+        "S2c"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 50,
+          "min": 350,
+          "max": 399,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 50,
+          "min": 350,
+          "max": 399,
+          "contiguous": true
+        },
+        {
+          "path": "S1c",
+          "count": 50,
+          "min": 350,
+          "max": 399,
+          "contiguous": true
+        },
+        {
+          "path": "S2c",
+          "count": 50,
+          "min": 350,
+          "max": 399,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/null_400_450.json",
+      "sha256": "ba62baf58fbda52039346fec6e8d490608eebc762c4843212580b97a4c24aee6",
+      "top_level_keys": [
+        "S1",
+        "S2",
+        "S1c",
+        "S2c"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 50,
+          "min": 400,
+          "max": 449,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 50,
+          "min": 400,
+          "max": 449,
+          "contiguous": true
+        },
+        {
+          "path": "S1c",
+          "count": 50,
+          "min": 400,
+          "max": 449,
+          "contiguous": true
+        },
+        {
+          "path": "S2c",
+          "count": 50,
+          "min": 400,
+          "max": 449,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/null_450_500.json",
+      "sha256": "2fbb85c06859b7996408dfa8dacf8401d5f9fb6efe11b73ac6804f36a562c3ff",
+      "top_level_keys": [
+        "S1",
+        "S2",
+        "S1c",
+        "S2c"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 50,
+          "min": 450,
+          "max": 499,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 50,
+          "min": 450,
+          "max": 499,
+          "contiguous": true
+        },
+        {
+          "path": "S1c",
+          "count": 50,
+          "min": 450,
+          "max": 499,
+          "contiguous": true
+        },
+        {
+          "path": "S2c",
+          "count": 50,
+          "min": 450,
+          "max": 499,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/null_50_100.json",
+      "sha256": "ff658f453cc8c2d1576e8ad8083364d6ee39c56fa0d155aea6276d0855d9a280",
+      "top_level_keys": [
+        "S1",
+        "S2",
+        "S1c",
+        "S2c"
+      ],
+      "counts": {
+        "pnl_leaf_results": 200
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "S1c",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        },
+        {
+          "path": "S2c",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_out/primary.json",
+      "sha256": "1ba7b36277e97cc05267de29d7e34d66edd45acd94f02fc5d8839a76a6b50bfc",
+      "top_level_keys": [
+        "S1_full",
+        "S1_no_stop",
+        "S1_fixed_size",
+        "S1_no_pyramid",
+        "S1_no_limits",
+        "S1_scaled",
+        "S2_full",
+        "S2_no_stop",
+        "S2_fixed_size",
+        "S2_no_pyramid",
+        "S2_no_limits",
+        "S2_scaled",
+        "S1c_full",
+        "S1c_no_stop",
+        "S1c_fixed_size",
+        "S1c_no_pyramid",
+        "S1c_no_limits",
+        "S1c_scaled",
+        "S2c_full",
+        "S2c_no_stop",
+        "S2c_fixed_size",
+        "S2c_no_pyramid",
+        "S2c_no_limits",
+        "S2c_scaled"
+      ],
+      "counts": {
+        "summary_results": 24,
+        "pnl_leaf_results": 24
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "pre2022_out/robust_0_of_4.json",
+      "sha256": "d4850d8376888f6ceaafd04818066b4c070378ae3209d88a171aedb512d2ce20",
+      "top_level_keys": [
+        "bh",
+        "cost_S1_11_2_0",
+        "cost_S1_10_2_1",
+        "cost_S2_11_2_0",
+        "cost_S2_10_2_1",
+        "cost_S1c_11_2_0",
+        "cost_S1c_10_2_1",
+        "cost_S2c_11_2_0",
+        "cost_S2c_10_2_1",
+        "win_S1_2020-03-01_2022-01-01",
+        "win_S2_2020-07-01_2021-01-01",
+        "win_S2_2020-04-01_2022-01-01",
+        "win_S1c_2021-01-01_2021-07-01",
+        "win_S1c_2020-05-01_2022-01-01",
+        "win_S2c_2021-07-01_2022-01-01",
+        "win_S2c_2020-06-01_2022-01-01",
+        "nb_S1_16_11",
+        "nb_S1_18_10",
+        "nb_S1_20_9",
+        "nb_S1_22_9",
+        "nb_S1_24_8",
+        "nb_S1_24_12",
+        "nb_S2_44_22",
+        "nb_S2_50_20",
+        "nb_S2_55_18",
+        "nb_S2_61_18",
+        "nb_S2_66_16",
+        "nb_S2_66_24",
+        "nb_S1c_22_15",
+        "nb_S1c_25_14",
+        "nb_S1c_28_13",
+        "nb_S1c_31_13",
+        "nb_S1c_34_11",
+        "nb_S1c_34_17",
+        "nb_S2c_62_31",
+        "nb_S2c_69_28",
+        "nb_S2c_77_25",
+        "nb_S2c_85_25",
+        "nb_S2c_92_22",
+        "nb_S2c_92_34",
+        "k7_S2c",
+        "_k7_dropped"
+      ],
+      "counts": {
+        "summary_results": 41,
+        "pnl_leaf_results": 41
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "pre2022_out/robust_1_of_4.json",
+      "sha256": "e3ff36174029267d12a11635bc430aad3e636cdc0716bddd0a69081084983961",
+      "top_level_keys": [
+        "cost_S1_4_2_0",
+        "cost_S1_16_2_0",
+        "cost_S2_4_2_0",
+        "cost_S2_16_2_0",
+        "cost_S1c_4_2_0",
+        "cost_S1c_16_2_0",
+        "cost_S2c_4_2_0",
+        "cost_S2c_16_2_0",
+        "win_S1_2020-07-01_2021-01-01",
+        "win_S1_2020-04-01_2022-01-01",
+        "win_S2_2021-01-01_2021-07-01",
+        "win_S2_2020-05-01_2022-01-01",
+        "win_S1c_2021-07-01_2022-01-01",
+        "win_S1c_2020-06-01_2022-01-01",
+        "win_S2c_2020-03-01_2022-01-01",
+        "nb_S1_16_8",
+        "nb_S1_16_12",
+        "nb_S1_18_11",
+        "nb_S1_20_11",
+        "nb_S1_22_10",
+        "nb_S1_24_9",
+        "nb_S2_44_16",
+        "nb_S2_44_24",
+        "nb_S2_50_22",
+        "nb_S2_55_22",
+        "nb_S2_61_20",
+        "nb_S2_66_18",
+        "nb_S1c_22_11",
+        "nb_S1c_22_17",
+        "nb_S1c_25_15",
+        "nb_S1c_28_15",
+        "nb_S1c_31_14",
+        "nb_S1c_34_13",
+        "nb_S2c_62_22",
+        "nb_S2c_62_34",
+        "nb_S2c_69_31",
+        "nb_S2c_77_31",
+        "nb_S2c_85_28",
+        "nb_S2c_92_25",
+        "k7_S1",
+        "_k7_dropped"
+      ],
+      "counts": {
+        "summary_results": 40,
+        "pnl_leaf_results": 40
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "pre2022_out/robust_2_of_4.json",
+      "sha256": "5c1d608d5e6e2e4d5657745c48486759a6fc308cc5dc28d236cca78c894c10d6",
+      "top_level_keys": [
+        "cost_S1_9_2_0",
+        "cost_S1_10_6_0",
+        "cost_S2_9_2_0",
+        "cost_S2_10_6_0",
+        "cost_S1c_9_2_0",
+        "cost_S1c_10_6_0",
+        "cost_S2c_9_2_0",
+        "cost_S2c_10_6_0",
+        "win_S1_2021-01-01_2021-07-01",
+        "win_S1_2020-05-01_2022-01-01",
+        "win_S2_2021-07-01_2022-01-01",
+        "win_S2_2020-06-01_2022-01-01",
+        "win_S1c_2020-03-01_2022-01-01",
+        "win_S2c_2020-07-01_2021-01-01",
+        "win_S2c_2020-04-01_2022-01-01",
+        "nb_S1_16_9",
+        "nb_S1_18_8",
+        "nb_S1_18_12",
+        "nb_S1_20_12",
+        "nb_S1_22_11",
+        "nb_S1_24_10",
+        "nb_S2_44_18",
+        "nb_S2_50_16",
+        "nb_S2_50_24",
+        "nb_S2_55_24",
+        "nb_S2_61_22",
+        "nb_S2_66_20",
+        "nb_S1c_22_13",
+        "nb_S1c_25_11",
+        "nb_S1c_25_17",
+        "nb_S1c_28_17",
+        "nb_S1c_31_15",
+        "nb_S1c_34_14",
+        "nb_S2c_62_25",
+        "nb_S2c_69_22",
+        "nb_S2c_69_34",
+        "nb_S2c_77_34",
+        "nb_S2c_85_31",
+        "nb_S2c_92_28",
+        "k7_S2",
+        "_k7_dropped"
+      ],
+      "counts": {
+        "summary_results": 40,
+        "pnl_leaf_results": 40
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "pre2022_out/robust_3_of_4.json",
+      "sha256": "01ec81849855b10e7acedf3bec809f1369aa999bfdbe0b766a0737bdb73cb475",
+      "top_level_keys": [
+        "cost_S1_10_2_0",
+        "cost_S1_16_6_0",
+        "cost_S2_10_2_0",
+        "cost_S2_16_6_0",
+        "cost_S1c_10_2_0",
+        "cost_S1c_16_6_0",
+        "cost_S2c_10_2_0",
+        "cost_S2c_16_6_0",
+        "win_S1_2021-07-01_2022-01-01",
+        "win_S1_2020-06-01_2022-01-01",
+        "win_S2_2020-03-01_2022-01-01",
+        "win_S1c_2020-07-01_2021-01-01",
+        "win_S1c_2020-04-01_2022-01-01",
+        "win_S2c_2021-01-01_2021-07-01",
+        "win_S2c_2020-05-01_2022-01-01",
+        "nb_S1_16_10",
+        "nb_S1_18_9",
+        "nb_S1_20_8",
+        "nb_S1_22_8",
+        "nb_S1_22_12",
+        "nb_S1_24_11",
+        "nb_S2_44_20",
+        "nb_S2_50_18",
+        "nb_S2_55_16",
+        "nb_S2_61_16",
+        "nb_S2_61_24",
+        "nb_S2_66_22",
+        "nb_S1c_22_14",
+        "nb_S1c_25_13",
+        "nb_S1c_28_11",
+        "nb_S1c_31_11",
+        "nb_S1c_31_17",
+        "nb_S1c_34_15",
+        "nb_S2c_62_28",
+        "nb_S2c_69_25",
+        "nb_S2c_77_22",
+        "nb_S2c_85_22",
+        "nb_S2c_85_34",
+        "nb_S2c_92_31",
+        "k7_S1c",
+        "_k7_dropped"
+      ],
+      "counts": {
+        "summary_results": 40,
+        "pnl_leaf_results": 40
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "pre2022_out/universe.json",
+      "sha256": "8f23b251946b78d7a94026739c80236d8ed61b5cce5113bd72e6b776b4887e16",
+      "top_level_keys": [
+        "syms",
+        "dropped"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "pre2022_smoke/blockb.json",
+      "sha256": "cb11f683b1013ef734d8f5effde6030902afc72561ebf6d048a679297d2dfcd7",
+      "top_level_keys": [
+        "best",
+        "universe",
+        "real",
+        "null",
+        "b"
+      ],
+      "counts": {
+        "pnl_leaf_results": 324
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "null/don_80_20/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/don_80_20/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/ema_10_100/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/tsmom_14_1/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xscarry_7/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsmom_7/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "null/xsrev_3/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_smoke/blockb_null_0_3.json",
+      "sha256": "aa4ed51d2c54e4e5ffb799a55090e32736f573d64eeb2813c2babc3cbaa94014",
+      "top_level_keys": [
+        "don_80_20",
+        "ema_10_100",
+        "tsmom_14_1",
+        "xscarry_7",
+        "xsmom_7",
+        "xsrev_3"
+      ],
+      "counts": {
+        "pnl_leaf_results": 108
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "don_80_20/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "don_80_20/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "ema_10_100/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "tsmom_14_1/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xscarry_7/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsmom_7/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BTCUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ETHUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/XRPUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/BNBUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/ADAUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "xsrev_3/LINKUSDT",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_smoke/blockb_real.json",
+      "sha256": "1447f8fe506d51e0c5e27f01b8f3771acd3786d748e4bbc3227f7bc088a39f2a",
+      "top_level_keys": [
+        "best",
+        "universe",
+        "real"
+      ],
+      "counts": {
+        "pnl_leaf_results": 216
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "pre2022_smoke/null_0_3.json",
+      "sha256": "28df9f902b1149804330e9daddc70de0e41f9c9e57fb77cce958a877dcedb74c",
+      "top_level_keys": [
+        "S1",
+        "S2",
+        "S1c",
+        "S2c"
+      ],
+      "counts": {
+        "pnl_leaf_results": 12
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "S1",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "S2",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "S1c",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        },
+        {
+          "path": "S2c",
+          "count": 3,
+          "min": 0,
+          "max": 2,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "pre2022_smoke/primary.json",
+      "sha256": "9ee79728fcc1840bc4fefe480de7b058ebd70d3b9aad5d2542e7f3e5d2d6393e",
+      "top_level_keys": [
+        "S1_full",
+        "S1_no_stop",
+        "S1_fixed_size",
+        "S1_no_pyramid",
+        "S1_no_limits",
+        "S1_scaled",
+        "S2_full",
+        "S2_no_stop",
+        "S2_fixed_size",
+        "S2_no_pyramid",
+        "S2_no_limits",
+        "S2_scaled",
+        "S1c_full",
+        "S1c_no_stop",
+        "S1c_fixed_size",
+        "S1c_no_pyramid",
+        "S1c_no_limits",
+        "S1c_scaled",
+        "S2c_full",
+        "S2c_no_stop",
+        "S2c_fixed_size",
+        "S2c_no_pyramid",
+        "S2c_no_limits",
+        "S2c_scaled"
+      ],
+      "counts": {
+        "summary_results": 24,
+        "pnl_leaf_results": 24
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "pre2022_smoke/robust_0_of_1.json",
+      "sha256": "2a4728967bd799a76398cb3cfcdb0f592207bfd0085b07298f21e19b08641f1e",
+      "top_level_keys": [
+        "bh",
+        "cost_S1_4_2_0",
+        "cost_S1_9_2_0",
+        "cost_S1_10_2_0",
+        "cost_S1_11_2_0",
+        "cost_S1_16_2_0",
+        "cost_S1_10_6_0",
+        "cost_S1_16_6_0",
+        "cost_S1_10_2_1",
+        "cost_S2_4_2_0",
+        "cost_S2_9_2_0",
+        "cost_S2_10_2_0",
+        "cost_S2_11_2_0",
+        "cost_S2_16_2_0",
+        "cost_S2_10_6_0",
+        "cost_S2_16_6_0",
+        "cost_S2_10_2_1",
+        "cost_S1c_4_2_0",
+        "cost_S1c_9_2_0",
+        "cost_S1c_10_2_0",
+        "cost_S1c_11_2_0",
+        "cost_S1c_16_2_0",
+        "cost_S1c_10_6_0",
+        "cost_S1c_16_6_0",
+        "cost_S1c_10_2_1",
+        "cost_S2c_4_2_0",
+        "cost_S2c_9_2_0",
+        "cost_S2c_10_2_0",
+        "cost_S2c_11_2_0",
+        "cost_S2c_16_2_0",
+        "cost_S2c_10_6_0",
+        "cost_S2c_16_6_0",
+        "cost_S2c_10_2_1",
+        "win_S1_2020-04-01_2020-04-15",
+        "win_S1_2020-04-15_2020-05-01",
+        "win_S1_2020-04-01_2020-05-01",
+        "win_S1_2020-05-01_2020-05-01",
+        "win_S1_2020-06-01_2020-05-01",
+        "win_S1_2020-07-01_2020-05-01",
+        "win_S2_2020-04-01_2020-04-15",
+        "win_S2_2020-04-15_2020-05-01",
+        "win_S2_2020-04-01_2020-05-01",
+        "win_S2_2020-05-01_2020-05-01",
+        "win_S2_2020-06-01_2020-05-01",
+        "win_S2_2020-07-01_2020-05-01",
+        "win_S1c_2020-04-01_2020-04-15",
+        "win_S1c_2020-04-15_2020-05-01",
+        "win_S1c_2020-04-01_2020-05-01",
+        "win_S1c_2020-05-01_2020-05-01",
+        "win_S1c_2020-06-01_2020-05-01",
+        "win_S1c_2020-07-01_2020-05-01",
+        "win_S2c_2020-04-01_2020-04-15",
+        "win_S2c_2020-04-15_2020-05-01",
+        "win_S2c_2020-04-01_2020-05-01",
+        "win_S2c_2020-05-01_2020-05-01",
+        "win_S2c_2020-06-01_2020-05-01",
+        "win_S2c_2020-07-01_2020-05-01",
+        "nb_S1_16_8",
+        "nb_S1_16_9",
+        "nb_S2_44_16",
+        "nb_S2_44_18",
+        "nb_S1c_22_11",
+        "nb_S1c_22_13",
+        "nb_S2c_62_22",
+        "nb_S2c_62_25",
+        "k7_S1",
+        "k7_S2",
+        "k7_S1c",
+        "k7_S2c",
+        "_k7_dropped"
+      ],
+      "counts": {
+        "summary_results": 69,
+        "pnl_leaf_results": 69
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "pre2022_smoke/universe.json",
+      "sha256": "e60c030c78786e41c2138c5086be5cd015ce274963bd7978a0891f7a06d41b70",
+      "top_level_keys": [
+        "syms",
+        "dropped"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "ensemble/k7.json",
+      "sha256": "f2fc3c29b620d733092f750a4a91d9c27ac2c22a4fde137b711c858df2e34449",
+      "top_level_keys": [
+        "summary",
+        "daily",
+        "syms",
+        "sym_net"
+      ],
+      "counts": {
+        "summary_results": 1,
+        "pnl_leaf_results": 1
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "ensemble/null_0_50.json",
+      "sha256": "61a537262d0ac0c126d3db337a6da371c228d2c60b0652311741b8f8e232e8b2",
+      "top_level_keys": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "30",
+        "31",
+        "32",
+        "33",
+        "34",
+        "35",
+        "36",
+        "37",
+        "38",
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44",
+        "45",
+        "46",
+        "47",
+        "48",
+        "49"
+      ],
+      "counts": {
+        "pnl_leaf_results": 50
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "",
+          "count": 50,
+          "min": 0,
+          "max": 49,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "ensemble/null_100_150.json",
+      "sha256": "d5722400a3fef08a3c2d8be5cee091e2063ec9a213e61f404d2c09327fb6c245",
+      "top_level_keys": [
+        "100",
+        "101",
+        "102",
+        "103",
+        "104",
+        "105",
+        "106",
+        "107",
+        "108",
+        "109",
+        "110",
+        "111",
+        "112",
+        "113",
+        "114",
+        "115",
+        "116",
+        "117",
+        "118",
+        "119",
+        "120",
+        "121",
+        "122",
+        "123",
+        "124",
+        "125",
+        "126",
+        "127",
+        "128",
+        "129",
+        "130",
+        "131",
+        "132",
+        "133",
+        "134",
+        "135",
+        "136",
+        "137",
+        "138",
+        "139",
+        "140",
+        "141",
+        "142",
+        "143",
+        "144",
+        "145",
+        "146",
+        "147",
+        "148",
+        "149"
+      ],
+      "counts": {
+        "pnl_leaf_results": 50
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "",
+          "count": 50,
+          "min": 100,
+          "max": 149,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "ensemble/null_150_200.json",
+      "sha256": "13f56c28cbe769a8ce7690137e53a7fd66b4550e25cc45f52aa8473e16b9c3d0",
+      "top_level_keys": [
+        "150",
+        "151",
+        "152",
+        "153",
+        "154",
+        "155",
+        "156",
+        "157",
+        "158",
+        "159",
+        "160",
+        "161",
+        "162",
+        "163",
+        "164",
+        "165",
+        "166",
+        "167",
+        "168",
+        "169",
+        "170",
+        "171",
+        "172",
+        "173",
+        "174",
+        "175",
+        "176",
+        "177",
+        "178",
+        "179",
+        "180",
+        "181",
+        "182",
+        "183",
+        "184",
+        "185",
+        "186",
+        "187",
+        "188",
+        "189",
+        "190",
+        "191",
+        "192",
+        "193",
+        "194",
+        "195",
+        "196",
+        "197",
+        "198",
+        "199"
+      ],
+      "counts": {
+        "pnl_leaf_results": 50
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "",
+          "count": 50,
+          "min": 150,
+          "max": 199,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "ensemble/null_200_250.json",
+      "sha256": "e4c01a52da3af69842a3d322b5c84de8016c1621987da4c487cc1250086928d6",
+      "top_level_keys": [
+        "200",
+        "201",
+        "202",
+        "203",
+        "204",
+        "205",
+        "206",
+        "207",
+        "208",
+        "209",
+        "210",
+        "211",
+        "212",
+        "213",
+        "214",
+        "215",
+        "216",
+        "217",
+        "218",
+        "219",
+        "220",
+        "221",
+        "222",
+        "223",
+        "224",
+        "225",
+        "226",
+        "227",
+        "228",
+        "229",
+        "230",
+        "231",
+        "232",
+        "233",
+        "234",
+        "235",
+        "236",
+        "237",
+        "238",
+        "239",
+        "240",
+        "241",
+        "242",
+        "243",
+        "244",
+        "245",
+        "246",
+        "247",
+        "248",
+        "249"
+      ],
+      "counts": {
+        "pnl_leaf_results": 50
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "",
+          "count": 50,
+          "min": 200,
+          "max": 249,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "ensemble/null_250_300.json",
+      "sha256": "64e21ddb239a69d562ab70d1697f709e7c5bca8143246accb44b7c80d1579d16",
+      "top_level_keys": [
+        "250",
+        "251",
+        "252",
+        "253",
+        "254",
+        "255",
+        "256",
+        "257",
+        "258",
+        "259",
+        "260",
+        "261",
+        "262",
+        "263",
+        "264",
+        "265",
+        "266",
+        "267",
+        "268",
+        "269",
+        "270",
+        "271",
+        "272",
+        "273",
+        "274",
+        "275",
+        "276",
+        "277",
+        "278",
+        "279",
+        "280",
+        "281",
+        "282",
+        "283",
+        "284",
+        "285",
+        "286",
+        "287",
+        "288",
+        "289",
+        "290",
+        "291",
+        "292",
+        "293",
+        "294",
+        "295",
+        "296",
+        "297",
+        "298",
+        "299"
+      ],
+      "counts": {
+        "pnl_leaf_results": 50
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "",
+          "count": 50,
+          "min": 250,
+          "max": 299,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "ensemble/null_50_100.json",
+      "sha256": "3cefcc6d378f2088062ec80bda567434236094daa91948cbbd3b614156b03de8",
+      "top_level_keys": [
+        "50",
+        "51",
+        "52",
+        "53",
+        "54",
+        "55",
+        "56",
+        "57",
+        "58",
+        "59",
+        "60",
+        "61",
+        "62",
+        "63",
+        "64",
+        "65",
+        "66",
+        "67",
+        "68",
+        "69",
+        "70",
+        "71",
+        "72",
+        "73",
+        "74",
+        "75",
+        "76",
+        "77",
+        "78",
+        "79",
+        "80",
+        "81",
+        "82",
+        "83",
+        "84",
+        "85",
+        "86",
+        "87",
+        "88",
+        "89",
+        "90",
+        "91",
+        "92",
+        "93",
+        "94",
+        "95",
+        "96",
+        "97",
+        "98",
+        "99"
+      ],
+      "counts": {
+        "pnl_leaf_results": 50
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": [
+        {
+          "path": "",
+          "count": 50,
+          "min": 50,
+          "max": 99,
+          "contiguous": true
+        }
+      ]
+    },
+    {
+      "file": "ensemble/primary.json",
+      "sha256": "7d9f4da0e1a6ed0b2ea138345715e5a5289151436e0774dc0994853a0f039fe8",
+      "top_level_keys": [
+        "main",
+        "bh",
+        "cap500",
+        "abl_trend_only",
+        "abl_no_xs",
+        "abl_no_carry",
+        "abl_no_risk",
+        "abl_no_buffer",
+        "nb_scale_0.8",
+        "nb_scale_0.9",
+        "nb_scale_1.1",
+        "nb_scale_1.2",
+        "nb_w_50_25_25",
+        "nb_w_70_15_15",
+        "cost_4_2_0",
+        "cost_16_2_0",
+        "cost_10_6_0",
+        "cost_16_6_0",
+        "cost_10_2_1",
+        "win_2020-07-01_2021-01-01",
+        "win_2021-01-01_2021-07-01",
+        "win_2021-07-01_2022-01-01",
+        "win_2022-01-01_2022-07-01",
+        "win_2022-07-01_2023-01-01",
+        "win_2023-01-01_2023-07-01",
+        "win_2023-07-01_2024-01-01",
+        "win_2024-01-01_2024-07-01",
+        "win_2024-07-01_2025-01-01",
+        "win_2025-01-01_2025-07-01",
+        "win_2025-07-01_2026-01-01",
+        "win_2026-01-01_2026-04-01",
+        "win_2020-04-01_2026-04-01",
+        "win_2020-05-01_2026-04-01",
+        "win_2020-06-01_2026-04-01",
+        "win_2020-07-01_2026-04-01"
+      ],
+      "counts": {
+        "summary_results": 35,
+        "pnl_leaf_results": 35
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "ensemble_smoke/primary.json",
+      "sha256": "83da65108bdb1a2ada0e84524de119a70cddd1c70c382cef9886ec8aec95fbd7",
+      "top_level_keys": [
+        "main",
+        "bh",
+        "cap500",
+        "abl_trend_only",
+        "abl_no_xs",
+        "abl_no_carry",
+        "abl_no_risk",
+        "abl_no_buffer",
+        "nb_scale_0.8",
+        "nb_scale_0.9",
+        "nb_scale_1.1",
+        "nb_scale_1.2",
+        "nb_w_50_25_25",
+        "nb_w_70_15_15",
+        "cost_4_2_0",
+        "cost_16_2_0",
+        "cost_10_6_0",
+        "cost_16_6_0",
+        "cost_10_2_1",
+        "win_2021-11-01_2021-12-15",
+        "win_2021-12-01_2022-02-01"
+      ],
+      "counts": {
+        "summary_results": 21,
+        "pnl_leaf_results": 21
+      },
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/base.json",
+      "sha256": "d9d48b6083df98508d6e6dfce689b07ef97ed59d123e8e999298d9b5dffec4f3",
+      "top_level_keys": [
+        "top",
+        "abs5",
+        "stress",
+        "mc"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/capacity.json",
+      "sha256": "4f95a9623fea178b897aeefd77b457d891db69083c3b92cd025fbab6ee6fb19c",
+      "top_level_keys": [
+        "S1_500",
+        "S1_10000",
+        "S1_100000",
+        "S2_500",
+        "S2_10000",
+        "S2_100000"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/misc.json",
+      "sha256": "362b8abfbfc905cb0073914f5bfce9a8f7d0fa593b0c3528e024f38fba8db223",
+      "top_level_keys": [
+        "fixed_1000",
+        "vol_target",
+        "vol_target_kill25",
+        "aggregate"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/nested_donchian.json",
+      "sha256": "1fb7aec0846a3a90ade8809b712cd8d715c4bcce5fee8140c2a0878c35e93098",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/nested_ema.json",
+      "sha256": "f04600c0f200cda123e37a98b42d3fcc53bc46f333a9bb4f41a62edf3352849a",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/nested_report.json",
+      "sha256": "901524f6002d95bbd8b3692cd3264b511d1ffb1a685e4eaf3013d83b19961f14",
+      "top_level_keys": [
+        "n_cfg",
+        "steps",
+        "oos_net",
+        "oos_sharpe",
+        "psr0",
+        "dsr",
+        "max_dd",
+        "p_random",
+        "random_median_sharpe",
+        "random_p95_sharpe",
+        "mean_config_net",
+        "median_config_net",
+        "best_config_oos",
+        "n_days",
+        "invalid"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/nested_tsmom.json",
+      "sha256": "d032fc452af80e5727691f14670667c62b79d5740acdb4e2ed718e54319c825a",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/nested_xs_carry.json",
+      "sha256": "f5af4acfaac2a8d8248beb4f82ca1eb98bad837138fe2dfbd4e1aa60ea169f9d",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/nested_xs_mom.json",
+      "sha256": "92ea692d4885a318079037dcd4ebbd475c16d5a0d1596de4d642bd2a769c4e38",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/nested_xs_rev.json",
+      "sha256": "9ba359aaee4a3b22ecae0663c62516379a12d38f8f5f9aab3a1cd7b305c6f41e",
+      "top_level_keys": [
+        "family",
+        "cfgs",
+        "res"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/pbo.json",
+      "sha256": "9e70c88535dfdaf9603e25cee76c20ea2c08822bc5edcce68dc22ad54ab9aa92",
+      "top_level_keys": [
+        "shape",
+        "cscv",
+        "spa",
+        "bh_sharpe",
+        "best_sharpe"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/risk.json",
+      "sha256": "fed7f7ac27e93b283973725ab4d454438b1fe2ad35d508af5a6403c739e2b171",
+      "top_level_keys": [
+        "S1_base",
+        "S1_eq_scale",
+        "S1_fixed_kill25",
+        "S1_eq_scale_kill25",
+        "S2_base",
+        "S2_eq_scale",
+        "S2_fixed_kill25",
+        "S2_eq_scale_kill25"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    },
+    {
+      "file": "completion/scaled.json",
+      "sha256": "bd3c414eb732c64414cfc344f11236386151504386fed1f8af04079617b6edae",
+      "top_level_keys": [
+        "S1_scaled",
+        "S1_scaled_kill",
+        "S2_scaled",
+        "S2_scaled_kill"
+      ],
+      "counts": {},
+      "defter_disina_isaretlenen": [],
+      "numeric_groups": []
+    }
+  ]
+}
