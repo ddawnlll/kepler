@@ -23,7 +23,7 @@ def leaky(kl):  # BİLEREK sızdırır: bir SONRAKİ barın kapanışına bakar
     return pd.Series(np.where(kl.close.shift(-1) > kl.close, 1000.0, -1000.0), index=kl.index)
 
 
-SP = referee.Spec(tick="0.01", step="0.0001", capital=10000.0, liq=False)
+SP = referee.Spec(tick="0.01", step="0.0001", capital=10000.0, liq=False, fill="close", close_out=False)
 
 
 # ---- nedensellik
@@ -83,7 +83,7 @@ def test_random_signal_is_minus_cost_on_driftless_market():
     for seed in range(30):
         kl = market(n=300, seed=seed)
         t = pd.Series(np.random.default_rng(1000 + seed).choice([-1000.0, 0.0, 1000.0], size=len(kl)), index=kl.index)
-        s = referee.run(kl, t, referee.Spec(tick="0.01", step="0.0001", capital=10000.0, liq=False, fee_rt_bps=10))["summary"]
+        s = referee.run(kl, t, referee.Spec(tick="0.01", step="0.0001", capital=10000.0, liq=False, fee_rt_bps=10, fill="close", close_out=False))["summary"]
         gross.append(s["gross_pnl"])
         fee.append(s["fee"])
     g, se = np.mean(gross), np.std(gross, ddof=1) / np.sqrt(len(gross))

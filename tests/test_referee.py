@@ -28,7 +28,7 @@ def tgt(kl, **at):
 
 
 def spec(**kw):
-    return Spec(**{**dict(tick="0.01", step="0.001", capital=10000.0, liq=False, fee_rt_bps=10.0), **kw})
+    return Spec(**{**dict(tick="0.01", step="0.001", capital=10000.0, liq=False, fee_rt_bps=10.0, fill="close", close_out=False), **kw})
 
 
 def test_long_round_trip():
@@ -170,7 +170,8 @@ def test_short_liquidated_at_formula_price():
 def test_liquidation_fee_default_is_mmr_of_notional():
     kl = crash(94.0)
     s = run(kl, tgt(kl, b0=10000.0), spec(**{**LIQ, "liq_fee_rate": None}))["summary"]
-    assert s["liq_fee"] == A(100 * 94.79 * 0.05) and s["net_pnl"] == A(-530.7395 - 473.95)
+    # çifte sayım yok: toplam likidasyon maliyeti = mmr*notional (473.95); motorun taker fee'si (4.7395) bunun içinde -> ek ücret 469.2105
+    assert s["liq_fee"] == A(100 * 94.79 * (0.05 - 0.0005)) and s["net_pnl"] == A(-521 - 5 - 4.7395 - 469.2105)
 
 
 def test_nautilus_alone_does_not_liquidate():

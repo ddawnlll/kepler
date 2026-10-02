@@ -3,6 +3,7 @@
 Kural: sonuç (PnL vb.) deftere YALNIZCA source="referee" ile girer; source="screen" (vectorbt) yalnızca `score` taşır.
 Her kayıt (eleme dahil) deneme sayacını (`trial`) bir artırır; sayaç çoklu-test düzeltmesinin (DSR) girdisidir.
 """
+import fcntl
 import hashlib
 import json
 import time
@@ -34,12 +35,16 @@ def record(path, source: str, hypothesis: str, config: dict, code: str, data: st
         raise ValueError("hakem kaydı result içermeli")
     if source == "referee" and (result.get("n_rejected", 0) or result.get("funding_missed", 0)):
         raise ValueError("reddedilen emir / eksik funding olan koşu geçerli sonuç değildir; deftere yazılmaz")
+    if source == "referee" and config.get("audit_causal") is not True:  # korkuluk (güvenlik değil): bayrağı evaluate koyar; elle yazan bunu atlatabilir
+        raise ValueError("hakem kaydı nedensellik denetiminden (evaluate) geçmemiş: config.audit_causal=True yok")
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     json.dumps([config, result, score], default=str, allow_nan=False)  # satır sayacı artmadan önce doğrula
-    row = dict(trial=trial_count(p) + 1, time=time.time(), source=source, hypothesis=hypothesis, config=config,
-               config_hash=sha(config), code_hash=code, data_hash=data, result=result, score=score)
-    with p.open("a") as f:  # append-only: mevcut satırlar asla yeniden yazılmaz
+    with p.open("a+") as f:  # append-only: mevcut satırlar asla yeniden yazılmaz; flock: eşzamanlı yazarlarda sayaç/satır yarışı olmaz
+        fcntl.flock(f, fcntl.LOCK_EX)
+        f.seek(0)
+        row = dict(trial=sum(1 for _ in f) + 1, time=time.time(), source=source, hypothesis=hypothesis, config=config,
+                   config_hash=sha(config), code_hash=code, data_hash=data, result=result, score=score)
         f.write(json.dumps(row, default=str, allow_nan=False) + "\n")  # NaN/inf sessizce yazılmaz (JSONL bozulmasın)
         f.flush()
     return row
