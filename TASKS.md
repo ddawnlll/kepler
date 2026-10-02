@@ -17,7 +17,7 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 |---|---|---|---|
 | 1 | Veri hattı | ☑ | 2022-01 → 2026-03, 179 sembol, QC raporu, sha256 manifest, mühür ayrı (G0) |
 | 2 | Sinyal | ☑ | `kepler/signals.py`: 6 kitap sinyali (Turtle S1/S2, Donchian Trend, tsmom, dual momentum, carry→funding), parametreleri `reports/book_signals.md`'de veriye bakmadan sabit; tests/test_signals.py (12: elle hesaplı kural + nedensellik) |
-| 3 | Risk motoru | ◐ | `kepler/risk.py`: vol hedefleme, kaldıraç tavanı, rebalance bandı, kill switch; `evaluate(size=, kill_dd=)`; tests/test_ops.py (elle hesaplı + nedensellik); gerçek veride duman testi. Parametreler ayarlanmadı; "sabit boyuta karşı" karşılaştırma G3 sonrası (aday yok) |
+| 3 | Risk motoru | ◐ | `kepler/risk.py`: vol hedefleme, kaldıraç tavanı, rebalance bandı, kill switch; `evaluate(size=, kill_dd=)`; tests/test_ops.py (elle hesaplı + nedensellik); gerçek veride duman testi. Parametreler ayarlanmadı; strateji stopu, piramitleme ve portföy sınırları yok. Karar 2026-10-02: risk motoru G3'ten önce, Motor v2 bloğunda |
 | 4 | Backtest/hakem (yürütme+muhasebe) | ☑ | Nautilus hakem gerçekçi: sonraki-bar açılış dolumu, zorunlu slippage (`evaluate`), açık pozisyon çıkış maliyeti, likidasyon çifte sayımı yok, likidasyon sonrası hesap ölü (tests/test_realistic.py, test_referee.py). Tek sembol: portföy = sembol başına bağımsız koşu toplamı (G2'de) |
 | 5 | Denetim | ☑ | `evaluate()` tek giriş: nedensellik denetimi → hakem → defter (ledger flock + `audit_causal` korkuluğu); walk-forward, rotasyon null'ı, DSR `scripts/g2.py` + `g2_report.py`'de (G2 işinde). Yok: SPA/StepM (yerine Bonferroni + DSR + dev-içi doğrulama bölmesi), purge/embargo (etiket çakışması yok) |
 | 6 | Rapor | ☑ | `kepler/report.py` (işlem tablosu, saatlik PnL), `scripts/g2_report.py`, `scripts/search_report.py` (otomatik tablolar); özet raporlar elle |
@@ -27,7 +27,28 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 | 10 | Sekreter/müdür (Hermes) | ◐ | Hermes sunucuda kurulmuş (başka oturumdan), sekreter talimatı henüz uygulanmadı; kuyruk kodu var (`factory/enqueue.py`) |
 
 **Döngü** (sinyal → boyut → backtest → denetim → rapor): boyut (risk motoru) hariç uçtan uca çalıştı (G2: `scripts/g2.py` + `g2_report.py`, Modal'de); rapor elle yazıldı.
-**G2 cevabı: NO_EDGE** (kitap sinyalleri, 4–16 bps fee, gerçekçi hakem; en iyi turtle_s2 p=0,06 sert null'da, Bonferroni 0,72). Sıradaki: yeni hipotez (MISSION: aynı altyapıyla başka fikre geç). Açık: hakem+yapıştırma 347 satır (>300, kullanıcı kararı); G2 işçisi/null/DSR kodu `scripts/`te (sayılmadı).
+**G2 cevabı: NO_EDGE** (kitap sinyalleri, 4–16 bps fee, gerçekçi hakem; en iyi turtle_s2 p=0,06 sert null'da, Bonferroni 0,72). Sıradaki: yeni hipotez (MISSION: aynı altyapıyla başka fikre geç). Hakem+yapıştırma 347 satır: tavan 450'ye çekildi (MISSION kural 7a, 2026-10-02).
+
+## Kararlar (2026-10-02, kullanıcı adına; MISSION'a işlendi)
+
+1. PR #2 main'e birleşti (gerçekçi hakem, G2, arama). Benim dalımdaki paralel sertleştirme (`b8ec86e`, `claude/blissful-ptolemy-4kmtvf`) birleştirilmez, arşiv olarak dalda kalır.
+2. G2 sonucu geçerli: kitap sinyallerinin kırpılmış sürümleri için `NO_EDGE`. Kapı ölçütü MISSION'da sabit: ortak-ofset rotasyon null'ı + Bonferroni (N = deneme sayısı) + fee 10 ve 16'da net > 0.
+3. Risk motoru ve trade yönetimi stratejinin parçası: G3'ten önce kullanılır.
+4. Satır tavanı: hakem+yapıştırma ≲450; araştırma kodu tavansız ama testli ve kullanılıyor olmalı. Kullanılmayan `scripts/probe.py` silindi.
+5. Aynı veride serbest arama yok (MISSION kural 11).
+
+## Sıradaki blok: Motor v2 + tam sistem testi (BAŞLANMADI; kullanıcı onayı bekliyor)
+
+Soru: kitaptaki tam Turtle sistemi (N-boyutlama, 2N stop, piramitleme, portföy birim sınırları), G2'deki kırpılmış sürümün yapamadığını yapıyor mu? Evet → eksik olan motordu; hayır → sorun sinyalde.
+
+| # | İş | Bitti sayılması için | Durum |
+|---|---|---|---|
+| V1 | Strateji stopu: sinyal hedef + stop seviyesi döner; stop-market bar içinde (gap dahil) tetiklenir | Elle hesaplı stop testleri (gap, aynı bar giriş+stop, likidasyonla etkileşim) | ☐ |
+| V2 | Portföy hakemi: tek Nautilus motorunda çok sembol, ortak sermaye, toplam brüt pozisyon tavanı | Tek sembolde mevcut hakemle birebir aynı sonuç + elle hesaplı portföy testleri | ☐ |
+| V3 | Risk motorunu bağla: N (ATR) boyutlama, piramitleme, birim sınırları (sembol/korele grup/toplam) | Testli; sabit boyuta karşı karşılaştırma raporlanır | ☐ |
+| V4 | Tam Turtle S1/S2 ön kaydı (`reports/full_systems_protocol.md`, koddan önce commit) ve tek koşu | `reports/full_systems.md`: MISSION G2 ölçütüyle sonuç | ☐ |
+
+Kapsam dışı: haber, emir defteri, likidasyon akışı (veri yok), limit/maker emirler, diskresyoner kararlar.
 
 ## İlerleme (G0–G1 çekirdek görevleri)
 

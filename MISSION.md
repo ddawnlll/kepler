@@ -58,13 +58,16 @@ ve kullanıcıya raporlar.
 |---|---|---|---|
 | **G0 Veri** | Ağ izni (kullanıcı); majörler için ≥3–4 yıl klines + funding + mark; veri kalite kontrolü (boşluk, saat dilimi, sha256, manifest) | Manifest ve kalite raporu temiz | Veri çekilemiyorsa dur, kullanıcıya bildir |
 | **G1 Değerlendirici** | Long/short/flat hedef; fee, funding, slippage, likidasyon; elle hesaplanmış bilinen-cevaplı testler; nedensellik (gelecek bozulunca karar değişmez); determinizm; negatif kontroller (flat ≈ 0, rastgele ≈ −maliyet) | Tüm testler yeşil | Bir test kırmızıysa düzelt; sinyale geçme |
-| **G2 S1–S2** | 2–3 sinyal (zaman serisi momentum, Donchian breakout, funding tabanlı); walk-forward; etiketler çakışıyorsa purge + embargo; null dağılımı; fee duyarlılığı | En az bir sinyal null'ın dışında **ve** en az bir fee senaryosunda net > 0 | Hiçbiri geçmezse `NO_EDGE` raporu; S3'e geçme; yeni hipotez öner |
+| **G2 S1–S2** | 2–3 sinyal (zaman serisi momentum, Donchian breakout, funding tabanlı); walk-forward; etiketler çakışıyorsa purge + embargo; null dağılımı; fee duyarlılığı | En az bir yapılandırmanın brüt PnL'si **ortak-ofset rotasyon null'ında** (B ≥ 300) tek yönlü p ≤ 0,05/N (N = o testteki deneme sayısı, Bonferroni) **ve** net > 0 hem fee 10 hem fee 16 bps'de. Ölçüt koşudan önce yazılır (karar 2026-10-02) | Hiçbiri geçmezse `NO_EDGE` raporu; S3'e geçme; yeni hipotez öner |
 | **G3 S3** | Mühürlü dönemi (son 6 ay) tek seferlik aç; yalnızca kullanıcı komutuyla | `SUPPORTED` / `REJECTED` / `INCONCLUSIVE` kararı | Açıldıktan sonra o dönem temiz sayılmaz |
 
+G2 sonucu (2026-10-02): kitap sinyallerinin kırpılmış sürümleri (stopsuz, sabit boyut, portföy sınırsız) → `NO_EDGE` (`reports/g2.md`, `reports/search.md`).
+
 G2'den sonra 7/24 ajanlı arama (H4) mühürlü dönem açılmadan, yalnızca dev verisinde yürür;
-G3 tek atışı en iyi aday için yapılır. G3 geçerse, **ayrı onayla**: Monte Carlo, stres testi,
-risk/kaldıraç ve trade yönetimi (her biri önceki basit haline karşı), MEXC farkı ölçümü, küçük
-canlı (H5).
+G3 tek atışı en iyi aday için yapılır. **Risk motoru ve trade yönetimi (boyutlama, stop,
+piramitleme, portföy sınırları) stratejinin parçasıdır**: G3'ten önce, ön kayıtlı testlerde ve
+önceki basit haline (sabit boyut) karşı kullanılır (karar 2026-10-02). G3 geçerse, **ayrı onayla**:
+Monte Carlo, stres testi, MEXC farkı ölçümü, küçük canlı (H5).
 
 ## Değişmez kurallar (mekanik; yönetişim belgesi değil)
 
@@ -83,10 +86,11 @@ canlı (H5).
 6. **Bütçe.** Her blok için açık süre ve araç çağrısı/token tavanı yazılır; aşılınca dur ve
    raporla. Dış sınır: 1 hafta.
 7. **Kendi kodumuz küçük kalır; iki ayrı sayı, ikisi de raporlanır.** (a) Hakem + yapıştırma
-   (hedef→emir adaptörü, funding, likidasyon stopu, eleme, defter, sözleşme, denetim) ≲300
-   satır (G1 sonu: 268). (b) Veri/QC/mühür araçları (indirici, kalite kontrol, evren, mühür)
-   ≲500 satır (G1 sonu: ~470). Boş/yorum satırı ve testler sayılmaz. Biri aşılırsa kullanıcıya
-   sor; sessizce geçilmez. Bakım maliyeti V8'de projeyi bitirdi.
+   (hedef→emir adaptörü, funding, likidasyon ve strateji stopu, portföy, eleme, defter, sözleşme,
+   denetim, evaluate) ≲450 satır (G1 sonu: 268; G2 sonu: 347; tavan 2026-10-02'de 300→450). (b) Veri/QC/mühür araçları (indirici, kalite kontrol, evren, mühür)
+   ≲500 satır (G1 sonu: ~470). (c) Araştırma kodu (sinyaller, koşucular, rapor betikleri) tavansızdır ama
+   her modül testli ve kullanılıyor olmalı; kullanılmayan dosya silinir. Boş/yorum satırı ve testler
+   sayılmaz. (a) ya da (b) aşılırsa kullanıcıya sor; sessizce geçilmez. Bakım maliyeti V8'de projeyi bitirdi.
 8. **Geliştirme ajanları kilometre taşında onay bekler**, aralarda serbest çalışır.
 9. **Kritik kod** (değerlendirici, denetim) güçlü model + bağımsız inceleme ile yazılır
    (G0–G1: Claude Code + Sonnet 5.5 high); veri çekme ve toplu koşum ucuz modelle yapılabilir.
@@ -94,6 +98,9 @@ canlı (H5).
 10. **Sonuçlar dürüst raporlanır:** test kırmızıysa söylenir, atlanan adım "atlandı" diye
     yazılır, doğrulanmamış rakam "doğrulanmadı" etiketiyle gelir
     (KNOWN / LIKELY / UNKNOWN).
+11. **Aynı veride serbest arama yok.** Her yeni test ön kayıtlı tek bir hipotezdir: kural, evren,
+    deneme sayısı ve geçme ölçütü kod ve koşudan önce `reports/` altında commit'lenir; deftere ve
+    deneme sayacına girer. Sonuca bakıp parametre ya da ölçüt değiştirilmez.
 
 ## Varsayılan stack (G1 sonunda testle doğrulanır)
 
