@@ -29,7 +29,8 @@ class Fake:
 
 
 def flat(n, over=None, price=100.0):
-    kl = pd.DataFrame(dict(open=price, high=price, low=price, close=price, volume=1.0), index=pd.date_range(T0, periods=n, freq="1h", tz="UTC"))
+    # volume büyük: hakem dolumu bar hacmiyle kısıtlanmasın
+    kl = pd.DataFrame(dict(open=price, high=price, low=price, close=price, volume=1e6), index=pd.date_range(T0, periods=n, freq="1h", tz="UTC"))
     for h, kw in (over or {}).items():
         for k, v in kw.items():
             kl.iloc[h, kl.columns.get_loc(k)] = v
@@ -172,7 +173,7 @@ def test_rotate_book_shifts_target_and_stop_with_common_offset():
     assert (abs_.stop.iloc[8:13] == 110.0).all() and abs_.stop.iloc[:8].isna().all()
     # göreli: stop / giriş kapanışı = 110 / 103; kaymış pozisyonun açılış kapanışı = saat 8 kapanışı = 108 -> stop = 108 x 110/103
     rel = zf.rotate_book(out, {"A": kl}, lo, hi, 0.25, relative=True)["A"]
-    assert (rel.stop.iloc[8:13] == pytest.approx(108 * 110 / 103)).all() and (rel.target.iloc[8:13] == -500.0).all()
+    assert np.allclose(rel.stop.iloc[8:13], 108 * 110 / 103) and (rel.target.iloc[8:13] == -500.0).all()
     # dairesel: u = 0,9 -> k = 18: pozisyon saat 21..25 -> saat 1, 2 (sarar) ... hedef -500 saat 21-25 mod 20 = 1..5
     wrap = zf.rotate_book(out, {"A": kl}, lo, hi, 0.9, relative=False)["A"]
     assert (wrap.target.iloc[1:6] == -500.0).all() and wrap.target.iloc[0] == 0.0 and wrap.target.iloc[6:].eq(0.0).all()
