@@ -50,10 +50,27 @@ def evaluate(signal, kl: pd.DataFrame, specs: list, ledger_path, hypothesis: str
     return out
 
 
+def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | None = None):
+    """Hesaplanmış kitabı ({sym: DataFrame[target, stop]}) [lo, hi) penceresinde portföy hakemiyle koşar (denetimsiz, deftersiz; sağlamlık koşuları için). Pencere başında tutulan
+    pozisyon açık hedef olur. Kill switch: portföy equity'si kill_dd düşünce tüm hedefler 0. (hakem sonucu, pencere verisi, tetik zamanı)"""
+    keep = {s: (d["kl"].index >= lo) & (d["kl"].index < hi) for s, d in data.items()}
+    win = {s: dict(d, kl=d["kl"][keep[s]], target=out[s].target.ffill().fillna(0.0)[keep[s]], stop=out[s].stop[keep[s]],
+                   mark=None if d.get("mark") is None else d["mark"].loc[(d["mark"].index >= lo) & (d["mark"].index < hi)]) for s, d in data.items() if keep[s].any()}
+    res, tripped = referee.run_portfolio(win, spec), None
+    if kill_dd is not None:
+        eq = spec.capital + report.book_pnl(win, res, spec).cumsum()
+        _, tripped = risk.kill_switch(pd.Series(0.0, index=eq.index), eq, kill_dd)
+        if tripped is not None:
+            for d in win.values():
+                d["target"], d["stop"] = d["target"].where(d["target"].index < tripped, 0.0), d["stop"].where(d["stop"].index < tripped)
+            res = referee.run_portfolio(win, spec)
+    return res, win, tripped
+
+
 def evaluate_book(book, data: dict[str, dict], specs: list, ledger_path, hypothesis: str, data_hash: str, name: str = "", params: dict | None = None, window: tuple | None = None, kill_dd: float | None = None) -> list[dict]:
     """Portföy (Motor v2): data[sym] = dict(kl, funding, mark[, tick, step]); book({sym: kl}) -> {sym: DataFrame[target, stop]} (örn. turtle.turtle_book). Sıra: gerçekçi Spec ->
-    tüm panel bozularak nedensellik denetimi -> belirlenimlilik -> portföy hakemi (ortak sermaye; Spec.gross_cap) -> kill switch (portföy equity'si, tetikte tüm hedefler 0) -> defter.
-    Kitap tam seride hesaplanır (ısınma); hakem yalnızca pencerede koşar, pencere başında tutulan pozisyon açık hedef olur."""
+    tüm panel bozularak nedensellik denetimi -> belirlenimlilik -> portföy hakemi (`run_book`; ortak sermaye; Spec.gross_cap; isteğe bağlı kill switch) -> defter.
+    Kitap tam seride hesaplanır (ısınma); hakem yalnızca pencerede koşar. Dönüş satırı: res, row, win (pencere verisi: report.book_pnl için)."""
     _realistic(specs)
     kls = {s: d["kl"] for s, d in data.items()}
     audit.assert_causal_book(book, kls)
@@ -63,19 +80,9 @@ def evaluate_book(book, data: dict[str, dict], specs: list, ledger_path, hypothe
     utc = lambda x: pd.Timestamp(x).tz_localize("UTC") if pd.Timestamp(x).tzinfo is None else pd.Timestamp(x).tz_convert("UTC")  # noqa: E731
     lo, hi = (utc(window[0]), utc(window[1])) if window else (min(k.index[0] for k in kls.values()), max(k.index[-1] for k in kls.values()) + pd.Timedelta("1h"))
     code = ledger.code_hash(referee.__file__, __file__, audit.__file__, ledger.__file__, tape.__file__, inspect.getsourcefile(book), risk.__file__, turtle.__file__, signals.__file__)
-    keep = {s: (kls[s].index >= lo) & (kls[s].index < hi) for s in kls}
     rows = []
     for sp in specs:
-        win = {s: dict(d, kl=d["kl"][keep[s]], target=out[s].target.ffill().fillna(0.0)[keep[s]], stop=out[s].stop[keep[s]],
-                       mark=None if d.get("mark") is None else d["mark"].loc[(d["mark"].index >= lo) & (d["mark"].index < hi)]) for s, d in data.items() if keep[s].any()}
-        res, tripped = referee.run_portfolio(win, sp), None
-        if kill_dd is not None:
-            eq = sp.capital + report.book_pnl(win, res, sp).cumsum()
-            _, tripped = risk.kill_switch(pd.Series(0.0, index=eq.index), eq, kill_dd)
-            if tripped is not None:
-                for d in win.values():
-                    d["target"], d["stop"] = d["target"].where(d["target"].index < tripped, 0.0), d["stop"].where(d["stop"].index < tripped)
-                res = referee.run_portfolio(win, sp)
+        res, win, tripped = run_book(out, data, sp, lo, hi, kill_dd)
         cfg = dict(name=name, params=params or {}, spec=asdict(sp), window=[str(lo), str(hi)], audit_causal=True, book=True, symbols=sorted(win), kill_dd=kill_dd, kill_at=str(tripped))
-        rows.append(dict(res=res, row=ledger.record(ledger_path, "referee", hypothesis, cfg, code, data_hash, result=res["summary"])))
+        rows.append(dict(res=res, win=win, row=ledger.record(ledger_path, "referee", hypothesis, cfg, code, data_hash, result=res["summary"])))
     return rows
