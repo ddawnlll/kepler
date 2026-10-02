@@ -57,7 +57,7 @@ Smoke kayıtları ayrıca sayıldı: full_smoke 12 asıl-varyant satırı; ensem
 
 ## `flock`: iki ayrı eşzamanlı Modal konteyneri
 
-Test kaynağı **`scratchpad/flock_modal_volume.py`**. İki ayrı sandbox aynı `kepler-data:/scratchpad/<benzersiz>/shared.lock` dosyasını açtı; dosya önce yüklenmişti, içerik SHA256 iki konteynerde aynıydı. Aynı UTC epoch anında `LOCK_EX|LOCK_NB` denendi ve kazanan kilidi12 saniye tuttu. Aynı konteynerde ayrı ikinci file descriptor yerel negatif kontroldür. İki bağımsız tur, dört ayrı sandbox; süre/başlangıç/geçerlilik ve sandbox kimlikleri `trial_inventory_data/flock.json`'da. Test kilit dosyaları Volume scratchpad'de kaldı, gerçek ledger açılıp yazılmadı.
+Test kaynağı **`scratchpad/flock_modal_volume.py`**. İki ayrı sandbox aynı `kepler-data:/scratchpad/<benzersiz>/shared.lock` dosyasını açtı; dosya önce yüklenmişti, içerik SHA256 iki konteynerde aynıydı. Aynı UTC epoch anında `LOCK_EX|LOCK_NB` denendi ve kazanan kilidi12 saniye tuttu. Aynı konteynerde ayrı ikinci file descriptor yerel negatif kontroldür. Modal SDK `1.2.0`, Debian/Python 3.12; iki bağımsız tur, dört ayrı sandbox; süre/başlangıç/geçerlilik ve sandbox kimlikleri `trial_inventory_data/flock.json`'da. Test kilit dosyaları Volume scratchpad'de kaldı, gerçek ledger açılıp yazılmadı.
 
 | Tur | A exclusive lock | B exclusive lock | Aynı-konteyner ikinci açılış | Exclusive sürelerin örtüşmesi | Sonuç |
 |---|---|---|---|---|---|

@@ -76,5 +76,8 @@
   ],
   "pass": false,
   "ledger_untouched": true,
-  "test_files_retained": true
+  "test_files_retained": true,
+  "modal_sdk_version": "1.2.0",
+  "image": "debian_slim python3.12; duckdb/pandas/pyarrow/numpy",
+  "lock_mode": "fcntl.LOCK_EX | fcntl.LOCK_NB"
 }
