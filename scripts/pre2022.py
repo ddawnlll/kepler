@@ -18,7 +18,7 @@ import full_systems as fs
 import g2
 import search
 from kepler import evaluate as ev
-from kepler import ledger, report, robust, stress, tape, turtle
+from kepler import audit, ledger, referee, report, robust, stress, tape, turtle
 from kepler import signals as sg
 
 CAP, END = fs.CAP, "2022-01-01"
@@ -126,13 +126,42 @@ def k7_universe(root, exclude):
     return syms, dropped
 
 
+TAG = "pre2022r2"  # ilk Blok B koşusu defter reddinde çöktü (ledger_pre2022_*.jsonl = o koşunun kısmi satırları, kümülatif sayıma girer); yeniden koşu bu etiketle yazar
+
+
+def one_safe(a):
+    """search.one, spec başına: defter bir koşuyu n_rejected/funding_missed > 0 diye reddederse (veri boşluğunda funding olayı: ham veri gerçeği, kod hatası değil) aynı nedensellik denetimi + hakemle
+    deftersiz koşulur ve satır ledger=False işaretlenir (full_systems_protocol.md koşu notundaki 'defter dışı, N'ye sayılır' davranışı); hakem/defter koduna dokunulmaz."""
+    family, name, p, sym, window, specs, out, dh, tag = a
+    rows = []
+    for sp in specs:
+        try:
+            rows.append(search.one((family, name, p, sym, window, [sp], out, dh, tag))[2][0])
+            continue
+        except ValueError as err:
+            if "reddedilen" not in str(err):
+                raise
+        kl, mark, funding = g2.D[sym]
+        sig = search.make(family, p, sym)
+        audit.assert_causal(sig, kl)
+        unit = tape.check_target(kl, sig(kl).astype(float)).ffill()
+        keep = (kl.index >= window[0]) & (kl.index < window[1])
+        k = kl[keep]
+        res = referee.run(k, (unit * g2.NOTIONAL)[keep], sp, funding, mark.loc[(mark.index >= pd.Timestamp(window[0], tz="UTC")) & (mark.index < pd.Timestamp(window[1], tz="UTC"))])
+        s = dict(res["summary"], fee_bps=sp.fee_rt_bps, slip_bps=sp.slip_rt_bps, traded=float((res["fills"].qty * res["fills"].px).sum()), ledger=False)
+        base = (sp.fee_rt_bps, sp.slip_rt_bps) == (10, g2.SLIP)
+        s["daily"] = {str(i.date()): float(v) for i, v in report.hourly_pnl(k, mark.loc[k.index.intersection(mark.index)], funding, res["fills"], sp).resample("1D").sum().items()} if base else None
+        rows.append(s)
+    return name, sym, rows
+
+
 def blockb(ex, out, dh, universe, lo, hi):
     """Gerçek koşu (6 yapılandırma x semboller x 6 maliyet, deftere) yalnızca lo == 0 parçasında; null çekilişleri [lo, hi) aralığında."""
     best = {fam: next((n, p) for n, p in search.configs(fam) if n == nm) for fam, nm in dict(donchian="don_80_20", ema="ema_10_100", tsmom="tsmom_14_1", xs_carry="xscarry_7", xs_mom="xsmom_7", xs_rev="xsrev_3").items()}
     specs = lambda kl: [g2.spec_for(kl, f, g2.SLIP) for f in g2.FEES] + [g2.spec_for(kl, 10, 6.0)]  # noqa: E731
     if lo == 0:
         real = {}
-        for name, sym, rows in ex.map(search.one, [(fam, nm, p, s, MAIN, specs(g2.D[s][0]), out, dh, "pre2022") for fam, (nm, p) in best.items() for s in universe], chunksize=1):
+        for name, sym, rows in ex.map(one_safe, [(fam, nm, p, s, MAIN, specs(g2.D[s][0]), out, dh, TAG) for fam, (nm, p) in best.items() for s in universe], chunksize=1):
             real.setdefault(name, {})[sym] = rows
         Path(out, "blockb_real.json").write_text(json.dumps(dict(best={f: b[0] for f, b in best.items()}, universe=universe, real=real)))
     null = {nm: {s: {} for s in universe} for nm, _ in best.values()}
