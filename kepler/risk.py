@@ -12,6 +12,19 @@ def realized_vol(kl: pd.DataFrame, days: int = 30) -> pd.Series:
     return pd.Series(v.reindex(kl.index.normalize()).to_numpy(), index=kl.index)
 
 
+def wilder_n(d: pd.DataFrame, n: int = 20) -> pd.Series:
+    """Turtle N = Wilder ATR (günlük high/low/close). TR = max(H-L, |H-önceki C|, |L-önceki C|), ilk gün H-L; N[n-1] = ilk n TR ortalaması,
+    sonra N[t] = ((n-1) N[t-1] + TR[t]) / n. t günü kapanışında bilinir (nedensel); ilk n-1 gün NaN."""
+    pc = d.close.shift(1)
+    tr = pd.concat([d.high - d.low, (d.high - pc).abs(), (d.low - pc).abs()], axis=1).max(axis=1).to_numpy()
+    out = np.full(len(tr), np.nan)
+    if len(tr) >= n:
+        out[n - 1] = tr[:n].mean()
+        for i in range(n, len(tr)):
+            out[i] = ((n - 1) * out[i - 1] + tr[i]) / n
+    return pd.Series(out, index=d.index)
+
+
 def vol_target(kl: pd.DataFrame, unit: pd.Series, capital: float, target_vol: float = 0.20, max_lev: float = 3.0, band: float = 0.25, days: int = 30) -> pd.Series:
     """hedef notional = yön x capital x min(max_lev, hedef_vol / gerçekleşen_vol). Band: önceki notional'dan göreli sapma < band ise yeniden boyutlama yok (fee)."""
     lev = (target_vol / realized_vol(kl, days)).clip(upper=max_lev)

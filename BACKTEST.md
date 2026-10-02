@@ -38,7 +38,7 @@ nasıl çalıştırılır `AGENTS.md`'de.
  [2] SİNYAL                signal(kl) -> birim pozisyon serisi [-1, 1], NaN = tut   (saf, nedensel)
         │
         ▼
- [3] RİSK / BOYUT          size(kl, unit, capital) -> hedef notional (USDT)  + stop seviyeleri [PLANLI]
+ [3] RİSK / BOYUT          size(kl, unit, capital) -> hedef notional (USDT); turtle_book: hedef + stop [VAR]
         │
         ▼
  [4] HAKEM (yürütme)       referee.run(kl, target, Spec, funding, mark) -> fills, özet
@@ -94,11 +94,12 @@ signal(kl: DataFrame[open, high, low, close, volume (+ fund_hr)]) -> Series
 - Funding kullanan sinyaller `signals.with_funding(kl, funding)` ile `fund_hr` sütunu alır (bar kapanışında bilinen son oran / aralık saati).
 - Mevcut sinyaller (`kepler/signals.py`): `turtle(entry, exit_, trend)`, `tsmom(days, every)`, `ema_trend(fast, slow)`,
   `dual_mom(panel, sym)`, `xs_signal(panel, sym, kind, days, every)`, `carry_funding(days)`.
-- **Bilinen boşluk [KISMEN]:** panel (kesitsel) sinyallerinde panel kapanışla dışarıdan verilir; `check_causal`
-  yalnızca sembolün kendi `kl`'ini bozar, paneli bozmaz. Bu sinyallerin nedenselliği kod okumasıyla doğrulandı,
-  denetimle değil. [PLANLI] panel'i de bozan nedensellik testi.
-- **[PLANLI] stoplu sözleşme (Motor v2):** `signal(kl) -> DataFrame[unit, stop]`; `stop` = o an geçerli koruyucu stop
-  fiyatı (NaN = stop yok). Stop seviyesi yalnızca ≤ t verisiyle hesaplanır. Eski tek-seri sinyaller `stop = NaN` ile uyumlu kalır.
+- **Panel sinyalleri:** `check_causal` yalnızca sembolün kendi `kl`'ini bozar; paneli de bozan test `check_causal_book` (yukarıda).
+- **[VAR] kitap (portföy) sözleşmesi (Motor v2):** `book({sym: kl}) -> {sym: DataFrame[target, stop]}` (`turtle.turtle_book` ve kapanışları). `target` = hedef notional
+  (USDT, işaretli; NaN = tut), `stop` = t kapanışında bilinen koruyucu stop fiyatı (NaN = stop yok), t+1 açılışından (gecikmede 1+delay) itibaren geçerli; hourly indeks `kl` ile aynı.
+  Kitap yalnızca ≤ t verisiyle hesaplanır: `audit.check_causal_book` tüm sembollerin k sonrasını bozar (panel dahil) ve kitabı kesip karşılaştırır. Tek-seri sinyal sözleşmesi
+  (yukarısı) değişmedi; `stop = NaN` her yerde = stopsuz, sonuç eski hakemle birebir aynı (tests/test_portfolio.py madde 9).
+- **Panel sinyallerinin nedensellik testi [VAR]:** `audit.check_causal_book(fn, data)`; tek-sembol `check_causal` bunun tek sembollü halidir.
 
 ## 5. Risk / boyut katmanı
 
@@ -112,14 +113,15 @@ signal(kl: DataFrame[open, high, low, close, volume (+ fund_hr)]) -> Series
 
 Kill switch tetiklenince **hakem baştan, kırpılmış hedefle yeniden koşar**; tetik zamanı deftere `kill_at` olarak yazılır.
 
-### 5.2 Motor v2 [PLANLI]
-- **N (ATR) boyutlama:** N = 20 günlük ATR (Wilder), birim = (capital × risk_per_unit) / (N × fiyat başına değer);
-  Turtle: risk_per_unit = %1.
-- **Piramitleme:** ilk girişten sonra her +0,5N'de bir birim ekle, en fazla 4 birim/sembol (Turtle).
-- **Birim sınırları:** sembol başına ≤ 4, yakın korele grup ≤ 6, tek yön toplam ≤ 12 birim (Turtle); korelasyon
-  grubu önceden sabit: {BTC, ETH}, {SOL, AVAX, ...} gibi listeler ön kayıtta yazılır.
-- **Strateji stopu:** 2N (Turtle) ya da sinyalin verdiği seviye; §6.4'e göre yürütülür.
-- **Portföy tavanı:** toplam brüt notional ≤ capital × L_max (L_max ön kayıtta).
+### 5.2 Motor v2 [VAR] (`kepler/risk.py::wilder_n`, `kepler/turtle.py`; tests/test_turtle.py)
+Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 barı) şunları ekler. Kurallar `turtle.py` başlığında; özet:
+- **N (ATR) boyutlama:** N = Wilder ATR(20) günlük (`risk.wilder_n`); birim qty u = capital × risk / N (risk = %1; N giriş günü, pozisyon boyunca sabit); hedef notional = yön × birim sayısı × u × kapanış.
+  Sermaye **sabit** (başlangıç sermayesi; equity geri beslemesi yok: Turtle'ın bileşik sermaye ayarı yok, sapma).
+- **Piramitleme:** son birimin referans kapanışından yön × 0,5N ilerleyince (günde en çok 1) +1 birim, en çok 4.
+- **Strateji stopu:** referans kapanış − yön × 2N; her eklemede son referanstan yeniden kurulur. Hakem bar içinde yürütür (§6.4); yönetici günlük H/L ile taklit eder (durum eşitleme).
+- **Birim sınırları:** sembol ≤ 4, aynı gruptaki aynı yön ≤ 6, toplam aynı yön ≤ 12; gruplar ön kayıtta. Günde iki geçiş: önce stop taklidi + çıkış/çevirme (alan açar), sonra girişler/eklemeler alfabetik. Engellenen giriş yön değişene kadar tekrar denenmez.
+- **Veri boşlukları:** eksik günler atılır (N sürekli); yön günün son değeriyle (ffill); karar günün son mevcut barına yazılır. Stop taklidi hakemin tetik verisini (mark H/L) ve tick yuvarlamasını kullanır.
+- **Portföy tavanı:** `Spec.gross_cap` (§6.5).
 - Kural: risk parametreleri sonuçtan önce yazılır, sonuca göre oynanmaz.
 
 ## 6. Hakem (yürütme ve muhasebe)
@@ -138,36 +140,44 @@ Kill switch tetiklenince **hakem baştan, kırpılmış hedefle yeniden koşar**
 | `liq_fee_rate` | None → mmr | Likidasyonda kaybedilen oran; motorun taker fee'si bunun içinde (çifte sayım yok) |
 | `fill` | "next_open" | "close" yalnızca test/eski; `evaluate` reddeder |
 | `close_out` | True | Dönem sonunda açık pozisyon son kapanıştan fee+slip ile değerlenir |
+| `delay` | 0 | Ek gecikme (bar): dolum karardan sonraki (1 + delay). açılışta (K3 stres: delay=1) |
+| `gross_cap` | None | Toplam brüt notional tavanı (USDT); artıran emir kalan alana küçülür (§6.5) |
 
 ### 6.2 Yürütme semantiği [VAR]
 1. Her saatlik bar motora iki parça gider: açılış tiki (o,o,o,o) zaman t (karar anı) ve gövde (o,h,l,c) zaman t+1h−1ns.
 2. t barının kapanışında verilen hedef, **ilk mevcut sonraki barın açılışında** piyasa emriyle dolar (boşluk varsa sonraki mevcut bar). Son barın hedefi dolmaz.
 3. Hedef değişmedikçe yeniden boyutlama yok; değişince miktar = hedef notional / dolum fiyatı, lot adımına aşağı yuvarlanır.
 4. Maliyet: (fee + slip)/2 bps her dolumun notional'ına; özet `fee`, `slippage`, `exit_cost` ayrı raporlar.
-5. **Funding:** T anındaki oran × T'den önce (T'deki dolumlardan önce) tutulan pozisyon × mark kapanışı; oran > 0 iken long öder. Mark yoksa kline'a düşer (`funding_mark_fallback` sayılır); ikisi de yoksa `funding_missed` sayılır ve koşu deftere giremez.
+5. **Funding:** T anındaki oran × T'den önce (T'deki dolumlardan önce; açılış tikinde dolan gap stopu/likidasyon dahil) tutulan pozisyon × mark kapanışı; oran > 0 iken long öder. Mark yoksa kline'a düşer (`funding_mark_fallback` sayılır); ikisi de yoksa `funding_missed` sayılır ve koşu deftere giremez.
 6. **Likidasyon:** Nautilus bar verisinde likide etmez; her pozisyon değişiminde likidasyon fiyatına reduce-only stop-market konur. Gövde barının H/L'si **mark** H/L'sidir (mark yoksa kline). Boşlukla geçilirse stop piyasa fiyatından dolar (iyimser LP dolumu yok). Likidasyondan sonra hesap ölüdür, yeni işlem yok.
 7. Reddedilen emir (`n_rejected > 0`) veya eksik funding olan koşu geçersizdir; deftere yazılmaz.
 8. Çıktı: `summary` (net_pnl, gross_pnl, fee, slippage, funding, liq_fee, exit_cost, n_fills, n_liq, end_position, n_rejected, funding_missed, funding_mark_fallback), `fills`, `positions`, `rejected`.
 
 ### 6.3 Mevcut sınırlar
-- Tek sembol [VAR]; portföy = sembol başına bağımsız koşuların toplamı (ortak sermaye ve marj yok).
+- Portföy [VAR] (§6.5): `run_portfolio` tek motor, tek hesap; `run` tek sembollü özel hali.
 - Yalnızca piyasa emri; limit/maker [YOK].
 - Bar çözünürlüğü: bar içi olay sırası bilinmez (§6.4 kuralı).
 - Slippage sabit bps; hacme bağlı piyasa etkisi [YOK] (500 USD'de ihmal edilebilir, sermaye artınca [PLANLI]).
 
-### 6.4 Strateji stopu [PLANLI] (Motor v2, V1)
-- t kapanışında bilinen `stop` seviyesi, t+1 açılışından itibaren reduce-only stop-market olarak durur.
-- Gövde barında fiyat stopu geçerse dolum: **açılış stopun ötesindeyse açılış fiyatı (gap), değilse stop fiyatı** + slippage.
-- Aynı barda hem stop hem likidasyon fiyatı geçiliyorsa: önce stop (stop LP'den daha yakındadır; daha yakın değilse likidasyon).
-- Aynı barda giriş ve stop: giriş açılışta doldu, gövde stopu geçtiyse stop o barda tetiklenir.
-- Stop tetiklenince sinyal yeni bir hedef verene kadar flat (Turtle: ters sinyal gelmeden yeniden giriş yok).
-- Bar içi belirsizlikte (aynı barda hem kâr hedefi hem stop) **kötümser** varsayım: önce stop.
+### 6.4 Strateji stopu [VAR] (Motor v2; tests/test_stops.py)
+- `stop[t]` (t kapanışında bilinen), t+1 açılışından itibaren reduce-only stop-market olarak durur; seviye her açılış tikinde ve her dolumdan sonra yeniden kurulur.
+- **Sembol başına tek koruyucu emir:** stop ile likidasyon fiyatından (LP) fiyata **yakın** olan konur (aynı tikte iki stop'un sırası belirsiz olmasın; yakın olan fiyat yolunda zaten önce vurulur).
+  Dolum fiyatı LP'de ya da ötesindeyse olay likidasyondur (hesap/sembol ölür, likidasyon ücreti), değilse strateji stopudur (`fills.stop`).
+- Gövde barında fiyat stopu geçerse dolum stop fiyatından; **açılış stopun ötesindeyse (gap) açılış fiyatından**. Seviye kurulurken fiyatın ötesindeyse (açılış gap'i) piyasa emriyle hemen kapanır.
+- Slippage fiyatı oynatmaz, her dolumda komisyon kalemi olarak sayılır ((fee+slip)/2 yan başına, §6.2.4); stop dolumu da aynı.
+- Tetik: motora giden barların H/L'si **mark** H/L'sidir (likidasyonla aynı kaynak; Binance `workingType=MARK_PRICE`); mark yoksa kline.
+- Aynı barda giriş ve stop: giriş açılışta dolar, aynı barın gövdesi stopu geçtiyse stop o barda tetiklenir (iki dolum).
+- **Stop sonrası flat:** hedef yönü (işareti) değişene (ters ya da 0) kadar yeniden giriş yok; aynı yönlü hedef değişiklikleri (örn. piramit) yok sayılır.
+- Bar içi belirsizlikte (aynı barda hem kâr hedefi hem stop) kötümser: önce stop. (Kâr hedefi emri yok; stop ve LP tek emirde.)
 
-### 6.5 Portföy hakemi [PLANLI] (Motor v2, V2)
-- Tek Nautilus motorunda N enstrüman, tek USDT hesap, ortak marj.
-- Hedefler sembol başına; risk katmanı toplam brüt tavanı uygular, aşan hedefler orantılı küçültülür.
-- **Denklik şartı:** tek sembolde sonuç mevcut `referee.run` ile birebir aynı olmalı (test).
-- Funding ve likidasyon sembol başına; likidasyon yalnızca o pozisyonu kapatır (cross-margin likidasyonu [YOK], UNKNOWN Binance davranışına bağlı).
+### 6.5 Portföy hakemi [VAR] (Motor v2; tests/test_portfolio.py)
+- `referee.run_portfolio(data, spec)`: tek Nautilus motorunda N enstrüman, tek USDT hesap, ortak marj. `data[sym] = dict(kl, target, stop, funding, mark, tick, step)`.
+- **Brüt tavan hakemde (`Spec.gross_cap`):** artıran emir, diğer sembollerin son fiyatla brütünü düşen kalan alana (lot adımına aşağı) küçülür, ama sembolün mevcut aynı yönlü pozisyonunun altına inmez (artıran hedef satışa dönmez); azaltan emir tavandan etkilenmez. Hedefler yeniden ölçeklenmez
+  (churn yok); küçülen emir için alan sonradan açılsa da hedef değişmedikçe tamamlanmaz. (Eski taslak: "orantılı küçültme"; yol bağımlı ama churn'süz ve test 10 bunu sabitler.)
+- **Denklik şartı:** tek sembolde sonuç yeniden yazımdan önceki hakemle birebir aynı (tests/test_portfolio.py: eski hakemden alınan sabit sayılar; 28 dolumlu funding'li koşu ve 10x likidasyon).
+- Funding sembol başına; likidasyon yalnızca o sembolü kapatır, diğerleri açık kalır (cross-margin likidasyonu [YOK], UNKNOWN Binance davranışına bağlı). LP'nin kullandığı bakiye = cüzdan − diğer pozisyonların
+  başlangıç marjı (notional/kaldıraç); LP yalnızca o sembolün kendi dolumlarında yeniden hesaplanır (başkasının PnL'siyle kayması yok sayılır: yaklaşıklık, UNKNOWN).
+- `evaluate.evaluate_book`: gerçekçi Spec → panel nedensellik denetimi → belirlenimlilik → portföy hakemi → portföy kill switch (tüm hedefler 0) → defter.
 
 ### 6.6 Eleme (vectorbt) [VAR]
 - `kepler/screen.py`: hedef değişince **kapanış** fiyatından hedef notional'a ayarlar (hakemden iyimser: next_open değil).
@@ -193,7 +203,7 @@ Kill switch tetiklenince **hakem baştan, kırpılmış hedefle yeniden koşar**
 Parametre seçimi yoksa eğitim de yoktur. Karar **tüm dev dönemi** üzerinden null'a karşı verilir; walk-forward pencereleri
 yalnızca **zamansal dağılımı** göstermek için raporlanır (K6).
 - Raporlama pencereleri (anchored değil, ardışık yarıyıllar): 2023-H1, 2023-H2, 2024-H1, 2024-H2, 2025-H1, 2025-H2, 2026-Q1.
-- Isınma: en uzun geri bakış (ör. 365 gün) kadar başlangıç işlemsiz kalır; DSR günlük serisinde ısınma günleri dışlanır [PLANLI düzeltme; G2'de sıfır PnL olarak dahildi].
+- Isınma: en uzun geri bakış (ör. 365 gün) kadar başlangıç işlemsiz kalır; DSR/Sharpe günlük serisinde ısınma günleri dışlanır [VAR: `stats.sharpe_series(warmup_days)`; G2'de sıfır PnL olarak dahildi, o sonuçlar değişmedi].
 
 ### 8.2 Seçim yapan araştırma: nested walk-forward [PLANLI]
 Parametre veya model seçen her test bu yapıyı kullanır; seçim prosedürünün kendisi test edilir.
@@ -240,18 +250,18 @@ yeni veridir.
   SR = ort(r)/std(r), çarpıklık γ3, basıklık γ4, gözlem T;
   SR0 = std(denemelerin SR'leri) × [(1−γ)·Φ⁻¹(1 − 1/N) + γ·Φ⁻¹(1 − 1/(N·e))], γ = 0,5772;
   DSR = Φ( (SR − SR0)·√(T−1) / √(1 − γ3·SR + (γ4−1)/4·SR²) ). Eşik ≥ 0,95.
-- **PSR [PLANLI]:** aynı formül, SR0 = 0 (ya da belirlenen eşik).
-- **MinTRL [PLANLI, raporda]:** MinTRL = 1 + (1 − γ3·SR + (γ4−1)/4·SR²)·(z_α / (SR − SR*))². Normal getiri, SR* = 0, α = %5 için
+- **PSR [VAR]** (`stats.psr`): aynı formül, SR0 = 0 (ya da belirlenen eşik). `stats.dsr(r, trial_srs)`, `stats.sr0_from_trials`.
+- **MinTRL [VAR, `stats.min_trl`; raporda]:** MinTRL = 1 + (1 − γ3·SR + (γ4−1)/4·SR²)·(z_α / (SR − SR*))². Normal getiri, SR* = 0, α = %5 için
   yaklaşık: yıllık SR 0,7 → ~5,5 yıl; 1,0 → ~2,7 yıl; 1,5 → ~1,2 yıl. Elimizde ~3 yıl OOS benzeri veri var: SR ≲ 1 kanıtlanamaz.
 - **Reality Check / SPA / StepM / MCS [YOK, koşullu]:** çok sayıda aday benchmark'a karşı karşılaştırılırsa (H4, 7/24 arama) SPA eklenir (`arch` paketi).
 - **PBO / CSCV [PLANLI, H4]:** otomatik aramada eğitim kazananının testte medyanın altına düşme olasılığı; arama-tabanlı her rapor için.
 
-### 9.3 Block bootstrap [PLANLI]
+### 9.3 Block bootstrap [VAR] (`stats.stationary_bootstrap`, `stats.bootstrap_summary`)
 - Stationary bootstrap (Politis–Romano), günlük net getiri, ortalama blok 20 gün, 2000 tekrar, sabit tohum.
-- Çıktı: yıllık Sharpe %5/%50/%95, maks DD %50/%95, toplam getiri aralığı. K4 bu çıktıyla değerlendirilir.
+- Çıktı: yıllık Sharpe %5/%50/%95, maks DD %50/%95, toplam getiri aralığı. K4 bu çıktıyla değerlendirilir. DD tanımı: toplamsal equity (sabit sermaye = 1, bileşik yok), tepe (başlangıç 0 dahil) − equity'nin en büyüğü.
 - Blok uzunluğu duyarlılığı (10/20/40 gün) raporlanır, karar 20 günle verilir.
 
-### 9.4 Benchmark [PLANLI]
+### 9.4 Benchmark [VAR] (`robust.buy_hold`, `stats.nw_alpha`)
 - **Al-tut:** aynı evrende eşit notional long, aynı toplam notional, aynı hakemle (fee, slip, funding dahil), pencere başında al, sonunda kapat.
 - **Alfa:** günlük r_strateji = a + b · r_al-tut + e; a'nın t istatistiği Newey–West (gecikme 5) ile. K2: t(a) ≥ 2 ve SR_strateji > SR_al-tut.
 - Ayrıca "nakit" (sıfır) referansı her tabloda.
@@ -263,13 +273,13 @@ Her test: ne yapılır, ön kayıtta ne yazılır, hangi karta bağlı, N'ye gir
 | Test | Prosedür (sabit) | Kart | N'ye girer | Durum |
 |---|---|---|---|---|
 | Null / placebo | §9.1 | K1 | Hayır | [VAR] |
-| Maliyet stresi | Fee 4/9/10/11/16 × slip 2/6; ek: 1 bar gecikme (dolum 2. sonraki açılış) | K3 | Hayır | [KISMEN] gecikme [PLANLI] |
-| Block bootstrap | §9.3 | K4 | Hayır | [PLANLI] |
-| Parametre duyarlılığı | Seçilen her parametre ±%10 ve ±%20 (tamsayıya yuvarlanmış, tekrarlar atılır); tam ızgara ön kayıtta | K5 | Hayır (seçim yapılmazsa) | [PLANLI] |
-| Pencere / başlangıç | Yarıyıl pencereleri (§8.1) + başlangıç 0/1/2/3 ay kaydırma | K6 | Hayır | [KISMEN] kaydırma [PLANLI] |
+| Maliyet stresi | Fee 4/9/10/11/16 × slip 2/6; ek: 1 bar gecikme (dolum 2. sonraki açılış; `Spec.delay=1`) | K3 | Hayır | [VAR] |
+| Block bootstrap | §9.3 | K4 | Hayır | [VAR] |
+| Parametre duyarlılığı | Seçilen her parametre ±%10 ve ±%20 (tamsayıya yuvarlanmış, tekrarlar atılır); tam ızgara ön kayıtta (`robust.neighbors`: tam kartezyen, seçilen hariç) | K5 | Hayır (seçim yapılmazsa) | [VAR] |
+| Pencere / başlangıç | Yarıyıl pencereleri (§8.1) + başlangıç 0/1/2/3 ay kaydırma | K6 | Hayır | [VAR] (`robust.shift_windows`) |
 | Çapraz varlık | Ön kayıtlı, kullanılmamış sembol kümesi (kural: aylık top-20'de ≥ 8 ay, evren dışı, ilk bar ≤ 2023-07-01, kesim yok); korele olduğu için tek başına kanıt değil | K7 | Hayır | [VAR] (replikasyon) |
-| Ablasyon | Stop, boyutlama, filtre, piramitleme tek tek kapatılır; aynı seçim prosedürü | K8 | Evet (her varyant bir deneme) | [PLANLI] |
-| Rejim | Nedensel rejim: 200 günlük EMA'nın 30 günlük eğimi ve fiyatın EMA'ya göre konumu → boğa / ayı / yatay; BTC'ye göre tanımlanır, o an bilinen veriyle | K9 | Hayır | [PLANLI] |
+| Ablasyon | Stop, boyutlama, filtre, piramitleme tek tek kapatılır; aynı seçim prosedürü | K8 | Evet (her varyant bir deneme) | [VAR: Turtle'da `turtle_book` bayrakları stop/pyramid/limits/fixed] |
+| Rejim | Nedensel rejim: 200 günlük EMA'nın 30 günlük eğimi ve fiyatın EMA'ya göre konumu → boğa / ayı / yatay; BTC'ye göre tanımlanır, o an bilinen veriyle (`robust.regime`: etiket[d] ≤ d−1 verisi; eğim > 0 & EMA üstü = bull, eğim < 0 & EMA altı = bear, diğer = range) | K9 | Hayır | [VAR] |
 | Tarihsel stres | 2022-05 LUNA, 2022-11 FTX, 2024-08 çöküşü, dev dönemindeki en büyük 3 likidasyon dalgası (veriden: en büyük günlük düşüş) | Rapor | Hayır | [PLANLI] |
 | İşlem sırası Monte Carlo | İşlem PnL'leri 5000 kez karıştırılır; DD ve en uzun kayıp serisi dağılımı; kill switch eşiğinin girdisi | Rapor | Hayır | [PLANLI] |
 | Kapasite | Her emrin notional'ı / o saatin quote hacmi ≤ %0,1; aşan emir sayısı raporlanır | Rapor | Hayır | [PLANLI] |
@@ -298,10 +308,11 @@ Eşikler yargıdır, kanıtlanmış standart değildir; yalnızca ön kayıtla v
 
 **Geçmiş sonuçlar bu kartla:** G2 kitap sinyalleri (kırpılmış): K1 kalıyor (en iyi p 0,06, DSR ≤ 0,67), K3 kalıyor (en iyi Sharpe 0,49) → NO_EDGE.
 Arama + doğrulama + replikasyon: K1 kalıyor → NO_EDGE.
+Tam Turtle S1/S2 (Motor v2: N-boyutlama, 2N stop, piramit, birim sınırları; `reports/full_systems.md`): K1 kalıyor (p 0,026 / 0,060 N=12 eşiği 0,0042; DSR 0,52 / 0,36) → NO_EDGE; K2, K3, K4, K6, K9 da kalıyor.
 
 ## 12. Test senaryoları
 
-### 12.1 Mevcut birim testleri [VAR] (`tests/`, 141 geçti, 1 atlandı: `KEPLER_NET=1` gerektiren gerçek ağ testi)
+### 12.1 Mevcut birim testleri [VAR] (`tests/`, 187 geçti, 1 atlandı: `KEPLER_NET=1` gerektiren gerçek ağ testi)
 | Dosya | Test fonksiyonu | Kapsam |
 |---|---|---|
 | `test_referee.py` | 19 | long/short gidiş-dönüş, açık pozisyon değerleme, fee ve slippage ayrımı, lot yuvarlama, min notional (artıran engellenir, azaltan değil), NaN = tut, flip, funding (long öder/alır, short, mark kullanımı, sınır anı), likidasyon, Nautilus'un tek başına likide etmediği |
@@ -318,8 +329,8 @@ Arama + doğrulama + replikasyon: K1 kalıyor → NO_EDGE.
 
 Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle karşılaştıran test sayılmaz.
 
-### 12.2 Motor v2 için yazılacak testler [PLANLI] (her birinin beklenen değeri elle)
-**Strateji stopu (V1)**
+### 12.2 Motor v2 testleri [VAR: 1–25 yazıldı; 1–8 tests/test_stops.py, 9–13 + 25 test_portfolio.py, 14–18 test_turtle.py, 19–24 test_stats.py] (her birinin beklenen değeri elle)
+**Strateji stopu**
 1. Long 100'den, stop 95; gövde L = 94, açılış 99 → dolum 95 − slip; PnL elle.
 2. Gap: açılış 90 (stopun altında) → dolum 90 (açılış), 95 değil.
 3. Short simetriği (stop yukarıda, gap yukarı).
@@ -329,14 +340,14 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 7. Stop seviyesi nedensellik: geleceği bozunca geçmiş stop seviyeleri değişmez (`check_causal` genişletilmiş).
 8. `stop = NaN` her yerde → sonuç mevcut hakemle birebir aynı.
 
-**Portföy hakemi (V2)**
+**Portföy hakemi**
 9. Tek sembol: portföy hakemi = `referee.run` (net, fills, funding birebir).
 10. İki sembol, ortak sermaye 1000, her biri 600 notional, kaldıraç 1 → ikincinin artırıcı emri tavana göre orantılı küçülür; elle değer.
 11. İki sembolde funding aynı anda: toplam = sembol funding'lerinin toplamı.
 12. Bir sembol likide olunca diğeri açık kalır; bakiye elle.
 13. Bağımsız koşu toplamı ile portföy sonucu, tavan bağlayıcı değilken eşit.
 
-**Risk / boyut (V3)**
+**Risk / boyut**
 14. ATR(20) elle hesaplanmış fixture'da N ve birim büyüklüğü.
 15. Piramitleme: +0,5N, +1N, +1,5N'de birim eklenir, 4'te durur.
 16. Birim sınırları: korele grup 6'ya ulaşınca yeni birim reddedilir.
@@ -372,10 +383,14 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 | MEXC fee (16 bps) ve MEXC–Binance fiyat farkı | UNKNOWN; canlıdan önce ölçülecek |
 | Hayatta kalma yanlılığı | Evrenler bugünkü majörler; iyimser yön |
 | Tek rejim | 2022–2026, çoğunlukla ayı sonrası boğa |
-| Panel sinyallerinde nedensellik denetimi | Kod okumasıyla doğrulandı, testle değil [PLANLI] |
+| Panel sinyallerinde nedensellik denetimi | `audit.check_causal_book` (tüm panel bozulur), tests/test_trust.py'de |
 
 ## 15. Değişiklik kaydı
 
 | Tarih | Değişiklik |
 |---|---|
+| 2026-10-02 | Tam Turtle koşusu: NO_EDGE (K1); kart değişmedi |
+| 2026-10-02 | Bağımsız inceleme (Motor v2) 6 bulgu giderildi: `report.hourly_pnl` gövde dolumları, brüt tavan artıran hedefi azaltmaya çeviremez, funding'de gap stopu, kısmi stop dolumunda yeniden emir yok, turtle veri boşlukları + mark H/L + tick + iki geçiş; regresyon testleri |
+| 2026-10-02 | Değerlendirme araçları (`stats.py`, `robust.py`): PSR/DSR/MinTRL, block bootstrap, NW alfa, al-tut, komşuluk, başlangıç kaydırma, nedensel rejim, rotasyon kaydırma, karar kuralı; testler madde 19–24 |
+| 2026-10-02 | Motor v2 (stop, portföy hakemi, risk/boyut) kodlandı: §4 kitap sözleşmesi, §5.2, §6.4 (tek koruyucu emir, gap, halt), §6.5 (brüt tavan hakemde), Spec.delay/gross_cap; madde 1–18 ve 25 testleri |
 | 2026-10-02 | v1: G0–G2 ve arama sonrası mevcut mimari, Motor v2 tasarımı, başarı kartı (MISSION'dan taşındı), test senaryoları |

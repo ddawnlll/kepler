@@ -102,3 +102,30 @@ def test_ema_trend_and_tsmom_every_k_days():
     assert e.index[0] == pd.Timestamp("2022-01-01", tz="UTC") + pd.Timedelta(days=49) and e.eq(1).all()  # yavaş EMA (50 gün) ısınınca ilk karar; yükselen seri -> long
     d = decisions(sg.tsmom(14, every=7)(kl))
     assert ((d.index - pd.Timestamp("2022-01-01", tz="UTC")).days % 7 == 6).all() and d.eq(1).all()
+
+
+def _panel_fixture(n=520):
+    r = np.random.default_rng(5)
+    return {s: hourly(list(100 * np.exp(np.cumsum(r.normal(0, 0.03, n))))) for s in "ABCD"}
+
+
+def _panel_of(d, shift=0):
+    return pd.DataFrame({s: sg._daily(k).close.shift(shift) for s, k in d.items()})
+
+
+@pytest.mark.parametrize("kind", ["mom", "rev"])
+def test_panel_signals_are_causal_when_the_whole_panel_is_perturbed(kind):
+    data = _panel_fixture()
+    fn = lambda d: {s: sg.xs_signal(_panel_of(d), s, kind, 14, 7)(d[s]) for s in d}  # noqa: E731
+    assert audit.check_causal_book(fn, data) == []
+    dm = lambda d: {s: sg.dual_mom(_panel_of(d), s, 60)(d[s]) for s in d}  # noqa: E731
+    assert audit.check_causal_book(dm, data) == []
+
+
+def test_panel_leak_is_caught_only_by_perturbing_the_panel():
+    """Panel yarın kapanışını içerirse (shift(-1)) tek sembolü bozan check_causal göremez; check_causal_book görür."""
+    data = _panel_fixture()
+    leak = lambda d: {s: sg.xs_signal(_panel_of(d, shift=-1), s, "mom", 14, 7)(d[s]) for s in d}  # noqa: E731
+    assert audit.check_causal_book(leak, data) != []
+    panel = _panel_of(data, shift=-1)  # sabit (dışarıdan verilen) panel: sembolün kendi kl'ini bozmak yetmez
+    assert audit.check_causal(sg.xs_signal(panel, "A", "mom", 14, 7), data["A"]) == []
