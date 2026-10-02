@@ -3,6 +3,7 @@
   --stage base       tam Turtle S1/S2 taban koşusu -> tarihsel stres (madde 1) + işlem sırası Monte Carlo (madde 2)
   --stage capacity   sermaye 500 / 10k / 100k + karekök etki (madde 3)
   --stage risk       equity_scale + portföy kill switch, 6 deneme (deftere; madde 4)
+  --stage scaled     ölçekli boyut + kill (4 deneme, reports/scaled_kill_protocol.md)
   --stage misc       risk.vol_target duman testi (BTC, 3 deneme) + tape.aggregate kontrolü (madde 4b)
   --stage pbo        PBO/CSCV + SPA, 88 yapılandırma (madde 5)
   --stage nested     --family <aile>: nested WF için sürekli koşu 2022-01-01 -> 2026-04-01 (deftere; ön kayıt reports/nested_wf_protocol.md)
@@ -181,6 +182,32 @@ def risk_stage(a):
     Path(a.out, "risk.json").write_text(json.dumps(res_all, indent=1, default=float))
 
 
+SCALED = {"S1": (0.0017, 0.299), "S2": (0.0016, 0.286)}  # reports/scaled_kill_protocol.md: (yönetici risk = %1 x s*, kill_dd)
+
+
+def scaled_stage(a):
+    """reports/scaled_kill_protocol.md: ölçekli boyut (risk %1 x s*), kill yok / kill = önerilen eşik; 4 deneme (deftere)."""
+    dh, res_all, led = ledger.sha(Path("/repo/data_manifest/manifest.json").read_text()), {}, Path(a.out) / "ledger_scaled.jsonl"
+    for sysname, (risk_, kill) in SCALED.items():
+        for name, k in (("scaled", None), ("scaled_kill", kill)):
+            sp, data = spec_c(), data_c()
+            r = ev.evaluate_book(book_c(sysname, CAP, risk=risk_), data, [sp], led, f"ölçekli boyut kill {sysname} {name} (reports/scaled_kill_protocol.md)", dh, f"{sysname}_{name}", dict(sys=sysname, var=name, risk=risk_), MAIN, k)[0]
+            res, win = r["res"], r["win"]
+            pnl = report.book_pnl(win, res, sp)
+            eq_h = sp.capital + pnl.cumsum()
+            peak = eq_h.cummax().clip(lower=sp.capital)
+            dpnl = pnl.resample("1D").sum()
+            eq_d = sp.capital + dpnl.cumsum()
+            peak_d = eq_d.cummax().clip(lower=sp.capital)
+            ret = dpnl / eq_d.shift(1).fillna(sp.capital)
+            s = res["summary"]
+            res_all[f"{sysname}_{name}"] = dict(net=s["net_pnl"], final_equity=float(eq_h.iloc[-1]), sharpe=stats.annual(stats.moments(ret.to_numpy())[0]), dd_hourly=float(((peak - eq_h) / peak).max()), dd_daily=float(((peak_d - eq_d) / peak_d).max()),
+                                                dd_of_capital=float(stats.max_drawdown(dpnl.to_numpy() / sp.capital)), n_fills=int(s["n_fills"]), n_stop=int(s["n_stop"]), n_liq=int(s["n_liq"]), n_rejected=int(s["n_rejected"]),
+                                                kill_dd=k, kill_at=r["row"]["config"]["kill_at"], trial=r["row"]["trial"], boot=stats.bootstrap_summary(ret.to_numpy()))
+            print(sysname, name, round(s["net_pnl"], 1), res_all[f"{sysname}_{name}"]["dd_hourly"], r["row"]["config"]["kill_at"], flush=True)
+    Path(a.out, "scaled.json").write_text(json.dumps(res_all, indent=1, default=float))
+
+
 def misc_stage(a):
     """Protokol madde 4b: BTCUSDT turtle(20,10) sabit notional / vol_target / vol_target + kill 0,25 (3 deneme) + tape.aggregate gerçek veri kontrolü."""
     from kepler import risk
@@ -271,7 +298,7 @@ def nested_report(a):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=["base", "capacity", "risk", "misc", "pbo", "nested", "nested_report"])
+    ap.add_argument("--stage", required=True, choices=["base", "capacity", "risk", "scaled", "misc", "pbo", "nested", "nested_report"])
     ap.add_argument("--root", default="/data")
     ap.add_argument("--out", default="/data/completion")
     ap.add_argument("--search", default="/data/search")
@@ -286,6 +313,6 @@ if __name__ == "__main__":
         g2.load(a.root, EXT)
     elif a.stage != "nested_report":
         load(a.root)
-    {"base": base_stage, "capacity": capacity_stage, "risk": risk_stage, "misc": misc_stage, "pbo": pbo_stage, "nested": nested_stage, "nested_report": nested_report}[a.stage](a)
+    {"base": base_stage, "capacity": capacity_stage, "risk": risk_stage, "scaled": scaled_stage, "misc": misc_stage, "pbo": pbo_stage, "nested": nested_stage, "nested_report": nested_report}[a.stage](a)
     print(f"{a.stage} bitti {time.time() - t0:.0f}s", flush=True)
     sys.exit(0)
