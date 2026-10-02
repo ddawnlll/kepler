@@ -249,3 +249,9 @@ Durum (adım adım güncellenir; dal `claude/serene-carson-tvrcs8`, main'e push 
 - ☑ `kepler/universe.py` parametreleştirildi (`--start/--rank-start/--end/--root`; varsayılanlar aynı; veri/QC/mühür araçları (b) 434 → 439 satır, ≲500 altında). Test: 203 geçti, 1 atlandı (Modal).
 - ☑ veri indirme (`/data/pre2022`; arşivde 2019 ayları yok, veri 2020-01 → 2021-12, 66 sembol; ayrıntı protokol sonu "Koşu notu (veri)") · ☑ QC (`data_manifest/manifest_pre2022.json`, `quality_report_pre2022.md`: 0 ERROR, 227 WARN, kesim yok) · ☐ Blok A · ☐ Blok B · ☐ rapor `reports/pre2022.md`
 Yeniden koşmak / ayrıntılar işler bitince buraya yazılır.
+
+
+## Ensemble v1 devralma notu (2026-10-02)
+- **pre2022 (2020–21) bitti:** Blok A tam Turtle NO_EDGE (K1/K2); Blok B `tsmom_14_1` ölçütü geçti (p 0,0066). Rapor `reports/pre2022.md` (teşhis dahil), tablolar `reports/pre2022_data/` (`scripts/pre2022_report.py`).
+- **Ensemble v1** (ön kayıt `reports/ensemble_protocol.md`): **ZAYIF**, K1–K8 geçti, K9 kaldı (bull payı %105). Rapor `reports/ensemble.md`, tablolar `reports/ensemble_data/`, defter `ledger/ensemble/`. Yeniden koşmak: `python scripts/ensemble.py --stage primary|k7|null [--null-from a --null-to b] --out /data/ensemble`, sonra `PYTHONPATH=. python scripts/ensemble_report.py <dizin> reports/ensemble_data ledger`. 217 test yeşil, 1 atlandı.
+- **Karar kullanıcıda:** (a) K9 için yeni ön kayıtlı sürüm, (b) ZAYIF'ı kabul, (c) K9 eşiği (yalnızca sonraki testten önce). Mühür açılmadı (aday yok). Kümülatif deneme 4 117.
