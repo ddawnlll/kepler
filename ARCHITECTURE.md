@@ -129,7 +129,7 @@ Kurallar:
 - **Veri:** saatlik (1h) tape ana; 4h ve 1d yukarı toplanır. Depolama Parquet + DuckDB.
 - **Sinyal arayüzü:** sinyal, tape'ten hedef pozisyon serisi (long/short/flat + büyüklük)
   üreten saf bir fonksiyondur. vectorbt (eleme) ve Nautilus (hakem) aynı seriyi oynatır.
-  Yapıştırma kodu ≲300 satır tavanına dahildir.
+  Yapıştırma kodu hakemle birlikte sayılır (MISSION kural 7a: tavan kaldırıldı, sayı raporlanır).
 - **Eleme ve hakem:** eleme başına ~100 konfigürasyon bütçesi; hepsi deftere ve DSR sayısına
   girer. Eleme–hakem sıralama uyumu ölçülür; öneri eşiği ≥0,8 (doğrulanmadı), altındaysa
   eleme devre dışı kalır ve doğrudan hakem kullanılır.

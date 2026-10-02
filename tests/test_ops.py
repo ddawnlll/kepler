@@ -99,3 +99,12 @@ def test_status_is_query_only_and_counts_queue(tmp_path):
 def test_status_accepts_search_summary_shape(tmp_path):
     out = status.status([], {"summary": {"donchian": {"cand": False}}, "search": []}, queue=tmp_path / "q.jsonl")
     assert any(l.startswith("aday: 0") and "yapılandırma 1" in l for l in out)
+
+
+def test_trades_values_open_leg_at_close_price():
+    """Sonda açık bacak (close_px): long 2 @100 açık, son kapanış 110 -> değerleme satırı pnl = (110-100)·2 = 20, notional 200, brüt 1000 bps; kapanmış işlem değişmez."""
+    t0, t1 = 1_700_000_000_000_000_000, 1_700_000_000_000_000_000 + 3_600_000_000_000
+    fills = pd.DataFrame(dict(sym="A", ts=[t0], side=["BUY"], qty=[2.0], px=[100.0]))
+    assert len(report.trades(fills)) == 0
+    r = report.trades(fills, 110.0, t1).iloc[0]
+    assert r.pnl == 20.0 and r.notional == 200.0 and r.gross_bps == A(1000.0) and r.hours == 1.0 and r.side == "long"

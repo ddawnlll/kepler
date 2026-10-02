@@ -1,0 +1,57 @@
+{
+ "fixed_1000": {
+  "net": -321.68655375130623,
+  "gross": -71.28237782516015,
+  "fee": 46.5698368457,
+  "n_fills": 79,
+  "n_liq": 0,
+  "dd": 0.38062962806853373,
+  "kill_at": "None",
+  "mean_fill_notional": 1178.9832112835443,
+  "trial": 1
+ },
+ "vol_target": {
+  "net": -154.701288874993,
+  "gross": 57.27366603685992,
+  "fee": 53.77377391405,
+  "n_fills": 117,
+  "n_liq": 0,
+  "dd": 0.3676842513664983,
+  "kill_at": "None",
+  "mean_fill_notional": 919.2098104965812,
+  "trial": 2
+ },
+ "vol_target_kill25": {
+  "net": -131.53243811498277,
+  "gross": 70.02046954339998,
+  "fee": 47.8253087695,
+  "n_fills": 105,
+  "n_liq": 0,
+  "dd": 0.25872789496913406,
+  "kill_at": "2025-10-01 08:00:00+00:00",
+  "mean_fill_notional": 910.9582622761905,
+  "trial": 3
+ },
+ "aggregate": {
+  "4h": {
+   "n_bars": 9306,
+   "volume_conserved": true,
+   "first_open_ok": true,
+   "last_close_ok": true,
+   "n_sum": 37224,
+   "n_expected": 37224,
+   "high_ok": true,
+   "low_ok": true
+  },
+  "1D": {
+   "n_bars": 1551,
+   "volume_conserved": true,
+   "first_open_ok": true,
+   "last_close_ok": true,
+   "n_sum": 37224,
+   "n_expected": 37224,
+   "high_ok": true,
+   "low_ok": true
+  }
+ }
+}

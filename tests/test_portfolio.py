@@ -98,3 +98,36 @@ def test_partial_stop_fills_do_not_create_rejected_orders():
     kl = bars([100] * 4, rows=rows).assign(volume=0.5)
     r = run(kl, series(kl, b0=1000.0), sp(liq=False), stop=pd.Series(95.0, index=kl.index))
     assert r["summary"]["n_rejected"] == 0 and r["summary"]["end_position"] == 0
+
+
+def test_equity_scale_resizes_changed_targets_by_equity_over_capital():
+    """§5.1 equity_scale (fill=close, fee 0, sermaye 1000). Kazanç: 5,000 @100 (500); b2 kapanış 120: equity = 1000 + 5·20 = 1100, hedef 600 -> 600·1,1 = 660 / 120 = 5,500 -> +0,5 alınır
+    (ölçeksiz: 600/120 = 5,000 = mevcut -> emir yok). Kayıp: b2 kapanış 80: equity = 1000 − 100 = 900, hedef 400 -> 360 / 80 = 4,500 -> 0,5 satılır (ölçeksiz 400/80 = 5,000 -> emir yok).
+    Brüt tavan da ölçeklenir: tavan 600, hedef 650 -> 650·1,1 = 715 / 120 = 5,958 ama kalan alan 600·1,1 = 660 -> 5,500 (ölçeksiz alan 600 -> 5,000, mevcut altına inmez -> emir yok)."""
+    kw = dict(fill="close", fee_rt_bps=0.0, close_out=False, capital=1000.0, leverage=10)
+    win, loss = bars([100, 100, 120, 120, 120]), bars([100, 100, 80, 80, 80])
+    t = lambda kl, a, b: pd.Series([a, np.nan, b, np.nan, 0.0], index=kl.index)  # noqa: E731
+    on = run(win, t(win, 500.0, 600.0), sp(equity_scale=True, **kw))
+    assert list(on["fills"].qty) == [5.0, 0.5, 5.5] and list(on["fills"].side) == ["BUY", "BUY", "SELL"] and on["summary"]["net_pnl"] == A(100.0)
+    assert list(run(win, t(win, 500.0, 600.0), sp(**kw))["fills"].qty) == [5.0, 5.0]
+    dn = run(loss, t(loss, 500.0, 400.0), sp(equity_scale=True, **kw))
+    assert list(dn["fills"].qty) == [5.0, 0.5, 4.5] and list(dn["fills"].side) == ["BUY", "SELL", "SELL"] and dn["summary"]["net_pnl"] == A(-100.0)
+    assert list(run(loss, t(loss, 500.0, 400.0), sp(**kw))["fills"].qty) == [5.0, 5.0]
+    cap = run(win, t(win, 500.0, 650.0), sp(equity_scale=True, gross_cap=600.0, **kw))
+    assert list(cap["fills"].qty) == [5.0, 0.5, 5.5] and list(run(win, t(win, 500.0, 650.0), sp(gross_cap=600.0, **kw))["fills"].qty) == [5.0, 5.0]
+
+
+def test_equity_scale_short_repeat_target_and_zero_equity():
+    """Short: 5,000 @100 short; b2 kapanış 80: equity = 1000 + (-5)(80-100) = 1100, hedef -600 -> 660/80 = 8,25 -> 3,25 daha satılır; b4'te 0 -> 8,25 alınır.
+    Aynı hedef tekrarında yeniden boyutlama yok: 500, b2'de yine 500 (equity 1100) -> emir yok. Negatif equity: 20 adet @100 long, b2 kapanış 40: equity = 1000 - 1200 = -200 -> f = 0 -> hedef 2100 kapanışa
+    çevrilir (20 satılır), yeni giriş yok. Davranış notu (BACKTEST §6.1): her hedef değişiminde TÜM pozisyon f ile yeniden boyutlanır (yalnız delta değil)."""
+    kw = dict(fill="close", fee_rt_bps=0.0, close_out=False, capital=1000.0, leverage=10, equity_scale=True)
+    s5 = bars([100, 100, 80, 80, 80])
+    out = run(s5, pd.Series([-500.0, np.nan, -600.0, np.nan, 0.0], index=s5.index), sp(**kw))
+    assert list(out["fills"].qty) == [5.0, 3.25, 8.25] and list(out["fills"].side) == ["SELL", "SELL", "BUY"] and out["summary"]["net_pnl"] == A(5 * 20 + 3.25 * 0)
+    w = bars([100, 100, 120, 120, 120])
+    same = run(w, pd.Series([500.0, np.nan, 500.0, np.nan, 0.0], index=w.index), sp(**kw))
+    assert list(same["fills"].qty) == [5.0, 5.0]
+    d = bars([100, 100, 40, 40, 40])
+    z = run(d, pd.Series([2000.0, np.nan, 2100.0, np.nan, 0.0], index=d.index), sp(**kw))
+    assert list(z["fills"].qty) == [20.0, 20.0] and list(z["fills"].side) == ["BUY", "SELL"] and z["summary"]["net_pnl"] == A(-1200.0)
