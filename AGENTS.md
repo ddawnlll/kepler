@@ -17,6 +17,7 @@ büyük bir adımdan önce yeniden oku.
 - Kod değiştirince ilgili testleri koş; sonucu rapora yaz (yeşil/kırmızı/atlandı).
 
 ## Kurallar
+- Backtest, sinyal, risk, hakem, değerlendirme ya da rapor işinden önce `BACKTEST.md`'yi oku (tasarım, sözleşmeler, başarı kartı, test senaryoları).
 - Soru ve kurallar `MISSION.md`'de, sistem haritası `ARCHITECTURE.md`'de. Çelişkide onlar kazanır.
 - Sonuç deftere yalnızca hakemden girer (`kepler/ledger.py`). Eleme sonucu sayılmaz.
 - Hakem, denetim, risk ve mühür koduna yalnızca kullanıcı + güçlü model + bağımsız inceleme dokunur.

@@ -69,36 +69,10 @@ piramitleme, portföy sınırları) stratejinin parçasıdır**: G3'ten önce, �
 önceki basit haline (sabit boyut) karşı kullanılır (karar 2026-10-02). G3 geçerse, **ayrı onayla**:
 Monte Carlo, stres testi, MEXC farkı ölçümü, küçük canlı (H5).
 
-## Başarı kartı (karar 2026-10-02; her test bu kartla ve koşudan önce yazılı eşiklerle değerlendirilir)
+## Başarı kartı
 
-Başlık metriği: maliyet sonrası, OOS, yıllık Sharpe ve DSR. Net PnL (USDT) yalnızca hesap raporu içindir;
-yüzde getiri tek başına karar ölçütü değildir. Veri sınırı: ~3 yıl OOS ile Sharpe ≲1 olan bir edge %95
-güvenle kanıtlanamaz (MinTRL), eşikler buna göre konuldu.
-
-**Geçme koşulları (hepsi geçmeli; biri kalırsa canlıya gitmez)**
-
-| # | Test | Eşik |
-|---|---|---|
-| K1 | Null / placebo | Ortak-ofset rotasyon null'ında (B ≥ 300) p ≤ 0,05/N **ve** DSR ≥ 0,95 |
-| K2 | Benchmark | OOS Sharpe > aynı evrenin eşit ağırlıklı al-tut Sharpe'ı **ve** al-tut'a göre günlük alfa t ≥ 2 |
-| K3 | Ekonomik + maliyet stresi | OOS net Sharpe ≥ 1,0; net > 0 hem fee 16 + slippage 6 bps'de hem 1 bar ek gecikmede |
-| K4 | Risk (block bootstrap) | Planlanan boyutla maks DD ≤ %25; stationary block bootstrap'te (ort. blok 20 gün) DD %95 dilimi ≤ %30 |
-| K5 | Parametre duyarlılığı | Önceden yazılmış komşu ızgarada (her parametre ±%10–20) yapılandırmaların ≥ %70'i fee 10'da net > 0; komşu medyan Sharpe ≥ seçilenin yarısı |
-| K6 | Pencere / başlangıç tarihi | Walk-forward pencerelerinin ≥ %60'ı net > 0; başlangıç 0/1/2/3 ay kaydırılınca hepsinde net > 0 |
-| K7 | Çapraz varlık | Önceden yazılmış, kullanılmamış sembol kümesinde fee 16'da net > 0 (korele olduğu için tek başına kanıt sayılmaz) |
-| K8 | Ablasyon | Her bileşen (stop, boyutlama, filtre, piramitleme) çıkarılınca OOS Sharpe düşmeli; düşmüyorsa bileşen atılır (kural 4) |
-| K9 | Rejim | Nedensel tanımlı rejimlerde (200 günlük trende göre boğa/ayı/yatay, o an bilinen veriyle) en az ikisinde net ≥ 0; kazanç tek rejimden gelmemeli |
-| K10 | Final (G3) | Mühürlü dönemde fee 16'da net > 0 (6 ay kısa: kanıtlamaz, bariz çöküşü yakalar) |
-
-**Raporlanır, eşik yok**
-- Tarihsel stres: 2022-05 LUNA, 2022-11 FTX, 2024-08 çöküşü ve dev dönemindeki en büyük likidasyon dalgaları; DD, likidasyon, kill switch davranışı.
-- İşlem sırası Monte Carlo: kayıp serisi ve DD dağılımı; kill switch eşiğinin girdisi (edge kanıtı değildir).
-- Kapasite: emir notional'ı saatlik hacmin ≤ %0,1'i (500 USD'de bariz; sermaye artarsa hacme katılım modeli).
-- Sentetik senaryo: ertelendi (sonuç senaryo modeline bağlı; aday çıkınca).
-
-**Karar:** K1–K9 geçerse aday → G3. K1 veya K2 kalırsa `NO_EDGE`. K3–K9'dan biri kalırsa zayıf, canlıya gitmez.
-Sağlamlık koşuları seçim yapmaz; seçim için kullanılırsa deneme sayısına (N) girer. Purge/embargo ve CPCV
-yalnızca ileri getiri etiketi kullanan ML modellerinde eklenir; sabit kurallarda nedensellik denetimi yeterli.
+Her test **`BACKTEST.md` §11 başarı kartıyla** (K1–K10) değerlendirilir; eşikler, karar kuralı (ADAY / ZAYIF /
+NO_EDGE) ve testlerin tam tanımı orada. Kart yalnızca ön kayıtla ve bir sonraki testten önce değişir.
 
 ## Değişmez kurallar (mekanik; yönetişim belgesi değil)
 
@@ -112,7 +86,8 @@ yalnızca ileri getiri etiketi kullanan ML modellerinde eklenir; sabit kurallard
    (ayrıntı `ARCHITECTURE.md` → Laboratuvar).
 4. **Yeni bileşen = gözlenmiş engel + önceki basit hale karşı karşılaştırma.** Engel yoksa
    BUILD yok.
-5. **Doküman tavanı.** Yeni spec, karar, anayasa belgesi yazılmaz. Sonuçlar `reports/`
+5. **Doküman tavanı.** Yeni spec, karar, anayasa belgesi yazılmaz; tek istisna backtest tasarım
+   belgesi `BACKTEST.md` (kullanıcı kararı 2026-10-02). Sonuçlar `reports/`
    altında kısa notlardır.
 6. **Bütçe.** Her blok için açık süre ve araç çağrısı/token tavanı yazılır; aşılınca dur ve
    raporla. Dış sınır: 1 hafta.

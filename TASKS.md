@@ -39,6 +39,8 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 
 ## Sıradaki blok: Motor v2 + tam sistem testi (BAŞLANMADI; kullanıcı onayı bekliyor)
 
+Tasarım ve test senaryoları: `BACKTEST.md` §4 (stoplu sözleşme), §5.2, §6.4–6.5, §12.2.
+
 Soru: kitaptaki tam Turtle sistemi (N-boyutlama, 2N stop, piramitleme, portföy birim sınırları), G2'deki kırpılmış sürümün yapamadığını yapıyor mu? Evet → eksik olan motordu; hayır → sorun sinyalde.
 
 | # | İş | Bitti sayılması için | Durum |
