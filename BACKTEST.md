@@ -461,10 +461,39 @@ Hakemde eksik olanlar: hedefte çıkış (take-profit) ve koşullu giriş. Terci
 ### 15.7 İlk sürüm sınırı
 v0 yalnızca ilk uzmanın (arz/talep bölgesi fade, `reports/` altındaki ön kayıt) istediklerini sunar: 3d ve 1d OHLC, ATR, swing seviyeleri, hacim profili, 4h/1h tetik verisi. Mevcut sinyallerin (trend, momentum, funding) bu servise taşınması şimdilik yapılmaz. Servis, ilk uzmanın sonucundan sonra genişler ya da atılır.
 
+### 15.8 Yeni trader hattı: sorumluluk ve uygulama sınırı [PLANLI] (2026-10-03)
+
+Gözlenmiş engel: §15.4 adaydan book'a geçişin sahibini ve bar sırasını tanımlamıyordu; Zone Fade ön kaydı koşulabilmek için bu adaptöre ihtiyaç duyuyor. Bu bölüm tasarımdır; bu oturumda strateji, state servisi, risk, hakem veya denetim kodu uygulanmaz. İstatistik eşikleri ve mevcut ön kayıt değişmez.
+
+```text
+tape.load (dev sınırı) → StateSpec / MarketState → uzman → Candidate
+                                                   ↓
+                     uzman yöneticisi: yaşam döngüsü + ön kayıtlı boyut/sınırlar
+                                                   ↓
+                       book({sym: kl}) → {sym: target, stop} (mevcut §4)
+                                                   ↓
+                        evaluate_book → tek hakem → fills / equity → defter
+                                                   ↓
+                               mevcut başarı kartı → rapor
+```
+
+**Yaşam döngüsünün sahibi:** araştırma tarafındaki uzman yöneticisi (ilk uygulamada Zone Fade book adaptörü), state servisi veya hakem değil. Servis yalnızca veriyi/özellikleri verir; uzman yalnızca bölge, tetik, stop ve hedef niyetini verir. Yönetici her tamamlanmış karar barında adayları deterministik olarak ilerletir, ön kayıtlı sermayeye göre boyutlandırır ve mevcut book sözleşmesini üretir. Adayın fiyat hedefi ile book'un USDT `target` alanı farklıdır; hedef fiyatına dokunmak adaptörde sonraki açılış için `target=0` niyetidir.
+
+**Zone Fade sırası:** önce önceki pozisyonların stop/hedef/süre durumları ve açık adayların geçersizlik/expiry koşulları işlenir; sonra uygun yeni tetikler, ön kayıttaki alfabetik sıra ve en çok 4 pozisyon / aynı yönde 3 / brüt 3×sermaye sınırlarıyla ele alınır. Aday/pozisyon varken aynı sembolde ikinci aday yaratılmaz. Giriş niyeti `target=side×min(sermaye, 0,005×sermaye / (|tetik_kapanışı−stop|/tetik_kapanışı))` ve sabit stop olarak yazılır; tetikte POC ve stop sabitlenir. R:R, 30 günlük aday ve 40 günlük pozisyon süresi, 4h karar saatleri ve bütün özellik hesapları yalnızca `reports/zone_fade_protocol.md`'deki kurallardır.
+
+**Karar ve dolum ayrı olaylardır:** tetik, `POZİSYONDA` gerçekleştiğinin kanıtı değildir. Geçici `GİRİŞ_BEKLİYOR` / `ÇIKIŞ_BEKLİYOR` yönetici kayıtları sonraki mevcut 1h açılışına kadar niyeti temsil eder. Adaptörün pozisyon kaydı bir yürütme taklididir; gerçek pozisyon/fill/fee/funding yalnızca hakem çıktısından doğrulanır. Gerçek fill fiyatı, miktarı, zamanı ve reddi yönetici günlüğüyle karşılaştırılmadan yaşam döngüsü [VAR] sayılmaz. Min-notional/lot/brüt tavan reddi veya küçültmesi taklitle uyuşmazsa sonuç geçerli trader yönetimi diye raporlanmaz; engel raporlanır. Bu sınır mevcut `book` fonksiyonunun hakem fills'ini bar bar geri alamamasından kaynaklanır.
+
+**Stop/hedef:** koruyucu stop hakemin mevcut mark H/L ve tick kurallarıyla yürür (§6.4). Hedefe 4h low/high ile dokunma, o bar kapanınca çıkış niyeti; dolum sonraki açılıştır, hedef fiyatından limit dolumu iddiası yoktur. Aynı barda stop ve hedef varsa stop önceliklidir. Yönetici taklidi gerçek stop fill'iyle karşılaştırılır; stop sonrası eski hedefle tekrar giriş yoktur. İptal/çıkış kararı görünmeden book'ta geriye dönük pozisyon değiştirilmez. Dolumun stopun ötesine gap yaptığı durumda koruyucu emrin sonucu hakemindir; tetik anı risk hesabı gerçekleşmiş 0,5% zarar garantisi vermez.
+
+**Henüz tanımsız olanlar:** genel çoklu-uzman aday çakışması, uzmanlara sermaye dağıtımı ve genel özellik kataloğu ikinci uzmanla birlikte, gözlenmiş engel varsa tanımlanır. EV1'in mevcut 0,6/0,2/0,2 tahmin birleşimi kendi ön kaydına aittir; Zone Fade ile birleşim kuralı değildir. Trailing stop, kısmi kâr alma, break-even ve stop taşıma bu ilk uzmanda yoktur; sonuç sonrası yeni ön kayıt gerektirir. `funding`, `mark` ve `xs` context adları genel bir servis hesabı tanımlamaz; ilk uzmanın istediği girdiler açık hesap/availability kuralı olmadan eklenmez. Genel rejim servisi tanımsızdır; mevcut değerlendirme etiketi `robust.regime` (§10) kendi kapsamıyla kalır.
+
+**Uygulamadan önce gerekli doğrulama:** mevcut §15.5'e ek olarak tetik→sonraki açılış, giriş/çıkış bekleme, stop sonrası hedef, küçültülen/reddedilen emir, aynı anda fazla tetik, veri boşluğu ve gap giriş örneklerinde yönetici ile hakem fill'lerinin elle hesaplı karşılaştırması gerekir. Bunlar bu dokümantasyon/denetim oturumunda koşulmadı: atlandı. Mühürlü dönem, defter ve `evaluate()` değişmez. Hakem arayüzüne geri besleme veya TP eki gerekirse bu ayrı korumalı-kod işidir; bu tasarım uygulama izni değildir.
+
 ## 16. Değişiklik kaydı
 
 | Tarih | Değişiklik |
 |---|---|
+| 2026-10-03 | §15.8 yeni trader hattı: yaşam döngüsü sahibi, Zone Fade book adaptörü, niyet/fill ayrımı ve tanımsız çoklu uzman/trade yönetimi sınırları; yalnızca tasarım |
 | 2026-10-02 | §15 Market state servisi ve uzman arayüzü (tasarım, [PLANLI]); ilk uzman: arz/talep bölgesi fade |
 | 2026-10-02 | Ensemble v1 (`kepler/ensemble.py`: piyasa durumu → uzmanlar → aday → risk motoru) ön kayıtlı koşu: ZAYIF (K9); pre2022 raporu; kart değişmedi |
 | 2026-10-02 | Tamamlama: tarihsel stres, işlem sırası MC, kapasite/karekök etki, `Spec.equity_scale` + portföy kill switch, PBO/CSCV, SPA, nested walk-forward kodlandı, testlendi ve gerçek veride kullanıldı (`reports/backtest_completion.md`); [PLANLI]/[KISMEN] kalmadı; yeni [YOK] gerekçeleri (limit emir, cross-margin, purge/CPCV, StepM/MCS, sentetik) yazıldı; `vol_target`/`aggregate`/`sharpe_series` gerçek veride kullanıldı (ön kayıt 4b) |

@@ -1,5 +1,7 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
+Aktif iş: Mimari ardından A/B/C denetimleri | durum: devam | protokol: BACKTEST.md §15.8; kullanıcı denetim talimatı
+
 Bu dosya görev planıdır, spec değil. Hedef, kapılar ve kurallar `MISSION.md`'de; sistem haritası
 `ARCHITECTURE.md`'de. Çelişki olursa o iki belge kazanır; çelişkiyi raporla.
 
