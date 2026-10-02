@@ -1,0 +1,24 @@
+[
+  {
+    "url": "https://contract.mexc.com/api/v1/contract/detail",
+    "status": "engelli",
+    "error": "proxy CONNECT 403 Forbidden"
+  },
+  {
+    "url": "https://www.mexc.com/fee",
+    "status": "engelli",
+    "error": "proxy CONNECT 403 Forbidden"
+  },
+  {
+    "url": "https://github.com/mexcdevelop/apidocs/blob/deae62dcb89df0f8a839b657dc99084d6c3fb3ad/source/index.html.md",
+    "status": "erişildi",
+    "document_date": "2025-11-20",
+    "source_commit": "deae62dcb89df0f8a839b657dc99084d6c3fb3ad",
+    "sections": [
+      "Get the contract information",
+      "Get contract funding rate",
+      "Gets the user's current trading fee rate"
+    ],
+    "example_is_current_live_rule": false
+  }
+]
