@@ -1,4 +1,4 @@
-"""V4 özet tabloları: scripts/full_systems.py çıktıları (JSON) -> tables.md + summary.json. Karar kuralı reports/full_systems_protocol.md'deki gibi (kart K1–K9).
+"""Tam Turtle özet tabloları: scripts/full_systems.py çıktıları (JSON) -> tables.md + summary.json. Karar kuralı reports/full_systems_protocol.md'deki gibi (kart K1–K9).
 
   python scripts/full_systems_report.py <işçi çıktı dizini> <çıktı dizini> [kümülatif deneme için ledger dizinleri...]"""
 import json
@@ -42,7 +42,7 @@ trial_srs = [stats.moments(daily[k])[0] for k in daily]  # N = 12 denemenin gün
 sr0 = stats.sr0_from_trials(trial_srs)
 bh = ser(R["bh"]["daily"]) / CAP
 btc_lab = robust.regime(BTC)
-summ, md = {}, ["# V4 tabloları (otomatik)", f"N = {N} deneme; DSR eşik SR0 = {sr0:.4f} (günlük; yıllık {stats.annual(sr0):.2f}); al-tut yıllık Sharpe = {shp(bh):.2f}; null B = " + ", ".join(f"{s}: {len(NULL[s])}" for s in SYS), ""]
+summ, md = {}, ["# Tam Turtle tabloları (otomatik)", f"N = {N} deneme; DSR eşik SR0 = {sr0:.4f} (günlük; yıllık {stats.annual(sr0):.2f}); al-tut yıllık Sharpe = {shp(bh):.2f}; null B = " + ", ".join(f"{s}: {len(NULL[s])}" for s in SYS), ""]
 for s in SYS:
     r, full = daily[(s, "full")], P[f"{s}_full"]["summary"]
     sr_d = stats.moments(r)[0]

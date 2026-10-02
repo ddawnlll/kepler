@@ -1,4 +1,4 @@
-"""Tam Turtle yöneticisi (V3; BACKTEST.md §5.2): sinyal yalnızca YÖN verir; bu modül N-boyutlama, 2N stop, piramitleme ve birim sınırlarını (sembol / korele grup / tek yön
+"""Tam Turtle yöneticisi (BACKTEST.md §5.2): sinyal yalnızca YÖN verir; bu modül N-boyutlama, 2N stop, piramitleme ve birim sınırlarını (sembol / korele grup / tek yön
 toplam) ekler. Saf ve nedensel: gün d kararı yalnızca <= d kapanışına bakar. Karar günlük, saatlik hedefe `signals._put` ile (23:00 barı) yazılır; dolum sonraki açılış.
 
 Kurallar (ön kayıt reports/full_systems_protocol.md ile aynı):

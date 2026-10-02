@@ -1,4 +1,4 @@
-# Tam Turtle S1/S2 ön kaydı (V4; kod ve koşudan ÖNCE commit'lenir; sonuca bakılıp değiştirilmez)
+# Tam Turtle S1/S2 ön kaydı (kod ve koşudan ÖNCE commit'lenir; sonuca bakılıp değiştirilmez)
 
 **Soru.** Kitaptaki tam sistem (N-boyutlama, 2N stop, piramitleme, birim sınırları + portföy brüt tavanı), G2'deki kırpılmış sürümün (stopsuz, sabit boyut, sınırsız) yapamadığını yapıyor mu?
 Karar `BACKTEST.md` §11 başarı kartıyla (K1–K9; K10 = G3, açılmaz). Eşikler kartta yazılı olduğu gibi; bu belge yalnızca kartın uygulama ayrıntısını (dönem, evren, N, formül ayrıntısı) sabitler.

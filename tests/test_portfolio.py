@@ -1,4 +1,4 @@
-"""V2 portföy hakemi (BACKTEST.md §6.5, §12.2 madde 9-13) + 1 bar gecikme modu (madde 25). Beklenen değerler ELLE (madde 9 hariç: eski tek-sembol hakemden alınan sabit sayılar)."""
+"""Portföy hakemi (BACKTEST.md §6.5, §12.2 madde 9-13) + 1 bar gecikme modu (madde 25). Beklenen değerler ELLE (madde 9 hariç: eski tek-sembol hakemden alınan sabit sayılar)."""
 import numpy as np
 import pandas as pd
 

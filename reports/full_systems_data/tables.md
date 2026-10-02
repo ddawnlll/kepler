@@ -1,4 +1,4 @@
-# V4 tabloları (otomatik)
+# Tam Turtle tabloları (otomatik)
 N = 12 deneme; DSR eşik SR0 = 0.0314 (günlük; yıllık 0.60); al-tut yıllık Sharpe = -0.11; null B = S1: 500, S2: 500
 
 ## S1: karar NO_EDGE (ilk kalan madde: K1)

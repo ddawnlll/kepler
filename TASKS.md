@@ -37,18 +37,18 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 4. Satır tavanı: hakem+yapıştırma ≲450; araştırma kodu tavansız ama testli ve kullanılıyor olmalı. Kullanılmayan `scripts/probe.py` silindi.
 5. Aynı veride serbest arama yok (MISSION kural 11).
 
-## Motor v2 + tam sistem testi (V1–V3 kodlandı, V4 sırada; kullanıcı görevi 2026-10-02)
+## Motor v2 + tam sistem testi (hepsi tamam; kullanıcı görevi 2026-10-02)
 
 Tasarım ve test senaryoları: `BACKTEST.md` §4 (stoplu sözleşme), §5.2, §6.4–6.5, §12.2.
 
 Soru: kitaptaki tam Turtle sistemi (N-boyutlama, 2N stop, piramitleme, portföy birim sınırları), G2'deki kırpılmış sürümün yapamadığını yapıyor mu? Evet → eksik olan motordu; hayır → sorun sinyalde.
 
-| # | İş | Bitti sayılması için | Durum |
+| Ad | İş | Bitti sayılması için | Durum |
 |---|---|---|---|
-| V1 | Strateji stopu: sinyal hedef + stop seviyesi döner; stop-market bar içinde (gap dahil) tetiklenir | Elle hesaplı stop testleri (gap, aynı bar giriş+stop, likidasyonla etkileşim) | ☑ tests/test_stops.py (8) |
-| V2 | Portföy hakemi: tek Nautilus motorunda çok sembol, ortak sermaye, toplam brüt pozisyon tavanı | Tek sembolde mevcut hakemle birebir aynı sonuç + elle hesaplı portföy testleri | ☑ tests/test_portfolio.py (6; denklik: eski hakemden sabit sayılar) |
-| V3 | Risk motorunu bağla: N (ATR) boyutlama, piramitleme, birim sınırları (sembol/korele grup/toplam) | Testli; sabit boyuta karşı karşılaştırma raporlanır | ☑ tests/test_turtle.py (14); sabit boyuta karşı karşılaştırma `reports/full_systems.md` (g2_equiv) |
-| V4 | Tam Turtle S1/S2 ön kaydı (`reports/full_systems_protocol.md`, koddan önce commit) ve tek koşu | `reports/full_systems.md`: MISSION başarı kartıyla (K1–K9) sonuç | ☑ **NO_EDGE (K1)**; S1 p=0,026 DSR 0,52, S2 p=0,060 DSR 0,36 |
+| Stop | Strateji stopu: sinyal hedef + stop seviyesi döner; stop-market bar içinde (gap dahil) tetiklenir | Elle hesaplı stop testleri (gap, aynı bar giriş+stop, likidasyonla etkileşim) | ☑ tests/test_stops.py (8) |
+| Portföy | Portföy hakemi: tek Nautilus motorunda çok sembol, ortak sermaye, toplam brüt pozisyon tavanı | Tek sembolde mevcut hakemle birebir aynı sonuç + elle hesaplı portföy testleri | ☑ tests/test_portfolio.py (6; denklik: eski hakemden sabit sayılar) |
+| Risk | Risk motorunu bağla: N (ATR) boyutlama, piramitleme, birim sınırları (sembol/korele grup/toplam) | Testli; sabit boyuta karşı karşılaştırma raporlanır | ☑ tests/test_turtle.py (14); sabit boyuta karşı karşılaştırma `reports/full_systems.md` (g2_equiv) |
+| Tam sistem | Tam Turtle S1/S2 ön kaydı (`reports/full_systems_protocol.md`, koddan önce commit) ve tek koşu | `reports/full_systems.md`: MISSION başarı kartıyla (K1–K9) sonuç | ☑ **NO_EDGE (K1)**; S1 p=0,026 DSR 0,52, S2 p=0,060 DSR 0,36 |
 
 Kapsam dışı: haber, emir defteri, likidasyon akışı (veri yok), limit/maker emirler, diskresyoner kararlar.
 
@@ -230,6 +230,6 @@ Ağırlıklar kaba tahmindir (G0–G1 çekirdeği bunun 25'i). Durum: ☑ bitti,
 ## Motor v2 devralma notu (2026-10-02)
 - **Hakem+yapıştırma satırı** (grep -cvE '^\s*(#.*)?$', referee+screen+tape+ledger+audit+evaluate): G2 sonunda 347 (tape 41, evaluate 31); şimdi **467** (referee 234, screen 24, tape 48 [aggregate +7], ledger 45, audit 40, evaluate 76). Tavan 450'yi aşıldı (+17): kullanıcı kararı gerekirse; kullanıcı talimatı "aşarsan TASKS.md'ye yaz ve devam et". Artış nedenleri: çok sembollü adaptör + stop + brüt tavan (referee +52), `evaluate_book` + `_realistic` (evaluate +40), `check_causal_book` (audit +14).
 - Mevcut `evaluate`/`check_causal` tek sembol API'si korundu (aynı çağrı, aynı kesim noktaları).
-- **Bağımsız inceleme (V1–V3, ayrı bağlamda, 1 kez):** 6 bulgu, hepsi giderildi ve regresyon testli: (1 YÜKSEK) `report.hourly_pnl` bar içi (stop/likidasyon) dolumları atıyordu → portföy kill switch yanlış tetiklenirdi; (2) brüt tavan artıran hedefi satışa çeviriyordu; (3) turtle veri boşluklarında durum ayrışıyordu; (4) gap stopu funding'i siliyordu; (5) kısmi stop dolumunda reddedilen yeniden emir; (6) taklit stop kline H/L + ham seviye kullanıyordu (hakem mark H/L + tick) + alfabetik sıra yanlılığı (iki geçişe çevrildi).
-- **V4 sonucu:** tam Turtle S1/S2 = NO_EDGE (K1; ayrıntı `reports/full_systems.md`). Yeniden koşmak: `modal run modal_app.py --cmd "python scripts/full_systems.py --stage primary|robust|k7 --out /data/full"` ve `--stage null --null-from a --null-to b` (5 paralel konteyner), sonra `PYTHONPATH=. python scripts/full_systems_report.py <dizin> reports/full_systems_data ledger`. Ham JSON `reports/full_systems_data/`, defterler `ledger/full_systems/` (attempt1 = çöken ilk koşu 10 satır; run2 = yeniden koşu 10 satır; 2 deneme ruin nedeniyle deftere yazılamaz).
+- **Bağımsız inceleme (stop/portföy/risk, ayrı bağlamda, 1 kez):** 6 bulgu, hepsi giderildi ve regresyon testli: (1 YÜKSEK) `report.hourly_pnl` bar içi (stop/likidasyon) dolumları atıyordu → portföy kill switch yanlış tetiklenirdi; (2) brüt tavan artıran hedefi satışa çeviriyordu; (3) turtle veri boşluklarında durum ayrışıyordu; (4) gap stopu funding'i siliyordu; (5) kısmi stop dolumunda reddedilen yeniden emir; (6) taklit stop kline H/L + ham seviye kullanıyordu (hakem mark H/L + tick) + alfabetik sıra yanlılığı (iki geçişe çevrildi).
+- **Tam Turtle sonucu:** tam Turtle S1/S2 = NO_EDGE (K1; ayrıntı `reports/full_systems.md`). Yeniden koşmak: `modal run modal_app.py --cmd "python scripts/full_systems.py --stage primary|robust|k7 --out /data/full"` ve `--stage null --null-from a --null-to b` (5 paralel konteyner), sonra `PYTHONPATH=. python scripts/full_systems_report.py <dizin> reports/full_systems_data ledger`. Ham JSON `reports/full_systems_data/`, defterler `ledger/full_systems/` (attempt1 = çöken ilk koşu 10 satır; run2 = yeniden koşu 10 satır; 2 deneme ruin nedeniyle deftere yazılamaz).
 - **Açık:** hakem+yapıştırma 467 > 450 (kullanıcı kararı); equity-ölçekli boyutlama, kill switch kartı, tarihsel stres/MC/kapasite/nested WF/PBO (BACKTEST §10 [PLANLI]) yapılmadı; K10/G3 dokunulmadı.

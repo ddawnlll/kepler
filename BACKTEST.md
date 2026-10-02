@@ -159,7 +159,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 - Bar çözünürlüğü: bar içi olay sırası bilinmez (§6.4 kuralı).
 - Slippage sabit bps; hacme bağlı piyasa etkisi [YOK] (500 USD'de ihmal edilebilir, sermaye artınca [PLANLI]).
 
-### 6.4 Strateji stopu [VAR] (Motor v2, V1; tests/test_stops.py)
+### 6.4 Strateji stopu [VAR] (Motor v2; tests/test_stops.py)
 - `stop[t]` (t kapanışında bilinen), t+1 açılışından itibaren reduce-only stop-market olarak durur; seviye her açılış tikinde ve her dolumdan sonra yeniden kurulur.
 - **Sembol başına tek koruyucu emir:** stop ile likidasyon fiyatından (LP) fiyata **yakın** olan konur (aynı tikte iki stop'un sırası belirsiz olmasın; yakın olan fiyat yolunda zaten önce vurulur).
   Dolum fiyatı LP'de ya da ötesindeyse olay likidasyondur (hesap/sembol ölür, likidasyon ücreti), değilse strateji stopudur (`fills.stop`).
@@ -170,7 +170,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 - **Stop sonrası flat:** hedef yönü (işareti) değişene (ters ya da 0) kadar yeniden giriş yok; aynı yönlü hedef değişiklikleri (örn. piramit) yok sayılır.
 - Bar içi belirsizlikte (aynı barda hem kâr hedefi hem stop) kötümser: önce stop. (Kâr hedefi emri yok; stop ve LP tek emirde.)
 
-### 6.5 Portföy hakemi [VAR] (Motor v2, V2; tests/test_portfolio.py)
+### 6.5 Portföy hakemi [VAR] (Motor v2; tests/test_portfolio.py)
 - `referee.run_portfolio(data, spec)`: tek Nautilus motorunda N enstrüman, tek USDT hesap, ortak marj. `data[sym] = dict(kl, target, stop, funding, mark, tick, step)`.
 - **Brüt tavan hakemde (`Spec.gross_cap`):** artıran emir, diğer sembollerin son fiyatla brütünü düşen kalan alana (lot adımına aşağı) küçülür, ama sembolün mevcut aynı yönlü pozisyonunun altına inmez (artıran hedef satışa dönmez); azaltan emir tavandan etkilenmez. Hedefler yeniden ölçeklenmez
   (churn yok); küçülen emir için alan sonradan açılsa da hedef değişmedikçe tamamlanmaz. (Eski taslak: "orantılı küçültme"; yol bağımlı ama churn'süz ve test 10 bunu sabitler.)
@@ -330,7 +330,7 @@ Tam Turtle S1/S2 (Motor v2: N-boyutlama, 2N stop, piramit, birim sınırları; `
 Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle karşılaştıran test sayılmaz.
 
 ### 12.2 Motor v2 testleri [VAR: 1–25 yazıldı; 1–8 tests/test_stops.py, 9–13 + 25 test_portfolio.py, 14–18 test_turtle.py, 19–24 test_stats.py] (her birinin beklenen değeri elle)
-**Strateji stopu (V1)**
+**Strateji stopu**
 1. Long 100'den, stop 95; gövde L = 94, açılış 99 → dolum 95 − slip; PnL elle.
 2. Gap: açılış 90 (stopun altında) → dolum 90 (açılış), 95 değil.
 3. Short simetriği (stop yukarıda, gap yukarı).
@@ -340,14 +340,14 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 7. Stop seviyesi nedensellik: geleceği bozunca geçmiş stop seviyeleri değişmez (`check_causal` genişletilmiş).
 8. `stop = NaN` her yerde → sonuç mevcut hakemle birebir aynı.
 
-**Portföy hakemi (V2)**
+**Portföy hakemi**
 9. Tek sembol: portföy hakemi = `referee.run` (net, fills, funding birebir).
 10. İki sembol, ortak sermaye 1000, her biri 600 notional, kaldıraç 1 → ikincinin artırıcı emri tavana göre orantılı küçülür; elle değer.
 11. İki sembolde funding aynı anda: toplam = sembol funding'lerinin toplamı.
 12. Bir sembol likide olunca diğeri açık kalır; bakiye elle.
 13. Bağımsız koşu toplamı ile portföy sonucu, tavan bağlayıcı değilken eşit.
 
-**Risk / boyut (V3)**
+**Risk / boyut**
 14. ATR(20) elle hesaplanmış fixture'da N ve birim büyüklüğü.
 15. Piramitleme: +0,5N, +1N, +1,5N'de birim eklenir, 4'te durur.
 16. Birim sınırları: korele grup 6'ya ulaşınca yeni birim reddedilir.
@@ -389,8 +389,8 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 
 | Tarih | Değişiklik |
 |---|---|
-| 2026-10-02 | V4 tam Turtle koşusu: NO_EDGE (K1); kart değişmedi |
+| 2026-10-02 | Tam Turtle koşusu: NO_EDGE (K1); kart değişmedi |
 | 2026-10-02 | Bağımsız inceleme (Motor v2) 6 bulgu giderildi: `report.hourly_pnl` gövde dolumları, brüt tavan artıran hedefi azaltmaya çeviremez, funding'de gap stopu, kısmi stop dolumunda yeniden emir yok, turtle veri boşlukları + mark H/L + tick + iki geçiş; regresyon testleri |
 | 2026-10-02 | Değerlendirme araçları (`stats.py`, `robust.py`): PSR/DSR/MinTRL, block bootstrap, NW alfa, al-tut, komşuluk, başlangıç kaydırma, nedensel rejim, rotasyon kaydırma, karar kuralı; testler madde 19–24 |
-| 2026-10-02 | Motor v2 (V1–V3) kodlandı: §4 kitap sözleşmesi, §5.2, §6.4 (tek koruyucu emir, gap, halt), §6.5 (brüt tavan hakemde), Spec.delay/gross_cap; madde 1–18 ve 25 testleri |
+| 2026-10-02 | Motor v2 (stop, portföy hakemi, risk/boyut) kodlandı: §4 kitap sözleşmesi, §5.2, §6.4 (tek koruyucu emir, gap, halt), §6.5 (brüt tavan hakemde), Spec.delay/gross_cap; madde 1–18 ve 25 testleri |
 | 2026-10-02 | v1: G0–G2 ve arama sonrası mevcut mimari, Motor v2 tasarımı, başarı kartı (MISSION'dan taşındı), test senaryoları |

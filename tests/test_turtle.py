@@ -1,4 +1,4 @@
-"""V3 risk motoru / Turtle yöneticisi (BACKTEST.md §5.2, §12.2 madde 14-18). Beklenen değerler ELLE.
+"""Risk motoru / Turtle yöneticisi (BACKTEST.md §5.2, §12.2 madde 14-18). Beklenen değerler ELLE.
 
 Fixture: gün d: kapanış 100+d, high = kapanış+1, low = kapanış-1 -> TR = 2 her gün, N = 2 (Wilder seed ortalaması). Sermaye 10000, risk %1 -> u = 100/2 = 50 adet."""
 import numpy as np

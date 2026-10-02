@@ -1,4 +1,4 @@
-"""V4 işçisi (Modal'de koşar): tam Turtle S1/S2 (reports/full_systems_protocol.md). Aşamalar:
+"""Tam Turtle işçisi (Modal'de koşar): tam Turtle S1/S2 (reports/full_systems_protocol.md). Aşamalar:
 
   primary  12 ön kayıtlı deneme (S1/S2 x full, no_stop, fixed_size, no_pyramid, no_limits, g2_equiv): evaluate_book (denetim + defter), günlük net PnL
   robust   sağlamlık koşuları (maliyet ızgarası, gecikme, komşuluk, pencereler, başlangıç kaydırma, al-tut): run_book (deftersiz, N'ye girmez)
@@ -73,7 +73,7 @@ def primary(a):
     data = {s: D[s] for s in syms}
     book, sp = make_book(e, x, VARIANTS[var], GROUPS), spec()
     try:
-        r = ev.evaluate_book(book, data, [sp], Path(out) / "ledger_run2.jsonl", f"V4 {sysname} {var}: tam Turtle (reports/full_systems_protocol.md)", dh, f"{sysname}_{var}", dict(sys=sysname, var=var, entry=e, exit=x), MAIN)[0]
+        r = ev.evaluate_book(book, data, [sp], Path(out) / "ledger_run2.jsonl", f"Tam Turtle {sysname} {var}: tam Turtle (reports/full_systems_protocol.md)", dh, f"{sysname}_{var}", dict(sys=sysname, var=var, entry=e, exit=x), MAIN)[0]
         invalid = False
     except ValueError as err:  # ilk koşuda çöktü (S2 no_stop, S2 fixed_size: hesap sıfırlandı, marj reddi -> hakem kuralı deftere yazmaz). Denetim evaluate_book'ta zaten geçti; N=12'ye sayılır, geçersiz işaretlenir
         if "reddedilen" not in str(err):

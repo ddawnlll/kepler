@@ -1,4 +1,4 @@
-"""V1 strateji stopu (BACKTEST.md §6.4, §12.2 madde 1-8). Beklenen değerler ELLE: fiyat 100, hedef notional 1000 -> 10.000 adet.
+"""Strateji stopu (BACKTEST.md §6.4, §12.2 madde 1-8). Beklenen değerler ELLE: fiyat 100, hedef notional 1000 -> 10.000 adet.
 Slippage komisyon olarak sayılır (fee+slip)/2 yan başına; stop fiyatı değil maliyet kalemi. Kararlar b0'da, ilk dolum b1 açılışı."""
 import numpy as np
 import pandas as pd
