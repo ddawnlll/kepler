@@ -89,6 +89,15 @@ Kill switch yanlış-tetik tablosu S2 (s* = 0.160 ölçekli boyut; ölçeksiz = 
 | S2_fixed_kill25 | 608 | 10 608 | 0.17 | 26.6% / 23.8% | 53 | 8 | 0 | 2022-08-17 13:00:00+00:00 | 5 | 29.2%/55.4%, —/—/— |
 | S2_eq_scale_kill25 | 139 | 10 139 | 0.11 | 25.3% / 16.4% | 29 | 6 | 0 | 2022-05-31 15:00:00+00:00 | 6 | 21.3%/39.3%, -0.75/0.10/0.53 |
 
+## 4c. Ölçekli boyutla kill switch yeniden testi (reports/scaled_kill_protocol.md; 4 deneme)
+
+| koşu | net | final equity | Sharpe | maks DD tepe-equity saatlik / günlük | DD sermayeye (K4 tanımı) | bootstrap DD %50/%95 | kill_dd | kill_at | dolum / stop |
+|---|---|---|---|---|---|---|---|---|---|
+| S1_scaled | 6 659 | 16 659 | 0.77 | 21.4% / 21.1% | 43.5% | 25.2%/44.6% | None | None | 962 / 195 |
+| S1_scaled_kill | 6 659 | 16 659 | 0.77 | 21.4% / 21.1% | 43.5% | 25.2%/44.6% | 0.299 | None | 962 / 195 |
+| S2_scaled | 4 957 | 14 957 | 0.57 | 29.0% / 29.0% | 55.2% | 29.7%/55.7% | None | None | 480 / 122 |
+| S2_scaled_kill | 3 582 | 13 582 | 0.46 | 28.7% / 28.7% | 54.6% | 31.8%/60.2% | 0.286 | 2025-08-02 17:00:00+00:00 | 421 / 116 |
+
 ## 4b. BTCUSDT turtle(20,10) risk motoru duman testi (sermaye 2 000; tek sembol; 3 deneme) + `tape.aggregate` kontrolü
 
 | koşu | net | brüt | fee | dolum | maks DD (tepe equity'ye) | kill_at | ort. dolum notional | deneme |

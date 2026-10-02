@@ -49,6 +49,11 @@ if r := load("risk.json"):
                   f"| {'—' if not bs else pc(bs['maxdd'][0]) + '/' + pc(bs['maxdd'][1]) + ', ' + '/'.join(f2(x) for x in bs['sharpe'])} |")
     md.append("")
 
+if sc := load("scaled.json"):
+    md += ["## 4c. Ölçekli boyutla kill switch yeniden testi (reports/scaled_kill_protocol.md; 4 deneme)", "", "| koşu | net | final equity | Sharpe | maks DD tepe-equity saatlik / günlük | DD sermayeye (K4 tanımı) | bootstrap DD %50/%95 | kill_dd | kill_at | dolum / stop |", "|---|---|---|---|---|---|---|---|---|---|"]
+    md += [f"| {k} | {n0(v['net'])} | {n0(v['final_equity'])} | {f2(v['sharpe'])} | {pc(v['dd_hourly'])} / {pc(v['dd_daily'])} | {pc(v['dd_of_capital'])} | {pc(v['boot']['maxdd'][0])}/{pc(v['boot']['maxdd'][1])} | {v['kill_dd']} | {v['kill_at']} | {v['n_fills']} / {v['n_stop']} |" for k, v in sc.items()]
+    md.append("")
+
 if m := load("misc.json"):
     md += ["## 4b. BTCUSDT turtle(20,10) risk motoru duman testi (sermaye 2 000; tek sembol; 3 deneme) + `tape.aggregate` kontrolü", "", "| koşu | net | brüt | fee | dolum | maks DD (tepe equity'ye) | kill_at | ort. dolum notional | deneme |", "|---|---|---|---|---|---|---|---|---|"]
     md += [f"| {k} | {f1(v['net'])} | {f1(v['gross'])} | {f1(v['fee'])} | {v['n_fills']} | {pc(v['dd'])} | {v['kill_at']} | {n0(v['mean_fill_notional'])} | {v['trial']} |" for k, v in m.items() if k != "aggregate"]

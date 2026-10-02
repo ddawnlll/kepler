@@ -103,6 +103,22 @@ Aday: 88 yapılandırma; iç ölçüt yarıyıl Sharpe medyanı; 5 dış adım (
 
 Birleşik OOS (821 gün): net **+248 USDT** (sermaye 18 000), yıllık Sharpe **0,07**, PSR(0) 0,54, DSR(N = 88) 0,06, maks DD %17. Rastgele seçim: **p = 0,64** (rastgele medyan Sharpe 0,17; %95: 0,59); 88'in aynı günlerde ortalama neti +2 109, medyanı +2 168 (prosedürden iyi). Ön kayıtlı yorum kuralıyla (p ≤ 0,05 ve net > 0): **"seçim değer katmıyor"**. Ortalama yenilen pay %49 ≈ beceri yok.
 
+## Ek: ölçekli boyutla kill switch yeniden testi (`reports/scaled_kill_protocol.md`, koşudan önce commit'lendi; 4 deneme)
+Tam Turtle, `equity_scale` kapalı, yönetici riski %1 × s\*: S1 0,0017 (kill 0,299), S2 0,0016 (kill 0,286); tablolar `reports/backtest_completion_data/tables.md` §4c.
+
+| koşu | net | Sharpe | maks DD tepe-equity (saatlik) | DD sermayeye (K4 tanımı) | bootstrap DD %95 | kill_at |
+|---|---|---|---|---|---|---|
+| S1 ölçekli | +6 659 | 0,77 | **%21,4** | %43,5 | %44,6 | — |
+| S1 ölçekli + kill %29,9 | +6 659 | 0,77 | %21,4 | %43,5 | %44,6 | **tetiklenmedi** |
+| S2 ölçekli | +4 957 | 0,57 | **%29,0** | %55,2 | %55,7 | — |
+| S2 ölçekli + kill %28,6 | +3 582 | 0,46 | %28,7 | %54,6 | %60,2 | **2025-08-02** |
+
+- **Ön kayıtlı yorum kuralı:** "öneri doğrulandı" ⇔ ölçekli koşuda iki sistemin DD'si ≤ kill eşiği ve kill tetiklenmez. S1 sağlıyor (%21,4 ≤ %29,9, tetik yok); S2 sağlamıyor (%29,0 > %28,6, kill 2025-08-02'de tetiklendi, sonrası 8 ay flat, net 4 957 → 3 582). Kural iki sistem için birlikte tanımlandığından sonuç: **"öneri iyimser"** (S2'de eşik aşımı marjinal, 0,4 puan).
+- **Tahminim kısmen yanlıştı:** protokolde saatlik DD'nin ≈ %43 / %48'e çıkıp her iki kill'i tetikleyeceğini yazmıştım. Sermayeye göre DD tahmine uydu (%43,5 / %55,2), ama kill tepe-equity'ye oranlı çalışıyor ve equity zamanla yükseldiği için tetik DD'si daha küçük (%21 / %29). Yani MC'nin başlangıç-sermayesine oranlı DD'si ile üretim kill'inin tepe-equity DD'si farklı büyüklükler (BACKTEST §14 satırı bu yüzden zaten uyarmıştı); s\* kill için kabaca doğru çıktı, K4 için değil.
+- **K4 (bilgi):** kartın tanımıyla (toplamsal, sermayeye oran) ölçekli boyutta da kalıyor: DD %43,5 / %55,2 > %25 ve bootstrap %95 %45–56 > %30; tepe-equity tanımıyla yalnızca S1 geçer (%21,4). K4'ü karta uygun geçmek için s\* ≈ 0,1'in altına inmek gerekirdi (kayıtsız tahmin, test edilmedi).
+- Net PnL ölçekle doğrusal (39 398 × 0,17 ≈ 6 697 → 6 659; S2 27 641 × 0,16 ≈ 4 423 → 4 957, funding/dolum yuvarlama farkı); Sharpe aynı: edge iddiası yok, K1 kararı değişmez. Kümülatif deneme 4 112 + 4 = **4 116**.
+- Yeni ayar (örn. s\* ≈ 0,1 ya da eşik) yeni ön kayıt ve yeni deneme olur; bu testte parametre değiştirilmedi.
+
 ## [YOK] gerekçeleri (kontrol edildi)
 - **Purge/embargo/CPCV:** etiket yok → doğru; ek not: CSCV/nested bloklarında pozisyon sınırı aşar (seri bağımlılık, UNKNOWN) BACKTEST §8.3'e yazıldı.
 - **Limit emir:** gerekçe doğru (MISSION "önce taker"; kuyruk/L2 verisi yok); BACKTEST §6.3'e açıkça yazıldı.
