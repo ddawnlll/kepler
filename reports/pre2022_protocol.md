@@ -3,7 +3,7 @@
 **Durum:** TASLAK. Onaydan ve "ÖN KAYIT ONAYLANDI" commit'inden önce veri indirilmez, kod yazılmaz, koşu yapılmaz. Onaydan sonra parametre/eşik/evren değişmez (MISSION kural 11); değişiklik yeni ön kayıt ve yeni deneme sayısıdır.
 
 ## Soru
-Dev dönemi (2022-01 → 2026-03) araştırmasında seçilmiş/ön kayıtlı sistemler, **hiç indirilmemiş ve hiçbir testte kullanılmamış** önceki döneme (2020-03 → 2021-12) aynı parametrelerle taşınınca da null'dan ve al-tuttan ayrışıyor mu? Yeni edge aranmıyor, hiçbir parametre ayarlanmıyor; mevcut sonuçların replikasyonu. Mühürlü dönem (≥ 2026-04-01) ve G3'e dokunulmaz.
+Dev dönemi (2022-01 → 2026-03) araştırmasında seçilmiş/ön kayıtlı sistemler, **hiç indirilmemiş ve hiçbir testte kullanılmamış** önceki döneme (2020-03 → 2021-12) aynı parametrelerle taşınınca da null'dan ve al-tuttan ayrışıyor mu? Yeni edge aranmıyor, hiçbir parametre ayarlanmıyor; mevcut sonuçların replikasyonu. Mühürlü dönem (≥ 2026-04-01) ve G3'e dokunulmaz; kullanıcı kararı: son 6 ay hiçbir testte kullanılmayacak.
 
 ## Veri (yeni, ayrı kök; mevcut tape/manifest değişmez)
 - Kaynak: Binance USDT-M, `data.binance.vision` aylık arşiv; klines 1h, markPriceKlines 1h, fundingRate (mevcut `kepler/data.py`, sha256 doğrulamalı). Aylar **2019-09 → 2021-12**. 2022-01 ve sonrası bu kökte yoktur; yükleme `tape.load(root, sym, end="2022-01-01")`.
@@ -33,7 +33,7 @@ Kart K1–K9 (`BACKTEST.md` §11, eşikler aynı), uygulama ayrıntıları:
 `don_80_20, ema_10_100, tsmom_14_1, xscarry_7, xsmom_7, xsrev_3` (`reports/search_protocol.md`; yeniden seçim YOK), genişletilmiş-9 evreni, sembol-başına bağımsız koşu (`scripts/search.py` yöntemi: hakem, fee 4/9/10/11/16 × slip 2 + fee 10 × slip 6), pencere 2020-03-01 → 2022-01-01, kesitsel aileler panel = pencerede verisi olan semboller. **Kriter (search protokolüyle aynı):** brüt PnL ortak-ofset rotasyon null'ında (B = 300) p ≤ 0,05/6 **ve** net > 0 fee 10'da **ve** fee 16'da. Aile başına sonuç ayrı yazılır; Bonferroni 6'ya.
 
 ## Yorum kuralı (sabit)
-Replikasyon "başarılı" ⇔ Blok A'da bir sistem ADAY (K1–K9 hepsi) **veya** Blok B'de en az bir yapılandırma kriteri geçer. Başarılı çıksa bile bu **ikinci bir görülmüş-olmayan-ama-bilinen dönemdir**, G3 yerine geçmez; G3 kararı kullanıcıda. Başarısızsa mevcut NO_EDGE sonucu pekişir; sonuca bakıp pencere/sistem eklenmez.
+Replikasyon "başarılı" ⇔ Blok A'da bir sistem ADAY (K1–K9 hepsi) **veya** Blok B'de en az bir yapılandırma kriteri geçer. Başarılı çıksa bile bu **ikinci bir görülmemiş-ama-bilinen dönemdir**; mühürlü dönem (kullanıcı kararı) test edilmeyeceği için bu replikasyon aday için tek zaman-dışı kanıt olur. Başarısızsa mevcut NO_EDGE sonucu pekişir; sonuca bakıp pencere/sistem eklenmez.
 
 ## Tahmin (veriye bakmadan yazıldı)
 2020-21 güçlü bir boğa döngüsüdür (BTC ≈ 7 000 → 69 000); trend sistemlerinin net pozitif çıkması beklenir. Asıl sorular null (K1), al-tut (K2) ve rejim tek-kaynaklılığı (K9). K2 ve K9'un kalma olasılığı yüksek; K4 (ölçekli boyutta bile) dev dönemi gibi kalabilir.
