@@ -1,12 +1,12 @@
 # BACKTEST.md tamamlama
 
-**Sonuç.** BACKTEST.md %100 tamam: 42 [VAR] (kodda, testli, gerçek veride kullanılmış) + 5 gerekçeli [YOK]; kalan [PLANLI]/[KISMEN]: yok. Yeni araçlar mevcut sonuçlara uygulandı, yeni edge aranmadı; hiçbiri bir sonucu aday yapmadı. Yeni bulgular: (1) planlanan %1 risk/birimde %25 kill switch hafta içinde tetikleniyor (tam Turtle S1 2022-04-11), işlem sırası MC'si %15–17 risk ölçeği öneriyor; (2) equity'ye göre ölçekleme (bileşik Turtle) kazancı siliyor (S1 +39 398 → −3 315, DD %93); (3) gerçek zarar serileri MC'nin %99'undan uzun (kümelenme); (4) FTX penceresinde S1 sermayenin %43'ünü kaybediyor, stop DD'yi %105 → %45'e indiriyor ama stop barları seviyeyi 563 bps'e kadar aşıyor; (5) seçim prosedürü rastgele seçimden ayrışmıyor (nested p = 0,64) ve trend ailelerinde aile-içi PBO %66–78; (6) kapasite sınırı katılım payına göre 10k (100k'da dolumların %21–26'sı > %0,1), karekök etki maliyeti küçük (brüt PnL'nin %1–2'si).
+**Sonuç.** BACKTEST.md %100 tamam: 42 [VAR] (kodda, testli, gerçek veride kullanılmış) + 5 gerekçeli [YOK]; kalan [PLANLI]/[KISMEN]: yok. Yeni araçlar mevcut sonuçlara uygulandı, yeni edge aranmadı; hiçbiri bir sonucu aday yapmadı. Yeni bulgular: (1) planlanan %1 risk/birimde %25 kill switch hafta içinde tetikleniyor (tam Turtle S1 2022-04-11), işlem sırası MC'si %16–17 risk ölçeği öneriyor; (2) equity'ye göre ölçekleme (bileşik Turtle) kazancı siliyor (S1 +39 398 → −3 315, DD %93); (3) gerçek ardışık zarar serileri MC'nin %99'una eşit ya da üstünde (kümelenme); (4) FTX penceresinde S1 sermayenin %43'ünü kaybediyor, stop DD'yi %105 → %45'e indiriyor ama stop barları seviyeyi 563 bps'e kadar aşıyor; (5) seçim prosedürü rastgele seçimden ayrışmıyor (nested p = 0,64) ve trend ailelerinde aile-içi PBO %66–78; (6) kapasite sınırı katılım payına göre 10k (100k'da dolumların %21–26'sı > %0,1), karekök etki maliyeti küçük (brüt PnL'nin %1–2'si).
 
 Ön kayıtlar: `reports/backtest_completion_protocol.md` (madde 1–5, 4b) ve `reports/nested_wf_protocol.md`; ikisi de koddan ve koşudan önce commit'lendi, parametre/eşik koşulardan sonra değişmedi. İşçi: `scripts/completion.py` (Modal), tablolar `reports/backtest_completion_data/tables.md` (+ ham JSON), defterler `ledger/backtest_completion/`. Mühür, ≥ 2026-04-01 veri ve G3'e dokunulmadı. Hiçbir sonuç ADAY/ZAYIF/NO_EDGE kararı değiştirmez (kart yeniden çıkarılmadı).
 
 ## Doğrulama ve sayımlar
 - Taban koşu tam Turtle S1/S2'yi birebir yeniden üretti: net 39 397,7 / 27 641,1 (beklenen 39 398 / 27 641); saatlik PnL yeniden kurulumu farkı 1,06 / 0,00 USDT.
-- Testler: `modal run modal_app.py --cmd "pytest -q"` → **199 geçti, 1 atlandı** (gerçek ağ testi; önceki 187 + 12 yeni). Yeni testler (elle hesaplı): `tests/test_stats.py` (+3), `test_stress.py` (2), `test_capacity.py` (2), `test_nested.py` (4), `test_portfolio.py` (+1, `equity_scale`).
+- Testler: `modal run modal_app.py --cmd "pytest -q"` → **202 geçti, 1 atlandı** (gerçek ağ testi; önceki 187 + 15 yeni). Yeni testler (elle hesaplı): `tests/test_stats.py` (+3), `test_stress.py` (2), `test_capacity.py` (2), `test_nested.py` (4), `test_portfolio.py` (+2, `equity_scale`), `test_ops.py` (+1, açık bacak).
 - Hakem+yapıştırma satırı: **473** (Motor v2 sonu 467; referee.py +6: `Spec.equity_scale`, `Adapter.equity()`); tavan 600. Veri/QC/mühür araçlarına dokunulmadı.
 - Kümülatif deneme: önceki defterler 3 311 satır + risk 6 + BTC duman testi 3 + nested 792 = **4 112**. Stres, MC, kapasite, PBO/SPA ve taban koşuları deftersiz kontroldür, N'ye girmez.
 
@@ -28,15 +28,15 @@ Pencereler: LUNA 05-05→05-16 (2022), FTX 11-06→11-15 (2022), 2024-08-01→08
 - Pencere içi maks DD'ler sermayenin %7–45'i: tek bir 9 günlük olay, %20–30 DD toleransını (MISSION) aşabiliyor (S1 FTX, 2024-08, LUNA).
 
 ## 2. İşlem sırası Monte Carlo [VAR] (`stats.trade_mc / path_stats / kill_stats`)
-5 000 permütasyon, işlem başına net (fiyat PnL'si − maliyet payı + funding payı; işlem toplamı hakem net'inden S1 +107, S2 −1 059 USDT farklı: açık pozisyonlar ve pay dağıtımı). S1 341 işlem (%23 kazanan), S2 154 işlem (%19).
+5 000 permütasyon, işlem başına net (fiyat PnL'si − maliyet payı + funding payı; sonda açık bacaklar pencere sonu kapanışından değerlenir). İşlem toplamı hakem net'iyle uzlaşıyor (|fark| < 1e-7 USDT). S1 344 işlem (%23 kazanan), S2 156 işlem (%20). (İlk koşuda açık bacaklar eksikti, bağımsız inceleme yakaladı; düzeltilip deterministik taban yeniden koşuldu, tek fark MC.)
 
 | | DD (sermayeye) %5 / %50 / %95 / %99 | zarar serisi %50 / %95 / %99 | gerçek sıra DD (yüzdelik) | gerçek zarar serisi |
 |---|---|---|---|---|
-| S1 | %62 / %92 / %147 / %178 | 17 / 26 / 31 | %120 (%83) | **32** |
-| S2 | %74 / %111 / %163 / %186 | 17 / 27 / 33 | %122 (%65) | **38** |
+| S1 | %62 / %93 / %147 / %176 | 18 / 26 / 32 | %120 (%82) | **32** |
+| S2 | %70 / %105 / %156 / %178 | 16 / 26 / 32 | %121 (%72) | **38** |
 
-- Gerçek ardışık zarar serileri MC %99'unun üstünde: zarar sıraya bağımsız değil, kümeleniyor (yatay/range dönemleri). İşlem karıştırma bu riski küçümser.
-- **Kill switch önerisi (ön kayıtlı kural):** s* = 0,25/DD95 = **0,170 (S1) / 0,153 (S2)** (planlanan %1 risk/birim → ≈ %0,15–0,17); önerilen eşik = min(DD99(s*), %30) = **%30 (S1), %28,5 (S2)**. s* boyutunda yanlış-tetik olasılığı: %30'da %1,1 / %0,4, %25'te %5,0, %20'de %19–26; planlanan boyutta (ölçeksiz) her eşikte (%50 dahil) ≈ %100 tetiklenir. %30 eşiğinde kesme ortalama finali yalnızca 0,2–0,5 puan düşürür (%25'te 1,8–2,2 puan).
+- Gerçek ardışık zarar serileri MC %99'una eşit (S1 32) ya da üstünde (S2 38 > 32): zarar sıraya bağımsız değil, kümeleniyor (yatay/range dönemleri). İşlem karıştırma bu riski küçümser.
+- **Kill switch önerisi (ön kayıtlı kural):** s* = 0,25/DD95 = **0,170 (S1) / 0,160 (S2)** (planlanan %1 risk/birim → ≈ %0,16–0,17); önerilen eşik = min(DD99(s*), %30) = **%29,9 (S1), %28,6 (S2)**. s* boyutunda yanlış-tetik olasılığı: %30'da %1,0 / %0,4, %25'te %5,0, %20'de %20–24; planlanan boyutta (ölçeksiz) her eşikte (%50 dahil) ≈ %100 tetiklenir. %30 eşiğinde kesme ortalama finali yalnızca 0,2–0,4 puan düşürür (%25'te 1,6–2,2 puan).
 - **Sınır:** işlem-seviyesi equity yalnızca gerçekleşmiş PnL'dir; saatlik DD işlem DD'sinin ≈ 2–2,5 katı (S1: hakem saatlik DD %251 vs işlem %120). s* bu yüzden iyimser; saatlik DD'ye göre ≈ 0,06–0,08 olurdu. Doğrusal ölçekleme yaklaşıklığı (gross_cap, likidasyon yok sayıldı). Öneri test edilmedi, madde 4 koşularını değiştirmedi.
 
 ## 3. Kapasite + hacme bağlı slippage [VAR] (`kepler/capacity.py`)
@@ -70,7 +70,7 @@ Tam Turtle S1/S2, sermaye C ∈ {500; 10 000; 100 000} (birim boyutu ve gross_ca
 | S2 `equity_scale` + kill %25 | +139 | 10 139 | %25 | 0 | 2022-05-31 |
 
 - Bileşik (equity'ye göre ölçekli) Turtle kazancı siliyor: S1 −3 315 (DD %93, 2 likidasyon), S2 +4 174 (DD %93). Erken kayıplar sonraki boyutları küçültüyor, kazançlar geç ve sabit boyutta toplanıyordu (yol bağımlılığı). K4 (DD ≤ %25) hiçbir ölçeksiz/ölçekli koşuda geçmiyor; bootstrap DD %95 dilimi %39–55 (kill'li) ve %289–381 (kill'siz ölçekli).
-- %25 kill switch planlanan %1 risk/birimde 6 hafta ile 5,5 ay içinde tetikleniyor ve hesap kalan 4 yıl flat kalıyor (net −1 336 … +608): MC önerisiyle (risk ölçeği ≈ 0,15–0,17) tutarlı; bu sonuç "kill switch'li tam Turtle'ın pozitif edge'i yok" demek değil, ön kayıtlı %25 eşiğinin bu boyutla kullanılamadığını gösteriyor. Eşik/boyut ayarlanmadı.
+- %25 kill switch planlanan %1 risk/birimde 6 hafta ile 5,5 ay içinde tetikleniyor ve hesap kalan 4 yıl flat kalıyor (net −1 336 … +608): MC önerisiyle (risk ölçeği ≈ 0,16–0,17) tutarlı; bu sonuç "kill switch'li tam Turtle'ın pozitif edge'i yok" demek değil, ön kayıtlı %25 eşiğinin bu boyutla kullanılamadığını gösteriyor. Eşik/boyut ayarlanmadı.
 - **BTC `vol_target` duman testi (4b, 3 deneme, tek sembol, sermaye 2 000):** sabit 1 000 notional net −322 (DD %38); `vol_target` −155 (%37); `vol_target` + kill %25 −132 (kill 2025-10-01, DD %26). Yalnızca aracın gerçek veride çalıştığını gösterir; sonuç yorumlanmaz (tek sembol, negatif).
 - `tape.aggregate` (BTC 1h → 4h / 1D) hacim, ilk açılış, son kapanış, high/low ve bar sayısını koruyor.
 
@@ -114,8 +114,14 @@ Birleşik OOS (821 gün): net **+248 USDT** (sermaye 18 000), yıllık Sharpe **
 ## UNKNOWN / sınırlar
 Stop kayması (üst gösterge 563 bps, PnL etkisi hesaplanmadı); karekök etki Y; gerçek lot/min-notional ve mmr kademeleri; MC işlem bağımsızlığı varsayımı (gerçek seriler kümelenmiş) ve gerçekleşmiş-PnL DD'si; doğrusal s* ölçeklemesi; PBO'nun aile etkisi; nested'de yarıyıl dilimlerinin yeniden başlatılmış koşuya eşdeğer olmaması; hayatta kalma yanlılığı ve tek rejim (önceki raporlarla aynı); dev dönemi görülmüş veri (§8.5). SPA/CSCV kendi uygulama (`arch` yok), elle hesaplı testlerle sabitlendi; harici kütüphaneyle çapraz doğrulama yapılmadı (doğrulanmadı).
 
-## Bağımsız inceleme
-(aşağıda)
+## Bağımsız inceleme (ayrı bağlamda alt ajan, tek kez; yalnızca kod/test/ön kayıt verildi)
+YÜKSEK bulgu yok; ORTA 3, PLAUSIBLE 1, test boşlukları ve DÜŞÜK bulgular. Giderilenler:
+1. `trade_nets` işlem toplamı hakem net'inden açık bacağın PnL'si kadar farklıydı → `report.trades(close_px, close_ts)` ile açık bacak değerlemesi; testli (`test_ops.py`); taban yeniden koşuldu, recon ≈ 0; MC sayıları güncellendi (yukarıdaki tablo yeni).
+8. MC "gerçek sıra" sıralaması kararsızdı → `kind="stable"`, ikincil anahtar sembol.
+5. Test boşlukları: `cscv` Sharpe dalı (elle), `nw_lrv` lag 1 (elle 1,5625), `equity_scale` short / tekrar eden hedef / negatif equity testleri eklendi. Gerçek veri sonuçları değişmedi (Sharpe dalı üretimde zaten bu yolla koşmuştu; inceleme naif uygulamayla aynı λ'yı doğruladı).
+9. `capacity.summary.n_capped` (katılım ≥ 1) eklendi.
+Giderilmeyen, belgelendi (kod değiştirilmedi, çünkü koşular ön kayıtlı davranışla alındı): (2) `equity_scale` her hedef değişiminde tüm pozisyonu yeniden boyutlar, f düşükken piramit eklemesi pozisyonu küçültebilir → BACKTEST §6.1'e yazıldı; bileşik Turtle sonucu bu davranışla okunmalı (Turtle'ın birim-başına-sabit boyutundan sapma). (3) `equity()` funding'i içermez → docstring düzeltildi, §6.1/UNKNOWN. (4) SPA sentetik iid null'da liberal (p_upper < 0,05 oranı ≈ %8): gerçek veri p'si (0,11) zaten anlamlı değil, yönü sonucu değiştirmez; §14. (11) MC DD'si başlangıç sermayesine oranlı, üretim kill switch'i tepe-equity'ye oranlı: §14. (6, 7, 10, 12) kozmetik/zararsız. (13) BACKTEST §6.5 kesik cümle ve §12.1 sayıları düzeltildi.
+İnceleme doğrulananlar: `equity_scale=False` yolu eski hakemle birebir; stop seviyesi hizası (`shift(1)`), capacity σ nedenselliği, CSCV/SPA tanımları, nested sızıntısız, işçi parametreleri ön kayıtla uyumlu; testler Modal'de 199 + 1 atlandı (düzeltmelerden sonra 202 + 1 atlandı).
 
 ## Öneri (yapılmadı; kapsam dışı)
-(1) Kill switch'i s* ölçekli boyutla (≈ %0,15 risk/birim) ve %30 eşikle ön kayıtlı yeniden test etmek (yeni hipotez, yeni N). (2) Stop kaymasını bar aşma payıyla stres etmek (stop dolumunu bar ucuna taşıyan hakem modu). (3) Zarar kümelenmesi için blok-MC (işlem sırasını bloklarla karıştırmak). (4) Kesitsel aileler (xs_mom/xs_carry) arama dönemi dışında kaldıkça sıra kalıcı; bu hipotez için G3 kararı kullanıcıda (`reports/search.md` önerisi geçerli).
+(1) Kill switch'i s* ölçekli boyutla (≈ %0,16 risk/birim) ve %30 eşikle ön kayıtlı yeniden test etmek (yeni hipotez, yeni N). (2) Stop kaymasını bar aşma payıyla stres etmek (stop dolumunu bar ucuna taşıyan hakem modu). (3) Zarar kümelenmesi için blok-MC (işlem sırasını bloklarla karıştırmak). (4) Kesitsel aileler (xs_mom/xs_carry) arama dönemi dışında kaldıkça sıra kalıcı; bu hipotez için G3 kararı kullanıcıda (`reports/search.md` önerisi geçerli).

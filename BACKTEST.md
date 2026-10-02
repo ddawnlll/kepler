@@ -320,7 +320,7 @@ Tam Turtle S1/S2 (Motor v2: N-boyutlama, 2N stop, piramit, birim sınırları; `
 
 ## 12. Test senaryoları
 
-### 12.1 Mevcut birim testleri [VAR] (`tests/`, 199 geçti, 1 atlandı: `KEPLER_NET=1` gerektiren gerçek ağ testi)
+### 12.1 Mevcut birim testleri [VAR] (`tests/`, 202 geçti, 1 atlandı: `KEPLER_NET=1` gerektiren gerçek ağ testi)
 | Dosya | Test fonksiyonu | Kapsam |
 |---|---|---|
 | `test_referee.py` | 19 | long/short gidiş-dönüş, açık pozisyon değerleme, fee ve slippage ayrımı, lot yuvarlama, min notional (artıran engellenir, azaltan değil), NaN = tut, flip, funding (long öder/alır, short, mark kullanımı, sınır anı), likidasyon, Nautilus'un tek başına likide etmediği |
@@ -404,10 +404,10 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 | Panel sinyallerinde nedensellik denetimi | `audit.check_causal_book` (tüm panel bozulur), tests/test_trust.py'de |
 | Stop dolum kayması | UNKNOWN; hakem stopu seviyeden doldurur (gap hariç), slippage komisyon kalemi. Üst gösterge: stop dolum barının seviyeyi aşma payı ort. 50–230 bps, FTX'te maks 563 bps; PnL etkisi hesaplanmadı |
 | Karekök etki katsayısı Y | UNKNOWN; Y = 1 birincil, 0,5/2 duyarlılık. Etki maliyeti 100k'da bile brüt PnL'nin %1–2'si; kapasiteyi belirleyen katılım payı (> %0,1) |
-| İşlem sırası MC varsayımı | İşlem getirileri bağımsız varsayılır; gerçek ardışık zarar serisi MC %99'unun üstünde (zarar kümelenmesi, S1 32 > 31, S2 38 > 33); işlem-seviyesi equity yalnızca gerçekleşmiş PnL (saatlik DD ≈ 2–2,5x), s* iyimser |
+| İşlem sırası MC varsayımı | İşlem getirileri bağımsız varsayılır; gerçek ardışık zarar serisi MC %99'una eşit ya da üstünde (zarar kümelenmesi: S1 32 = MC %99'u, S2 38 > 32); işlem-seviyesi equity yalnızca gerçekleşmiş PnL (saatlik DD ≈ 2–2,5x), s* iyimser |
 | MC DD tanımı | `kill_stats`/MC DD'si başlangıç sermayesine oranlı toplamsal; üretimdeki `risk.kill_switch` tepe-equity'ye oranlı (1 − eq/tepe): önerilen eşik ve yanlış-tetik olasılığı üretim tetiğiyle aynı olay değil (UNKNOWN) |
 | SPA boyutu | Sentetik iid null'da SPA p'leri liberal (bağımsız incelemede n = 1096, K = 88: p_upper < 0,05 oranı ≈ %8; yöntemin kendisinden, blok-20 bootstrap + max); 0,05'e yakın p'ler sınırda okunur. Gerçek veri sonucu (p_consistent 0,11) zaten anlamlı değil |
-| Kill switch eşiği | Planlanan %1 risk/birimde %25 eşik hafta içinde tetiklenir (tam Turtle S1 2022-04-11, S2 2022-05/08); ölçekli boyut (s* ≈ 0,15–0,17) önerisi test edilmedi |
+| Kill switch eşiği | Planlanan %1 risk/birimde %25 eşik hafta içinde tetiklenir (tam Turtle S1 2022-04-11, S2 2022-05/08); ölçekli boyut (s* ≈ 0,16–0,17) önerisi test edilmedi |
 
 ## 15. Değişiklik kaydı
 
