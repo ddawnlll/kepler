@@ -411,10 +411,61 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 | SPA boyutu | Sentetik iid null'da SPA p'leri liberal (bağımsız incelemede n = 1096, K = 88: p_upper < 0,05 oranı ≈ %8; yöntemin kendisinden, blok-20 bootstrap + max); 0,05'e yakın p'ler sınırda okunur. Gerçek veri sonucu (p_consistent 0,11) zaten anlamlı değil |
 | Kill switch eşiği | Planlanan %1 risk/birimde %25 eşik hafta içinde tetiklenir (tam Turtle S1 2022-04-11, S2 2022-05/08); ölçekli boyut (s* ≈ 0,16–0,17) önerisi test edilmedi |
 
+## 16. Market state servisi ve uzman arayüzü [PLANLI] (tasarım 2026-10-02; kod yok)
+
+Amaç: her uzmanın kendi piyasa durumunu (market state) istediği zaman dilimlerinde (1h, 4h, 1d, 3d) veri katmanından almasını sağlamak. Uzman ihtiyacını beyan eder, servis hesaplar ve yalnızca karar anında bilinen veriyi verir. Mevcut sözleşme (§4: `book -> {sym: DataFrame[target, stop]}`) ve hakem değişmez. **Katalog baştan yazılmaz** (MISSION kural 4): bir özellik, ancak bir uzman onu istediğinde servise girer.
+
+```
+UZMAN                                         SERVİS (kepler/state.py)
+StateSpec ──────────────────────────────►     build(data, specs)
+  sym, views[tf, lookback, features],            1. tape.load (mühür sınırı kodda)
+  context                                        2. zaman dilimine topla
+MarketState ◄──────────────────────────────      3. özellikleri hesapla (nedensel)
+  yalnızca istenen, yalnızca <= karar anı        4. karar anına hizala
+                                                 5. önbellek (spec hash'i)
+```
+
+### 16.1 StateSpec (uzmanın beyanı)
+`StateSpec = {sym, views: [View{tf ∈ {1h,4h,1d,3d}, lookback (bar), features: ["atr:14", "swing:5", "profile:180", "ret:7", ...]}], context: ["funding", "mark", "xs:<evren>"], id = içerik hash'i}`. `id` deftere yazılır (hangi state tanımıyla koşuldu).
+
+### 16.2 MarketState (servisin çıktısı, karar anı t)
+`as_of = t` (saatlik karar anı). Her view için: **tamamlanmış** barlar (kapanış ≤ t), istenen özellikler (ATR, oynaklık, getiri), `levels` (swing tepe/dip: fiyat, oluşma zamanı, dokunuş sayısı), `profile` (hacim profili: POC, VAH, VAL, HVN/LVN; lookback penceresi için), nedensel trend/rejim etiketi. İstenmeyen hiçbir şey hesaplanmaz.
+
+### 16.3 Zaman dilimi kuralları (sözleşmenin kalbi)
+| tf | bar sınırı (UTC) | tamamlanmış sayılma |
+|---|---|---|
+| 1h | her saat | kapanışta |
+| 4h | 00, 04, 08, 12, 16, 20 | kapanışta |
+| 1d | 00:00 | kapanışta |
+| 3d | **sabit takvim çıpası**: gün_no = 1970-01-01'den gün sayısı; bar = gün_no ÷ 3 (tam bölüm); kayma yok | kapanışta |
+
+**Kural:** t anındaki karar yalnızca kapanış zamanı ≤ t olan barları görür; oluşmakta olan (forming) bar servise girmez. Eksik bar sayısı her view'da raporlanır (sessiz boşluk yok). Servis yalnızca `tape.load` üzerinden okur: mühür sınırını aşamaz.
+
+### 16.4 Uzman çıktısı: Candidate ve yaşam döngüsü
+`expert(state) -> Candidate[]`; `Candidate = {expert_id, sym, side, zone [alt, üst], trigger (kural), stop (fiyat), target (fiyat), expiry (bar), id = hash}`.
+Durum makinesi (deterministik): `AKTİF → (fiyat zone'a girince) İZLEMEDE → (tetik) POZİSYONDA → (hedef/stop/süre) KAPALI`; zone'a gelmeden `expiry` dolarsa `İPTAL`. Adaylar yönetici katmanından (boyut, risk, birim/portföy sınırları) geçip `book({sym: kl})` olarak hakeme gider: **hakem tarafı değişmez**.
+Hakemde eksik olanlar: hedefte çıkış (take-profit) ve koşullu giriş. Tercih: sinyalle taklit (kapanışta hedefe ulaşıldıysa sonraki açılışta çık / tetik kapanışta görülürse sonraki açılışta gir; mevcut `next_open` dolumu, kötümser). Taklit yetersizse yalnızca **minimal** take-profit eki (reduce-only limit), elle hesaplı testlerle ve BACKTEST §6'ya yazılarak (MISSION kural 4 istisnası).
+
+### 16.5 Kurallar ve testler (§12.2'ye eklenir)
+1. **Nedensellik:** gelecek bar bozulunca geçmiş state'ler (ve adaylar) değişmez (`check_causal`'ın state sürümü).
+2. **Belirlenimlilik:** aynı spec + aynı veri → aynı state hash'i.
+3. **Pencere denkliği:** tam seride hesaplanan state = pencerede hesaplanan state (ısınma dahil).
+4. **Toplama:** 3d çıpası elle hesaplanmış tarihlerde; tamamlanmamış bar servise girmez; eksik bar sayısı doğru.
+5. **Özellikler elle hesaplı:** ATR, swing seviyesi (fractal), hacim profili (POC/VAH/VAL) küçük sentetik veride beklenen değer testte elle yazılır.
+6. **Aday yaşam döngüsü:** zone'a girmeden iptal, tetik, stop, hedef, süre dolması; aynı bar içinde stop ve hedef: kötümser (önce stop).
+7. **Önbellek:** aynı spec iki kez hesaplanmaz; farklı spec farklı hash.
+
+### 16.6 Yer ve boyut
+`kepler/state.py` (servis, ≲300 satır beklenir), `kepler/experts/` (uzmanlar: araştırma kodu), `tests/test_state.py`. Hakem+yapıştırma sayısına girmez (veri/araştırma tarafı); satır sayısı yine her raporda yazılır.
+
+### 16.7 İlk sürüm sınırı
+v0 yalnızca ilk uzmanın (arz/talep bölgesi fade, `reports/` altındaki ön kayıt) istediklerini sunar: 3d ve 1d OHLC, ATR, swing seviyeleri, hacim profili, 4h/1h tetik verisi. Mevcut sinyallerin (trend, momentum, funding) bu servise taşınması şimdilik yapılmaz. Servis, ilk uzmanın sonucundan sonra genişler ya da atılır.
+
 ## 15. Değişiklik kaydı
 
 | Tarih | Değişiklik |
 |---|---|
+| 2026-10-02 | §16 Market state servisi ve uzman arayüzü (tasarım, [PLANLI]); ilk uzman: arz/talep bölgesi fade |
 | 2026-10-02 | Ensemble v1 (`kepler/ensemble.py`: piyasa durumu → uzmanlar → aday → risk motoru) ön kayıtlı koşu: ZAYIF (K9); pre2022 raporu; kart değişmedi |
 | 2026-10-02 | Tamamlama: tarihsel stres, işlem sırası MC, kapasite/karekök etki, `Spec.equity_scale` + portföy kill switch, PBO/CSCV, SPA, nested walk-forward kodlandı, testlendi ve gerçek veride kullanıldı (`reports/backtest_completion.md`); [PLANLI]/[KISMEN] kalmadı; yeni [YOK] gerekçeleri (limit emir, cross-margin, purge/CPCV, StepM/MCS, sentetik) yazıldı; `vol_target`/`aggregate`/`sharpe_series` gerçek veride kullanıldı (ön kayıt 4b) |
 | 2026-10-02 | Tam Turtle koşusu: NO_EDGE (K1); kart değişmedi |
