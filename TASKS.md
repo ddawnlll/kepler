@@ -247,5 +247,5 @@ Ağırlıklar kaba tahmindir (G0–G1 çekirdeği bunun 25'i). Durum: ☑ bitti,
 ## 2020–2021 replikasyonu (pre2022; kullanıcı görevi 2026-10-02; ön kayıt `reports/pre2022_protocol.md`, N = 10)
 Durum (adım adım güncellenir; dal `claude/serene-carson-tvrcs8`, main'e push yok):
 - ☑ `kepler/universe.py` parametreleştirildi (`--start/--rank-start/--end/--root`; varsayılanlar aynı; veri/QC/mühür araçları (b) 434 → 439 satır, ≲500 altında). Test: 203 geçti, 1 atlandı (Modal).
-- ☐ veri indirme (`/data/pre2022`, 2019-09 → 2021-12) · ☐ QC (`manifest_pre2022.json`) · ☐ Blok A · ☐ Blok B · ☐ rapor `reports/pre2022.md`
+- ☑ veri indirme (`/data/pre2022`; arşivde 2019 ayları yok, veri 2020-01 → 2021-12, 66 sembol; ayrıntı protokol sonu "Koşu notu (veri)") · ☑ QC (`data_manifest/manifest_pre2022.json`, `quality_report_pre2022.md`: 0 ERROR, 227 WARN, kesim yok) · ☐ Blok A · ☐ Blok B · ☐ rapor `reports/pre2022.md`
 Yeniden koşmak / ayrıntılar işler bitince buraya yazılır.
