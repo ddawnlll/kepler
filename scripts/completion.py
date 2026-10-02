@@ -3,6 +3,7 @@
   --stage base       tam Turtle S1/S2 taban koşusu -> tarihsel stres (madde 1) + işlem sırası Monte Carlo (madde 2)
   --stage capacity   sermaye 500 / 10k / 100k + karekök etki (madde 3)
   --stage risk       equity_scale + portföy kill switch, 6 deneme (deftere; madde 4)
+  --stage misc       risk.vol_target duman testi (BTC, 3 deneme) + tape.aggregate kontrolü (madde 4b)
   --stage pbo        PBO/CSCV + SPA, 88 yapılandırma (madde 5)
   --stage nested     --family <aile>: nested WF için sürekli koşu 2022-01-01 -> 2026-04-01 (deftere; ön kayıt reports/nested_wf_protocol.md)
   --stage nested_report   nested WF analizi (6 ailenin çıktısından)
@@ -71,8 +72,7 @@ def run_base(sysname, C=CAP, spec=None, variant=None):
 
 
 def annual_sharpe(pnl_daily: pd.Series, capital: float) -> float:
-    r = pnl_daily / capital
-    return stats.annual(stats.moments(r.to_numpy())[0])
+    return stats.annual(stats.moments(stats.sharpe_series(pnl_daily, capital).to_numpy())[0])
 
 
 def trade_nets(res, sp) -> pd.DataFrame:
@@ -179,6 +179,31 @@ def risk_stage(a):
     Path(a.out, "risk.json").write_text(json.dumps(res_all, indent=1, default=float))
 
 
+def misc_stage(a):
+    """Protokol madde 4b: BTCUSDT turtle(20,10) sabit notional / vol_target / vol_target + kill 0,25 (3 deneme) + tape.aggregate gerçek veri kontrolü."""
+    from kepler import risk
+    kl, mark, funding = g2.D["BTCUSDT"]
+    sig, led, dh = sg.turtle(20, 10), Path(a.out) / "ledger_misc.jsonl", ledger.sha(Path("/repo/data_manifest/manifest.json").read_text())
+    sp = g2.spec_for(kl, 10, g2.SLIP)
+    out = {}
+    for name, size, kill in (("fixed_1000", None, None), ("vol_target", lambda k, u, c: risk.vol_target(k, u, c), None), ("vol_target_kill25", lambda k, u, c: risk.vol_target(k, u, c), 0.25)):
+        r = ev.evaluate(sig, kl, [sp], led, f"risk motoru duman testi BTC turtle(20,10) {name} (reports/backtest_completion_protocol.md madde 4b)", dh, funding, mark, g2.NOTIONAL, name, dict(name=name), None, size, kill)[0]
+        pnl = report.hourly_pnl(kl, mark, funding, r["res"]["fills"], sp)
+        eq = sp.capital + pnl.cumsum()
+        peak = eq.cummax().clip(lower=sp.capital)
+        s = r["res"]["summary"]
+        pos = r["res"]["fills"].assign(n=lambda f: f.qty * f.px)
+        out[name] = dict(net=s["net_pnl"], gross=s["gross_pnl"], fee=s["fee"], n_fills=int(s["n_fills"]), n_liq=int(s["n_liq"]), dd=float(((peak - eq) / peak).max()), kill_at=r["row"]["config"]["kill_at"], mean_fill_notional=float(pos.n.mean()), trial=r["row"]["trial"])
+    ag = {}
+    for f in ("4h", "1D"):
+        g = tape.aggregate(kl, f)
+        ag[f] = dict(n_bars=len(g), volume_conserved=bool(abs(g.volume.sum() - kl.volume.sum()) < 1e-6 * kl.volume.sum()), first_open_ok=bool(g.open.iloc[0] == kl.open.iloc[0]), last_close_ok=bool(g.close.iloc[-1] == kl.close.iloc[-1]),
+                     n_sum=int(g.n.sum()), n_expected=len(kl), high_ok=bool(g.high.max() == kl.high.max()), low_ok=bool(g.low.min() == kl.low.min()))
+    out["aggregate"] = ag
+    Path(a.out, "misc.json").write_text(json.dumps(out, indent=1, default=float))
+    print(json.dumps(out, default=float), flush=True)
+
+
 def pbo_stage(a):
     cols, fam = {}, {}
     for f in search.FAMILIES:
@@ -244,7 +269,7 @@ def nested_report(a):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=["base", "capacity", "risk", "pbo", "nested", "nested_report"])
+    ap.add_argument("--stage", required=True, choices=["base", "capacity", "risk", "misc", "pbo", "nested", "nested_report"])
     ap.add_argument("--root", default="/data")
     ap.add_argument("--out", default="/data/completion")
     ap.add_argument("--search", default="/data/search")
@@ -255,8 +280,10 @@ if __name__ == "__main__":
     t0 = time.time()
     if a.stage == "nested":
         g2.load(a.root, EXT)
+    elif a.stage == "misc":
+        g2.load(a.root, EXT)
     elif a.stage != "nested_report":
         load(a.root)
-    {"base": base_stage, "capacity": capacity_stage, "risk": risk_stage, "pbo": pbo_stage, "nested": nested_stage, "nested_report": nested_report}[a.stage](a)
+    {"base": base_stage, "capacity": capacity_stage, "risk": risk_stage, "misc": misc_stage, "pbo": pbo_stage, "nested": nested_stage, "nested_report": nested_report}[a.stage](a)
     print(f"{a.stage} bitti {time.time() - t0:.0f}s", flush=True)
     sys.exit(0)
