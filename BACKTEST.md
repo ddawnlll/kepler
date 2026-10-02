@@ -142,6 +142,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 | `close_out` | True | Dönem sonunda açık pozisyon son kapanıştan fee+slip ile değerlenir |
 | `delay` | 0 | Ek gecikme (bar): dolum karardan sonraki (1 + delay). açılışta (K3 stres: delay=1) |
 | `gross_cap` | None | Toplam brüt notional tavanı (USDT); artıran emir kalan alana küçülür (§6.5) |
+| `equity_scale` | False | True: yeni/değişen hedef notional × (equity / `capital`), equity = bakiye + gerçekleşmemiş PnL (emir anında, son görülen fiyatla); `gross_cap` da aynı çarpanla ölçeklenir; hedef değişmedikçe yeniden boyutlama yok (Turtle bileşik sermaye ayarı, §5.1) |
 
 ### 6.2 Yürütme semantiği [VAR]
 1. Her saatlik bar motora iki parça gider: açılış tiki (o,o,o,o) zaman t (karar anı) ve gövde (o,h,l,c) zaman t+1h−1ns.
