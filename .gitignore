@@ -45,3 +45,7 @@ lab/
 # Fabrika canli durumu (sunucuda; `state` dalina ozet push edilir)
 state/*
 !state/.gitkeep
+
+# V4 ham işçi çıktıları (Modal Volume `kepler-data:/full` içinde; repoda yalnızca tables.md + summary.json)
+reports/full_systems_data/*.json
+!reports/full_systems_data/summary.json
