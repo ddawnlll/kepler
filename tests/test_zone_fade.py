@@ -74,6 +74,22 @@ def test_stop_emulation_uses_hourly_trigger_data_from_entry_bar(monkeypatch):
     assert book.log[0].state == "POZISYONDA" and (out["A"].stop.iloc[7:] == 107.0).all()
 
 
+def test_long_stop_emulation_and_mirror_sizing(monkeypatch):
+    plan = {"A": {**LONG, 1: TRIG_L}}
+    out, book = make(monkeypatch, plan, flat(40, {10: dict(low=92.0)}))  # saat 10 (k=2 barı): low 92 <= stop 93
+    o = out["A"]
+    assert o.target.iloc[7] == A(N_L) and o.target.iloc[11] == 0.0 and (o.stop.iloc[7:11] == 93.0).all() and np.isnan(o.stop.iloc[11]) and book.log[0].why == "stop"  # N_L = 50 / (6,5 / 99,5)
+    out, book = make(monkeypatch, plan, flat(40, {10: dict(low=93.5)}))  # stop'a değmedi
+    assert book.log[0].state == "POZISYONDA"
+
+
+def test_rr_cancel_allows_same_zone_to_re_form_at_once(monkeypatch):
+    # protokol "aday oluşumu"nu yalnız "o sembolde açık aday/pozisyon yok" ile sınırlar: R:R ile iptal edilen aday, aynı kararda aynı S ile yeniden oluşur (davranış belgelendi; rapor notu)
+    bad = dict(TRIG_S, poc=90.0, imp_up=5.0, sw_hi=[105.0])  # (99-90)/8 = 1,125 < 2: iptal; aynı barda impuls ve S hâlâ var
+    out, book = make(monkeypatch, {"A": {**SHORT, 1: bad}}, flat(24))
+    assert [(c.state, c.why) for c in book.log] == [("IPTAL", "rr"), ("AKTIF", "")] and book.log[1].born == T0 + pd.Timedelta(hours=8) and out["A"].target.dropna().empty
+
+
 def test_time_exit_after_40_days(monkeypatch):
     n = 24 * 42
     out, book = make(monkeypatch, {"A": {**SHORT, 1: TRIG_S}}, flat(n))
@@ -146,7 +162,7 @@ def test_end_to_end_target_exit_fills_at_next_open(monkeypatch):
     assert r["summary"]["net_pnl"] == A(61.87) and r["summary"]["n_rejected"] == 0
 
 
-def test_end_to_end_stop_fills_at_level_and_flat_target_clears_halt(monkeypatch):
+def test_end_to_end_stop_fills_at_level_no_reentry(monkeypatch):
     pytest.importorskip("nautilus_trader")
     kl = flat(40, {10: dict(high=108.0)})
     out, _ = make(monkeypatch, {"A": {**SHORT, 1: TRIG_S}}, kl)

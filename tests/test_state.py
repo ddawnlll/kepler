@@ -221,6 +221,26 @@ def test_form_picks_nearest_confirmed_level_within_reach():
     assert c.side == 1 and c.zone == (97.0, 101.0) and c.stop == 95.0
 
 
+def test_form_both_sides_nearest_wins_tie_goes_short():
+    a = bar("2022-06-01 04:00", 100, 100, 100, 100)
+    a.imp_up, a.imp_dn, a.sw_hi, a.sw_lo = 5.0, 5.0, np.array([103.0]), np.array([98.0])  # mesafe: üst 3, alt 2 -> talep (long)
+    c = zf.form(a, "X", zf.Params())
+    assert c.side == 1 and c.zone == (98.0, 102.0)
+    a.sw_lo = np.array([97.0])  # mesafe eşit (3 ve 3): short
+    assert zf.form(a, "X", zf.Params()).side == -1
+    a.valid = False
+    assert zf.form(a, "X", zf.Params()) is None  # ısınma: servis geçersiz
+    b = bar("2022-06-01 04:00", 100, 100, 100, 100)
+    b.sw_hi, b.sw_lo = np.array([103.0]), np.array([97.0])  # impuls yok: aday yok; no_impulse ablasyonunda var
+    assert zf.form(b, "X", zf.Params()) is None and zf.form(b, "X", zf.Params(ablate="no_impulse")).side == -1
+
+
+def test_expiry_precedes_trigger_and_applies_while_watching():
+    c, p = sup()
+    assert zf.watch(c, bar("2022-06-02", 100, 103, 100, 102), p) is None and c.state == "IZLEMEDE"
+    assert zf.watch(c, bar("2022-07-01 00:00", 100, 104, 98, 99.0, poc=80.0), p) is None and (c.state, c.why) == ("IPTAL", "expiry")  # süre bitiş barında tetik olsa da iptal (kötümser)
+
+
 def test_never_touched_cancels_on_expiry():
     c, p = sup()
     assert zf.watch(c, bar("2022-06-15", 98, 100.9, 97, 99), p) is None and c.state == "AKTIF"  # high 100,9 < alt 101: zone'a girmedi

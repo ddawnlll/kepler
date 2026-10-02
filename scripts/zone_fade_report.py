@@ -43,6 +43,7 @@ def pct(x):
     return f"{100 * x:.1f}%"
 
 
+assert len(NULL) == 500, f"null B=500 olmalı, {len(NULL)} var (eksik parça)"
 main = P["main"]
 r = ser(main["daily"]) / CAP
 abl = {k: ser(P[f"abl_{k}"]["daily"]) / CAP for k in ABL}
