@@ -37,7 +37,7 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 4. Satır tavanı: hakem+yapıştırma ≲450; araştırma kodu tavansız ama testli ve kullanılıyor olmalı. Kullanılmayan `scripts/probe.py` silindi.
 5. Aynı veride serbest arama yok (MISSION kural 11).
 
-## Sıradaki blok: Motor v2 + tam sistem testi (BAŞLANMADI; kullanıcı onayı bekliyor)
+## Motor v2 + tam sistem testi (V1–V3 kodlandı, V4 sırada; kullanıcı görevi 2026-10-02)
 
 Tasarım ve test senaryoları: `BACKTEST.md` §4 (stoplu sözleşme), §5.2, §6.4–6.5, §12.2.
 
@@ -45,9 +45,9 @@ Soru: kitaptaki tam Turtle sistemi (N-boyutlama, 2N stop, piramitleme, portföy 
 
 | # | İş | Bitti sayılması için | Durum |
 |---|---|---|---|
-| V1 | Strateji stopu: sinyal hedef + stop seviyesi döner; stop-market bar içinde (gap dahil) tetiklenir | Elle hesaplı stop testleri (gap, aynı bar giriş+stop, likidasyonla etkileşim) | ☐ |
-| V2 | Portföy hakemi: tek Nautilus motorunda çok sembol, ortak sermaye, toplam brüt pozisyon tavanı | Tek sembolde mevcut hakemle birebir aynı sonuç + elle hesaplı portföy testleri | ☐ |
-| V3 | Risk motorunu bağla: N (ATR) boyutlama, piramitleme, birim sınırları (sembol/korele grup/toplam) | Testli; sabit boyuta karşı karşılaştırma raporlanır | ☐ |
+| V1 | Strateji stopu: sinyal hedef + stop seviyesi döner; stop-market bar içinde (gap dahil) tetiklenir | Elle hesaplı stop testleri (gap, aynı bar giriş+stop, likidasyonla etkileşim) | ☑ tests/test_stops.py (8) |
+| V2 | Portföy hakemi: tek Nautilus motorunda çok sembol, ortak sermaye, toplam brüt pozisyon tavanı | Tek sembolde mevcut hakemle birebir aynı sonuç + elle hesaplı portföy testleri | ☑ tests/test_portfolio.py (6; denklik: eski hakemden sabit sayılar) |
+| V3 | Risk motorunu bağla: N (ATR) boyutlama, piramitleme, birim sınırları (sembol/korele grup/toplam) | Testli; sabit boyuta karşı karşılaştırma raporlanır | ◐ kod+testler tamam (tests/test_turtle.py, 10); sabit boyuta karşı karşılaştırma V4 koşusunda raporlanır |
 | V4 | Tam Turtle S1/S2 ön kaydı (`reports/full_systems_protocol.md`, koddan önce commit) ve tek koşu | `reports/full_systems.md`: MISSION başarı kartıyla (K1–K9) sonuç | ☐ |
 
 Kapsam dışı: haber, emir defteri, likidasyon akışı (veri yok), limit/maker emirler, diskresyoner kararlar.
@@ -225,3 +225,8 @@ Ağırlıklar kaba tahmindir (G0–G1 çekirdeği bunun 25'i). Durum: ☑ bitti,
 - **Kullanıcı/dış girdi gerektirdiği için YAPILAMAYAN:** F2/F3 (VPS, Hermes, Telegram, anahtarlar; `factory/README.md` "Senden gerekenler"), H4 (7/24 LLM arama; sağlayıcı anahtarı + F2), G3 (mühür açılışı yalnızca kullanıcı komutu + özel anahtar; aday da yok), H5 (gerçek para), MEXC emir katmanı/MEXC farkı (karar verilmedi), mühür kaynağı sağlaması (inceleme 33; mühür aracına dokunulmadı).
 - **"Pozitif backtest" hedefi:** üretilmedi. Doğrulama dönemi tek atış tüketildi; aynı veriyle daha fazla arama yanlış pozitif üretir (bkz. `reports/search.md` dürüstlük notu).
 - **Replikasyon (tek atış):** kullanılmamış 14 majörde aile-seçilmiş 6 yapılandırma: trend/momentum aileleri net pozitif (fee 16'da da), brüt p 0,047–0,106, Bonferroni ≥0,28 → ADAY yok (`reports/search.md`). Yön tutarlı bir hipotez; G3 için aday dondurulmadı (kriter sağlanmadı). Karar kullanıcıda: bu hipotez için G3 (mühür tek atış) açılsın mı? (xs_mom 7g dolar-nötr en temiz: beta'dan arınmış, p=0,047 ham.) Mühür dokunulmadı.
+
+
+## Motor v2 devralma notu (2026-10-02)
+- **Hakem+yapıştırma satırı** (grep -cvE '^\s*(#.*)?$', referee+screen+tape+ledger+audit+evaluate): G2 sonunda 347 (tape 41, evaluate 31); şimdi **460** (referee 232, screen 24, tape 48 [aggregate +7], ledger 45, audit 40, evaluate 71). Tavan 450'yi aşıldı (+10): kullanıcı kararı gerekirse; kullanıcı talimatı "aşarsan TASKS.md'ye yaz ve devam et". Artış nedenleri: çok sembollü adaptör + stop + brüt tavan (referee +52), `evaluate_book` + `_realistic` (evaluate +40), `check_causal_book` (audit +14).
+- Mevcut `evaluate`/`check_causal` tek sembol API'si korundu (aynı çağrı, aynı kesim noktaları).

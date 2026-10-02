@@ -22,6 +22,12 @@ def hourly_pnl(kl: pd.DataFrame, mark: pd.DataFrame | None, funding: pd.DataFram
     return pnl
 
 
+def book_pnl(data: dict, res: dict, spec) -> pd.Series:
+    """Portföy saatlik net PnL: sembol başına hourly_pnl'nin toplamı (data[sym] = kl, funding, mark içeren dict'ler; res = run_portfolio çıktısı)."""
+    parts = [hourly_pnl(d["kl"], d.get("mark"), d.get("funding"), res["fills"][res["fills"].sym == s], spec) for s, d in data.items()]
+    return pd.concat(parts, axis=1).fillna(0.0).sum(axis=1).sort_index()
+
+
 def trades(fills: pd.DataFrame) -> pd.DataFrame:
     """Her kapanış/azaltma olayı başına bir satır (kısmi azaltmalar ayrı satır): açılış, kapanış, yön, notional, tutma süresi (saat), brüt bps (fee'siz fiyat getirisi). Çevirmeler iki işlem sayılır."""
     rows, pos, cost, qty_open, t0 = [], 0.0, 0.0, 0.0, None
