@@ -28,7 +28,7 @@ def test_participation_and_sqrt_impact_hand_values():
     hc = capacity.hourly_cost(t, c, h)
     assert hc.iloc[3] == A(c[0]) and hc.iloc[4] == A(c[1]) and hc.iloc[0] == 0 and hc.sum() == A(c.sum())
     s = capacity.summary(t, 0.0005)
-    assert s["n"] == 3 and s["n_over"] == 3 and s["share_over"] == 1.0 and s["max"] == 1.0 and s["n_zero_volume"] == 1
+    assert s["n"] == 3 and s["n_over"] == 3 and s["share_over"] == 1.0 and s["max"] == 1.0 and s["n_zero_volume"] == 1 and s["n_capped"] == 1
     assert capacity.summary(t, 0.002)["n_over"] == 1  # yalnızca katılımı 1 olan
 
 

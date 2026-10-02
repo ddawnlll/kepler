@@ -32,8 +32,9 @@ def book_pnl(data: dict, res: dict, spec) -> pd.Series:
     return pd.concat(parts, axis=1).fillna(0.0).sum(axis=1).sort_index()
 
 
-def trades(fills: pd.DataFrame) -> pd.DataFrame:
-    """Her kapanış/azaltma olayı başına bir satır (kısmi azaltmalar ayrı satır): açılış, kapanış, yön, notional, tutma süresi (saat), brüt bps (fee'siz fiyat getirisi). Çevirmeler iki işlem sayılır."""
+def trades(fills: pd.DataFrame, close_px: float | None = None, close_ts: int | None = None) -> pd.DataFrame:
+    """Her kapanış/azaltma olayı başına bir satır (kısmi azaltmalar ayrı satır): açılış, kapanış, yön, notional, tutma süresi (saat), brüt bps (fee'siz fiyat getirisi). Çevirmeler iki işlem sayılır.
+    close_px/close_ts (ns) verilirse sonda açık kalan bacak o fiyattan kapatılmış sayılır (değerleme satırı; toplam PnL hakem net'iyle uzlaşsın diye)."""
     rows, pos, cost, qty_open, t0 = [], 0.0, 0.0, 0.0, None
     for r in fills.itertuples():
         d = r.qty if r.side == "BUY" else -r.qty
@@ -49,6 +50,10 @@ def trades(fills: pd.DataFrame) -> pd.DataFrame:
                 pos, d = pos - side * c, d - np.sign(d) * c
                 if abs(pos) < 1e-12:
                     pos, cost, qty_open, t0 = 0.0, 0.0, 0.0, None
+    if close_px is not None and abs(pos) > 1e-12:
+        side, c = (1 if pos > 0 else -1), abs(pos)
+        rows.append(dict(opened=pd.Timestamp(t0, unit="ns", tz="UTC"), closed=pd.Timestamp(close_ts, unit="ns", tz="UTC"), side="long" if side > 0 else "short", notional=cost * c, hours=(close_ts - t0) / 3.6e12,
+                         gross_bps=side * (close_px / cost - 1) * 1e4, pnl=side * (close_px - cost) * c))
     return pd.DataFrame(rows, columns=["opened", "closed", "side", "notional", "hours", "gross_bps", "pnl"])
 
 

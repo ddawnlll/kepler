@@ -115,3 +115,19 @@ def test_equity_scale_resizes_changed_targets_by_equity_over_capital():
     assert list(run(loss, t(loss, 500.0, 400.0), sp(**kw))["fills"].qty) == [5.0, 5.0]
     cap = run(win, t(win, 500.0, 650.0), sp(equity_scale=True, gross_cap=600.0, **kw))
     assert list(cap["fills"].qty) == [5.0, 0.5, 5.5] and list(run(win, t(win, 500.0, 650.0), sp(gross_cap=600.0, **kw))["fills"].qty) == [5.0, 5.0]
+
+
+def test_equity_scale_short_repeat_target_and_zero_equity():
+    """Short: 5,000 @100 short; b2 kapanış 80: equity = 1000 + (-5)(80-100) = 1100, hedef -600 -> 660/80 = 8,25 -> 3,25 daha satılır; b4'te 0 -> 8,25 alınır.
+    Aynı hedef tekrarında yeniden boyutlama yok: 500, b2'de yine 500 (equity 1100) -> emir yok. Negatif equity: 20 adet @100 long, b2 kapanış 40: equity = 1000 - 1200 = -200 -> f = 0 -> hedef 2100 kapanışa
+    çevrilir (20 satılır), yeni giriş yok. Davranış notu (BACKTEST §6.1): her hedef değişiminde TÜM pozisyon f ile yeniden boyutlanır (yalnız delta değil)."""
+    kw = dict(fill="close", fee_rt_bps=0.0, close_out=False, capital=1000.0, leverage=10, equity_scale=True)
+    s5 = bars([100, 100, 80, 80, 80])
+    out = run(s5, pd.Series([-500.0, np.nan, -600.0, np.nan, 0.0], index=s5.index), sp(**kw))
+    assert list(out["fills"].qty) == [5.0, 3.25, 8.25] and list(out["fills"].side) == ["SELL", "SELL", "BUY"] and out["summary"]["net_pnl"] == A(5 * 20 + 3.25 * 0)
+    w = bars([100, 100, 120, 120, 120])
+    same = run(w, pd.Series([500.0, np.nan, 500.0, np.nan, 0.0], index=w.index), sp(**kw))
+    assert list(same["fills"].qty) == [5.0, 5.0]
+    d = bars([100, 100, 40, 40, 40])
+    z = run(d, pd.Series([2000.0, np.nan, 2100.0, np.nan, 0.0], index=d.index), sp(**kw))
+    assert list(z["fills"].qty) == [20.0, 20.0] and list(z["fills"].side) == ["BUY", "SELL"] and z["summary"]["net_pnl"] == A(-1200.0)

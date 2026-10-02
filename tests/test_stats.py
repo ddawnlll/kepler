@@ -150,3 +150,16 @@ def test_nw_lrv_and_spa_hand_values():
     s = stats.spa(z, B=400, seed=1)
     assert s["best"] == 2 and s["p_consistent"] < 0.01 and s["p_upper"] < 0.01
     assert stats.spa(np.zeros((50, 3)), B=100)["stat"] == 0.0 and stats.spa(np.zeros((50, 3)), B=100)["p_upper"] == 1.0  # sabit sütunlar: t = 0
+
+
+def test_cscv_sharpe_branch_and_nw_lrv_lag_hand_values():
+    # Sharpe dalı (üretimde kullanılan): A blokları [1,3] [1,3] [-1,-3] [-1,-3], B sabit 2 (std 0 -> Sharpe 0). S=4, 6 bölme.
+    # (0,1): IS A [1,3,1,3] ort 2, std(ddof0) 1 -> Sharpe 2 > B 0 -> A; OOS (2,3): A -2 < B 0 -> A sırası 1 -> ω=1/3, λ=-ln2.
+    # (2,3): IS A -2 < 0 -> B; OOS (0,1): A +2 > B 0 -> B sırası 1 -> λ=-ln2. Diğer dört bölmede A bir pozitif + bir negatif blok: ort 0 -> Sharpe 0 = B 0, eşitlikte ilk sütun (A);
+    # OOS'ta da 0 = 0 -> ortalama sıra 1,5 -> ω=0,5 -> λ=0. Hepsi λ <= 0 -> PBO = 1
+    A_ = np.repeat([1.0, 3, 1, 3, -1, -3, -1, -3], 1)
+    R = np.column_stack([A_, np.full(8, 2.0)])
+    out = stats.cscv(R, S=4, metric="sharpe")
+    assert out["n_splits"] == 6 and out["pbo"] == 1.0 and sorted(np.round(out["lam"], 6)) == sorted(np.round([-np.log(2)] * 2 + [0.0] * 4, 6))
+    # lag 1, x = [1,2,3,4]: sapmalar [-1.5,-.5,.5,1.5]; γ0 = 5/4 = 1.25; γ1 = (0.75 - 0.25 + 0.75)/4 = 0.3125; lrv = γ0 + 2·(1 - 1/2)·γ1 = 1.5625
+    assert stats.nw_lrv(np.array([[1.0], [2.0], [3.0], [4.0]]), 1)[0] == A(1.5625)

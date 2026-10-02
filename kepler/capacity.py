@@ -30,4 +30,4 @@ def summary(tab: pd.DataFrame, thr: float = 0.001) -> dict:
     """Katılım dağılımı ve eşiği (varsayılan %0,1, BACKTEST §10) aşan dolum sayısı/payı."""
     p = tab.part
     return dict(n=len(p), n_over=int((p > thr).sum()), share_over=float((p > thr).mean()) if len(p) else 0.0, p50=float(p.quantile(0.5)), p95=float(p.quantile(0.95)),
-                p99=float(p.quantile(0.99)), max=float(p.max()), n_zero_volume=int(((p == 1.0) & (tab.notional > 0)).sum()))
+                p99=float(p.quantile(0.99)), max=float(p.max()), n_zero_volume=int(((p == 1.0) & (tab.notional > 0)).sum()), n_capped=int((p >= 1.0).sum()))

@@ -86,7 +86,7 @@ class Adapter(Strategy):
         return sum((Decimal(str(p.signed_qty)).quantize(self.B[k]["step"]) for p in self.cache.positions_open(instrument_id=self.B[k]["iid"])), Decimal(0))  # float gürültüsünü at
 
     def equity(self) -> float:
-        """Bakiye + gerçekleşmemiş PnL (son görülen fiyatla); hakem özetindeki net = equity - capital ile aynı tanım."""
+        """Bakiye + gerçekleşmemiş PnL (son görülen fiyatla). Funding, likidasyon ücreti farkı ve çıkış maliyeti koşu sonunda eklenir, bu yüzden equity - capital hakem net'inden bu kalemler kadar farklıdır (UNKNOWN: boyutlama equity'si funding'i görmez)."""
         return float(self.portfolio.account(VENUE).balance_total(USDT)) + sum(float(self.pos(j)) * (self.px[j] - float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open))
                                                                                   for j in self.B if self.pos(j) != 0 and self.px.get(j))
 

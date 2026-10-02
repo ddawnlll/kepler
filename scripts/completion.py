@@ -77,7 +77,9 @@ def annual_sharpe(pnl_daily: pd.Series, capital: float) -> float:
 
 def trade_nets(res, sp) -> pd.DataFrame:
     """Protokol madde 2: işlem başına net = fiyat PnL'si − toplam maliyet × notional payı + toplam funding × (notional × saat) payı."""
-    tr = pd.concat([report.trades(res["fills"][res["fills"].sym == s]).assign(sym=s) for s in res["fills"].sym.unique()], ignore_index=True).sort_values("closed").reset_index(drop=True)
+    end = int(pd.Timestamp(utc(MAIN)[1]).value)  # sonda açık bacaklar pencere sonu kapanışından değerlenir (inceleme bulgusu 1: aksi halde Σ işlem ≠ hakem net)
+    tr = pd.concat([report.trades(res["fills"][res["fills"].sym == s], fs.D[s]["kl"].close.iloc[-1], end).assign(sym=s) for s in res["fills"].sym.unique()], ignore_index=True)
+    tr = tr.sort_values(["closed", "sym"], kind="stable").reset_index(drop=True)
     s = res["summary"]
     cost = s["fee"] + s["slippage"] + s["liq_fee"] + s["exit_cost"]
     tr["net"] = tr.pnl - cost * tr.notional / tr.notional.sum() + s["funding"] * (tr.notional * tr.hours) / (tr.notional * tr.hours).sum()

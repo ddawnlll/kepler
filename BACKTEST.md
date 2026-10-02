@@ -145,7 +145,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 | `close_out` | True | Dönem sonunda açık pozisyon son kapanıştan fee+slip ile değerlenir |
 | `delay` | 0 | Ek gecikme (bar): dolum karardan sonraki (1 + delay). açılışta (K3 stres: delay=1) |
 | `gross_cap` | None | Toplam brüt notional tavanı (USDT); artıran emir kalan alana küçülür (§6.5) |
-| `equity_scale` | False | True: yeni/değişen hedef notional × (equity / `capital`), equity = bakiye + gerçekleşmemiş PnL (emir anında, son görülen fiyatla); `gross_cap` da aynı çarpanla ölçeklenir; hedef değişmedikçe yeniden boyutlama yok (Turtle bileşik sermaye ayarı, §5.1) |
+| `equity_scale` | False | True: yeni/değişen hedef notional × (equity / `capital`), equity = bakiye + gerçekleşmemiş PnL (emir anında, son görülen fiyatla; funding ve çıkış maliyeti dahil değil, UNKNOWN); `gross_cap` da aynı çarpanla ölçeklenir; hedef değişmedikçe yeniden boyutlama yok. **Davranış:** her hedef değişiminde TÜM pozisyon güncel f ile yeniden boyutlanır (yalnız delta değil); bu yüzden f düşükken yukarı giden bir hedef (piramit eklemesi) pozisyonu küçültebilir. Turtle'ın birim-başına-sabit boyutundan sapma (§5.1) |
 
 ### 6.2 Yürütme semantiği [VAR]
 1. Her saatlik bar motora iki parça gider: açılış tiki (o,o,o,o) zaman t (karar anı) ve gövde (o,h,l,c) zaman t+1h−1ns.
@@ -180,8 +180,8 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
   (churn yok); küçülen emir için alan sonradan açılsa da hedef değişmedikçe tamamlanmaz. (Eski taslak: "orantılı küçültme"; yol bağımlı ama churn'süz ve test 10 bunu sabitler.)
 - **Denklik şartı:** tek sembolde sonuç yeniden yazımdan önceki hakemle birebir aynı (tests/test_portfolio.py: eski hakemden alınan sabit sayılar; 28 dolumlu funding'li koşu ve 10x likidasyon).
 - Funding sembol başına; likidasyon yalnızca o sembolü kapatır, diğerleri açık kalır (cross-margin likidasyonu [YOK], UNKNOWN Binance davranışına bağlı). LP'nin kullandığı bakiye = cüzdan − diğer pozisyonların
-  **Cross-margin [YOK] gerekçesi:** doğru model bakım marjı kademelerini ve Binance likidasyon motorunu ister (ikisi UNKNOWN; `fapi` bulut ortamından 451). Yaklaşıklığın payı ölçüldü: tam Turtle `full` koşularında (S1, S2) n_liq = 0; likidasyon yalnızca stopsuz ablasyonlarda (S1 7, S2 4) ve S1 `equity_scale`'de (2) görüldü, yani yaklaşıklık yalnızca aşırı kaldıraçlı/stopsuz yollarda devreye girer (`reports/full_systems.md`, `reports/backtest_completion.md`).
   başlangıç marjı (notional/kaldıraç); LP yalnızca o sembolün kendi dolumlarında yeniden hesaplanır (başkasının PnL'siyle kayması yok sayılır: yaklaşıklık, UNKNOWN).
+  **Cross-margin [YOK] gerekçesi:** doğru model bakım marjı kademelerini ve Binance likidasyon motorunu ister (ikisi UNKNOWN; `fapi` bulut ortamından 451). Yaklaşıklığın payı ölçüldü: tam Turtle `full` koşularında (S1, S2) n_liq = 0; likidasyon yalnızca stopsuz ablasyonlarda (S1 7, S2 4) ve S1 `equity_scale`'de (2) görüldü, yani yaklaşıklık yalnızca aşırı kaldıraçlı/stopsuz yollarda devreye girer (`reports/full_systems.md`, `reports/backtest_completion.md`).
 - `evaluate.evaluate_book`: gerçekçi Spec → panel nedensellik denetimi → belirlenimlilik → portföy hakemi → portföy kill switch (tüm hedefler 0) → defter.
 
 ### 6.6 Eleme (vectorbt) [VAR]
@@ -328,11 +328,12 @@ Tam Turtle S1/S2 (Motor v2: N-boyutlama, 2N stop, piramit, birim sınırları; `
 | `test_liq_mark.py` | 7 | 10x senaryo, mark geçince likidasyon (last geçince değil), short tarafı, mark eksikse kline, LP ≈ 1/kaldıraç − mmr |
 | `test_review_fixes.py` | 9 | funding aralıkları, NaN/ms sapması, fitil/NaN hacim, red/eksik funding deftere girmez, boşlukta likidasyon gap fiyatından |
 | `test_trust.py` | 7 | nedensellik (sızdıran ve uzunluğa bağlı sinyal yakalanır), belirlenimlilik hash'i, pencereli = tam tape, flat = 0, rastgele ≈ −maliyet |
-| `test_signals.py` | 9 | Turtle giriş/çıkış/flip, Donchian trend filtresi (350 gün EMA), aylık sinyal yerleşimi, dual momentum, carry ve nedensel funding birleşimi, tüm sinyaller nedensel ve |x| ≤ 1, kesitsel dolar-nötr, EMA trend |
-| `test_ops.py` | 9 | işlem tablosu, saatlik PnL'nin hakem net'ini yeniden kurması, vol hedefleme (nedensel, tavanlı, bantlı, elle değer), kill switch, 4h/1d türetme, evaluate + risk, durum özeti |
+| `test_signals.py` | 11 | Turtle giriş/çıkış/flip, Donchian trend filtresi (350 gün EMA), aylık sinyal yerleşimi, dual momentum, carry ve nedensel funding birleşimi, tüm sinyaller nedensel ve |x| ≤ 1, kesitsel dolar-nötr, EMA trend |
+| `test_ops.py` | 10 | işlem tablosu, saatlik PnL'nin hakem net'ini yeniden kurması, vol hedefleme (nedensel, tavanlı, bantlı, elle değer), kill switch, 4h/1d türetme, evaluate + risk, durum özeti |
 | `test_tape_ledger.py` | 5 | UTC indeks, mühür reddi, hedef sözleşmesi, append-only defter, eleme sonuç yazamaz |
 | `test_screen.py` | 3 | eleme kuralı = hakem kuralı, basit fixture'da eşleşme, her eleme deftere |
 | `test_xcheck.py` | 1 | hakem = bağımsız muhasebe |
+| `test_stops.py`, `test_portfolio.py`, `test_turtle.py`, `test_stats.py`, `test_stress.py`, `test_capacity.py`, `test_nested.py` | 8+11+14+16+2+2+4 | Motor v2 ve tamamlama araçları (§12.2–12.3) |
 | `test_data.py`, `test_qc.py`, `test_universe_rules.py`, `test_seal.py`, `test_env.py`, `test_enqueue.py` | 7+7+3+6+3+3 | veri, kalite, evren, mühür, ortam, kuyruk |
 
 Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle karşılaştıran test sayılmaz.
@@ -404,6 +405,8 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 | Stop dolum kayması | UNKNOWN; hakem stopu seviyeden doldurur (gap hariç), slippage komisyon kalemi. Üst gösterge: stop dolum barının seviyeyi aşma payı ort. 50–230 bps, FTX'te maks 563 bps; PnL etkisi hesaplanmadı |
 | Karekök etki katsayısı Y | UNKNOWN; Y = 1 birincil, 0,5/2 duyarlılık. Etki maliyeti 100k'da bile brüt PnL'nin %1–2'si; kapasiteyi belirleyen katılım payı (> %0,1) |
 | İşlem sırası MC varsayımı | İşlem getirileri bağımsız varsayılır; gerçek ardışık zarar serisi MC %99'unun üstünde (zarar kümelenmesi, S1 32 > 31, S2 38 > 33); işlem-seviyesi equity yalnızca gerçekleşmiş PnL (saatlik DD ≈ 2–2,5x), s* iyimser |
+| MC DD tanımı | `kill_stats`/MC DD'si başlangıç sermayesine oranlı toplamsal; üretimdeki `risk.kill_switch` tepe-equity'ye oranlı (1 − eq/tepe): önerilen eşik ve yanlış-tetik olasılığı üretim tetiğiyle aynı olay değil (UNKNOWN) |
+| SPA boyutu | Sentetik iid null'da SPA p'leri liberal (bağımsız incelemede n = 1096, K = 88: p_upper < 0,05 oranı ≈ %8; yöntemin kendisinden, blok-20 bootstrap + max); 0,05'e yakın p'ler sınırda okunur. Gerçek veri sonucu (p_consistent 0,11) zaten anlamlı değil |
 | Kill switch eşiği | Planlanan %1 risk/birimde %25 eşik hafta içinde tetiklenir (tam Turtle S1 2022-04-11, S2 2022-05/08); ölçekli boyut (s* ≈ 0,15–0,17) önerisi test edilmedi |
 
 ## 15. Değişiklik kaydı
