@@ -71,3 +71,30 @@ def test_one_bar_delay_fills_at_the_second_following_open():
     t = series(kl, b0=100.0)
     f0, f1 = run(kl, t, sp())["fills"], run(kl, t, sp(delay=1))["fills"]
     assert list(f0.px) == [101.0] and list(f0.qty) == [0.990] and list(f1.px) == [102.0] and list(f1.qty) == [0.980]
+
+
+def test_gross_cap_never_turns_an_increasing_target_into_a_reduction():
+    """Bulgu 2: A 6 adet, fiyat 100 -> 200 (A'nın brütü 1200); B 3 adet (300) iken hedefi 400'e çıkarır: kalan alan 1000-1200 < 0, B'nin mevcut 3 adedi KÜÇÜLMEZ (satış yok)."""
+    a = bars([100, 100, 200, 200, 200, 200])
+    b = bars([100, 100, 100, 100, 100, 100])
+    ta, tb = series(a, b0=600.0), series(b, b0=300.0, b3=400.0)
+    r = run_portfolio({"A": dict(kl=a, target=ta), "B": dict(kl=b, target=tb)}, sp(capital=1000.0, leverage=5, gross_cap=1000.0))
+    f = r["fills"]
+    assert list(f.sym) == ["A", "B"] and list(f.side) == ["BUY", "BUY"] and r["summary"]["end_position"] == 9.0  # 6 + 3, hiç satış yok
+
+
+def test_funding_at_the_instant_of_a_gap_stop_uses_the_pre_fill_position():
+    """Bulgu 4: 10 adet long, stop 95; 08:00 açılışı 90'a gap'ler (stop o tikte 90'dan dolar). T = 08:00 funding'i T'den ÖNCE tutulan 10 adetle ödenir: -10*mark 100*1e-4 = -0.1."""
+    rows = [(100, 100, 100, 100)] * 8 + [(90, 90, 90, 90)] * 4
+    kl = bars([100] * 12, rows=rows)
+    f = pd.DataFrame({"last_funding_rate": [1e-4]}, index=[pd.Timestamp("2024-01-01 08:00:00.005", tz="UTC")])
+    r = run(kl, series(kl, b0=1000.0), sp(fee_rt_bps=0), funding=f, mark=kl.assign(close=100.0), stop=pd.Series(95.0, index=kl.index))
+    assert list(r["fills"].px) == [100.0, 90.0] and r["summary"]["funding"] == A(-0.1)
+
+
+def test_partial_stop_fills_do_not_create_rejected_orders():
+    """Bulgu 5: düşük hacimli barda stop parçalı dolsa da reduce-only yeniden emir reddi (n_rejected) olmaz."""
+    rows = [(100,) * 4, (100,) * 4, (99, 100, 94, 96), (100,) * 4]
+    kl = bars([100] * 4, rows=rows).assign(volume=0.5)
+    r = run(kl, series(kl, b0=1000.0), sp(liq=False), stop=pd.Series(95.0, index=kl.index))
+    assert r["summary"]["n_rejected"] == 0 and r["summary"]["end_position"] == 0

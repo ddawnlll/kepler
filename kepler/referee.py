@@ -95,7 +95,7 @@ class Adapter(Strategy):
         if self.split and t % HOUR_NS:  # bar gövdesi (ts = kapanış-1ns): karar yok; funding anı T = kapanış
             self.before[k][t + 1] = pos  # funding için: bu barın içindeki likidasyonlar düşülmüş, T'deki kararlardan önceki pozisyon
             return
-        self.before[k][t] = pos  # (karar öncesi; açılış tikinde de tutulur: boşluktan sonraki ilk bar için funding anı doğru pozisyonu görür)
+        self.before[k].setdefault(t, pos)  # (karar öncesi; gövdeden gelen değer korunur: açılış tikinde dolan gap stopu/likidasyon T'deki funding'i silmesin; açılış tikinde de tutulur: boşluktan sonraki ilk bar için funding anı doğru pozisyonu görür)
         if k in self.dead:
             return
         old, new = self.stop[k], b["st"].get(t, self.stop[k])
@@ -110,7 +110,7 @@ class Adapter(Strategy):
                 want = (Decimal(str(abs(tgt))) / px).quantize(b["step"], rounding=ROUND_DOWN) * d
                 if self.spec.gross_cap and abs(want) > abs(pos):  # toplam brüt tavan: artıran emir kalan alana küçülür
                     room = self.spec.gross_cap - sum(abs(float(self.pos(j))) * self.px[j] for j in self.B if j != k and self.px.get(j))
-                    want = min(abs(want), (Decimal(str(max(room, 0.0))) / px).quantize(b["step"], rounding=ROUND_DOWN)) * d
+                    want = max(min(abs(want), (Decimal(str(max(room, 0.0))) / px).quantize(b["step"], rounding=ROUND_DOWN)), abs(pos) if pos * d > 0 else 0) * d  # mevcut pozisyon küçülmez
                 delta = want - pos
                 reducing = want == 0 or (want * pos > 0 and abs(want) < abs(pos))
                 if delta != 0 and (reducing or abs(delta) * px >= Decimal(str(self.spec.min_notional))):
@@ -152,7 +152,9 @@ class Adapter(Strategy):
         elif prot:
             self.halt[k] = 1 if sell else -1
         self.fills.append(dict(sym=k, ts=e.ts_event, side=str(e.order_side), qty=float(e.last_qty), px=p, commission=float(e.commission), liq=liq, stop=prot and not liq))
-        self.refresh(k, p)
+        o = self.cache.order(e.client_order_id)
+        if o is None or o.is_closed:  # kısmi dolumda (hacim sınırı) emir hâlâ açıksa yeni emir kurma: kalan miktar aynı emirle dolar
+            self.refresh(k, p)
 
     def on_order_rejected(self, e):
         self.rejected.append(str(e))

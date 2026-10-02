@@ -113,6 +113,7 @@ def test_book_run_never_exceeds_gross_cap():
     for x in r["fills"].itertuples():  # her dolumdan sonra brüt (her sembol son dolum fiyatıyla; diğer sembolün fiyatı <= 1 gün eski: ~%1 pay)
         pos[x.sym], last[x.sym] = pos.get(x.sym, 0.0) + (x.qty if x.side == "BUY" else -x.qty), x.px
         worst = max(worst, sum(abs(pos[k]) * last[k] for k in pos))
+    assert (r["fills"].side == "BUY").all()  # artıran hedef hiçbir zaman satışa dönmez (inceleme bulgusu 2)
     assert 19000 < worst <= cap * 1.01 and r["summary"]["n_rejected"] == 0  # tavan bağlıyor (19000'in üstüne çıkar) ama aşılmaz
 
 
@@ -153,3 +154,64 @@ def test_book_kill_switch_flattens_at_25pct_drawdown_and_stays_flat(tmp_path):
     f, s = out["res"]["fills"], out["res"]["summary"]
     assert list(f.side) == ["BUY", "SELL"] and list(f.px) == [100.0, 70.0] and out["row"]["config"]["kill_at"] == str(kl.index[39])
     assert s["end_position"] == 0 and s["net_pnl"] == pytest_approx(-300 - 0.0006 * 1700)
+
+
+# ---- bağımsız inceleme bulguları (regresyon)
+def test_missing_23h_bar_still_delivers_the_decision_and_missing_day_keeps_n():
+    """Bulgu 3: gün 27'nin 23:00 barı yok -> karar 22:00 barına yazılır, yönetici durumu bozulmaz (hedefler 6250, 12600, 19050, 25600: gün 27 değeri kesilmeden)."""
+    kl = hourly(trend())
+    d27 = pd.Timestamp("2024-01-28", tz="UTC")  # DAYS[27]
+    kl.loc[d27 + pd.Timedelta(hours=22), ["open", "high", "low", "close"]] = kl.loc[d27 + pd.Timedelta(hours=23), "close"]  # günün kapanışı 22:00 barında da aynı
+    kl = kl.drop(d27 + pd.Timedelta(hours=23))
+    book, info = turtle_book({"A": kl}, {"A": dirs_from(25)}, 10000.0, {"A": "g"})
+    assert emits(book) == [(25, 6250.0), (26, 12600.0), (27, 19050.0), (28, 25600.0)] and info["entries"] == 1 and info["adds"] == 3
+    assert book["A"].target.dropna().index[2] == d27 + pd.Timedelta(hours=22)
+    gap = hourly(trend())
+    gap = gap[gap.index.normalize() != DAYS[20]]  # bütün gün eksik: N NaN'a düşmez, giriş yapılır (N = 2.05 civarı)
+    book, info = turtle_book({"A": gap}, {"A": dirs_from(25)}, 10000.0, {"A": "g"})
+    assert info["entries"] == 1 and 6000 < emits(book)[0][1] < 6400
+
+
+def test_exits_free_room_before_entries_regardless_of_alphabetical_order():
+    """İki geçiş: B'nin çıkışı (gün 30) aynı gün A'nın girişine alan açar (grup tavanı 1); tek geçişte alfabetik A önce işlenir ve engellenirdi."""
+    kl = hourly(trend())
+
+    def dB(k):
+        d = pd.Series(0.0, index=DAYS)
+        d.iloc[25:30] = 1.0
+        return sg._put(k, d)
+    book, info = turtle_book({"A": kl, "B": kl}, {"A": dirs_from(30), "B": dB}, 10000.0, {"A": "g", "B": "g"}, group_cap=1)
+    assert emits(book, "A")[0][0] == 30 and info["blocked"] == 0 and emits(book, "B")[:2] == [(25, 6250.0), (30, 0.0)]
+
+
+def test_emulation_uses_mark_extremes_and_tick_grid():
+    """Bulgu 6: kline düşüğü stopun (121) üstünde, mark düşüğü altında -> taklit stop tetiklenir (hakem mark H/L ile tetikler); stop seviyesi tick'e yuvarlanır (121/5 -> 120)."""
+    kl = hourly(trend())
+    mk = kl.copy()
+    mk.loc[pd.Timestamp("2024-01-27 10:00", tz="UTC"), "low"] = 120.0  # gün 26
+    book, info = turtle_book({"A": kl}, {"A": dirs_from(25)}, 10000.0, {"A": "g"})
+    assert info["stops"] == 0
+    book, info = turtle_book({"A": kl}, {"A": dirs_from(25)}, 10000.0, {"A": "g"}, marks={"A": mk})
+    assert info["stops"] == 1 and emits(book)[:2] == [(25, 6250.0), (26, 0.0)]
+    book, _ = turtle_book({"A": kl}, {"A": dirs_from(25)}, 10000.0, {"A": "g"}, ticks={"A": 5.0})
+    assert book["A"].stop[pd.Timestamp("2024-01-26 23:00", tz="UTC")] == 120.0
+
+
+def test_evaluate_book_hand_value_and_book_pnl_reconstructs_net_with_stop_fills(tmp_path):
+    """Bulgu 1 + zayıf test: tek sembol trend, giriş 50@125, ekler 50@126, 50@127, 50@128 (açılışlar), son kapanış 159 x 200 adet. Maliyet yan 6 bps (fee 10 + slip 2).
+    brüt = 200*159 - (6250+6300+6350+6400) = 31800 - 25300 = 6500; komisyon 0.0006*25300 = 15.18; çıkış 0.0006*31800 = 19.08; net = 6465.74."""
+    from kepler import evaluate as ev
+    from kepler import report
+    kl = hourly(trend())
+    book = lambda kls: turtle_book(kls, {s: dirs_from(25) for s in kls}, 10000.0, {s: "g" for s in kls})[0]  # noqa: E731
+    out = ev.evaluate_book(book, {"A": dict(kl=kl)}, [sp()], tmp_path / "l.jsonl", "h", "d", name="t")[0]
+    assert out["row"]["result"]["net_pnl"] == pytest_approx(6465.74) and out["row"]["result"]["gross_pnl"] == pytest_approx(6500.0) and list(out["res"]["fills"].px) == [125.0, 126.0, 127.0, 128.0]
+    rows = trend()
+    rows[26] = (125, 127, 120, 126)  # düşük 120 <= stop 121: bar içi stop dolumu (gövde barı ts = t+1h-1ns)
+    kl2 = hourly(rows)
+    book2 = lambda kls: turtle_book(kls, {s: dirs_from(25) for s in kls}, 10000.0, {s: "g" for s in kls})[0]  # noqa: E731
+    o2 = ev.evaluate_book(book2, {"A": dict(kl=kl2)}, [sp()], tmp_path / "l2.jsonl", "h", "d", name="t")[0]
+    assert o2["res"]["summary"]["n_stop"] == 1
+    win = dict(A=dict(kl=kl2))
+    assert report.hourly_pnl(kl2, None, None, o2["res"]["fills"], sp()).sum() == pytest_approx(o2["res"]["summary"]["net_pnl"])  # gövde dolumu dahil
+    assert report.book_pnl(win, o2["res"], sp()).sum() == pytest_approx(o2["res"]["summary"]["net_pnl"])

@@ -119,7 +119,8 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
   Sermaye **sabit** (başlangıç sermayesi; equity geri beslemesi yok: Turtle'ın bileşik sermaye ayarı yok, sapma).
 - **Piramitleme:** son birimin referans kapanışından yön × 0,5N ilerleyince (günde en çok 1) +1 birim, en çok 4.
 - **Strateji stopu:** referans kapanış − yön × 2N; her eklemede son referanstan yeniden kurulur. Hakem bar içinde yürütür (§6.4); yönetici günlük H/L ile taklit eder (durum eşitleme).
-- **Birim sınırları:** sembol ≤ 4, aynı gruptaki aynı yön ≤ 6, toplam aynı yön ≤ 12; gruplar ön kayıtta. Semboller alfabetik işlenir. Engellenen giriş yön değişene kadar tekrar denenmez.
+- **Birim sınırları:** sembol ≤ 4, aynı gruptaki aynı yön ≤ 6, toplam aynı yön ≤ 12; gruplar ön kayıtta. Günde iki geçiş: önce stop taklidi + çıkış/çevirme (alan açar), sonra girişler/eklemeler alfabetik. Engellenen giriş yön değişene kadar tekrar denenmez.
+- **Veri boşlukları:** eksik günler atılır (N sürekli); yön günün son değeriyle (ffill); karar günün son mevcut barına yazılır. Stop taklidi hakemin tetik verisini (mark H/L) ve tick yuvarlamasını kullanır.
 - **Portföy tavanı:** `Spec.gross_cap` (§6.5).
 - Kural: risk parametreleri sonuçtan önce yazılır, sonuca göre oynanmaz.
 
@@ -147,7 +148,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 2. t barının kapanışında verilen hedef, **ilk mevcut sonraki barın açılışında** piyasa emriyle dolar (boşluk varsa sonraki mevcut bar). Son barın hedefi dolmaz.
 3. Hedef değişmedikçe yeniden boyutlama yok; değişince miktar = hedef notional / dolum fiyatı, lot adımına aşağı yuvarlanır.
 4. Maliyet: (fee + slip)/2 bps her dolumun notional'ına; özet `fee`, `slippage`, `exit_cost` ayrı raporlar.
-5. **Funding:** T anındaki oran × T'den önce (T'deki dolumlardan önce) tutulan pozisyon × mark kapanışı; oran > 0 iken long öder. Mark yoksa kline'a düşer (`funding_mark_fallback` sayılır); ikisi de yoksa `funding_missed` sayılır ve koşu deftere giremez.
+5. **Funding:** T anındaki oran × T'den önce (T'deki dolumlardan önce; açılış tikinde dolan gap stopu/likidasyon dahil) tutulan pozisyon × mark kapanışı; oran > 0 iken long öder. Mark yoksa kline'a düşer (`funding_mark_fallback` sayılır); ikisi de yoksa `funding_missed` sayılır ve koşu deftere giremez.
 6. **Likidasyon:** Nautilus bar verisinde likide etmez; her pozisyon değişiminde likidasyon fiyatına reduce-only stop-market konur. Gövde barının H/L'si **mark** H/L'sidir (mark yoksa kline). Boşlukla geçilirse stop piyasa fiyatından dolar (iyimser LP dolumu yok). Likidasyondan sonra hesap ölüdür, yeni işlem yok.
 7. Reddedilen emir (`n_rejected > 0`) veya eksik funding olan koşu geçersizdir; deftere yazılmaz.
 8. Çıktı: `summary` (net_pnl, gross_pnl, fee, slippage, funding, liq_fee, exit_cost, n_fills, n_liq, end_position, n_rejected, funding_missed, funding_mark_fallback), `fills`, `positions`, `rejected`.
@@ -171,7 +172,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 
 ### 6.5 Portföy hakemi [VAR] (Motor v2, V2; tests/test_portfolio.py)
 - `referee.run_portfolio(data, spec)`: tek Nautilus motorunda N enstrüman, tek USDT hesap, ortak marj. `data[sym] = dict(kl, target, stop, funding, mark, tick, step)`.
-- **Brüt tavan hakemde (`Spec.gross_cap`):** artıran emir, diğer sembollerin son fiyatla brütünü düşen kalan alana (lot adımına aşağı) küçülür; azaltan emir tavandan etkilenmez. Hedefler yeniden ölçeklenmez
+- **Brüt tavan hakemde (`Spec.gross_cap`):** artıran emir, diğer sembollerin son fiyatla brütünü düşen kalan alana (lot adımına aşağı) küçülür, ama sembolün mevcut aynı yönlü pozisyonunun altına inmez (artıran hedef satışa dönmez); azaltan emir tavandan etkilenmez. Hedefler yeniden ölçeklenmez
   (churn yok); küçülen emir için alan sonradan açılsa da hedef değişmedikçe tamamlanmaz. (Eski taslak: "orantılı küçültme"; yol bağımlı ama churn'süz ve test 10 bunu sabitler.)
 - **Denklik şartı:** tek sembolde sonuç yeniden yazımdan önceki hakemle birebir aynı (tests/test_portfolio.py: eski hakemden alınan sabit sayılar; 28 dolumlu funding'li koşu ve 10x likidasyon).
 - Funding sembol başına; likidasyon yalnızca o sembolü kapatır, diğerleri açık kalır (cross-margin likidasyonu [YOK], UNKNOWN Binance davranışına bağlı). LP'nin kullandığı bakiye = cüzdan − diğer pozisyonların
@@ -387,6 +388,7 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 
 | Tarih | Değişiklik |
 |---|---|
+| 2026-10-02 | Bağımsız inceleme (Motor v2) 6 bulgu giderildi: `report.hourly_pnl` gövde dolumları, brüt tavan artıran hedefi azaltmaya çeviremez, funding'de gap stopu, kısmi stop dolumunda yeniden emir yok, turtle veri boşlukları + mark H/L + tick + iki geçiş; regresyon testleri |
 | 2026-10-02 | Değerlendirme araçları (`stats.py`, `robust.py`): PSR/DSR/MinTRL, block bootstrap, NW alfa, al-tut, komşuluk, başlangıç kaydırma, nedensel rejim, rotasyon kaydırma, karar kuralı; testler madde 19–24 |
 | 2026-10-02 | Motor v2 (V1–V3) kodlandı: §4 kitap sözleşmesi, §5.2, §6.4 (tek koruyucu emir, gap, halt), §6.5 (brüt tavan hakemde), Spec.delay/gross_cap; madde 1–18 ve 25 testleri |
 | 2026-10-02 | v1: G0–G2 ve arama sonrası mevcut mimari, Motor v2 tasarımı, başarı kartı (MISSION'dan taşındı), test senaryoları |

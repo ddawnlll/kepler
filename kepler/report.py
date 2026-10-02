@@ -4,12 +4,16 @@ import pandas as pd
 
 
 def hourly_pnl(kl: pd.DataFrame, mark: pd.DataFrame | None, funding: pd.DataFrame | None, fills: pd.DataFrame, spec) -> pd.Series:
-    """Saatlik net PnL (fiyat + funding - komisyon, son barda çıkış maliyeti); toplamı hakem net_pnl'ine eşit olmalı (likidasyonsuz koşuda)."""
-    t = pd.to_datetime(fills.ts, unit="ns", utc=True)
-    signed = pd.Series(np.where(fills.side == "BUY", fills.qty, -fills.qty), index=t).groupby(level=0).sum()
-    pos = signed.reindex(kl.index, fill_value=0.0).cumsum()
+    """Saatlik net PnL (fiyat + funding - komisyon - likidasyon ücreti, son barda çıkış maliyeti); toplamı hakem net_pnl'ine eşit. Gövde barı dolumları (stop, likidasyon: ts = t+1h-1ns)
+    kendi barlarına yazılır: bar PnL'i = önceki pozisyon x (sonraki açılış - açılış) + sum(Δ x (sonraki açılış - dolum fiyatı)) - komisyon."""
+    bar = pd.DatetimeIndex(pd.to_datetime(fills.ts, unit="ns", utc=True)).floor("1h")
+    signed = pd.Series(np.where(fills.side == "BUY", fills.qty, -fills.qty), index=bar)
     nxt = kl.open.shift(-1).fillna(kl.close.iloc[-1])
-    pnl = pos * (nxt - kl.open) - pd.Series(fills.commission.to_numpy(), index=t).groupby(level=0).sum().reindex(kl.index, fill_value=0.0)
+    by_bar = lambda v: pd.Series(np.asarray(v, float), index=bar).groupby(level=0).sum().reindex(kl.index, fill_value=0.0)  # noqa: E731
+    pos = by_bar(signed).cumsum()  # bar sonu pozisyonu
+    side_fee = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
+    liq = fills.qty * fills.px * fills.liq * max(0.0, (spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate) - side_fee)
+    pnl = pos.shift(1, fill_value=0.0) * (nxt - kl.open) + by_bar(signed.to_numpy() * (nxt.reindex(bar).to_numpy() - fills.px.to_numpy())) - by_bar(fills.commission) - by_bar(liq)
     if funding is not None and len(funding):
         rate = funding.last_funding_rate.copy()
         rate.index = rate.index.round("1min")
@@ -18,7 +22,7 @@ def hourly_pnl(kl: pd.DataFrame, mark: pd.DataFrame | None, funding: pd.DataFram
             b = T - pd.Timedelta("1h")
             if b in pos.index:
                 pnl[b] += -pos[b] * mk.get(b, kl.close[b]) * r  # T öncesi tutulan pozisyon x mark kapanışı (hakemle aynı kural)
-    pnl.iloc[-1] -= abs(pos.iloc[-1]) * kl.close.iloc[-1] * (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
+    pnl.iloc[-1] -= abs(pos.iloc[-1]) * kl.close.iloc[-1] * side_fee
     return pnl
 
 
