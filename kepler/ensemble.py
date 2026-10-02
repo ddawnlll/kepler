@@ -110,7 +110,7 @@ def size(f: pd.DataFrame, st: dict, capital: float, p: Params) -> pd.DataFrame:
             if g > p.gross_cap * capital:
                 n *= p.gross_cap * capital / g
             tgt[idx], u[idx] = n, unit
-        move = np.abs(tgt - prev) > p.buffer * u
+        move = np.abs(tgt - prev) > np.where(np.isinf(u), np.inf, p.buffer * np.where(np.isinf(u), 0.0, u))
         prev = np.where(~a, 0.0, np.where(move, tgt, prev))
         out[d] = prev
     return pd.DataFrame(out, index=f.index, columns=syms)

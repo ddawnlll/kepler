@@ -68,8 +68,8 @@ def data_of(syms, d=None):
     return {s: d[s] for s in syms}
 
 
-def run(p, sp, window=MAIN, syms=EXT, u=None, out=None):
-    data = data_of(syms)
+def run(p, sp, window=None, syms=EXT, u=None, out=None):
+    window, data = window or MAIN, data_of(syms)  # varsayılan çağrı anında (--smoke MAIN'i değiştirir)
     out = out or en.make_book(sp.capital, p, u)({s: x["kl"] for s, x in data.items()})
     res, win, _ = ev.run_book(out, data, sp, *utc(window))
     return res, win, out
@@ -105,8 +105,7 @@ def task(a):
         res, win, _ = run(p, spec(fee, slip, delay))
         return f"cost_{fee}_{slip}_{delay}", dict(summary=keep(res), daily=daily(report.book_pnl(win, res, spec(fee, slip, delay))))
     if kind == "win":
-        out = None
-        res, win, _ = run(p, spec(), window=name, out=out)
+        res, win, _ = run(p, spec(), window=name)
         return f"win_{name[0]}_{name[1]}", dict(summary=keep(res))
     if kind == "bh":
         res, pnl = robust.buy_hold(data_of(EXT), replace(spec(), gross_cap=None), CAP / len(EXT), MAIN)
