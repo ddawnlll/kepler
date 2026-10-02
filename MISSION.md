@@ -93,7 +93,7 @@ NO_EDGE) ve testlerin tam tanımı orada. Kart yalnızca ön kayıtla ve bir son
    raporla. Dış sınır: 1 hafta.
 7. **Kendi kodumuz küçük kalır; iki ayrı sayı, ikisi de raporlanır.** (a) Hakem + yapıştırma
    (hedef→emir adaptörü, funding, likidasyon ve strateji stopu, portföy, eleme, defter, sözleşme,
-   denetim, evaluate) ≲450 satır (G1 sonu: 268; G2 sonu: 347; tavan 2026-10-02'de 300→450). (b) Veri/QC/mühür araçları (indirici, kalite kontrol, evren, mühür)
+   denetim, evaluate) ≲600 satır (G1 sonu: 268; G2 sonu: 347; Motor v2 sonu: 467; tavan 2026-10-02'de 300→450, sonra 450→600). (b) Veri/QC/mühür araçları (indirici, kalite kontrol, evren, mühür)
    ≲500 satır (G1 sonu: ~470). (c) Araştırma kodu (sinyaller, koşucular, rapor betikleri) tavansızdır ama
    her modül testli ve kullanılıyor olmalı; kullanılmayan dosya silinir. Boş/yorum satırı ve testler
    sayılmaz. (a) ya da (b) aşılırsa kullanıcıya sor; sessizce geçilmez. Bakım maliyeti V8'de projeyi bitirdi.

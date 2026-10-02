@@ -34,7 +34,7 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 1. PR #2 main'e birleşti (gerçekçi hakem, G2, arama). Benim dalımdaki paralel sertleştirme (`b8ec86e`, `claude/blissful-ptolemy-4kmtvf`) birleştirilmez, arşiv olarak dalda kalır.
 2. G2 sonucu geçerli: kitap sinyallerinin kırpılmış sürümleri için `NO_EDGE`. Kapı ölçütü MISSION'da sabit: ortak-ofset rotasyon null'ı + Bonferroni (N = deneme sayısı) + fee 10 ve 16'da net > 0.
 3. Risk motoru ve trade yönetimi stratejinin parçası: G3'ten önce kullanılır.
-4. Satır tavanı: hakem+yapıştırma ≲450; araştırma kodu tavansız ama testli ve kullanılıyor olmalı. Kullanılmayan `scripts/probe.py` silindi.
+4. Satır tavanı: hakem+yapıştırma ≲600 (450'den çıkarıldı, kullanıcı kararı 2026-10-02); araştırma kodu tavansız ama testli ve kullanılıyor olmalı. Kullanılmayan `scripts/probe.py` silindi.
 5. Aynı veride serbest arama yok (MISSION kural 11).
 
 ## Motor v2 + tam sistem testi (hepsi tamam; kullanıcı görevi 2026-10-02)
@@ -228,8 +228,8 @@ Ağırlıklar kaba tahmindir (G0–G1 çekirdeği bunun 25'i). Durum: ☑ bitti,
 
 
 ## Motor v2 devralma notu (2026-10-02)
-- **Hakem+yapıştırma satırı** (grep -cvE '^\s*(#.*)?$', referee+screen+tape+ledger+audit+evaluate): G2 sonunda 347 (tape 41, evaluate 31); şimdi **467** (referee 234, screen 24, tape 48 [aggregate +7], ledger 45, audit 40, evaluate 76). Tavan 450'yi aşıldı (+17): kullanıcı kararı gerekirse; kullanıcı talimatı "aşarsan TASKS.md'ye yaz ve devam et". Artış nedenleri: çok sembollü adaptör + stop + brüt tavan (referee +52), `evaluate_book` + `_realistic` (evaluate +40), `check_causal_book` (audit +14).
+- **Hakem+yapıştırma satırı** (grep -cvE '^\s*(#.*)?$', referee+screen+tape+ledger+audit+evaluate): G2 sonunda 347 (tape 41, evaluate 31); şimdi **467** (referee 234, screen 24, tape 48 [aggregate +7], ledger 45, audit 40, evaluate 76). Tavan 450'yi aşıldı (+17); kullanıcı tavanı 600'e çıkardı (karar 2026-10-02). Artış nedenleri: çok sembollü adaptör + stop + brüt tavan (referee +52), `evaluate_book` + `_realistic` (evaluate +40), `check_causal_book` (audit +14).
 - Mevcut `evaluate`/`check_causal` tek sembol API'si korundu (aynı çağrı, aynı kesim noktaları).
 - **Bağımsız inceleme (stop/portföy/risk, ayrı bağlamda, 1 kez):** 6 bulgu, hepsi giderildi ve regresyon testli: (1 YÜKSEK) `report.hourly_pnl` bar içi (stop/likidasyon) dolumları atıyordu → portföy kill switch yanlış tetiklenirdi; (2) brüt tavan artıran hedefi satışa çeviriyordu; (3) turtle veri boşluklarında durum ayrışıyordu; (4) gap stopu funding'i siliyordu; (5) kısmi stop dolumunda reddedilen yeniden emir; (6) taklit stop kline H/L + ham seviye kullanıyordu (hakem mark H/L + tick) + alfabetik sıra yanlılığı (iki geçişe çevrildi).
 - **Tam Turtle sonucu:** tam Turtle S1/S2 = NO_EDGE (K1; ayrıntı `reports/full_systems.md`). Yeniden koşmak: `modal run modal_app.py --cmd "python scripts/full_systems.py --stage primary|robust|k7 --out /data/full"` ve `--stage null --null-from a --null-to b` (5 paralel konteyner), sonra `PYTHONPATH=. python scripts/full_systems_report.py <dizin> reports/full_systems_data ledger`. Ham JSON `reports/full_systems_data/`, defterler `ledger/full_systems/` (attempt1 = çöken ilk koşu 10 satır; run2 = yeniden koşu 10 satır; 2 deneme ruin nedeniyle deftere yazılamaz).
-- **Açık:** hakem+yapıştırma 467 > 450 (kullanıcı kararı); equity-ölçekli boyutlama, kill switch kartı, tarihsel stres/MC/kapasite/nested WF/PBO (BACKTEST §10 [PLANLI]) yapılmadı; K10/G3 dokunulmadı.
+- **Açık:** hakem+yapıştırma 467 ≤ 600 (tavan 600'e çıkarıldı); equity-ölçekli boyutlama, kill switch kartı, tarihsel stres/MC/kapasite/nested WF/PBO (BACKTEST §10 [PLANLI]) yapılmadı; K10/G3 dokunulmadı.
