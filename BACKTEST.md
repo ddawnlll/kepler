@@ -8,7 +8,7 @@ nasıl çalıştırılır `AGENTS.md`'de.
 ## 0. LLM / ajan için okuma talimatı
 
 - Backtest, sinyal, risk, hakem, değerlendirme veya rapor ile ilgili **her işten önce** bu dosyayı oku.
-- Her bölümün durumu etiketlidir: **[VAR]** kodda ve testli; **[KISMEN]** kodda ama eksik; **[PLANLI]**
+- Her bölümün durumu etiketlidir: **[VAR]** kodda, testli ve en az bir kez gerçek veride kullanılmış; **[KISMEN]** kodda ama eksik; **[PLANLI]**
   tasarlandı, kod yok (TASKS.md'de iş olarak açık); **[YOK]** bilinçli olarak kapsam dışı.
 - [PLANLI] bir parçayı yazarken buradaki sözleşmeye ve test senaryolarına uy. Sözleşmeyi değiştirmen
   gerekiyorsa önce bu dosyayı güncelle, sonra kodu yaz (aynı commit'te olabilir), değişiklik kaydına ekle.
@@ -103,7 +103,7 @@ signal(kl: DataFrame[open, high, low, close, volume (+ fund_hr)]) -> Series
 
 ## 5. Risk / boyut katmanı
 
-### 5.1 Mevcut [KISMEN] (`kepler/risk.py`)
+### 5.1 Risk motoru [VAR] (`kepler/risk.py`, `Spec.equity_scale`; gerçek veri: `reports/backtest_completion.md`)
 | Fonksiyon | Davranış | Varsayılan |
 |---|---|---|
 | `realized_vol(kl, days)` | Günlük log-getiri std × √365, yalnızca tamamlanmış günler (shift 1) | 30 gün |
@@ -111,7 +111,10 @@ signal(kl: DataFrame[open, high, low, close, volume (+ fund_hr)]) -> Series
 | `kill_switch(target, equity, max_dd)` | Equity tepeden max_dd düşünce hedef o andan sonra 0 | MISSION önerisi %25 |
 | `evaluate(size=, kill_dd=)` | Boyutlu hedef capital × leverage tavanını aşarsa hata | — |
 
-Kill switch tetiklenince **hakem baştan, kırpılmış hedefle yeniden koşar**; tetik zamanı deftere `kill_at` olarak yazılır.
+Kill switch tetiklenince **hakem baştan, kırpılmış hedefle yeniden koşar**; tetik zamanı deftere `kill_at` olarak yazılır. Tetikten sonra hesap flat kalır (insan onayına kadar; yeniden devreye alma yok).
+- **Portföy kill switch:** `evaluate.run_book/evaluate_book(kill_dd=)`: portföy saatlik equity'si (`report.book_pnl`) tepeden `kill_dd` düşünce tüm hedefler 0 (tests/test_turtle.py).
+- **Equity'ye göre ölçekleme:** `Spec.equity_scale` (§6.1): hakem emir anında hedef notional'ı equity/capital ile çarpar (tests/test_portfolio.py).
+- **Gerçek veride kullanım:** `equity_scale` + portföy kill switch tam Turtle S1/S2'de (6 deneme), `vol_target` + kill BTC turtle duman testinde (3 deneme), `realized_vol` onun içinde: `reports/backtest_completion.md` madde 4/4b. Parametreler ayarlanmadı.
 
 ### 5.2 Motor v2 [VAR] (`kepler/risk.py::wilder_n`, `kepler/turtle.py`; tests/test_turtle.py)
 Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 barı) şunları ekler. Kurallar `turtle.py` başlığında; özet:
@@ -156,9 +159,9 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 
 ### 6.3 Mevcut sınırlar
 - Portföy [VAR] (§6.5): `run_portfolio` tek motor, tek hesap; `run` tek sembollü özel hali.
-- Yalnızca piyasa emri; limit/maker [YOK].
+- Yalnızca piyasa emri; limit/maker [YOK]: gerekçe — MISSION "önce taker; maker ayrı hipotez"; limit dolum olasılığı ve kuyruk önceliği emir defteri/L2 verisi ister (kapsam dışı), bar verisinden varsayımsal olur.
 - Bar çözünürlüğü: bar içi olay sırası bilinmez (§6.4 kuralı).
-- Slippage sabit bps; hacme bağlı piyasa etkisi [YOK] (500 USD'de ihmal edilebilir, sermaye artınca [PLANLI]).
+- Slippage hakemde sabit bps. Hacme bağlı etki hakem **dışı maliyet bindirmesi** olarak [VAR] (`kepler/capacity.py`, §10 Kapasite): katılım = dolum notional'ı / aynı saatin quote hacmi; karekök etki = Y·σ_h·√katılım·notional (Y = 1 birincil, UNKNOWN), sabit slippage'a ek; yol bağımlılığı yok sayılır. Hakemin kendisi hacme bağlı dolum yapmaz.
 
 ### 6.4 Strateji stopu [VAR] (Motor v2; tests/test_stops.py)
 - `stop[t]` (t kapanışında bilinen), t+1 açılışından itibaren reduce-only stop-market olarak durur; seviye her açılış tikinde ve her dolumdan sonra yeniden kurulur.
@@ -177,6 +180,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
   (churn yok); küçülen emir için alan sonradan açılsa da hedef değişmedikçe tamamlanmaz. (Eski taslak: "orantılı küçültme"; yol bağımlı ama churn'süz ve test 10 bunu sabitler.)
 - **Denklik şartı:** tek sembolde sonuç yeniden yazımdan önceki hakemle birebir aynı (tests/test_portfolio.py: eski hakemden alınan sabit sayılar; 28 dolumlu funding'li koşu ve 10x likidasyon).
 - Funding sembol başına; likidasyon yalnızca o sembolü kapatır, diğerleri açık kalır (cross-margin likidasyonu [YOK], UNKNOWN Binance davranışına bağlı). LP'nin kullandığı bakiye = cüzdan − diğer pozisyonların
+  **Cross-margin [YOK] gerekçesi:** doğru model bakım marjı kademelerini ve Binance likidasyon motorunu ister (ikisi UNKNOWN; `fapi` bulut ortamından 451). Yaklaşıklığın payı ölçüldü: tam Turtle `full` koşularında (S1, S2) n_liq = 0; likidasyon yalnızca stopsuz ablasyonlarda (S1 7, S2 4) ve S1 `equity_scale`'de (2) görüldü, yani yaklaşıklık yalnızca aşırı kaldıraçlı/stopsuz yollarda devreye girer (`reports/full_systems.md`, `reports/backtest_completion.md`).
   başlangıç marjı (notional/kaldıraç); LP yalnızca o sembolün kendi dolumlarında yeniden hesaplanır (başkasının PnL'siyle kayması yok sayılır: yaklaşıklık, UNKNOWN).
 - `evaluate.evaluate_book`: gerçekçi Spec → panel nedensellik denetimi → belirlenimlilik → portföy hakemi → portföy kill switch (tüm hedefler 0) → defter.
 
@@ -206,7 +210,7 @@ yalnızca **zamansal dağılımı** göstermek için raporlanır (K6).
 - Raporlama pencereleri (anchored değil, ardışık yarıyıllar): 2023-H1, 2023-H2, 2024-H1, 2024-H2, 2025-H1, 2025-H2, 2026-Q1.
 - Isınma: en uzun geri bakış (ör. 365 gün) kadar başlangıç işlemsiz kalır; DSR/Sharpe günlük serisinde ısınma günleri dışlanır [VAR: `stats.sharpe_series(warmup_days)`; G2'de sıfır PnL olarak dahildi, o sonuçlar değişmedi].
 
-### 8.2 Seçim yapan araştırma: nested walk-forward [PLANLI]
+### 8.2 Seçim yapan araştırma: nested walk-forward [VAR] (`kepler/nested.py`, tests/test_nested.py; ön kayıt `reports/nested_wf_protocol.md`; tek koşu: `reports/backtest_completion.md` madde 6)
 Parametre veya model seçen her test bu yapıyı kullanır; seçim prosedürünün kendisi test edilir.
 ```
 Dış döngü (anchored, genişleyen):   eğitim [2022-01-01, T_k)   →   OOS [T_k, T_k + 6 ay)
@@ -219,6 +223,7 @@ Sonuç: dış OOS parçaları birleştirilir; başarı kartı bu birleşik OOS s
 - Seçim her dış adımda yeniden yapılır; seçilen yapılandırma ve skor deftere yazılır.
 - Dış OOS sonuçlarına bakıp ızgarayı, ölçütü veya pencereyi değiştirmek seçim yanlılığıdır: yeni bir deneme olarak sayılır ve ön kayıt gerekir.
 - G2 sonrası "arama → doğrulama → replikasyon" (`reports/search_protocol.md`) bu yapının tek dış adımlı, basit sürümüdür.
+- Uygulama: iç skor günlük Sharpe (std = 0 → 0), medyan, eşitlikte ilk sütun; aday getirileri sürekli koşunun dilimleridir; araç ayrıca seçim prosedürünü **rastgele seçime** karşı sınar (`nested.random_sharpes`, p = rotasyon-p formülü).
 
 ### 8.3 Purge / embargo / CPCV [YOK, koşullu]
 - Kural tabanlı sinyallerde ileri getiri etiketi yoktur; sızıntıyı §7 nedensellik denetimi engeller. Purge/embargo gerekmez.
@@ -254,8 +259,9 @@ yeni veridir.
 - **PSR [VAR]** (`stats.psr`): aynı formül, SR0 = 0 (ya da belirlenen eşik). `stats.dsr(r, trial_srs)`, `stats.sr0_from_trials`.
 - **MinTRL [VAR, `stats.min_trl`; raporda]:** MinTRL = 1 + (1 − γ3·SR + (γ4−1)/4·SR²)·(z_α / (SR − SR*))². Normal getiri, SR* = 0, α = %5 için
   yaklaşık: yıllık SR 0,7 → ~5,5 yıl; 1,0 → ~2,7 yıl; 1,5 → ~1,2 yıl. Elimizde ~3 yıl OOS benzeri veri var: SR ≲ 1 kanıtlanamaz.
-- **Reality Check / SPA / StepM / MCS [YOK, koşullu]:** çok sayıda aday benchmark'a karşı karşılaştırılırsa (H4, 7/24 arama) SPA eklenir (`arch` paketi).
-- **PBO / CSCV [PLANLI, H4]:** otomatik aramada eğitim kazananının testte medyanın altına düşme olasılığı; arama-tabanlı her rapor için.
+- **SPA [VAR]** (`stats.spa`, Hansen 2005; kendi uygulama, `arch` bağımlılığı eklenmedi): d_k = model − benchmark günlük getiri; ω̂ Newey–West (Bartlett, gecikme 20); stationary bootstrap (blok 20, B = 2000); p_lower / **p_consistent** / p_upper (p_upper = Reality Check). Test: elle hesaplı istatistik, p sıralaması, tohum, sinyalsiz/sinyalli sentetik. Gerçek veri: 88 yapılandırma, nakit ve al-tut benchmark (`reports/backtest_completion.md` madde 5).
+- **StepM / MCS [YOK, koşullu]:** gerekçe — SPA "en az bir model üstün mü" sorar; hangi modellerin üstün olduğunu (StepM) ya da güvenilir alt kümeyi (MCS) ayıklamak aday listesi ister, aday çıkmadı. 7/24 arama (H4) çok aday üretirse eklenir.
+- **PBO / CSCV [VAR]** (`stats.cscv`; ön kayıt S = 16, 12 870 bölme, metrik günlük Sharpe): IS-en-iyinin OOS'ta medyanın altına düşme olasılığı (λ ≤ 0); aile içi PBO ayrıca. Not: PBO sıra kalıcılığını ölçer, kârlılığı değil; aileler arası getiri farkı tüm-88 PBO'yu düşürür, bu yüzden aile içi PBO'yla birlikte okunur. Gerçek veri: 88 yapılandırma (`reports/backtest_completion.md` madde 5). Arama-tabanlı her rapor için kullanılır.
 
 ### 9.3 Block bootstrap [VAR] (`stats.stationary_bootstrap`, `stats.bootstrap_summary`)
 - Stationary bootstrap (Politis–Romano), günlük net getiri, ortalama blok 20 gün, 2000 tekrar, sabit tohum.
@@ -281,10 +287,10 @@ Her test: ne yapılır, ön kayıtta ne yazılır, hangi karta bağlı, N'ye gir
 | Çapraz varlık | Ön kayıtlı, kullanılmamış sembol kümesi (kural: aylık top-20'de ≥ 8 ay, evren dışı, ilk bar ≤ 2023-07-01, kesim yok); korele olduğu için tek başına kanıt değil | K7 | Hayır | [VAR] (replikasyon) |
 | Ablasyon | Stop, boyutlama, filtre, piramitleme tek tek kapatılır; aynı seçim prosedürü | K8 | Evet (her varyant bir deneme) | [VAR: Turtle'da `turtle_book` bayrakları stop/pyramid/limits/fixed] |
 | Rejim | Nedensel rejim: 200 günlük EMA'nın 30 günlük eğimi ve fiyatın EMA'ya göre konumu → boğa / ayı / yatay; BTC'ye göre tanımlanır, o an bilinen veriyle (`robust.regime`: etiket[d] ≤ d−1 verisi; eğim > 0 & EMA üstü = bull, eğim < 0 & EMA altı = bear, diğer = range) | K9 | Hayır | [VAR] |
-| Tarihsel stres | 2022-05 LUNA, 2022-11 FTX, 2024-08 çöküşü, dev dönemindeki en büyük 3 likidasyon dalgası (veriden: en büyük günlük düşüş) | Rapor | Hayır | [PLANLI] |
-| İşlem sırası Monte Carlo | İşlem PnL'leri 5000 kez karıştırılır; DD ve en uzun kayıp serisi dağılımı; kill switch eşiğinin girdisi | Rapor | Hayır | [PLANLI] |
-| Kapasite | Her emrin notional'ı / o saatin quote hacmi ≤ %0,1; aşan emir sayısı raporlanır | Rapor | Hayır | [PLANLI] |
-| Sentetik senaryo | Ertelendi; aday çıkarsa (GBM + rejim değişimi + gap olayları) | — | — | [YOK] |
+| Tarihsel stres | 2022-05 LUNA, 2022-11 FTX, 2024-08 çöküşü, dev dönemindeki en büyük 3 likidasyon dalgası (veriden: eşit ağırlıklı sepetin en büyük günlük düşüşü; adlı pencereler dışı, ≥ 7 gün ara). Metrikler: pencere PnL, saatlik DD, stop/likidasyon sayısı, stop seviyesi aşma | Rapor | Hayır | [VAR] (`kepler/stress.py`; `reports/backtest_completion.md` madde 1) |
+| İşlem sırası Monte Carlo | İşlem PnL'leri 5000 kez karıştırılır; DD ve en uzun kayıp serisi dağılımı; kill switch eşiğinin girdisi (kural: s* = 0,25/DD95; öneri = min(DD99(s*), 0,30)) | Rapor | Hayır | [VAR] (`stats.trade_mc`, `path_stats`, `kill_stats`; madde 2) |
+| Kapasite | Her emrin notional'ı / o saatin quote hacmi ≤ %0,1; aşan emir sayısı raporlanır; karekök etki bindirmesi (Y = 1; duyarlılık 0,5/2); sermaye 500 / 10k / 100k | Rapor | Hayır | [VAR] (`kepler/capacity.py`; madde 3) |
+| Sentetik senaryo | GBM + rejim değişimi + gap olayları | — | — | [YOK]: gerekçe — aday yok (NO_EDGE), sentetik veri edge'in varlığını değil yalnızca sistemin davranışını sınar; gerçek kriz pencereleri ayrı (Tarihsel stres). Aday çıkarsa yeniden değerlendirilir |
 | Eleme–hakem uyumu | Aynı ızgara iki motorda; Spearman (genel ve aile içi) | §6.6 | Eleme satırları girer | [VAR] |
 
 ## 11. Başarı kartı (karar 2026-10-02; MISSION'daki G2 ölçütünü genişletir)
@@ -313,7 +319,7 @@ Tam Turtle S1/S2 (Motor v2: N-boyutlama, 2N stop, piramit, birim sınırları; `
 
 ## 12. Test senaryoları
 
-### 12.1 Mevcut birim testleri [VAR] (`tests/`, 187 geçti, 1 atlandı: `KEPLER_NET=1` gerektiren gerçek ağ testi)
+### 12.1 Mevcut birim testleri [VAR] (`tests/`, 199 geçti, 1 atlandı: `KEPLER_NET=1` gerektiren gerçek ağ testi)
 | Dosya | Test fonksiyonu | Kapsam |
 |---|---|---|
 | `test_referee.py` | 19 | long/short gidiş-dönüş, açık pozisyon değerleme, fee ve slippage ayrımı, lot yuvarlama, min notional (artıran engellenir, azaltan değil), NaN = tut, flip, funding (long öder/alır, short, mark kullanımı, sınır anı), likidasyon, Nautilus'un tek başına likide etmediği |
@@ -363,6 +369,15 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 23. Benchmark alfası: sentetik r_s = 0,001 + 0,5·r_bh + gürültü → a ≈ 0,001, b ≈ 0,5.
 24. Rejim etiketi nedensel: geleceği bozunca geçmiş etiketler değişmez.
 25. 1 bar gecikme modu: dolum 2. sonraki açılışta, elle.
+
+### 12.3 Tamamlama araçları testleri [VAR] (beklenen değerler elle; `reports/backtest_completion.md`)
+26. `stats.path_stats / trade_mc / kill_stats`: [3,−1,−2,2] → DD 3, zarar serisi 2, en kötü ardışık zarar 3; permütasyon toplamı korur; kill yolu kesilir (tests/test_stats.py).
+27. `stats.cscv`: N = 2, S = 4, ortalama metriği: PBO = 2/6, λ = ±ln 2, IS-en-iyi OOS'ta zararda 1/6; eşitlikte PBO = 1.
+28. `stats.nw_lrv / spa`: ω̂² = 2 (elle), T = √2; p_lower ≤ p_consistent ≤ p_upper; sinyalsiz gürültüde reddedilmez, sinyalli sütunda p ≈ 0; sabit sütunlar t = 0.
+29. `stress.drop_days / window_stats / basket_return`: sepet düşüşü seçimi (ayrım + dışlama), pencere DD'si (tepe başlangıç dahil), stop kayması ve bar aşma payı, pencere başı brüt/net notional (tests/test_stress.py).
+30. `capacity.fill_table / impact_cost / summary`: katılım 0,001, etki = ln(1,01)·√0,001·1000 = 0,31466; hacimsiz bar katılım 1; σ nedensel (tests/test_capacity.py).
+31. `Spec.equity_scale`: kazançta +0,5 alım (660/120 = 5,5), kayıpta −0,5 satım (360/80 = 4,5), brüt tavan ölçeklenir; ölçeksiz kontrol (tests/test_portfolio.py).
+32. `nested.sharpe / half_years / select / run / random_sharpes`: medyan ≠ ortalama, eşitlikte ilk sütun, OOS seçimi değiştirmez, tohum (tests/test_nested.py).
 
 ## 13. Çalıştırma ve raporlama
 

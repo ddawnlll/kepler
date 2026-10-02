@@ -10,7 +10,7 @@ load = lambda f: json.loads((D / f).read_text()) if (D / f).exists() else None  
 pc = lambda x: "—" if x is None else f"{100 * x:.1f}%"  # noqa: E731
 n0 = lambda x: "—" if x is None else f"{x:,.0f}".replace(",", " ")  # noqa: E731
 f1 = lambda x: "—" if x is None else f"{x:.1f}"  # noqa: E731
-f2 = lambda x: "—" if x is None else f"{x:.2f}"  # noqa: E731
+f2 = lambda x: "—" if x is None or x != x else f"{x:.2f}"  # noqa: E731
 md = ["# BACKTEST tamamlama tabloları (otomatik; scripts/completion_report.py)", ""]
 
 if b := load("base.json"):
@@ -48,6 +48,11 @@ if r := load("risk.json"):
         md.append(f"| {k}{' ⚠ geçersiz' if v['invalid'] else ''} | {n0(v['net'])} | {n0(v['final_equity'])} | {f2(v['sharpe'])} | {pc(v['dd_hourly'])} / {pc(v['dd_daily'])} | {v['n_fills']} | {v['n_stop']} | {v['n_liq']} | {v['kill_at']} | {v['trial']} "
                   f"| {'—' if not bs else pc(bs['maxdd'][0]) + '/' + pc(bs['maxdd'][1]) + ', ' + '/'.join(f2(x) for x in bs['sharpe'])} |")
     md.append("")
+
+if m := load("misc.json"):
+    md += ["## 4b. BTCUSDT turtle(20,10) risk motoru duman testi (sermaye 2 000; tek sembol; 3 deneme) + `tape.aggregate` kontrolü", "", "| koşu | net | brüt | fee | dolum | maks DD (tepe equity'ye) | kill_at | ort. dolum notional | deneme |", "|---|---|---|---|---|---|---|---|---|"]
+    md += [f"| {k} | {f1(v['net'])} | {f1(v['gross'])} | {f1(v['fee'])} | {v['n_fills']} | {pc(v['dd'])} | {v['kill_at']} | {n0(v['mean_fill_notional'])} | {v['trial']} |" for k, v in m.items() if k != "aggregate"]
+    md += ["", "`tape.aggregate` (BTCUSDT, 37 224 saatlik bar): " + "; ".join(f"{k}: {v['n_bars']} bar, hacim korundu {v['volume_conserved']}, ilk açılış/son kapanış {v['first_open_ok']}/{v['last_close_ok']}, high/low {v['high_ok']}/{v['low_ok']}, n toplamı {v['n_sum']} = {v['n_expected']}" for k, v in m["aggregate"].items()), ""]
 
 if p := load("pbo.json"):
     md += ["## 5. PBO/CSCV ve SPA (88 yapılandırma, arama dönemi 2022-01-01 → 2025-01-01, S = 16, 12 870 bölme)", "", "| küme | N | PBO | λ medyanı | P(IS-en-iyi OOS'ta zararda) |", "|---|---|---|---|---|"]
