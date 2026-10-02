@@ -316,6 +316,7 @@ Eşikler yargıdır, kanıtlanmış standart değildir; yalnızca ön kayıtla v
 
 **Geçmiş sonuçlar bu kartla:** G2 kitap sinyalleri (kırpılmış): K1 kalıyor (en iyi p 0,06, DSR ≤ 0,67), K3 kalıyor (en iyi Sharpe 0,49) → NO_EDGE.
 Arama + doğrulama + replikasyon: K1 kalıyor → NO_EDGE.
+Ensemble v1 (`reports/ensemble.md`, 2020-04 → 2026-04): K1–K8 geçti (p 0,0033, DSR 0,999, Sharpe 1,45, alfa t 3,37, DD %9,7), K9 kalıyor (bull payı %105) → ZAYIF. 2020–21 replikasyonu (`reports/pre2022.md`): tam Turtle NO_EDGE; Blok B tsmom_14_1 ölçütü geçti.
 Tam Turtle S1/S2 (Motor v2: N-boyutlama, 2N stop, piramit, birim sınırları; `reports/full_systems.md`): K1 kalıyor (p 0,026 / 0,060 N=12 eşiği 0,0042; DSR 0,52 / 0,36) → NO_EDGE; K2, K3, K4, K6, K9 da kalıyor.
 
 ## 12. Test senaryoları
@@ -414,6 +415,7 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 
 | Tarih | Değişiklik |
 |---|---|
+| 2026-10-02 | Ensemble v1 (`kepler/ensemble.py`: piyasa durumu → uzmanlar → aday → risk motoru) ön kayıtlı koşu: ZAYIF (K9); pre2022 raporu; kart değişmedi |
 | 2026-10-02 | Tamamlama: tarihsel stres, işlem sırası MC, kapasite/karekök etki, `Spec.equity_scale` + portföy kill switch, PBO/CSCV, SPA, nested walk-forward kodlandı, testlendi ve gerçek veride kullanıldı (`reports/backtest_completion.md`); [PLANLI]/[KISMEN] kalmadı; yeni [YOK] gerekçeleri (limit emir, cross-margin, purge/CPCV, StepM/MCS, sentetik) yazıldı; `vol_target`/`aggregate`/`sharpe_series` gerçek veride kullanıldı (ön kayıt 4b) |
 | 2026-10-02 | Tam Turtle koşusu: NO_EDGE (K1); kart değişmedi |
 | 2026-10-02 | Bağımsız inceleme (Motor v2) 6 bulgu giderildi: `report.hourly_pnl` gövde dolumları, brüt tavan artıran hedefi azaltmaya çeviremez, funding'de gap stopu, kısmi stop dolumunda yeniden emir yok, turtle veri boşlukları + mark H/L + tick + iki geçiş; regresyon testleri |

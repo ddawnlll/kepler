@@ -39,12 +39,12 @@ def _month_volume(path: Path) -> tuple[str, float, int]:
     return path.stem[-7:], float(df["quote_volume"].sum()), len(df)
 
 
-def sym_volume(root: Path, sym: str) -> pd.DataFrame:
+def sym_volume(root: Path, sym: str, rank_start: str = RANK_START, end: str = data.DEV_END) -> pd.DataFrame:
     """Sembol başına aylık toplam quote volume; sonuç Parquet'e yazılır (devam ettirilebilir)."""
     cache = root / "tape" / "vol" / f"{sym}.parquet"
     if cache.exists():
         return pd.read_parquet(cache)
-    ms = [m for m in data.months("klines", sym, "1d") if RANK_START <= m]
+    ms = [m for m in data.months("klines", sym, "1d") if rank_start <= m <= end]
     paths = data.fetch_many([data.key("klines", sym, m, "1d") for m in ms], RAW, workers=1)
     df = pd.DataFrame([(sym, *_month_volume(p)) for p in paths], columns=["sym", "month", "quote_volume", "days"])
     cache.parent.mkdir(parents=True, exist_ok=True)
@@ -52,19 +52,19 @@ def sym_volume(root: Path, sym: str) -> pd.DataFrame:
     return df
 
 
-def monthly_volume(root: Path, syms: list[str], workers: int = 32) -> pd.DataFrame:
+def monthly_volume(root: Path, syms: list[str], workers: int = 32, rank_start: str = RANK_START, end: str = data.DEV_END) -> pd.DataFrame:
     parts = []
     with ThreadPoolExecutor(workers) as ex:
-        for k, df in enumerate(ex.map(lambda s: sym_volume(root, s), syms), 1):
+        for k, df in enumerate(ex.map(lambda s: sym_volume(root, s, rank_start, end), syms), 1):
             parts.append(df)
             if k % 20 == 0:
                 print(f"  {k}/{len(syms)} sembol", flush=True)
     return pd.concat(parts, ignore_index=True)
 
 
-def build_universe(vol: pd.DataFrame, top_n: int = TOP_N) -> pd.DataFrame:
+def build_universe(vol: pd.DataFrame, top_n: int = TOP_N, start: str = START, end: str = data.DEV_END) -> pd.DataFrame:
     rows = []
-    for m in pd.period_range(START, data.DEV_END, freq="M").astype(str):
+    for m in pd.period_range(start, end, freq="M").astype(str):
         prev = vol[vol.month == month_shift(m, -1)].nlargest(top_n, "quote_volume")
         rows += [(m, i + 1, r.sym, r.quote_volume) for i, r in enumerate(prev.itertuples())]
     return pd.DataFrame(rows, columns=["month", "rank", "sym", "prev_quote_volume"])
@@ -79,7 +79,7 @@ def to_tape(path: Path, kind: str) -> pd.DataFrame:
     return df.drop(columns=[c for c in ("close_time", "ignore") if c in df.columns])
 
 
-def build_symbol(root: Path, sym: str) -> dict:
+def build_symbol(root: Path, sym: str, start: str = START, end: str = data.DEV_END) -> dict:
     """Sembolün üç türü için zip'leri indirir, tek Parquet'e birleştirir; zip sha256 listesi yanına yazılır. {kind: ay sayısı}."""
     out = {}
     for kind in KINDS:
@@ -87,7 +87,7 @@ def build_symbol(root: Path, sym: str) -> dict:
         if dst.exists():  # devam: bu tür tamamlanmış
             out[kind] = "cached"
             continue
-        ms = [m for m in data.months(kind, sym) if m >= START]
+        ms = [m for m in data.months(kind, sym) if start <= m <= end]
         paths = data.fetch_many([data.key(kind, sym, m) for m in ms], RAW, workers=4)
         if not paths:
             out[kind] = 0
@@ -101,7 +101,7 @@ def build_symbol(root: Path, sym: str) -> dict:
     return out
 
 
-def main(root: Path, stage: str = "all", shard: str = "0/1", workers: int = 32) -> None:
+def main(root: Path, stage: str = "all", shard: str = "0/1", workers: int = 32, start: str = START, rank_start: str = RANK_START, end: str = data.DEV_END) -> None:
     """Aşamalar: rank (1d hacim indir, paralel parçalanabilir) -> universe (parçaları birleştir) -> build (1h/mark/funding)."""
     i, n = map(int, shard.split("/"))
     tape = root / "tape"
@@ -109,19 +109,19 @@ def main(root: Path, stage: str = "all", shard: str = "0/1", workers: int = 32) 
     syms = data.symbols()
     if stage in ("rank", "all"):
         print(f"{len(syms)} USDT-M perp sembolü; parça {shard}", flush=True)
-        monthly_volume(root, syms[i::n], workers).to_parquet(tape / f"vol_shard_{i}_of_{n}.parquet", index=False)
+        monthly_volume(root, syms[i::n], workers, rank_start, end).to_parquet(tape / f"vol_shard_{i}_of_{n}.parquet", index=False)
     if stage in ("universe", "all"):
         vol = pd.concat([pd.read_parquet(p) for p in sorted(tape.glob("vol_shard_*_of_*.parquet"))], ignore_index=True).drop_duplicates(["sym", "month"])
         missing = {s for s in syms if eligible(s) and not (tape / "vol" / f"{s}.parquet").exists()}  # boş (dev penceresinde verisi olmayan) semboller de dosya bırakır
         if missing:
             raise RuntimeError(f"rank parçaları eksik: {len(missing)} sembolün hacmi yok (örn. {sorted(missing)[:3]}); eksik parçaları çalıştır")
         vol.to_parquet(tape / "volume_1d.parquet", index=False)
-        build_universe(vol[vol.sym.map(eligible)]).to_parquet(tape / "universe.parquet", index=False)  # filtre sıralamadan önce
+        build_universe(vol[vol.sym.map(eligible)], start=start, end=end).to_parquet(tape / "universe.parquet", index=False)  # filtre sıralamadan önce
     if stage in ("build", "all"):
         need = sorted(pd.read_parquet(tape / "universe.parquet").sym.unique())
         print(f"evren: {len(need)} sembol dev döneminde üye oldu; parça {shard}", flush=True)
         with ThreadPoolExecutor(max(1, workers // 4)) as ex:
-            for sym, res in zip(need[i::n], ex.map(lambda s: build_symbol(root, s), need[i::n])):
+            for sym, res in zip(need[i::n], ex.map(lambda s: build_symbol(root, s, start, end), need[i::n])):
                 print(sym, res, flush=True)
 
 
@@ -130,5 +130,10 @@ if __name__ == "__main__":
     ap.add_argument("--root", type=Path, default=Path("/data"))
     ap.add_argument("--stage", default="all", choices=["rank", "universe", "build", "all"])
     ap.add_argument("--shard", default="0/1")
+    ap.add_argument("--start", default=START, help="ilk evren ayı (pre2022: 2019-09)")
+    ap.add_argument("--rank-start", default=RANK_START, help="hacim sıralaması için ilk ay (pre2022: 2019-08)")
+    ap.add_argument("--end", default=data.DEV_END, help="son ay (pre2022: 2021-12; DEV_END'i aşamaz)")
     a = ap.parse_args()
-    main(a.root, a.stage, a.shard)
+    if a.end > data.DEV_END:
+        raise SystemExit(f"--end {a.end} mühür sınırını ({data.DEV_END}) aşıyor")
+    main(a.root, a.stage, a.shard, start=a.start, rank_start=a.rank_start, end=a.end)

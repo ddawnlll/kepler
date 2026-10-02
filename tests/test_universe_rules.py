@@ -21,6 +21,13 @@ def test_non_crypto_excluded_before_ranking_so_next_symbol_enters():
     assert universe.eligible("BTCUSDT") and universe.eligible("1000SHIBUSDT")
 
 
+def test_build_universe_window_is_parameterized():
+    """pre2022 koşusu: ay aralığı parametre (start/end); ay M üyeleri M-1 hacminden (nedensel), aralık dışı ay yok."""
+    vol = pd.DataFrame([(s, m, v, 30) for m in ("2019-08", "2019-09", "2019-10") for s, v in (("AUSDT", 3.0), ("BUSDT", 2.0), ("CUSDT", 1.0))], columns=["sym", "month", "quote_volume", "days"])
+    uni = universe.build_universe(vol, top_n=2, start="2019-09", end="2019-10")
+    assert sorted(uni.month.unique()) == ["2019-09", "2019-10"] and list(uni[uni.month == "2019-09"].sym) == ["AUSDT", "BUSDT"]
+
+
 def frames(n=400, diverge_from=None, run=30):
     ts = pd.date_range("2024-01-01", periods=n, freq="1h", tz="UTC")
     c = np.full(n, 100.0)

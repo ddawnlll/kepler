@@ -1,0 +1,295 @@
+sym,kind,check,severity,detail,count,first
+1000SHIBUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2021-05-12 17:00:00+00:00
+1000SHIBUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+1000SHIBUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+1000SHIBUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+AAVEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-04-18 03:00:00+00:00
+AAVEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+AAVEUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+AAVEUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-05-19 12:00:00+00:00
+AAVEUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+ADAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2020-02-28 17:00:00+00:00
+ADAUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+ALGOUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-11-18 04:00:00+00:00
+ALGOUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-11-18 04:00:00+00:00
+ALGOUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+ALICEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,4,2021-04-18 03:00:00+00:00
+ALICEUSDT,klines,jump,WARN,|saatlik getiri| > 30%,4,2021-04-18 03:00:00+00:00
+ALICEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-04-18 03:00:00+00:00
+ALICEUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2021-04-18 03:00:00+00:00
+ALICEUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,2,2021-05-19 13:00:00+00:00
+ALICEUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+ATOMUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2020-03-13 02:00:00+00:00
+ATOMUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+ATOMUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+ATOMUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+ATOMUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+AVAXUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+AVAXUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+AVAXUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+AVAXUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+AVAXUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-05-19 12:00:00+00:00
+AVAXUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+AXSUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+AXSUSDT,klines,jump,WARN,|saatlik getiri| > 30%,3,2021-04-05 06:00:00+00:00
+AXSUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+AXSUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+AXSUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,3,2021-04-05 06:00:00+00:00
+AXSUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+BANDUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+BANDUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2020-08-05 21:00:00+00:00
+BANDUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+BANDUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+BANDUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2020-08-05 21:00:00+00:00
+BANDUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+BATUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2020-03-13 02:00:00+00:00
+BATUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+BATUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+BATUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+BATUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+BCHUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+BCHUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 14:00:00+00:00
+BCHUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+BCHUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 14:00:00+00:00
+BCHUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+BNBUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+BNBUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-05-19 12:00:00+00:00
+BNBUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+BTCUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+BTCUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+CHRUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+CHRUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+CHRUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+CHRUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+CHRUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+CHRUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-05-19 12:00:00+00:00
+CHRUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+CHZUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2021-02-19 00:00:00+00:00
+CHZUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2021-02-19 00:00:00+00:00
+CHZUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,3,2021-02-19 00:00:00+00:00
+CHZUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2021-02-19 00:00:00+00:00
+CHZUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-05-19 12:00:00+00:00
+CHZUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+COMPUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+COMPUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+CRVUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+CRVUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+CRVUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+CRVUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+CRVUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+CRVUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+DASHUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2020-04-14 07:00:00+00:00
+DASHUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+DASHUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+DASHUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+DASHUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+DOGEUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,4,2021-01-28 15:00:00+00:00
+DOGEUSDT,klines,jump,WARN,|saatlik getiri| > 30%,5,2021-01-28 04:00:00+00:00
+DOGEUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,3,2021-01-28 15:00:00+00:00
+DOGEUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,5,2021-01-28 04:00:00+00:00
+DOGEUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+DOTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2020-08-22 07:00:00+00:00
+DOTUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+DOTUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+DOTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+DOTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+DOTUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+DYDXUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+EGLDUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-04-18 03:00:00+00:00
+EGLDUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+ENJUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+ENJUSDT,klines,jump,WARN,|saatlik getiri| > 30%,3,2021-01-08 00:00:00+00:00
+ENJUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+ENJUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+ENJUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,3,2021-01-08 00:00:00+00:00
+ENJUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-05-19 12:00:00+00:00
+ENJUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+EOSUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+EOSUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+EOSUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+ETCUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+ETCUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+ETCUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+ETHUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2020-03-13 02:00:00+00:00
+ETHUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+FILUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+FILUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+FILUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+FTMUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+FTMUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2021-01-29 02:00:00+00:00
+FTMUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+FTMUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2021-01-29 02:00:00+00:00
+FTMUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+GALAUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+GRTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+GRTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+GRTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+GRTUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+ICPUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+ICPUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+ICPUSDT,fundingRate,missing_file,WARN,bu tür için dosya yok,0,
+ICPUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-05-19 13:00:00+00:00
+ICPUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+IOSTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+IOSTUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+IOSTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+IOSTUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+IOTAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+IOTAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+IOTAUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+IOTAUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,2,2020-03-13 03:00:00+00:00
+IOTAUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+IOTXUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+KAVAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+KAVAUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+KAVAUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+KAVAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+KAVAUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+KAVAUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+KNCUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+KSMUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+KSMUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2021-05-19 12:00:00+00:00
+KSMUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+KSMUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2021-05-19 12:00:00+00:00
+KSMUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+LENDUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2020-10-10 02:00:00+00:00
+LENDUSDT,klines,delisted,INFO,son bar 2020-11-10 08:00:00+00:00; delist/duraklatma,0,2020-11-10 08:00:00+00:00
+LINKUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2020-03-12 10:00:00+00:00
+LINKUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+LINKUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+LINKUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+LRCUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+LRCUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+LRCUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+LTCUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+LTCUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+LTCUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+LUNAUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-09-07 14:00:00+00:00
+LUNAUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+MANAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+MANAUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+MANAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+MANAUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+MANAUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-05-19 13:00:00+00:00
+MANAUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+MATICUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 13:00:00+00:00
+MATICUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-03-11 21:00:00+00:00
+MATICUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+MATICUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-03-11 21:00:00+00:00
+MATICUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+MKRUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+NEOUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+NEOUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+NEOUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+NEOUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+OMGUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+OMGUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2020-08-21 02:00:00+00:00
+OMGUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+OMGUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+OMGUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2020-08-21 02:00:00+00:00
+OMGUSDT,fundingRate,funding_interval_not_8h,INFO,"8 saat dışı aralık kullanılmış: [2, 8]",6,2021-11-11 14:00:00.004000+00:00
+OMGUSDT,fundingRate,funding_extreme,WARN,|oran| > 0.01,12,
+OMGUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-11-09 15:00:00+00:00
+OMGUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+ONTUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+ONTUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+ONTUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+ONTUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+ONTUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+ONTUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+SANDUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+SANDUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+SANDUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+SANDUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+SANDUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+SANDUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,2,2021-05-19 12:00:00+00:00
+SANDUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+SOLUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2020-09-14 07:00:00+00:00
+SOLUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 13:00:00+00:00
+SOLUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+SOLUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+SOLUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+STORJUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+STORJUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+STORJUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+STORJUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+SUSHIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,4,2020-12-23 22:00:00+00:00
+SUSHIUSDT,klines,jump,WARN,|saatlik getiri| > 30%,4,2020-09-06 05:00:00+00:00
+SUSHIUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+SUSHIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,3,2020-12-23 22:00:00+00:00
+SUSHIUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,3,2020-09-06 07:00:00+00:00
+SUSHIUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-05-19 12:00:00+00:00
+SUSHIUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+SXPUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,3,2021-04-18 03:00:00+00:00
+SXPUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+SXPUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+SXPUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+SXPUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,4,2020-07-27 20:00:00+00:00
+SXPUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+THETAUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+THETAUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+THETAUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+THETAUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+THETAUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,3,2020-05-27 12:00:00+00:00
+THETAUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+TRXUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-01-29 13:00:00+00:00
+TRXUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+TRXUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-01-29 13:00:00+00:00
+TRXUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+UNIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+UNIUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+UNIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+UNIUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+VETUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+VETUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 14:00:00+00:00
+VETUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+VETUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+VETUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 14:00:00+00:00
+VETUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2020-03-13 02:00:00+00:00
+VETUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+WAVESUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+WAVESUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+WAVESUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+XLMUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+XLMUSDT,klines,jump,WARN,|saatlik getiri| > 30%,2,2021-05-19 12:00:00+00:00
+XLMUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+XLMUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+XLMUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,2,2021-05-19 12:00:00+00:00
+XLMUSDT,klines~mark,mark_kline_divergence,WARN,kline ile mark close farkı > 5%,1,2021-05-19 12:00:00+00:00
+XLMUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+XMRUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+XMRUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+XMRUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+XMRUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+XMRUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+XMRUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+XRPUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+XRPUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+XTZUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+XTZUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+XTZUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+XTZUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+XTZUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+XTZUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+YFIIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+YFIIUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+YFIIUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+YFIIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+YFIIUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+YFIIUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+YFIUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,2,2021-05-19 12:00:00+00:00
+YFIUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 13:00:00+00:00
+YFIUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+YFIUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+YFIUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 13:00:00+00:00
+YFIUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+ZECUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+ZECUSDT,klines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+ZECUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+ZECUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+ZECUSDT,markPriceKlines,jump,WARN,|saatlik getiri| > 30%,1,2021-05-19 12:00:00+00:00
+ZECUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00
+ZILUSDT,klines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+ZILUSDT,markPriceKlines,gap,WARN,"eksik bar: 120 adet, 2 boşluk",2,2021-07-02 00:00:00+00:00
+ZILUSDT,markPriceKlines,wick_outlier,WARN,(high-low)/close > 50%,1,2021-05-19 12:00:00+00:00
+ZILUSDT,klines,delisted,INFO,son bar 2021-12-31 23:00:00+00:00; delist/duraklatma,0,2021-12-31 23:00:00+00:00

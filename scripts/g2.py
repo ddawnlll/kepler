@@ -34,9 +34,9 @@ def spec_for(kl, fee, slip) -> referee.Spec:
     return referee.Spec(tick=format(q, "f"), step=format(s, "f"), min_notional=5.0, fee_rt_bps=fee, slip_rt_bps=slip, capital=CAP, leverage=10, liq=True)
 
 
-def load(root, syms):
+def load(root, syms, end=None):
     for s in syms:
-        d = tape.load(root, s)
+        d = tape.load(root, s, end=end)
         D[s] = (sg.with_funding(d["klines"][["open", "high", "low", "close", "volume"]], d["funding"]), d["mark"], d["funding"])
 
 
