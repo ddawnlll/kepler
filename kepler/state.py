@@ -82,6 +82,7 @@ def _profile(H, L, V, bins: int) -> dict:
         return dict(poc=pmin, vah=pmin, val=pmin, lo=pmin, hi=pmax, width=0.0)
     bl = np.clip(np.floor((L - pmin) / w).astype(int), 0, bins - 1)
     bh = np.clip(np.floor((H - pmin) / w).astype(int), 0, bins - 1)
+    bl, bh = np.minimum(bl, bh), np.maximum(bl, bh)  # bozuk bar (high < low) sıfıra bölme üretmesin
     per = V / (bh - bl + 1)
     vol = np.cumsum(np.bincount(bl, weights=per, minlength=bins + 1) - np.bincount(bh + 1, weights=per, minlength=bins + 1))[:bins]
     poc = int(np.argmax(vol))

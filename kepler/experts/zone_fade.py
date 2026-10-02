@@ -186,3 +186,37 @@ def make_book(capital: float, p: Params = Params(), marks: dict | None = None, t
 
     book.log = []
     return book
+
+
+def _runs(x: np.ndarray):
+    """x != 0 olan ardışık dizilerin (başlangıç, bitiş-dışı) indeksleri."""
+    d = np.diff(np.r_[False, x != 0, False].astype(int))
+    return zip(np.flatnonzero(d == 1), np.flatnonzero(d == -1))
+
+
+def rotate_book(out: dict, kls: dict, lo, hi, u: float, relative: bool = True) -> dict:
+    """K1 rotasyon null'u (protokol: kitap çıktısının target + stop'unun ORTAK ofset dairesel kaydırması): her sembolün ffill'lenmiş hedefi ve stop'u [lo, hi) penceresinde ortak saatlik
+    ızgarada (listelenmemiş saat = 0) k = ⌊u · saat sayısı⌋ kaydırılır; işlem sayısı, tutma süresi ve yön oranı korunur. relative=True (birincil, kötümser): stop seviyesi mutlak fiyat olduğundan
+    başka bir zamana taşınınca anlamsızlaşır (örn. geçmişteki long stop'u bugünkü fiyatın üstünde kalıp hemen vurur); bu yüzden stop her pozisyonun açılış kapanışına oranı (stop / giriş kapanışı)
+    olarak taşınır ve kaymış pozisyonun açılış kapanışıyla yeniden fiyatlanır. relative=False: protokolün lafzı, mutlak seviyeler (yalnızca bilgi)."""
+    grid = pd.date_range(lo, hi, freq="1h", inclusive="left")
+    k, res = int(u * len(grid)), {}
+    for s, df in out.items():
+        tg, st, cl = df.target.ffill().fillna(0.0).to_numpy(), df.stop.to_numpy(), kls[s].close.to_numpy()
+        ratio = np.full(len(df), np.nan)
+        for a, b in _runs(tg):  # pozisyon başına stop / giriş (karar barı) kapanışı
+            ratio[a:b] = st[a:b] / cl[a]
+        m = (df.index >= lo) & (df.index < hi)
+        on = lambda v: pd.Series(v[m], index=df.index[m]).reindex(grid)  # noqa: E731
+        t_g, r_g, s_g, c_g = on(tg).fillna(0.0).to_numpy(), on(ratio).to_numpy(), on(st).to_numpy(), on(cl).ffill().bfill().to_numpy()
+        t_r, r_r, s_r = (np.roll(x, k) for x in (t_g, r_g, s_g))
+        st_new = s_r.copy()
+        if relative:
+            st_new = np.full(len(grid), np.nan)
+            for a, b in _runs(t_r):
+                st_new[a:b] = r_r[a:b] * c_g[a]  # yeni zamandaki açılış kapanışı (kaydırılmamış fiyat)
+        r = df.copy()
+        r.loc[m, "target"] = pd.Series(t_r, index=grid).reindex(df.index[m]).to_numpy()
+        r.loc[m, "stop"] = pd.Series(st_new, index=grid).reindex(df.index[m]).to_numpy()
+        res[s] = r
+    return res
