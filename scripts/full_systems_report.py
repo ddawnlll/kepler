@@ -126,6 +126,14 @@ md += ["", "## Rotasyon null (brüt PnL, fee 10 + slip 2)", "| sistem | gerçek 
 for s in SYS:
     n = summ[s]["null"]
     md.append(f"| {s} | {P[f'{s}_full']['summary']['gross_pnl']:.0f} | {n['gross_mean']:.0f} | {n['gross_sd']:.0f} | {n['gross_q95']:.0f} | {summ[s]['p_gross']:.4f} | {summ[s]['p_net']:.4f} |")
+md += ["", "## Bilgi (karar dışı)", "| sistem | maks DD (tepe equity'ye oran) | tepe equity (sermaye=1) | geçerli null çekilişi (n_rejected=0) | p (brüt; yalnız geçerli çekilişler) | ilk-1/4 ve son-1/4 net |", "|---|---|---|---|---|---|"]
+for s in SYS:
+    eq = 1 + daily[(s, "full")].cumsum()
+    ok = [i for i in sorted(NULL[s]) if NULL[s][i]["n_rejected"] == 0]
+    pv = stats.rotation_p(P[f"{s}_full"]["summary"]["gross_pnl"], [NULL[s][i]["gross_pnl"] for i in ok])
+    summ[s].update(dd_peak=float(((eq.cummax() - eq) / eq.cummax()).max()), peak_equity=float(eq.max()), null_valid=len(ok), p_gross_valid=pv)
+    q = len(eq) // 4
+    md.append(f"| {s} | {pct(summ[s]['dd_peak'])} | {eq.max():.2f} | {len(ok)}/{len(NULL[s])} | {pv:.4f} | {(daily[(s, 'full')].iloc[:q].sum() * CAP):.0f} / {(daily[(s, 'full')].iloc[-q:].sum() * CAP):.0f} |")
 bad = [(k, v["summary"]["n_rejected"], v["summary"]["funding_missed"]) for k, v in P.items() if v["summary"]["n_rejected"] or v["summary"]["funding_missed"]]
 md += ["", f"Geçersiz koşu (n_rejected/funding_missed > 0): {bad or 'yok'}; en büyük |recon farkı| = {max(abs(v['recon']) for v in P.values()):.2f} USDT; null'larda n_rejected toplamı = {sum(r['n_rejected'] for s in SYS for r in NULL[s].values()):.0f}."]
 n_prev = sum(sum(1 for _ in p.open()) for d in sys.argv[3:] for p in Path(d).rglob("*.jsonl"))

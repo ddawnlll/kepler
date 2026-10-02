@@ -308,10 +308,11 @@ Eşikler yargıdır, kanıtlanmış standart değildir; yalnızca ön kayıtla v
 
 **Geçmiş sonuçlar bu kartla:** G2 kitap sinyalleri (kırpılmış): K1 kalıyor (en iyi p 0,06, DSR ≤ 0,67), K3 kalıyor (en iyi Sharpe 0,49) → NO_EDGE.
 Arama + doğrulama + replikasyon: K1 kalıyor → NO_EDGE.
+Tam Turtle S1/S2 (Motor v2: N-boyutlama, 2N stop, piramit, birim sınırları; `reports/full_systems.md`): K1 kalıyor (p 0,026 / 0,060 N=12 eşiği 0,0042; DSR 0,52 / 0,36) → NO_EDGE; K2, K3, K4, K6, K9 da kalıyor.
 
 ## 12. Test senaryoları
 
-### 12.1 Mevcut birim testleri [VAR] (`tests/`, 141 geçti, 1 atlandı: `KEPLER_NET=1` gerektiren gerçek ağ testi)
+### 12.1 Mevcut birim testleri [VAR] (`tests/`, 187 geçti, 1 atlandı: `KEPLER_NET=1` gerektiren gerçek ağ testi)
 | Dosya | Test fonksiyonu | Kapsam |
 |---|---|---|
 | `test_referee.py` | 19 | long/short gidiş-dönüş, açık pozisyon değerleme, fee ve slippage ayrımı, lot yuvarlama, min notional (artıran engellenir, azaltan değil), NaN = tut, flip, funding (long öder/alır, short, mark kullanımı, sınır anı), likidasyon, Nautilus'un tek başına likide etmediği |
@@ -388,6 +389,7 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 
 | Tarih | Değişiklik |
 |---|---|
+| 2026-10-02 | V4 tam Turtle koşusu: NO_EDGE (K1); kart değişmedi |
 | 2026-10-02 | Bağımsız inceleme (Motor v2) 6 bulgu giderildi: `report.hourly_pnl` gövde dolumları, brüt tavan artıran hedefi azaltmaya çeviremez, funding'de gap stopu, kısmi stop dolumunda yeniden emir yok, turtle veri boşlukları + mark H/L + tick + iki geçiş; regresyon testleri |
 | 2026-10-02 | Değerlendirme araçları (`stats.py`, `robust.py`): PSR/DSR/MinTRL, block bootstrap, NW alfa, al-tut, komşuluk, başlangıç kaydırma, nedensel rejim, rotasyon kaydırma, karar kuralı; testler madde 19–24 |
 | 2026-10-02 | Motor v2 (V1–V3) kodlandı: §4 kitap sözleşmesi, §5.2, §6.4 (tek koruyucu emir, gap, halt), §6.5 (brüt tavan hakemde), Spec.delay/gross_cap; madde 1–18 ve 25 testleri |
