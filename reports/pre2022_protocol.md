@@ -1,6 +1,6 @@
-# 2020–2021 zaman-dışı (OOS) replikasyon: ön kayıt TASLAĞI (kullanıcı onayı bekliyor)
+# 2020–2021 zaman-dışı (OOS) replikasyon: ön kayıt (onaylandı)
 
-**Durum:** TASLAK. Onaydan ve "ÖN KAYIT ONAYLANDI" commit'inden önce veri indirilmez, kod yazılmaz, koşu yapılmaz. Onaydan sonra parametre/eşik/evren değişmez (MISSION kural 11); değişiklik yeni ön kayıt ve yeni deneme sayısıdır.
+**Durum:** ÖN KAYIT ONAYLANDI (kullanıcı, 2026-10-02; takvim düzeltmeli S1c/S2c dahil, N = 10). Bu commit'ten sonra veri indirilebilir, kod yazılabilir, koşu yapılabilir. Parametre/eşik/evren/N değişmez (MISSION kural 11); değişiklik yeni ön kayıt ve yeni deneme sayısıdır.
 
 ## Soru
 Dev dönemi (2022-01 → 2026-03) araştırmasında seçilmiş/ön kayıtlı sistemler, **hiç indirilmemiş ve hiçbir testte kullanılmamış** önceki döneme (2020-03 → 2021-12) aynı parametrelerle taşınınca da null'dan ve al-tuttan ayrışıyor mu? Yeni edge aranmıyor, hiçbir parametre ayarlanmıyor; mevcut sonuçların replikasyonu. Mühürlü dönem (≥ 2026-04-01) ve G3'e dokunulmaz; kullanıcı kararı: son 6 ay hiçbir testte kullanılmayacak.
