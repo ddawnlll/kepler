@@ -36,7 +36,7 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 3. Risk motoru ve trade yönetimi stratejinin parçası: G3'ten önce kullanılır.
 4. Satır tavanı: hakem+yapıştırma tavanı **kaldırıldı** (kullanıcı kararı 2026-10-02; önceki 300→450→600), sayı raporlanmaya devam eder; araştırma kodu tavansız ama testli ve kullanılıyor olmalı. Kullanılmayan `scripts/probe.py` silindi.
 5. Aynı veride serbest arama yok (MISSION kural 11).
-6. Son 6 ay (mühürlü dönem, ≥ 2026-04-01) hiçbir testte kullanılmayacak (kullanıcı kararı); G3 yapılmaz. MISSION'daki G3 kapısı metinde duruyor, kaldırılması ayrı karar.
+6. Mühürlü dönem (son 6 ay, ≥ 2026-04-01) **aday çıkmadıkça açılmaz** (kullanıcı kararı 2026-10-02; önceki "hiç kullanılmayacak" ifadesinin yerine). Aday (K1–K9) çıkarsa G3 yalnızca kullanıcı komutuyla, tek atış. MISSION'a işlendi.
 
 ## Motor v2 + tam sistem testi (hepsi tamam; kullanıcı görevi 2026-10-02)
 

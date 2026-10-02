@@ -59,7 +59,7 @@ ve kullanıcıya raporlar.
 | **G0 Veri** | Ağ izni (kullanıcı); majörler için ≥3–4 yıl klines + funding + mark; veri kalite kontrolü (boşluk, saat dilimi, sha256, manifest) | Manifest ve kalite raporu temiz | Veri çekilemiyorsa dur, kullanıcıya bildir |
 | **G1 Değerlendirici** | Long/short/flat hedef; fee, funding, slippage, likidasyon; elle hesaplanmış bilinen-cevaplı testler; nedensellik (gelecek bozulunca karar değişmez); determinizm; negatif kontroller (flat ≈ 0, rastgele ≈ −maliyet) | Tüm testler yeşil | Bir test kırmızıysa düzelt; sinyale geçme |
 | **G2 S1–S2** | 2–3 sinyal (zaman serisi momentum, Donchian breakout, funding tabanlı); walk-forward; etiketler çakışıyorsa purge + embargo; null dağılımı; fee duyarlılığı | En az bir yapılandırmanın brüt PnL'si **ortak-ofset rotasyon null'ında** (B ≥ 300) tek yönlü p ≤ 0,05/N (N = o testteki deneme sayısı, Bonferroni) **ve** net > 0 hem fee 10 hem fee 16 bps'de. Ölçüt koşudan önce yazılır (karar 2026-10-02) | Hiçbiri geçmezse `NO_EDGE` raporu; S3'e geçme; yeni hipotez öner |
-| **G3 S3** | Mühürlü dönemi (son 6 ay) tek seferlik aç; yalnızca kullanıcı komutuyla | `SUPPORTED` / `REJECTED` / `INCONCLUSIVE` kararı | Açıldıktan sonra o dönem temiz sayılmaz |
+| **G3 S3** | Mühürlü dönemi (son 6 ay, ≥ 2026-04-01) tek seferlik aç; **yalnızca başarı kartında aday (K1–K9) varken** ve kullanıcı komutuyla. Aday yoksa mühürlü dönem hiçbir testte kullanılmaz (karar 2026-10-02) | `SUPPORTED` / `REJECTED` / `INCONCLUSIVE` kararı | Açıldıktan sonra o dönem temiz sayılmaz |
 
 G2 sonucu (2026-10-02): kitap sinyallerinin kırpılmış sürümleri (stopsuz, sabit boyut, portföy sınırsız) → `NO_EDGE` (`reports/g2.md`, `reports/search.md`).
 
@@ -81,7 +81,8 @@ NO_EDGE) ve testlerin tam tanımı orada. Kart yalnızca ön kayıtla ve bir son
 2. **Her deneme deftere yazılır** (hipotez, config/kod/veri hash'i, deneme sayısı). Elemede
    koşulan her konfigürasyon da deftere ve DSR deneme sayısına girer. Deneme sayacı çoklu
    test düzeltmesinin girdisidir.
-3. **Mühürlü dönem tek atış**, ajandan mekanik olarak gizli, insan komutuyla açılır. Veri
+3. **Mühürlü dönem tek atış**, ajandan mekanik olarak gizli, insan komutuyla ve **yalnızca aday çıkınca** açılır
+   (aday yoksa hiçbir testte kullanılmaz; karar 2026-10-02). Veri
    şifreli saklanır, anahtar yalnızca kullanıcıdadır ve hiçbir ajanın ortamına girmez
    (ayrıntı `ARCHITECTURE.md` → Laboratuvar).
 4. **Yeni bileşen = gözlenmiş engel + önceki basit hale karşı karşılaştırma.** Engel yoksa

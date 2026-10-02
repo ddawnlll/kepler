@@ -52,3 +52,6 @@ Yeni hipotez 10 (A: 4, B: 6; ablasyon/komşuluk/null/stres kontrol); kümülatif
 
 ## Onay istenenler
 (a) Bu protokol (kart eşikleri, N, pencereler, evren kuralı; takvim düzeltmeli S1c/S2c dahil). (b) Binance arşivinden 2019-09 → 2021-12 indirme (ağ izni). (c) `universe.py` parametreleştirme (veri aracı; satır sayısı (b) tavanı ≲500 altında kalmalı, sayıyı raporlarım).
+
+## Not (2026-10-02, koşudan önce; parametre/eşik/N değişmedi)
+Kullanıcı mühür kararını güncelledi: "hiç kullanılmayacak" yerine **"aday çıkmadıkça açılmaz"** (MISSION G3, kural 3). Bu protokolde "son 6 ay hiçbir testte kullanılmayacak" geçen yerler bu karara göre okunur: replikasyonda aday çıkarsa (Blok A'da ADAY) G3 kullanıcı komutuyla açılabilir; bu koşuda mühürlü döneme yine dokunulmaz.
