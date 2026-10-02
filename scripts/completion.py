@@ -104,7 +104,7 @@ def base_stage(a):
             s = res["summary"]
             print(sysname, var, "net", round(s["net_pnl"], 2), "n_stop", s["n_stop"], "rej", s["n_rejected"], flush=True)
             res_all["stress"][f"{sysname}_{var}"] = dict(net=s["net_pnl"], n_rejected=int(s["n_rejected"]), recon=float(pnl.sum() - s["net_pnl"]),
-                                                         windows={w: dict(stress.window_stats(pnl, res["fills"], *wins[w], CAP, close, {k: outb[k].stop for k in EXT}), basket=stress.basket_return(close, *wins[w])) for w in wins})
+                                                         windows={w: dict(stress.window_stats(pnl, res["fills"], *wins[w], CAP, close, {k: outb[k].stop for k in EXT}, kl), basket=stress.basket_return(close, *wins[w])) for w in wins})
             if var == "full":
                 tr = trade_nets(res, sp)
                 nets = tr.net.to_numpy() / CAP

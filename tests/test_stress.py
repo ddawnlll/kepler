@@ -29,11 +29,13 @@ def test_window_stats_hand_values():
     ns = lambda i: int(h[i].value)  # noqa: E731
     fills = pd.DataFrame([dict(sym="A", ts=ns(0), side="BUY", qty=2.0, px=100.0, liq=False, stop=False),
                           dict(sym="A", ts=ns(3) + 3_599_999_999_999, side="SELL", qty=2.0, px=94.0, liq=False, stop=True)])
-    s = stress.window_stats(pnl, fills, "2024-01-01 01:00", "2024-01-01 06:00", 100.0, close, stop)
+    bar = {"A": pd.DataFrame(dict(low=[100, 100, 100, 93.0, 100, 100], high=100.0), index=h)}
+    s = stress.window_stats(pnl, fills, "2024-01-01 01:00", "2024-01-01 06:00", 100.0, close, stop, bar)
     # pencere [01:00, 06:00): -3,-2,4,-5,1 -> kümülatif -3,-5,-1,-6,-5; tepe 0 (başlangıç) -> maks DD 6; net -5; en kötü saat -5
     assert s["net"] == -5 and s["net_pct"] == A(-0.05) and s["max_dd"] == 6 and s["max_dd_pct"] == A(0.06) and s["worst_hour"] == -5 and s["worst_day"] == -5
     assert s["n_stop"] == 1 and s["n_liq"] == 0
     assert s["gross_start"] == 210 and s["net_start"] == 210  # pozisyon +2, 01:00 öncesi son kapanış 105
     # stop dolumu 03:00 barında (ts = 03:00 + 1sa - 1ns); yürürlükteki seviye = stop.shift(1)[03:00] = stop[02:00] = 95; satış 94'ten -> (95-94)/95 = 105,263 bps
     assert s["stop_slip_bps_mean"] == A(1 / 95 * 1e4) and s["n_stop_slip"] == 1
+    assert s["overshoot_bps_mean"] == A((95 - 93) / 95 * 1e4)  # barın dibi 93, seviye 95 -> 210,526 bps aşma
     assert stress.basket_return(close, "2024-01-01 01:00", "2024-01-01 06:00") == A(100 / 105 - 1)
