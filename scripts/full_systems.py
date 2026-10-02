@@ -72,11 +72,18 @@ def primary(a):
     syms = list(g2.EXT)
     data = {s: D[s] for s in syms}
     book, sp = make_book(e, x, VARIANTS[var], GROUPS), spec()
-    r = ev.evaluate_book(book, data, [sp], Path(out) / "ledger.jsonl", f"V4 {sysname} {var}: tam Turtle (reports/full_systems_protocol.md)", dh, f"{sysname}_{var}", dict(sys=sysname, var=var, entry=e, exit=x), MAIN)[0]
+    try:
+        r = ev.evaluate_book(book, data, [sp], Path(out) / "ledger_run2.jsonl", f"V4 {sysname} {var}: tam Turtle (reports/full_systems_protocol.md)", dh, f"{sysname}_{var}", dict(sys=sysname, var=var, entry=e, exit=x), MAIN)[0]
+        invalid = False
+    except ValueError as err:  # ilk koşuda çöktü (S2 no_stop, S2 fixed_size: hesap sıfırlandı, marj reddi -> hakem kuralı deftere yazmaz). Denetim evaluate_book'ta zaten geçti; N=12'ye sayılır, geçersiz işaretlenir
+        if "reddedilen" not in str(err):
+            raise
+        res, win, _ = ev.run_book(book({s: d["kl"] for s, d in data.items()}), data, sp, *utc(MAIN))
+        r, invalid = dict(res=res, win=win, row=dict(trial=None)), True
     pnl = report.book_pnl(r["win"], r["res"], sp)
     info = turtle.turtle_book({s: D[s]["kl"] for s in syms}, {s: sg.turtle(e, x) for s in syms}, CAP, GROUPS, marks={s: D[s]["mark"] for s in syms}, ticks={s: float(D[s]["tick"]) for s in syms}, **VARIANTS[var])[1]
     sym_net = {s: float(report.hourly_pnl(r["win"][s]["kl"], r["win"][s].get("mark"), r["win"][s].get("funding"), r["res"]["fills"][r["res"]["fills"].sym == s], sp).sum()) for s in r["win"]}
-    return f"{sysname}_{var}", dict(summary=keep(r["res"]), daily=daily(pnl), manager=info, sym_net=sym_net, recon=float(pnl.sum() - r["res"]["summary"]["net_pnl"]), row_trial=r["row"]["trial"])
+    return f"{sysname}_{var}", dict(summary=keep(r["res"]), daily=daily(pnl), manager=info, sym_net=sym_net, recon=float(pnl.sum() - r["res"]["summary"]["net_pnl"]), row_trial=r["row"]["trial"], invalid=invalid)
 
 
 def robust_task(a):
