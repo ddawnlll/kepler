@@ -17,6 +17,7 @@ büyük bir adımdan önce yeniden oku.
 - Kod değiştirince ilgili testleri koş; sonucu rapora yaz (yeşil/kırmızı/atlandı).
 
 ## Kurallar
+- Kendi dalında çalışan her ajan, TASKS.md'de tek bir `Aktif iş:` satırını güncel tutar: `Aktif iş: <iş adı> | durum: devam/bitti/engelli | protokol: <dosya>`. Durum bülteni ve devam ettirici routine'ler bunu okur.
 - Backtest, sinyal, risk, hakem, değerlendirme ya da rapor işinden önce `BACKTEST.md`'yi oku (tasarım, sözleşmeler, başarı kartı, test senaryoları).
 - Soru ve kurallar `MISSION.md`'de, sistem haritası `ARCHITECTURE.md`'de. Çelişkide onlar kazanır.
 - Sonuç deftere yalnızca hakemden girer (`kepler/ledger.py`). Eleme sonucu sayılmaz.
