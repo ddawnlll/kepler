@@ -461,7 +461,7 @@ Hakemde eksik olanlar: hedefte çıkış (take-profit) ve koşullu giriş. Terci
 ### 16.7 İlk sürüm sınırı
 v0 yalnızca ilk uzmanın (arz/talep bölgesi fade, `reports/` altındaki ön kayıt) istediklerini sunar: 3d ve 1d OHLC, ATR, swing seviyeleri, hacim profili, 4h/1h tetik verisi. Mevcut sinyallerin (trend, momentum, funding) bu servise taşınması şimdilik yapılmaz. Servis, ilk uzmanın sonucundan sonra genişler ya da atılır.
 
-## 15. Değişiklik kaydı
+## 17. Değişiklik kaydı
 
 | Tarih | Değişiklik |
 |---|---|
