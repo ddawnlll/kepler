@@ -38,3 +38,13 @@ Arama döneminde net>0 olan yapılandırma: 80/88; ortalama net 5381; medyan 576
 | xs_rev | xsrev_3 | 1054 | 445 / -85 / -191 / -297 / -826 | -614 | 0.146 | 0.88 | -0.11 | 0.31 | yok |
 
 Doğrulama DSR (N=88 arama eşiğiyle): donchian 0.11, ema 0.10, tsmom 0.06, xs_carry 0.04, xs_mom 0.02, xs_rev 0.04
+
+## Replikasyon (tek atış, kullanılmamış semboller: 1000PEPEUSDT, 1000SHIBUSDT, APEUSDT, APTUSDT, ARBUSDT, BCHUSDT, ETCUSDT, FILUSDT, GMTUSDT, LTCUSDT, MATICUSDT, NEARUSDT, OPUSDT, SUIUSDT; 2023-07→2026-04)
+| aile | yapılandırma | brüt | net @fee4/9/10/11/16 (slip2) | net @10 slip6 | p(brüt, ortak-ofset null) | Bonf.(×6) p | karar |
+|---|---|---|---|---|---|---|---|
+| donchian | don_80_20 | 10728 | 8128 / 8063 / 8050 / 8037 / 7972 | 7998 | 0.106 | 0.64 | yok |
+| ema | ema_10_100 | 18339 | 14433 / 14322 / 14300 / 14277 / 14167 | 14211 | 0.063 | 0.38 | yok |
+| tsmom | tsmom_14_1 | 16797 | 13764 / 13083 / 12947 / 12810 / 12127 | 12400 | 0.070 | 0.42 | yok |
+| xs_mom | xsmom_7 | 7287 | 6344 / 5961 / 5884 / 5807 / 5423 | 5576 | 0.047 | 0.28 | yok |
+| xs_carry | xscarry_7 | -1512 | -648 / -864 / -907 / -950 / -1166 | -1080 | 0.804 | 1.00 | yok |
+| xs_rev | xsrev_3 | -1546 | -3389 / -4806 / -5088 / -5370 / -6782 | -6217 | 0.681 | 1.00 | yok |
