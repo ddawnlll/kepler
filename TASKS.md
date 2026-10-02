@@ -47,7 +47,7 @@ Soru: kitaptaki tam Turtle sistemi (N-boyutlama, 2N stop, piramitleme, portföy 
 |---|---|---|---|
 | V1 | Strateji stopu: sinyal hedef + stop seviyesi döner; stop-market bar içinde (gap dahil) tetiklenir | Elle hesaplı stop testleri (gap, aynı bar giriş+stop, likidasyonla etkileşim) | ☑ tests/test_stops.py (8) |
 | V2 | Portföy hakemi: tek Nautilus motorunda çok sembol, ortak sermaye, toplam brüt pozisyon tavanı | Tek sembolde mevcut hakemle birebir aynı sonuç + elle hesaplı portföy testleri | ☑ tests/test_portfolio.py (6; denklik: eski hakemden sabit sayılar) |
-| V3 | Risk motorunu bağla: N (ATR) boyutlama, piramitleme, birim sınırları (sembol/korele grup/toplam) | Testli; sabit boyuta karşı karşılaştırma raporlanır | ☑ tests/test_turtle.py (17); sabit boyuta karşı karşılaştırma `reports/full_systems.md` (g2_equiv) |
+| V3 | Risk motorunu bağla: N (ATR) boyutlama, piramitleme, birim sınırları (sembol/korele grup/toplam) | Testli; sabit boyuta karşı karşılaştırma raporlanır | ☑ tests/test_turtle.py (14); sabit boyuta karşı karşılaştırma `reports/full_systems.md` (g2_equiv) |
 | V4 | Tam Turtle S1/S2 ön kaydı (`reports/full_systems_protocol.md`, koddan önce commit) ve tek koşu | `reports/full_systems.md`: MISSION başarı kartıyla (K1–K9) sonuç | ☑ **NO_EDGE (K1)**; S1 p=0,026 DSR 0,52, S2 p=0,060 DSR 0,36 |
 
 Kapsam dışı: haber, emir defteri, likidasyon akışı (veri yok), limit/maker emirler, diskresyoner kararlar.
