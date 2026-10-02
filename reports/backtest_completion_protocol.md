@@ -22,7 +22,7 @@ Sermaye C ∈ {500; 10 000; 100 000}: tam Turtle S1/S2 (`full`) yeniden koşar: 
 
 ## 5. PBO/CSCV ve SPA — 88 yapılandırma (`reports/search_protocol.md` ızgarası)
 Girdi: arama dönemi (2022-01-01 → 2025-01-01) günlük net PnL (fee 10 + slip 2), yapılandırma başına 9 sembolün toplamı (`/data/search/search_<aile>.json` `res[ad][sembol].daily`); 88 sütun × 1096 gün.
-**CSCV:** S = 16 ardışık blok (`np.array_split`), tüm C(16,8) = 12 870 bölme; metrik günlük Sharpe (std = 0 ise 0); IS-en-iyi (eşitlikte ilk sütun) → OOS göreli sırası ω = sıra/(N+1) (1 = en iyi), λ = ln(ω/(1−ω)); **PBO = P(λ ≤ 0)**; ayrıca λ medyanı ve P(IS-en-iyinin OOS ort. getirisi < 0). Aile bazında (N = aile içi) aynı.
+**CSCV:** S = 16 ardışık blok (`np.array_split`), tüm C(16,8) = 12 870 bölme; metrik günlük Sharpe (std = 0 ise 0); IS-en-iyi (eşitlikte ilk sütun) → OOS göreli sırası ω = sıra/(N+1) (sıra artan: en kötü = 1, en iyi = N; eşitlikte ortalama sıra), λ = ln(ω/(1−ω)); **PBO = P(λ ≤ 0)**; ayrıca λ medyanı ve P(IS-en-iyinin OOS ort. getirisi < 0). Aile bazında (N = aile içi) aynı.
 **SPA (Hansen 2005):** performans d_k = günlük net getiri (benchmark nakit = 0) ve ikinci benchmark olarak al-tut (9 sembol × 1000 notional, aynı hakem/fee/slip, aynı pencere; d_k = r_k − r_al-tut); ω̂_k = Newey–West uzun dönem std (Bartlett, gecikme 20); T = max(max_k √n d̄_k/ω̂_k, 0); stationary bootstrap (ortalama blok 20, B = 2000, seed 0); p_lower / **p_consistent (birincil)** / p_upper (= Reality Check). Eşik 0,05. `arch` bağımlılığı eklenmez (uv.lock değişmez): kendi uygulama, elle hesaplı istatistik testi.
 
 ## Raporlama

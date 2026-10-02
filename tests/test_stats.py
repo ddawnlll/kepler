@@ -106,3 +106,47 @@ def test_buy_hold_benchmark_and_warmup_exclusion():
     assert res["summary"]["net_pnl"] == A(98.95) and pnl.sum() == A(98.95)
     r = stats.sharpe_series(pd.Series([0.0, 0.0, 0.0, 1.0, 2.0]), 10.0, warmup_days=3)  # ısınma günleri dışlanır
     assert list(r) == [0.1, 0.2]
+
+
+def test_path_stats_and_trade_mc_hand_values():
+    # [3,-1,-2,2]: equity 3,2,0,2; tepe 3 -> DD 3; en uzun zarar serisi 2 (-1,-2); en kötü ardışık zarar toplamı 3
+    dd, streak, worst = stats.path_stats([[3, -1, -2, 2], [-1, 1, 0, 0], [1, 1, 1, 1]])
+    assert list(dd) == [3, 1, 0] and list(streak) == [2, 1, 0] and list(worst) == [3, 1, 0]
+    # [1,-1]'in iki sırası da DD = 1 (1->0 ya da 0->-1); permütasyonlar toplamı korur
+    paths = stats.trade_mc([1.0, -1.0], B=50, seed=1)
+    assert paths.shape == (50, 2) and (paths.sum(1) == 0).all() and (stats.path_stats(paths)[0] == 1).all()
+    assert (stats.trade_mc([1.0, 2.0, -3.0, 4.0], 20, 7) == stats.trade_mc([1.0, 2.0, -3.0, 4.0], 20, 7)).all()
+    # kill: yol A [1,-2,5]: eq 1,-1,4; DD 0,2,... eşik 1,5 -> 2. adımda DD 2 > 1,5 tetik, final = -1; yol B [1,1,1]: tetik yok, final 3
+    k = stats.kill_stats([[1, -2, 5], [1, 1, 1]], 1.5)
+    assert k["p_trip"] == 0.5 and k["mean_final"] == A((-1 + 3) / 2) and k["mean_final_nokill"] == A((4 + 3) / 2)
+
+
+def test_cscv_pbo_hand_values():
+    # A = [1,1,-1,-1], B = [.5]*4, S=4 blok (1 gözlem/blok), metrik ortalama; 6 bölme:
+    # (0,1): IS-en-iyi A, OOS (2,3): A=-1 < B=.5 -> sıra 1, ω=1/3, λ=-ln2; (2,3): IS-en-iyi B, OOS (0,1): A=1 > .5 -> B sırası 1, λ=-ln2;
+    # diğer dört bölmede IS A=0 < B=.5 -> B; OOS'ta A=0 < B -> B sırası 2, ω=2/3, λ=+ln2. PBO = 2/6; IS-en-iyinin OOS ort. < 0 yalnız (0,1) -> 1/6
+    R = np.column_stack([[1, 1, -1, -1], [0.5] * 4]).astype(float)
+    out = stats.cscv(R, S=4, metric="mean")
+    assert out["n_splits"] == 6 and out["pbo"] == A(2 / 6) and out["loss"] == A(1 / 6)
+    assert sorted(np.round(out["lam"], 6)) == sorted(np.round([-np.log(2)] * 2 + [np.log(2)] * 4, 6)) and out["lam_median"] == A(np.log(2))
+    # eşitlik: iki aynı sütun -> ortalama sıra 1,5 -> ω = 0,5 -> λ = 0 -> PBO = 1
+    assert stats.cscv(np.ones((8, 2)), S=4, metric="mean")["pbo"] == 1.0
+
+
+def test_nw_lrv_and_spa_hand_values():
+    d = np.array([[1.0], [-1.0], [1.0], [3.0]])  # ort 1, sapmalar 0,-2,0,2 -> ddof=0 varyans = 8/4 = 2
+    assert stats.nw_lrv(d, 0)[0] == A(2.0)
+    # lag 1: γ0 = 2, γ1 = (u1u0 + u2u1 + u3u2)/4 = (0 + 0 + 0)/4 = 0 -> 2
+    assert stats.nw_lrv(d, 1)[0] == A(2.0)
+    r = stats.spa(d, B=200, seed=0, lag=0)
+    assert r["stat"] == A(np.sqrt(4) * 1 / np.sqrt(2)) and r["best"] == 0 and r["K"] == 1 and r["n"] == 4  # T = √4·1/√2 = √2
+    # her bootstrap yolunda g_l <= g_c <= g_u -> p_lower <= p_consistent <= p_upper; sabit tohum -> aynı sonuç
+    rng = np.random.default_rng(3)
+    z = rng.normal(0, 1, (300, 6))
+    a, b = stats.spa(z, B=400, seed=1), stats.spa(z, B=400, seed=1)
+    assert a == {**b, "t": a["t"]} or all(a[k] == b[k] for k in ("stat", "p_lower", "p_consistent", "p_upper"))
+    assert a["p_lower"] <= a["p_consistent"] <= a["p_upper"] and a["p_consistent"] > 0.05  # sinyalsiz gürültü: reddedilmez
+    z[:, 2] += 0.5  # t ≈ √300·0.5 = 8,7: güçlü üstünlük -> p ≈ 0
+    s = stats.spa(z, B=400, seed=1)
+    assert s["best"] == 2 and s["p_consistent"] < 0.01 and s["p_upper"] < 0.01
+    assert stats.spa(np.zeros((50, 3)), B=100)["stat"] == 0.0 and stats.spa(np.zeros((50, 3)), B=100)["p_upper"] == 1.0  # sabit sütunlar: t = 0

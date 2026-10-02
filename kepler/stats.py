@@ -92,3 +92,86 @@ def nw_alpha(rs, rb, lag: int = 5) -> tuple[float, float, float]:
 def sharpe_series(pnl_daily: pd.Series, capital: float, warmup_days: int = 0) -> pd.Series:
     """Günlük PnL -> getiri (PnL / sermaye); ilk `warmup_days` gün (ısınma: sıfır PnL'li işlemsiz günler) dışlanır, DSR/Sharpe bozulmasın (§8.1)."""
     return (pnl_daily / capital).iloc[warmup_days:]
+
+
+def path_stats(r) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """İşlem getiri yolları (B, T) -> (maks DD [toplamsal, tepe başlangıç dahil], en uzun ardışık zarar serisi [adet], en kötü ardışık zarar toplamı [pozitif sayı])."""
+    r = np.atleast_2d(np.asarray(r, float))
+    run, run_sum, best, worst = (np.zeros(len(r)) for _ in range(4))
+    for t in range(r.shape[1]):
+        neg = r[:, t] < 0
+        run, run_sum = np.where(neg, run + 1, 0), np.where(neg, run_sum + r[:, t], 0)
+        best, worst = np.maximum(best, run), np.minimum(worst, run_sum)
+    return max_drawdown(r), best, -worst
+
+
+def trade_mc(nets, B: int = 5000, seed: int = 0) -> np.ndarray:
+    """İşlem sırası Monte Carlo: işlem net getirilerini (sermayeye oranlı) B kez permüte eder -> yollar (B, T); DD/seri için path_stats(yollar), kill_stats(yollar, eşik)."""
+    x = np.asarray(nets, float)
+    return x[np.argsort(np.random.default_rng(seed).random((B, len(x))), axis=1)]
+
+
+def kill_stats(r, thr: float) -> dict:
+    """Yollar r (B, T) (toplamsal getiri, sermayeye oranlı): DD (tepe başlangıç 0 dahil) thr'yi aşınca yol kesilir. p_trip, kesmeli/kesmesiz ortalama final."""
+    eq = np.cumsum(np.asarray(r, float), axis=1)
+    hit = (np.maximum(np.maximum.accumulate(eq, axis=1), 0) - eq) > thr
+    idx = hit.argmax(axis=1)
+    final = np.where(hit.any(axis=1), eq[np.arange(len(eq)), idx], eq[:, -1])
+    return dict(p_trip=float(hit.any(axis=1).mean()), mean_final=float(final.mean()), mean_final_nokill=float(eq[:, -1].mean()))
+
+
+def cscv(R, S: int = 16, metric: str = "sharpe") -> dict:
+    """PBO / CSCV (Bailey, Borwein, López de Prado, Zhu). R: (T, N) günlük getiri, N yapılandırma. S ardışık blok (np.array_split), tüm C(S, S/2) bölme: IS-en-iyi (eşitlikte ilk) →
+    OOS sırası (artan, eşitlikte ortalama) ω = sıra/(N+1), λ = ln(ω/(1−ω)); PBO = P(λ ≤ 0). metric: 'sharpe' (std = 0 → 0) | 'mean'. Dönüş: pbo, lam, loss (P(IS-en-iyinin OOS ort. getirisi < 0)), n_splits."""
+    import itertools
+    R = np.asarray(R, float)
+    blocks = np.array_split(np.arange(len(R)), S)
+    n, s1, s2 = np.array([len(b) for b in blocks]), np.array([R[b].sum(0) for b in blocks]), np.array([(R[b] ** 2).sum(0) for b in blocks])
+    mean = lambda i: s1[i].sum(0) / n[i].sum()  # noqa: E731
+    def perf(i):
+        m = mean(i)
+        if metric == "mean":
+            return m
+        sd = np.sqrt(np.maximum(s2[i].sum(0) / n[i].sum() - m**2, 0))
+        return np.where(sd > 1e-12, m / np.where(sd > 1e-12, sd, 1), 0.0)
+    lam, loss = [], []
+    for c in itertools.combinations(range(S), S // 2):
+        i, o = np.array(c), np.setdiff1d(np.arange(S), c)
+        k, po = int(np.argmax(perf(i))), perf(o)
+        rank = (po < po[k]).sum() + ((po == po[k]).sum() + 1) / 2
+        w = rank / (R.shape[1] + 1)
+        lam.append(np.log(w / (1 - w)))
+        loss.append(mean(o)[k] < 0)
+    lam = np.array(lam)
+    return dict(pbo=float((lam <= 0).mean()), lam=lam, lam_median=float(np.median(lam)), loss=float(np.mean(loss)), n_splits=len(lam))
+
+
+def nw_lrv(x, lag: int) -> np.ndarray:
+    """Sütun başına Newey–West (Bartlett) uzun dönem varyansı, ortalamadan sapmalarla, 1/n normalizasyonu. lag = 0: ddof=0 varyans."""
+    u = np.asarray(x, float) - np.mean(x, axis=0)
+    n, v = len(u), (u * u).sum(0) / len(u)
+    for k in range(1, lag + 1):
+        v = v + 2 * (1 - k / (lag + 1)) * (u[k:] * u[:-k]).sum(0) / n
+    return v
+
+
+def spa(d, mean_block: float = 20.0, B: int = 2000, seed: int = 0, lag: int = 20) -> dict:
+    """Superior Predictive Ability (Hansen 2005). d: (n, K) performans farkı (model − benchmark; pozitif = model daha iyi). T = max(max_k √n d̄_k/ω̂_k, 0), ω̂ = Newey–West std;
+    stationary bootstrap altında T* = max(max_k √n (d̄*_k − d̄_k + g_k)/ω̂_k, 0), g: lower min(d̄,0) · consistent d̄·1{√n d̄/ω̂ ≤ −√(2 ln ln n)} · upper 0 (= Reality Check).
+    Aynı bootstrap yollarında g_l ≤ g_c ≤ g_u olduğundan p_lower ≤ p_consistent ≤ p_upper. Sabit sütunlar (ω̂ = 0) t = 0 sayılır."""
+    d = np.asarray(d, float)
+    n, K = d.shape
+    dbar, om = d.mean(0), np.sqrt(nw_lrv(d, lag))
+    ok = om > 0
+    sc = np.where(ok, om, 1.0)
+    t = np.where(ok, np.sqrt(n) * dbar / sc, 0.0)
+    stat = max(float(t.max()), 0.0)
+    thr = np.sqrt(2 * np.log(np.log(n)))
+    g = dict(lower=np.minimum(dbar, 0), consistent=np.where(t <= -thr, dbar, 0.0), upper=np.zeros(K))
+    idx, tstar = stationary_bootstrap(n, mean_block, B, seed), {k: [] for k in g}
+    for c in range(0, B, 100):
+        dstar = d[idx[c:c + 100]].mean(1) - dbar  # (b, K)
+        for k, gk in g.items():
+            tstar[k].append(np.maximum(np.where(ok, np.sqrt(n) * (dstar + gk) / sc, 0.0).max(axis=1), 0.0))
+    p = {k: float((np.concatenate(v) >= stat).mean()) for k, v in tstar.items()}
+    return dict(stat=stat, best=int(np.argmax(t)), t=t, p_lower=p["lower"], p_consistent=p["consistent"], p_upper=p["upper"], n=n, K=K)
