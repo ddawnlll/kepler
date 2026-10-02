@@ -32,9 +32,9 @@ WINDOWS, NB_LIMIT = g2.WINDOWS, None  # --smoke: kısa pencereler ve 2 komşu (y
 D: dict = {}  # sembol -> dict(kl, funding, mark, tick, step); fork ile paylaşılır
 
 
-def load(root, syms):
+def load(root, syms, end=None):
     for s in syms:
-        d = tape.load(root, s)
+        d = tape.load(root, s, end=end)
         kl = d["klines"][["open", "high", "low", "close", "volume"]]
         q = Decimal(10) ** (math.floor(math.log10(kl.close.min())) - 5)  # sembol kuralları UNKNOWN: sinyal-bağımsız çözünürlük (protokol)
         st = Decimal(10) ** (math.floor(math.log10(0.25 * CAP / kl.close.max())) - 3)
