@@ -83,6 +83,8 @@ yoksa yazmadan önce kanıtlı engel gösterilir (`MISSION.md` kural 4, 7).
 
 ## Operasyon katmanı (7/24, telefondan yönetim)
 
+> **v2 (2026-10-03):** ayrıntılı ve güncel fabrika tasarımı **`docs/factory.md`** (roller, kapılar, değişmezler D1–D14, prompt'lar, kurulum sırası). Aşağıdaki dört rol özeti v1'dir; çelişkide `docs/factory.md` kazanır.
+
 Amaç: sistemi bir kez kurarsın; araştırma 7/24 sürer, durum sana düzenli gelir, telefondan
 direktif verirsin. Bilgisayar başında olman gerekmez. Dört rol, hepsi LLM; talimatları
 `factory/agents/`, kurulum özeti `factory/README.md`.

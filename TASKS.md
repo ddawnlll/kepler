@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: Seviye olay çalışması | durum: ön kayıt yazıldı, kodlama sırada | protokol: reports/levels_event_study_protocol.md
+Aktif iş: Fabrika spesifikasyonu v2 | durum: bitti (tasarım; kurulum paketleri WP1–WP9 sırada) | protokol: docs/factory.md
 
 Bu dosya görev planıdır, spec değil. Hedef, kapılar ve kurallar `MISSION.md`'de; sistem haritası
 `ARCHITECTURE.md`'de. Çelişki olursa o iki belge kazanır; çelişkiyi raporla.
@@ -306,3 +306,6 @@ Kapanış kanıtı: reports/audit_closure.json (rapor/kanıt SHA256'ları, korun
 
 ## Seviye servisi (destek/direnç) ve olay çalışması (2026-10-03, kullanıcı isteği; yalnızca tasarım)
 Tasarım `BACKTEST.md` §15.10. Sıra: (1) ☑ `reports/levels_event_study_protocol.md` ön kaydı (2026-10-03, parametreler donuk, koddan önce commit), (2) `kepler/levels.py` + `tests/test_levels.py` (8 test, elle hesaplı), (3) `scripts/levels_event_study.py` ile tek koşu (N = 7), (4) `tools/plot_levels.py` SVG çıktısı. Sonuç "SEVİYE ANLAMSIZ" ise destek/direnç uzmanları rafa kalkar. Kodlama Sonnet 5.5 high, bağımsız inceleme farklı aileden; hakem/denetim/risk/mühür koduna dokunulmaz.
+
+## Fabrika spesifikasyonu v2 (2026-10-03, kullanıcı isteği; yalnızca tasarım)
+`docs/factory.md` (Opus 5.5 taslağı + 7 blocker düzeltmesi + bürokrasi azaltma + fazsız bağımlılık sırası). Prompt'lar v1'den neredeyse aynen. İş paketleri (§16): WP1 uzman arayüzü (Zone Fade birebir aynı sonuç), WP2 kayıt + legacy içe aktarım + kütüphaneci, WP3 kapılar + `render_report`, WP4 kontrol düzlemi, WP5 runner + promote (C), WP6 VPS altyapısı, WP7 Hermes doğrulama, WP8 prompt'lar + ekilmiş hata takımı, WP9 entegrasyon provası (kabul takımı T1–T14). Sana kalan kararlar: `docs/factory.md` §18.2 (`N_eff` yöntemi, bütçe, repo koruması, ikinci mühür dönemi, müdür açılışı). Hiçbir kod yazılmadı; Hermes davranışı dokümandan okundu, doğrulanmadı.

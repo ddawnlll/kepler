@@ -87,8 +87,7 @@ NO_EDGE) ve testlerin tam tanımı orada. Kart yalnızca ön kayıtla ve bir son
    (ayrıntı `ARCHITECTURE.md` → Laboratuvar).
 4. **Yeni bileşen = gözlenmiş engel + önceki basit hale karşı karşılaştırma.** Engel yoksa
    BUILD yok.
-5. **Doküman tavanı.** Yeni spec, karar, anayasa belgesi yazılmaz; tek istisna backtest tasarım
-   belgesi `BACKTEST.md` (kullanıcı kararı 2026-10-02). Sonuçlar `reports/`
+5. **Doküman tavanı.** Yeni spec, karar, anayasa belgesi yazılmaz; tek istisnalar backtest tasarım belgesi `BACKTEST.md` (kullanıcı kararı 2026-10-02) ve fabrika spesifikasyonu `docs/factory.md` (kullanıcı kararı 2026-10-03). Sonuçlar `reports/`
    altında kısa notlardır.
 6. **Bütçe.** Her blok için açık süre ve araç çağrısı/token tavanı yazılır; aşılınca dur ve
    raporla. Dış sınır: 1 hafta.
