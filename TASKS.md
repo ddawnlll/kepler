@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: A/B/C denetimleri — sekiz saatlik pencere kontrolü | durum: devam | protokol: reports/data_audit.md; reports/account_reality.md; reports/trial_inventory.md
+Aktif iş: A/B/C denetimleri — sekiz saatlik pencere kontrolü | durum: bitti | protokol: reports/data_audit.md; reports/account_reality.md; reports/trial_inventory.md
 
 Bu dosya görev planıdır, spec değil. Hedef, kapılar ve kurallar `MISSION.md`'de; sistem haritası
 `ARCHITECTURE.md`'de. Çelişki olursa o iki belge kazanır; çelişkiyi raporla.
