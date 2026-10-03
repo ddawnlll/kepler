@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: Fabrika spesifikasyonu v2 | durum: bitti (tasarım; kurulum paketleri WP1–WP9 sırada) | protokol: docs/factory.md
+Aktif iş: Repo mimari kuralları + Ensemble katman ayrımı | durum: bitti (inceleme bekliyor) | protokol: ARCHITECTURE.md
 
 Bu dosya görev planıdır, spec değil. Hedef, kapılar ve kurallar `MISSION.md`'de; sistem haritası
 `ARCHITECTURE.md`'de. Çelişki olursa o iki belge kazanır; çelişkiyi raporla.

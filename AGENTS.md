@@ -14,7 +14,15 @@ büyük bir adımdan önce yeniden oku.
   (veya `modal token set`). Token repoya, dosyaya, commit'e ve sohbete yazılmaz.
 - Python 3.12 + `uv` (`uv.lock` kilitli). Yalnızca stdlib'e dayanan testler (ör. `tests/test_enqueue.py`)
   Modal'siz de koşar; Nautilus/vectorbt testleri Modal'de doğrulanmıştır.
-- Kod değiştirince ilgili testleri koş; sonucu rapora yaz (yeşil/kırmızı/atlandı).
+- Mimari kuralları (Modal'siz, saniyeler): `python3 tests/test_architecture.py`. Kod değiştirince bunu ve ilgili testleri koş; sonucu rapora yaz (yeşil/kırmızı/atlandı).
+- Yeni klonda bir kez: `git config core.hooksPath .githooks` (commit öncesi mimari testi + korumalı yol kontrolü; Claude Code ayrıca `.claude/hooks/guard.py` kullanır).
+
+## Mimari (kod zorlar; ayrıntı `ARCHITECTURE.md` "Katmanlar ve kurallar", tek kaynak `tests/test_architecture.py`)
+- Ana sistem Ensemble: durum (`market_state.py`, `state.py`) → uzman (`experts/`) → `ensemble.py` → boyutlama (`portfolio.py`, `risk.py`) → hakem.
+- **Uzman yalnızca tahmin verir**; boyut/kaldıraç/tavan risk katmanında. Uzman `risk`, `portfolio`, `ledger`, hakem kodunu import etmez; hakem hattı uzman/sinyal koduna bakmaz.
+- Nereye ne konur: yeni tahmin → `experts/<ad>.py` (+ önce `reports/<ad>_protocol.md`); yeni girdi → `market_state.py`/`state.py`; deney betiği → `scripts/`. Yeni modül = `LAYERS`a satır.
+- Yeni `.md` açma: ilgili mevcut belgeye yaz (izin listesi testte). Kural/mimari değişince ilgili belge **aynı commit'te** güncellenir.
+- Korumalı çekirdeğe (hakem, denetim, risk, state, tape, mühür, `tests/` mevcut dosyaları, BACKTEST/AGENTS/docs) ajan yazamaz; kullanıcı `KEPLER_CORE_UNLOCK=1` ile oturumu açarsa yazılır. Sonuçlanmış bir ön kayıt (`reports/<ad>_protocol.md` + `reports/<ad>.md` var) değişmez.
 
 ## Kurallar
 - Kendi dalında çalışan her ajan, TASKS.md'de tek bir `Aktif iş:` satırını güncel tutar: `Aktif iş: <iş adı> | durum: devam/bitti/engelli | protokol: <dosya>`. Durum bülteni ve devam ettirici routine'ler bunu okur.

@@ -541,6 +541,7 @@ Dinamik çizgiler (hareketli ortalama, anchored VWAP), trend çizgisi, kanal ve 
 |---|---|
 | 2026-10-03 | §15.10 seviye servisi (destek/direnç: 5 statik tür, dokunuş/kırılma, bölge) ve seviye olay çalışması tasarımı; ön kayıt `reports/levels_event_study_protocol.md` yazıldı (kod henüz yok) |
 | 2026-10-03 | §15.9 gösterge kütüphanesi (`kepler/indicators.py`): TradingView teknik analiz sayfasının 11 osilatörü, 15 hareketli ortalaması ve 5 pivot türü; referans kütüphanelerle doğrulandı; state servisine bağlanmadı |
+| 2026-10-03 | Ensemble katmanlara ayrıldı (sonuç birebir aynı, sentetik golden testle doğrulandı): `market_state.py`, `experts/{trend,xs_momentum,carry}.py`, `portfolio.py`; `ensemble.py` yalnızca kompozisyon; mimari kuralları `tests/test_architecture.py`, ARCHITECTURE v2 |
 | 2026-10-03 | §15.8 yeni trader hattı: yaşam döngüsü sahibi, Zone Fade book adaptörü, niyet/fill ayrımı ve tanımsız çoklu uzman/trade yönetimi sınırları; yalnızca tasarım |
 | 2026-10-02 | §15 Market state servisi ve uzman arayüzü (tasarım, [PLANLI]); ilk uzman: arz/talep bölgesi fade |
 | 2026-10-02 | State servisi v0 (`kepler/state.py`) ve Zone Fade uzmanı (`kepler/experts/zone_fade.py`) kodlandı, testlendi; ön kayıtlı tek koşu `reports/zone_fade.md`; hakem değişmedi, kart değişmedi |
