@@ -1,5 +1,7 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
+Aktif iş: A/B/C denetimleri — çalışma penceresi kapandı | durum: bitti | protokol: reports/data_audit.md; reports/account_reality.md; reports/trial_inventory.md
+
 Bu dosya görev planıdır, spec değil. Hedef, kapılar ve kurallar `MISSION.md`'de; sistem haritası
 `ARCHITECTURE.md`'de. Çelişki olursa o iki belge kazanır; çelişkiyi raporla.
 
@@ -272,3 +274,29 @@ Yeniden koşmak / ayrıntılar işler bitince buraya yazılır.
 - **pre2022 (2020–21) bitti:** Blok A tam Turtle NO_EDGE (K1/K2); Blok B `tsmom_14_1` ölçütü geçti (p 0,0066). Rapor `reports/pre2022.md` (teşhis dahil), tablolar `reports/pre2022_data/` (`scripts/pre2022_report.py`).
 - **Ensemble v1** (ön kayıt `reports/ensemble_protocol.md`): **ZAYIF**, K1–K8 geçti, K9 kaldı (bull payı %105). Rapor `reports/ensemble.md`, tablolar `reports/ensemble_data/`, defter `ledger/ensemble/`. Yeniden koşmak: `python scripts/ensemble.py --stage primary|k7|null [--null-from a --null-to b] --out /data/ensemble`, sonra `PYTHONPATH=. python scripts/ensemble_report.py <dizin> reports/ensemble_data ledger`. 217 test yeşil, 1 atlandı.
 - **Karar kullanıcıda:** (a) K9 için yeni ön kayıtlı sürüm, (b) ZAYIF'ı kabul, (c) K9 eşiği (yalnızca sonraki testten önce). Mühür açılmadı (aday yok). Kümülatif deneme 4 117.
+
+
+## Denetim devralma notu (2026-10-03)
+- Dal: `codex/kepler-audits-20261003` (güncel main `5e93e12` tabanından); mimari yalnız BACKTEST §15.8'e yazıldı ve `70b5971` ile push edildi. Korunan kodda değişiklik yok.
+- Kullanıcı çalışma penceresi: 3 Ekim 2026 01:45–09:45 Europe/Istanbul. Saatlik devam ve 09:45 kapanış kontrolü kaydedildi. Bir sonraki çalışma mevcut koşuyu kontrol eder, tekrar başlatmaz.
+- Sıra: A → B → C. A Modal `kepler-data` Volume'unu salt okunur tarar; /data'da 2531 Parquet (şema kontrolü tamamlandı). ≥2026-04-01 zamanları olan dosyada fiyat sütunları okunmaz. Token veya mühür anahtarı dosyaya yazılmaz.
+- Devralmada mevcut A sonucu için `/tmp/kepler_data_audit_result.json` ve devam eden Modal sandbox `sb-epmSR4xi0Q4CHqrGQuuk5x` kontrol edilir. Geçici bağlantı betiği `/tmp/modal_http_transport.py`, SDK `/tmp/modal-legacy/bin/python`; bunlar çalışma ortamı araçlarıdır, repoya girmez. A tamamlandı: `reports/data_audit.md` + `data_audit_data/` (2531/2531 dosya, veri riskleri kırmızı); koşu bitti, yeniden başlatma.
+- Her rapor tamamlanınca TASKS ve rapor commit/push; engel varsa engelli raporla, sıradakine geç. Hakem, denetim, risk, mühür, ledger ve evaluate değiştirilmez. C'nin test dosyası yalnız scratchpad'e yazılabilir.
+
+- İş B: `reports/account_reality.md`; EV1 $500 hedef hesabı bitti. Güncel MEXC kuralları/hesap ücreti ve funding SSS doğrulaması engelli (proxy CONNECT 403); tüm semboller doğrulanmadı, C'ye geçildi.
+
+- İş C tamamlandı: `reports/trial_inventory.md`; repo4117/Modal5434 satır, 1317 fark. Volume flock iki turda da iki exclusive lock'u aynı anda verdi (kırmızı), yerel kontrol yeşil. Test yalnız scratchpad. A/B/C ilk geçişi tamamlandı; 09:45 kapanışına kadar yalnız çözülmüş engel/yeni kanıt varsa rapor güncellenir, aynı koşu tekrar başlatılmaz.
+
+## Denetim pencere kapanışı — 2026-10-03 09:45 Europe/Istanbul
+
+Kapanış kontrolü: 2026-10-03 09:50:11 +0300. Pencere 01:45–09:45; bu kayıt kontrolün gerçek saatini taşır. İlk A/B/C koşuları tamamlandıktan sonra aynı denetimler yeniden başlatılmadı. Son kontrolde workspace/GitHub/Modal erişimi başarılı; mevcut A sandbox çıkış kodu 0.
+
+| İş | İşin kapanışı | Renk | Kanıt |
+|---|---|---|---|
+| A | Tamamlandı: 2531/2531 Parquet; okunamayan/atlanan dosya 0 | kırmızı | reports/data_audit.md; data_audit_data/files.csv, findings.json, summary.json, time_checks.json |
+| B | Hesap tamam; güncel MEXC tick/lot/minimum/fee/funding doğrulaması engelli (proxy CONNECT 403); doğrulanmadı | kırmızı | reports/account_reality.md; account_reality_data/sizing.json, sources.json, symbol_rules.csv |
+| C | Tamamlandı: repo4117/Modal5434 defter satırı; flock iki turda konteynerler arasında dışlama sağlamadı | kırmızı | reports/trial_inventory.md; trial_inventory_data/ledger_reconciliation.csv, flock.json, integrity.json |
+
+Mühür/anahtar/seal aracı **atlandı** (yasak); proje suite'i **atlandı** (üretim kodu değişmedi). Resmi delist teyidi, gerçek MEXC uygunluğu ve Zone Fade gerçekleşmiş aday sayısı **atlandı / doğrulanmadı**; ayrıntı raporlarda. Üç raporun renkleri canlı uygunluk onayı değildir.
+
+Kapanış kanıtı: reports/audit_closure.json (rapor/kanıt SHA256'ları, korunan kaynak/defter denklik kontrolü, erişim ve gerçek kontrol saati). Saatlik devam görevi tamamlanmış/devre dışı, sonraki koşu yok. Yeni strateji/hakem/ledger koşusu 0; mühür açılmadı.
