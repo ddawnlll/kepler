@@ -167,8 +167,11 @@ def pivots(d: pd.DataFrame, kind: str = "classic") -> pd.DataFrame:
     H, L, C, O = d.high.shift(1), d.low.shift(1), d.close.shift(1), d.open.shift(1)
     rg, nan = H - L, pd.Series(np.nan, index=d.index)
     cols = dict.fromkeys(["P", "S1", "S2", "S3", "S4", "R1", "R2", "R3", "R4"], nan)
-    if kind in ("classic", "woodie"):
-        P = (H + L + C) / 3 if kind == "classic" else (H + L + 2 * d.open) / 4
+    if kind == "classic":  # TradingView (BTCUSDT teknik analiz, doğrulandı): R3/S3 = P ± 2 (H - L)
+        P = (H + L + C) / 3
+        cols.update(P=P, R1=2 * P - L, S1=2 * P - H, R2=P + rg, S2=P - rg, R3=P + 2 * rg, S3=P - 2 * rg)
+    elif kind == "woodie":  # R3/S3 = H + 2 (P - L) / L - 2 (H - P) (TradingView ile doğrulandı)
+        P = (H + L + 2 * d.open) / 4
         cols.update(P=P, R1=2 * P - L, S1=2 * P - H, R2=P + rg, S2=P - rg, R3=H + 2 * (P - L), S3=L - 2 * (H - P))
     elif kind == "fibonacci":
         P = (H + L + C) / 3
@@ -210,11 +213,33 @@ def on_tf(kl: pd.DataFrame, tf: str, fn) -> pd.DataFrame:
     return pd.DataFrame(out, index=kl.index, columns=v.columns)
 
 
+TV_PIVOT_TF = {"1h": "1w", "4h": "1w", "1d": "1M"}  # TradingView: grafik zaman dilimine göre pivotun türediği önceki dönem (1h/4h grafikte haftalık, 1d grafikte aylık; 1w grafik doğrulanmadı)
+
+
+def _period_start(index: pd.DatetimeIndex, tf: str) -> pd.DatetimeIndex:
+    """tf döneminin başlangıcı (UTC, tz'siz): 1w = pazartesi 00:00, 1M = ayın 1'i; diğerleri takvim çıpalı saat grupları."""
+    t = index.tz_convert("UTC").tz_localize(None)
+    if tf == "1M":
+        return t.to_period("M").to_timestamp()
+    if tf == "1w":
+        return (t.normalize() - pd.to_timedelta(t.weekday, unit="D"))
+    h = TF_HOURS[tf]
+    return pd.DatetimeIndex(pd.Timestamp("1970-01-01") + ((t - pd.Timestamp("1970-01-01")) // pd.Timedelta(hours=h)) * pd.Timedelta(hours=h))
+
+
 def on_tf_pivots(kl: pd.DataFrame, tf: str, kind: str) -> pd.DataFrame:
-    """Pivot seviyeleri saatlik indekste: saat h, içinde bulunduğu tf döneminin (bir önceki dönemden türeyen) seviyelerini görür (dönem açılışında bilinir; Woodie dönem açılışını da kullanır)."""
-    b = bars(kl[["open", "high", "low", "close", "volume"]].astype(float), tf)
+    """Pivot seviyeleri saatlik indekste: saat h, içinde bulunduğu tf döneminin (bir önceki dönemden türeyen) seviyelerini görür (dönem açılışında bilinir; Woodie dönem açılışını da kullanır).
+    tf: 1h/4h/1d/3d (takvim çıpalı) veya 1w (pazartesi) / 1M (takvim ayı). TradingView eşlemesi için `TV_PIVOT_TF`."""
+    kl = kl[["open", "high", "low", "close", "volume"]].astype(float)
+    start = _period_start(kl.index, tf)
+    g = kl.groupby(start)
+    b = pd.DataFrame(dict(open=g.open.first(), high=g.high.max(), low=g.low.min(), close=g.close.last(), volume=g.volume.sum()))
+    if tf == "1M":
+        full = pd.date_range(b.index[0], b.index[-1], freq="MS")
+    elif tf == "1w":
+        full = pd.date_range(b.index[0], b.index[-1], freq="7D")
+    else:
+        full = pd.date_range(b.index[0], b.index[-1], freq=pd.Timedelta(hours=TF_HOURS[tf]))
+    b = b.reindex(full)  # eksik dönem NaN satırı
     p = pivots(b, kind)
-    key = np.asarray((kl.index - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta(hours=TF_HOURS[tf]))
-    first = (b.index - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta(hours=TF_HOURS[tf])
-    pos = pd.Index(first).get_indexer(key)
-    return pd.DataFrame(p.to_numpy(float)[pos], index=kl.index, columns=p.columns)
+    return pd.DataFrame(p.reindex(start).to_numpy(float), index=kl.index, columns=p.columns)

@@ -115,7 +115,7 @@ def row(kind, d=PV):
 
 def test_pivots_by_hand_prev_bar_H120_L100_C110():
     c = row("classic")
-    assert [c.P, c.S1, c.S2, c.S3, c.R1, c.R2, c.R3] == pytest.approx([110, 100, 90, 80, 120, 130, 140])  # R3 = H + 2 (P - L), S3 = L - 2 (H - P)
+    assert [c.P, c.S1, c.S2, c.S3, c.R1, c.R2, c.R3] == pytest.approx([110, 100, 90, 70, 120, 130, 150])  # TradingView Classic: R3/S3 = P ± 2 (H - L)
     f = row("fibonacci")
     assert [f.P, f.S1, f.S2, f.S3, f.R1, f.R2, f.R3] == pytest.approx([110, 110 - 7.64, 110 - 12.36, 90, 110 + 7.64, 110 + 12.36, 130])
     m = row("camarilla")
@@ -379,3 +379,63 @@ def test_against_pandas_ta_classic():
     pta = pytest.importorskip("pandas_ta_classic")
     for mine, ref in ((ind.hma(D, 9), pta.hma(D.close, 9)), (ind.vwma(D, 20), pta.vwma(D.close, D.volume, 20))):
         close_to(mine, ref, 1e-9)
+
+
+# --- (5) TradingView ile birebir: gerçek BTCUSDT (Binance spot) mumları + aynı anda TradingView tarama API'sinden alınan değerler -------------------------------------------------------
+# tests/data/tradingview/: btcusdt_<tf>.csv.gz (son 1000 mum, oluşmakta olan bar dahil) ve tv_<tf>.json (TradingView'in aynı anki değerleri: RSI, Stoch.K, CCI20, ADX, AO, Mom, MACD.macd, Stoch.RSI.K,
+# W.R, BBPower, UO, EMA/SMA 10-200, Ichimoku.BLine, VWMA, HullMA9, Pivot.M.*). Tek yakalama, 2026-10-03; ağ gerekmez.
+import gzip
+import json
+from pathlib import Path
+
+TVDIR = Path(__file__).parent / "data" / "tradingview"
+TV_MAP = {"RSI": "RSI14", "Stoch.K": "StochK_14_3_3", "CCI20": "CCI20", "ADX": "ADX14", "AO": "AO", "Mom": "Mom10", "MACD.macd": "MACD_12_26", "Stoch.RSI.K": "StochRSI_K_3_3_14_14",
+          "W.R": "WilliamsR14", "BBPower": "BBP", "UO": "UO_7_14_28", "Ichimoku.BLine": "IchimokuBase", "VWMA": "VWMA20", "HullMA9": "HMA9",
+          **{f"{m}{n}": f"{m}{n}" for m in ("EMA", "SMA") for n in ind.PERIODS}}
+TV_PIVOT_KIND = {"Classic": "classic", "Fibonacci": "fibonacci", "Camarilla": "camarilla", "Woodie": "woodie", "Demark": "dm"}
+TV_LEVEL = {"Middle": "P", "S1": "S1", "S2": "S2", "S3": "S3", "R1": "R1", "R2": "R2", "R3": "R3"}
+
+
+def tv_case(tf):
+    with gzip.open(TVDIR / f"btcusdt_{tf}.csv.gz", "rt") as f:
+        k = pd.read_csv(f)
+    k.index = pd.DatetimeIndex(pd.to_datetime(k.open_time, unit="ms", utc=True)).as_unit("ns")
+    return k[["open", "high", "low", "close", "volume"]].astype(float), json.loads((TVDIR / f"tv_{tf}.json").read_text())["values"]
+
+
+@pytest.mark.parametrize("tf", ["1d", "4h", "1h", "1w"])
+def test_matches_tradingview_values(tf):
+    d, tv = tv_case(tf)
+    assert tv["close"] == pytest.approx(d.close.iloc[-1])  # aynı fiyatta yakalandı
+    mine = ind.technicals(d).iloc[-1]
+    # EMA'nın hafızası uzun: TradingView tarama API'si EMA100/200'ü sınırlı geçmişle hesaplıyor (1h/4h'de ~600 mum, aşağıda birebir gösteriliyor), biz 1000 mumla; formül aynı, tohum penceresi farklı.
+    tol = {"EMA100": 1e-6, "EMA200": {"1d": 1e-5, "1w": 5e-3}.get(tf, 0), "RSI": 1e-5, "ADX": 5e-4, "MACD.macd": 5e-4}
+    for name, col in TV_MAP.items():
+        a, b = tv[name], mine[col]
+        if name == "EMA200" and tf in ("4h", "1h"):
+            continue  # aşağıda pencere eşlemesiyle
+        t = tol.get(name, 1e-6)
+        assert abs(a - b) <= t * max(abs(a), 1.0), f"{tf} {name}: TradingView {a} bizim {b}"
+
+
+@pytest.mark.parametrize("tf", ["4h", "1h"])
+def test_tradingview_scanner_ema_uses_about_600_bars(tf):
+    """EMA(100/200) için TradingView değeri, son ~600 muma uygulanan AYNI formülle (SMA tohumu) birebir çıkar: tohum penceresi dışında fark yok."""
+    d, tv = tv_case(tf)
+    for n in (100, 200):
+        best = min(abs(ind.ema(d.close.iloc[-w:], n).iloc[-1] - tv[f"EMA{n}"]) for w in range(550, 700))
+        assert best < 1e-6, f"{tf} EMA{n}: en iyi fark {best}"
+
+
+@pytest.mark.parametrize("tf,src,pivot_tf", [("1d", "1d", "1M"), ("4h", "1h", "1w"), ("1h", "1h", "1w")])
+def test_pivots_match_tradingview(tf, src, pivot_tf):
+    """TradingView pivot zaman dilimi grafiğe bağlı: 1d grafikte önceki AY, 1h/4h grafikte önceki HAFTA (gözlem; `TV_PIVOT_TF`). 1w grafik doğrulanmadı."""
+    assert ind.TV_PIVOT_TF[tf] == pivot_tf
+    d, _ = tv_case(src)
+    _, tv = tv_case(tf)
+    for tvk, kind in TV_PIVOT_KIND.items():
+        p = ind.on_tf_pivots(d, pivot_tf, kind).iloc[-1]
+        for lv, col in TV_LEVEL.items():
+            a = tv.get(f"Pivot.M.{tvk}.{lv}")
+            if a is not None and not np.isnan(p[col]):
+                assert p[col] == pytest.approx(a, abs=0.01), f"{tf} {tvk} {lv}: TradingView {a} bizim {p[col]}"
