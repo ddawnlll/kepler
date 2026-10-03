@@ -300,3 +300,6 @@ Kapanış kontrolü: 2026-10-03 09:50:11 +0300. Pencere 01:45–09:45; bu kayıt
 Mühür/anahtar/seal aracı **atlandı** (yasak); proje suite'i **atlandı** (üretim kodu değişmedi). Resmi delist teyidi, gerçek MEXC uygunluğu ve Zone Fade gerçekleşmiş aday sayısı **atlandı / doğrulanmadı**; ayrıntı raporlarda. Üç raporun renkleri canlı uygunluk onayı değildir.
 
 Kapanış kanıtı: reports/audit_closure.json (rapor/kanıt SHA256'ları, korunan kaynak/defter denklik kontrolü, erişim ve gerçek kontrol saati). Saatlik devam görevi tamamlanmış/devre dışı, sonraki koşu yok. Yeni strateji/hakem/ledger koşusu 0; mühür açılmadı.
+
+## Gösterge kütüphanesi (2026-10-03, kullanıcı isteği)
+`kepler/indicators.py` + `tests/test_indicators.py` (24 test; referans testleri `uv run --with TA-Lib --with ta --with pandas-ta-classic pytest tests/test_indicators.py` ile koşar). TradingView teknik analiz sayfasının 11 osilatörü, 15 hareketli ortalaması, 5 pivot türü; ayrıntı ve doğrulama kapsamı `BACKTEST.md` §15.9. **State servisine bağlı değil**; sıradaki uzmanın ön kaydı hangi göstergeyi istiyorsa o bağlanır. TradingView ekranıyla birebir sayı karşılaştırması doğrulanmadı.

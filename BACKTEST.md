@@ -491,10 +491,19 @@ tape.load (dev sınırı) → StateSpec / MarketState → uzman → Candidate
 
 **Uygulamadan önce gerekli doğrulama:** mevcut §15.5'e ek olarak tetik→sonraki açılış, giriş/çıkış bekleme, stop sonrası hedef, küçültülen/reddedilen emir, aynı anda fazla tetik, veri boşluğu ve gap giriş örneklerinde yönetici ile hakem fill'lerinin elle hesaplı karşılaştırması gerekir. Bunlar bu dokümantasyon/denetim oturumunda koşulmadı: atlandı. Mühürlü dönem, defter ve `evaluate()` değişmez. Hakem arayüzüne geri besleme veya TP eki gerekirse bu ayrı korumalı-kod işidir; bu tasarım uygulama izni değildir.
 
+### 15.9 Gösterge kütüphanesi [VAR; state servisine henüz bağlı değil] (2026-10-03)
+
+`kepler/indicators.py`: TradingView BTCUSDT "Teknik Analiz" sayfasındaki tüm satırlar: 11 osilatör (RSI 14, Stochastic %K 14/3/3, CCI 20, ADX 14, Awesome, Momentum 10, MACD 12/26, Stochastic RSI Fast 3/3/14/14, Williams %R 14, Bull Bear Power, Ultimate 7/14/28), 15 hareketli ortalama (EMA ve SMA 10/20/30/50/100/200, Ichimoku taban 9/26/52/26, VWMA 20, Hull 9) ve 5 pivot türü (Classic, Fibonacci, Camarilla, Woodie, DM). `technicals(df)` sayfadaki 26 sayısal satırı her bar için verir; `pivots` / `on_tf_pivots` pivotları; `on_tf(kl, tf, fn)` herhangi bir göstergeyi 1h/4h/1d/3d tamamlanmış barlarda hesaplayıp saatlik karar anına §15.3 kuralıyla hizalar.
+Tanımlar Pine yerleşikleridir (EMA/RMA tohumu ilk n değerin SMA'sı, Wilder düzleştirme, `ta.dmi`). Sıfıra bölme NaN (RSI'da kayıp 0 ise 100). Pivot satırı i, bir önceki dönemin (i-1) HLC'sinden (Woodie: i. dönemin açılışı da) türer.
+**Doğrulama (tests/test_indicators.py, 24 test):** elle hesaplı örnekler ve Wilder RSI bilinen cevabı (70,53 / 66,32 / ...); formülden bağımsız saf-Python oracle'lar (1e-9); nedensellik (kesme ve gelecek bozma, tüm göstergeler ve pivotlar); `on_tf` hizalaması (oluşmakta olan bar sızmaz); TA-Lib (SMA, EMA, RSI, Momentum, Williams, CCI, Ultimate, Stochastic K/D, StochRSI, DI/ADX ve MACD ısınma sonrası; DI/MACD'de TA-Lib tohumu farklı: ısınmadan önce bilinçli fark) ve `ta` (Awesome, Ichimoku) ve pandas-ta-classic (Hull, VWMA) ile 1e-9 eşleşme (referans testleri kütüphane kurulu değilse atlanır: `uv run --with TA-Lib --with ta --with pandas-ta-classic pytest tests/test_indicators.py`). Gerçek BTCUSDT 1h (2025-12 → 2026-03) üzerinde duman testi: tüm aralıklar geçerli (RSI/Stoch/ADX/UO 0-100, Williams -100-0), son barda NaN yok.
+**Doğrulanmadı:** TradingView'in kendi ekranındaki sayılarla birebir karşılaştırma (erişim yok); Pine nüansları: Hull'da n/2 tabana yuvarlanır, CCI tipik fiyat HLC/3, Woodie açılışı o dönemin ilk saatlik açılışıdır. Pivotlar için harici referans kütüphane yok: elle hesaplı örneklerle doğrulandı.
+**Kullanım kuralı:** göstergeler OHLCV'nin dönüşümleridir, yeni bilgi eklemez; serbest gösterge/parametre taraması yapılmaz (MISSION kural 11). Bir uzman, ön kayıtlı tek hipotezde birkaç göstergeyi kullanır; state servisine (`StateSpec.features`) ancak bir uzman istediğinde bağlanır (§15.8 genel katalog kuralı).
+
 ## 16. Değişiklik kaydı
 
 | Tarih | Değişiklik |
 |---|---|
+| 2026-10-03 | §15.9 gösterge kütüphanesi (`kepler/indicators.py`): TradingView teknik analiz sayfasının 11 osilatörü, 15 hareketli ortalaması ve 5 pivot türü; referans kütüphanelerle doğrulandı; state servisine bağlanmadı |
 | 2026-10-03 | §15.8 yeni trader hattı: yaşam döngüsü sahibi, Zone Fade book adaptörü, niyet/fill ayrımı ve tanımsız çoklu uzman/trade yönetimi sınırları; yalnızca tasarım |
 | 2026-10-02 | §15 Market state servisi ve uzman arayüzü (tasarım, [PLANLI]); ilk uzman: arz/talep bölgesi fade |
 | 2026-10-02 | State servisi v0 (`kepler/state.py`) ve Zone Fade uzmanı (`kepler/experts/zone_fade.py`) kodlandı, testlendi; ön kayıtlı tek koşu `reports/zone_fade.md`; hakem değişmedi, kart değişmedi |
