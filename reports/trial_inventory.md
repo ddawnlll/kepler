@@ -70,4 +70,8 @@ Her iki tur geçerli eşzamanlı girişimdir (başlangıçlar aynı planlı anda
 
 Defter JSON/sıra ve SHA256 kopya eşleşmesi **yeşil**; eksik repo envanteri/başarısız-deneme izi/ablasyon sayımı **kırmızı**. Konteynerler arası kilit **kırmızı (2/2 tur)**; aynı-konteyner kontrolü **yeşil**. Korunan üretim kodu ve defter SHA256 kontrolü ayrıca yapıldı; ilgili kaynaklarda diff yok. Proje suite'i **atlandı** (üretim kodu değiştirilmedi); test dosyası yalnız scratchpad'de. Hakem+yapıştırma473; veri/QC/mühür439 (artış0); scratchpad test yardımcı kodu bu iki üretim sayısına eklenmedi. Mühür açma/anahtar/seal aracı **atlandı**.
 
+## Çalışma penceresi kapanışı
+
+3 Ekim 2026 09:45 Europe/Istanbul penceresi kapandı; kontrol saati 2026-10-03 09:50:11 +0300. Tamamlandı; mevcut envanter ve iki geçerli flock turu korunuyor. Test yeniden başlatılmadı; defter ve korunan üretim kaynaklarında değişiklik yok. Kapanış bütünlük ve erişim kanıtı: `audit_closure.json`. Mühür/anahtar/seal aracı ve üretim test suite'i **atlandı**; yeni strateji denemesi 0.
+
 **İş durumları:** A **kırmızı** (tamamlandı, veri ölçüm-riskleri); B **kırmızı** (hesap tamam, güncel MEXC doğrulaması engelli); C **kırmızı** (tamamlandı, envanter ve dağıtık kilit bulguları). Üç iş de rapor üretti; yeşil bir canlı uygunluk iddiası yok.

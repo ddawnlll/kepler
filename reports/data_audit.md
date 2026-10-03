@@ -56,4 +56,8 @@ Tam dosya envanteri + zaman bağımsız kontrolü tamamlandı (**yeşil**). Sıf
 
 Kod sayıları (boş/yorum satırı hariç mevcut yöntem): hakem+yapıştırma 473; veri/QC/mühür araçları 439. Artış 0. Dokümantasyon için proje testleri **atlandı**; üretim kodunda değişiklik yok.
 
+## Çalışma penceresi kapanışı
+
+3 Ekim 2026 09:45 Europe/Istanbul penceresi kapandı; kontrol saati 2026-10-03 09:50:11 +0300. Tamamlandı; 2531/2531 Parquet, 0 okunamayan/atlanan dosya. Resmi delist teyidi doğrulanmadı. Yeni tarama başlatılmadı. Kapanış bütünlük ve erişim kanıtı: `audit_closure.json`. Mühür/anahtar/seal aracı ve üretim test suite'i **atlandı**; yeni strateji denemesi 0.
+
 **İş durumları:** A **kırmızı** (tamamlandı); B **kırmızı** (hesap tamam, güncel MEXC doğrulaması engelli); C **kırmızı** (tamamlandı, Volume flock/deneme envanteri bulguları).

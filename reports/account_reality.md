@@ -71,4 +71,8 @@ Henüz Zone Fade uygulaması veya gerçekleşmiş aday/pozisyon çıktısı yok.
 
 Kod sayısı: hakem+yapıştırma 473; veri/QC/mühür 439, artış 0. Proje testleri **atlandı** (üretim kodu değişmedi); deftere yeni satır 0; mühürlü dönem/anahtar **atlandı**.
 
+## Çalışma penceresi kapanışı
+
+3 Ekim 2026 09:45 Europe/Istanbul penceresi kapandı; kontrol saati 2026-10-03 09:50:11 +0300. Hesap tamam; güncel MEXC kuralları/fee/funding resmi doğrulaması engelli ve doğrulanmadı olarak kapandı. Ağ politikası değişmedi; engelli istek tekrarlanmadı. Gerçek MEXC uygunluk/Zone Fade aday testi atlandı. Kapanış bütünlük ve erişim kanıtı: `audit_closure.json`. Mühür/anahtar/seal aracı ve üretim test suite'i **atlandı**; yeni strateji denemesi 0.
+
 **İş durumları:** A **kırmızı** (tamamlandı); B **kırmızı** (hesap tamam, güncel MEXC doğrulaması engelli); C **kırmızı** (tamamlandı, Volume flock/deneme envanteri bulguları).
