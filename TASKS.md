@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: A/B/C denetimleri — çalışma penceresi kapandı | durum: bitti | protokol: reports/data_audit.md; reports/account_reality.md; reports/trial_inventory.md
+Aktif iş: Seviye servisi ve olay çalışması tasarımı | durum: bitti (yalnızca tasarım; kod ve ön kayıt dosyası sırada) | protokol: BACKTEST.md §15.10
 
 Bu dosya görev planıdır, spec değil. Hedef, kapılar ve kurallar `MISSION.md`'de; sistem haritası
 `ARCHITECTURE.md`'de. Çelişki olursa o iki belge kazanır; çelişkiyi raporla.
@@ -303,3 +303,6 @@ Kapanış kanıtı: reports/audit_closure.json (rapor/kanıt SHA256'ları, korun
 
 ## Gösterge kütüphanesi (2026-10-03, kullanıcı isteği)
 `kepler/indicators.py` + `tests/test_indicators.py` (33 test; referans testleri `uv run --with TA-Lib --with ta --with pandas-ta-classic pytest tests/test_indicators.py` ile koşar). TradingView teknik analiz sayfasının 11 osilatörü, 15 hareketli ortalaması, 5 pivot türü; ayrıntı ve doğrulama kapsamı `BACKTEST.md` §15.9. **State servisine bağlı değil**; sıradaki uzmanın ön kaydı hangi göstergeyi istiyorsa o bağlanır. TradingView ile birebir doğrulandı (BINANCE:BTCUSDT 1d/4h/1h/1w, 2026-10-03; `tests/data/tradingview/`); ayrıntı ve sınırlar BACKTEST §15.9.
+
+## Seviye servisi (destek/direnç) ve olay çalışması (2026-10-03, kullanıcı isteği; yalnızca tasarım)
+Tasarım `BACKTEST.md` §15.10. Sıra: (1) `reports/levels_event_study_protocol.md` ön kaydı (parametreler §15.10'daki değerlerle donuk, koddan önce commit), (2) `kepler/levels.py` + `tests/test_levels.py` (8 test, elle hesaplı), (3) `scripts/levels_event_study.py` ile tek koşu (N = 7), (4) `tools/plot_levels.py` SVG çıktısı. Sonuç "SEVİYE ANLAMSIZ" ise destek/direnç uzmanları rafa kalkar. Kodlama Sonnet 5.5 high, bağımsız inceleme farklı aileden; hakem/denetim/risk/mühür koduna dokunulmaz.

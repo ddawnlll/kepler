@@ -429,7 +429,7 @@ MarketState ◄─────────────────────�
 `StateSpec = {sym, views: [View{tf ∈ {1h,4h,1d,3d}, lookback (bar), features: ["atr:14", "swing:5", "profile:180", "ret:7", ...]}], context: ["funding", "mark", "xs:<evren>"], id = içerik hash'i}`. `id` deftere yazılır (hangi state tanımıyla koşuldu).
 
 ### 15.2 MarketState (servisin çıktısı, karar anı t)
-`as_of = t` (saatlik karar anı). Her view için: **tamamlanmış** barlar (kapanış ≤ t), istenen özellikler (ATR, oynaklık, getiri), `levels` (swing tepe/dip: fiyat, oluşma zamanı, dokunuş sayısı), `profile` (hacim profili: POC, VAH, VAL, HVN/LVN; lookback penceresi için), nedensel trend/rejim etiketi. İstenmeyen hiçbir şey hesaplanmaz.
+`as_of = t` (saatlik karar anı). Her view için: **tamamlanmış** barlar (kapanış ≤ t), istenen özellikler (ATR, oynaklık, getiri), `levels` (swing tepe/dip: fiyat, oluşma zamanı, dokunuş sayısı; genişletilmiş tasarım §15.10), `profile` (hacim profili: POC, VAH, VAL, HVN/LVN; lookback penceresi için), nedensel trend/rejim etiketi. İstenmeyen hiçbir şey hesaplanmaz.
 
 ### 15.3 Zaman dilimi kuralları (sözleşmenin kalbi)
 | tf | bar sınırı (UTC) | tamamlanmış sayılma |
@@ -499,10 +499,47 @@ Tanımlar Pine yerleşikleridir (EMA/RMA tohumu ilk n değerin SMA'sı, Wilder d
 **Pivot kuralları (TradingView ile doğrulandı):** pivotlar grafik zaman dilimine bağlı bir üst dönemden türer: **1h ve 4h grafikte önceki hafta (pazartesi 00:00 UTC), 1d grafikte önceki ay** (`TV_PIVOT_TF`, `on_tf_pivots(kl, "1w"|"1M", tür)`). **Classic** R3/S3 = P ± 2 (H − L) (ilk yazdığım formül H + 2 (P − L) idi ve TradingView'dan farklıydı; gerçek karşılaştırma yakaladı); **Woodie** R3/S3 = H + 2 (P − L) / L − 2 (H − P); Woodie P = (H + L + 2·dönem açılışı)/4. DM: önceki dönem O/C'ye bağlı X. **Doğrulanmadı:** 1w grafikte TradingView'in pivot dönemi (yıllık denedim, uymadı); ≥1h dışı zaman dilimleri; spot yerine USDT-M perp (TradingView'de BINANCE:BTCUSDT.P) üzerinde aynı karşılaştırma (formüller aynı, veri farklı).
 **Kullanım kuralı:** göstergeler OHLCV'nin dönüşümleridir, yeni bilgi eklemez; serbest gösterge/parametre taraması yapılmaz (MISSION kural 11). Bir uzman, ön kayıtlı tek hipotezde birkaç göstergeyi kullanır; state servisine (`StateSpec.features`) ancak bir uzman istediğinde bağlanır (§15.8 genel katalog kuralı).
 
+### 15.10 Seviye servisi (destek/direnç) ve seviye olay çalışması [PLANLI; kod yok] (tasarım 2026-10-03)
+
+**Gözlenmiş engel:** state v0 seviye olarak yalnızca 3d onaylı swing fiyatını (`sw_hi/sw_lo`) ve hacim profilini (POC/VAH/VAL) sunuyor; dokunuş sayısı, kırılma, bölge, pivot ve diğer seviye türleri yok. Zone Fade (tek mekanik yorum) NO_EDGE verdi (165 işlem) ama bu, "seviye bilgi taşımıyor" mu "kural kötüydü" mü ayırmıyor. Kullanıcı: trader seviyeleri çok türden okuyor. İlke: **seviyenin tanımı servise, kullanımı uzmana aittir**; servis yorum yapmaz ve trade önermez; uzman bir seviye türünü ve parametresini ön kayıtla dondurur.
+
+**Katman:** `StateSpec` sözleşmesine `levels: [LevelSpec{types, tf, param}]` eklenir; `AsOf.levels()` karar anında kapanıştan ±6 ATR içindeki seviyeleri, `AsOf.zones()` bölgeleri verir (lazy, spec hash'iyle önbellekli, yalnızca istenen tür hesaplanır). v0'daki swing ve profil tanımları **aynen** kullanılır (Zone Fade sonuçları geçerli kalır; testle sabitlenir).
+
+**Seviye nesnesi (statik):** `Level = {id (içerik hash'i), type, tf, price, born_at, anchor_ts, touches, last_touch_ts, broken_at, flipped}`. `born_at` = seviyenin bilinir hale geldiği an (swing: sağdaki k bar kapanınca; pivot/önceki dönem: dönem açılışı; profil: günlük kapanış yenilemesi; yuvarlak: her zaman). Karar anı t < `born_at` ise seviye yoktur. Destek/direnç rolü saklanmaz, t'de kapanışa göre türetilir (`role_at(t)`: kapanışın altındaysa destek, üstündeyse direnç); kırılma sonrası rol değişir (`flipped`).
+
+**Seviye türleri (v1, yalnızca bunlar; hepsi nesnel ve tanımlı):**
+| tür | tanım |
+|---|---|
+| `swing` | fractal k = 2 (tf ∈ {4h, 1d, 3d}); tepe = high, dip = low; onay: sağdaki k bar kapanışı (state v0 ile aynı kod) |
+| `pivot` | Classic / Fibonacci / Camarilla / Woodie / DM (`kepler/indicators.py::pivots`, TradingView ile doğrulandı); dönem: 1d grafik mantığıyla önceki ay, 1h/4h için önceki hafta (`TV_PIVOT_TF`); servis dönemi `period ∈ {1w, 1M}` olarak seçtirir |
+| `prev_hl` | önceki dönemin (gün/hafta/ay) high, low, close'u |
+| `profile` | W günlük (varsayılan 180) saatlik hacim profili: POC, VAH, VAL (Zone Fade ön kaydındaki tanım: 100 kutu, %70 değer alanı); günlük kapanışta yenilenir, kimliği yenileme gününü içerir |
+| `round` | yuvarlak sayı: ana = 10^⌊log10 p⌋ katları (BTC 10 000), ara = ana / 2 (BTC 5 000); veriden türemez |
+
+Dinamik çizgiler (hareketli ortalama, anchored VWAP), trend çizgisi, kanal ve formasyonlar **v1 dışı** [PLANLI v2]; yalnızca bir uzman veya olay çalışması ister ve yatay seviyeler bilgi taşıyorsa girer (çok parametreli ve öznel; MISSION kural 4).
+
+**Dokunuş ve kırılma (karar ızgarası 4h; sabitler v1'de ayarlanmaz):** ATR = 1d ATR14 (t'de bilinen). Bir 4h bar seviyeye **dokunur**: [low, high] aralığı [L − 0,25 ATR, L + 0,25 ATR] bandıyla kesişir ve bar `born_at`'tan sonradır. Ardışık dokunan barlar tek dokunuş sayılır; yeni dokunuş için fiyatın banttan ≥ 0,5 ATR uzaklaşmış olması gerekir. **Kırıldı:** bir 4h bar seviyenin öte yanında > 0,5 ATR kapanır (`broken_at`; sonraki dokunuşlar `flipped` rolüyle sayılır). Sayılar ham tutulur; **tek bir "güç skoru" yok** (bileşik skor serbest parametredir).
+
+**Bölge (confluence):** tüm türlerden seviyeler fiyata göre sıralanır; komşu fark ≤ 0,5 ATR ise aynı bölgeye zincirlenir. `Zone = {lo, hi, members, n_levels, n_types}`; `n_types ≥ 2` "çakışma" demektir. Ham sayılar verilir, uzman eşiği ön kayıtla seçer.
+
+**Seviye olay çalışması (uzman yazmadan önce; karar: seviye bilgi taşıyor mu?).** Strateji değil, **keşif ölçümü** (hakem yok, dolum yok, kart yok). Soru: bir seviyeye dokunduktan sonra fiyatın hareketi, aynı yapıdaki ama yerinden oynatılmış çizgilere göre farklı mı?
+- **Hipotezler (N = 7, deftere "seviye" ailesi olarak yazılır):** H1 `swing` 1d, H2 `swing` 3d, H3 `pivot` Classic (period 1w), H4 `prev_hl` (haftalık), H5 `profile` (180g POC/VAH/VAL), H6 `round` (ana), H7 çakışma bölgesi (`n_types ≥ 2`, tüm türler). Her biri tek yapılandırma, grid yok.
+- **Veri:** genişletilmiş-9 (BTC ETH SOL XRP BNB DOGE ADA LINK AVAX), 2022-07-01 → 2026-04-01 (ısınma 2022-01'den), karar ızgarası 4h, mühür dokunulmaz.
+- **Olay:** yeni dokunuş (yukarıdaki kural). **Yaklaşma yönü** σ = +1 (fiyat seviyeye aşağıdan geldi: direnç), −1 (yukarıdan: destek). **Tepki** r = −σ · (C(t+h) − C(t)) / ATR; t = dokunuş barının kapanışı, h = 6 bar (24 saat) sabit. r > 0 "geri dönüş", r < 0 "devam/kırılma". İkincil raporlar (karar dışı): P(r > 0), kırılma oranı, h ∈ {3, 12} duyarlılığı.
+- **Null (yerinden oynatılmış çizgiler):** her replikasyonda b = 1…B (B = 300, `default_rng([0, b])`) sembol başına tek ortak kaydırma s_b ∈ ±U(0,75; 2,5) × ATR(`born_at`); aynı tür seviyeler L + s_b·ATR fiyatında, aynı `born_at`, **aynı dokunuş kodu** ile yeniden ölçülür. Yoğunluk ve aralık yapısı korunur, gerçek swing/pivot/POC hizası bozulur (yuvarlak sayılar nesnel olmayan fiyatlara kayar). Gerçek istatistik R̄ (olay başına ortalama r), placebo R̄_b dağılımıyla iki yönlü karşılaştırılır: p = (1 + #{|R̄_b − m| ≥ |R̄ − m|}) / (B + 1), m = placebo ortalaması. Güven aralığı haftalık blok bootstrap.
+- **Karar (her hipotez ayrı; ölçüt koşudan önce yazılır):** "seviye bilgi taşıyor" ⇔ p ≤ 0,05 / 7 **ve** |R̄ − m| ≥ 0,10 ATR (BTC'de günlük ATR ≈ %2–3 olduğundan ≈ 20–30 bps, gidiş-dönüş maliyetinin 10 + 2 bps'inin üstü; eşik yargıdır) **ve** olay sayısı ≥ 300 (altı "YETERSİZ ÖRNEK"). Hiçbiri geçmezse: **"SEVİYE ANLAMSIZ (bu tanımlarla)"**, destek/direnç uzmanları rafa kalkar (yeni tanım = yeni ön kayıt). Biri geçerse: hangi tür ve hangi yönde (geri dönüş mü kırılma mı) bilinir; ilgili uzman ön kaydı bu bulgudan türetilir ve dev verisinin görülmüşlüğü (§8.5) belirtilir.
+- **Ön kayıt:** bu çalışma koddan önce `reports/levels_event_study_protocol.md` olarak commit'lenir (parametreler yukarıdaki değerlerle dondurulur; belirsizlikte kısıtlayıcı yorum); sonuçtan sonra tanım, eşik, h, band veya evren değişmez.
+
+**Testler (§15.5'e ek, tümü elle hesaplı):** (1) nedensellik: gelecek bozulunca t öncesi seviyeler, dokunuşlar ve bölgeler değişmez; `born_at` onay anıdır; (2) küçük sentetik grafikte bilinen swing, 2 dokunuş, 1 kırılma, rol değişimi; (3) `swing` ve `profile` sayıları state v0 ile ve Zone Fade testleriyle birebir aynı; (4) `pivot` değerleri `indicators.pivots` ile birebir; (5) bölge zincirleme örneği (fiyatlar 100 / 100,4 / 101, ATR 1, bağ 0,5: 100 ve 100,4 aynı bölge, 101 ayrı); (6) belirlenimlilik (aynı spec + veri → aynı hash); (7) yuvarlak sayı kafesi (her fiyat için ana/ara katlar, BTC 85 000 → 80 000/90 000 ve 85 000); (8) placebo kayması dokunuş kodunu değiştirmez (yalnızca fiyat).
+**Yer ve boyut:** `kepler/levels.py` (≲400 satır; `state.py` içinden çağrılır), `tests/test_levels.py`, `scripts/levels_event_study.py` (Modal), `tools/plot_levels.py` (seviyeleri ve bölgeleri fiyat grafiği üstüne **bağımlılıksız SVG** olarak çizer; kullanıcı kendi trader'ının çizdiğiyle gözle karşılaştırır). Satır sayıları her raporda yazılır.
+**Sorumluluk:** tasarım Opus 5.5 + kullanıcı onayı (mimari değişiklik); kodlama Sonnet 5.5 high; bağımsız inceleme farklı model ailesinden. Hakem, denetim, risk ve mühür koduna dokunulmaz.
+**UNKNOWN / sınırlar:** 0,25 / 0,5 ATR bandı, 0,5 ATR bölge bağı, h = 6, ±6 ATR penceresi ve 0,10 ATR eşiği yargıdır (ayarlanmaz; yalnızca ön kayıtla ve sonraki testten önce değişir). Kline'dan hesaplanan hacim profili yaklaşıktır. Evren bugünün majörleri (hayatta kalma yanlılığı). Dev dönemi görülmüş veridir.
+
 ## 16. Değişiklik kaydı
 
 | Tarih | Değişiklik |
 |---|---|
+| 2026-10-03 | §15.10 seviye servisi (destek/direnç: 5 statik tür, dokunuş/kırılma, bölge) ve ön kayıtlı seviye olay çalışması tasarımı; yalnızca tasarım, kod ve ön kayıt dosyası henüz yok |
 | 2026-10-03 | §15.9 gösterge kütüphanesi (`kepler/indicators.py`): TradingView teknik analiz sayfasının 11 osilatörü, 15 hareketli ortalaması ve 5 pivot türü; referans kütüphanelerle doğrulandı; state servisine bağlanmadı |
 | 2026-10-03 | §15.8 yeni trader hattı: yaşam döngüsü sahibi, Zone Fade book adaptörü, niyet/fill ayrımı ve tanımsız çoklu uzman/trade yönetimi sınırları; yalnızca tasarım |
 | 2026-10-02 | §15 Market state servisi ve uzman arayüzü (tasarım, [PLANLI]); ilk uzman: arz/talep bölgesi fade |
