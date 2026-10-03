@@ -29,6 +29,23 @@ Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = ger�
 **Döngü** (sinyal → boyut → backtest → denetim → rapor): boyut (risk motoru) hariç uçtan uca çalıştı (G2: `scripts/g2.py` + `g2_report.py`, Modal'de); rapor elle yazıldı.
 **G2 cevabı: NO_EDGE** (kitap sinyalleri, 4–16 bps fee, gerçekçi hakem; en iyi turtle_s2 p=0,06 sert null'da, Bonferroni 0,72). Sıradaki: yeni hipotez (MISSION: aynı altyapıyla başka fikre geç). Hakem+yapıştırma 347 satır: tavan 450'ye çekildi (MISSION kural 7a, 2026-10-02).
 
+## Zone Fade v1 + market state servisi v0 (2026-10-02; kullanıcı görevi): bitti, NO_EDGE (K1)
+
+Ön kayıt `reports/zone_fade_protocol.md`, sonuç `reports/zone_fade.md` (+ `reports/zone_fade_data/`, `ledger/zone_fade/`). 165 işlem (örnek yeterli), K1 p = 0,371, DSR 0,706 → **NO_EDGE**; K2, K3, K5, K6, K9 da kalıyor; K4, K7, K8 geçiyor. Kümülatif deneme 4 118. ADAY değil: G3/mühür açılmadı.
+
+| İş | Durum | Kanıt |
+|---|---|---|
+| State servisi v0 (BACKTEST §15) | ☑ testli | `kepler/state.py` (178 satır), `tests/test_state.py`: §15.5'in 7 kuralı elle hesaplı (ATR 41/14, impuls 5,75, swing onay tarihleri, profil POC 45/VAL 10/VAH 70, 3d çıpa 2022-01-01) |
+| Zone Fade uzmanı + yönetici | ☑ testli | `kepler/experts/zone_fade.py` (193), `tests/test_zone_fade.py` (hakem e2e dahil); hedefte çıkış/koşullu giriş sinyalle taklit edildi (hakem değişmedi, taklit yetti) |
+| Tek koşu + K1–K10 | ☑ | `scripts/zone_fade.py`, `scripts/zone_fade_report.py`; 39 test geçti |
+| Bağımsız inceleme | ☑ | BLOCKER yok; bulgular `reports/zone_fade.md` içinde (giderilenler ve bilinçle giderilmeyenler) |
+
+**Devralma notları (yeniden keşfetme):**
+- Bu koşu Modal'de değil bir bulut konteynerinde yapıldı (Modal gRPC proxy'den geçmiyordu). Ham veri Binance arşivinden indirildi (`kepler.universe.build_symbol`, EXT-9 + K7 14 sembol), zip sha256'lar manifestle birebir; `universe.parquet` ve `usable.json` manifestten kuruldu. Komut: `PYTHONPATH=. python scripts/zone_fade.py --stage primary|second|k7|null --root <kök> --out <dizin>` (`--smoke` kısa boru hattı denemesi). Modal'de aynı komutlar `--root /data --out /data/zone_fade` ile koşar.
+- Açık, sonucu etkileyebilecek ama koşulmayan: aday yeniden oluşumunu engelleyen varyant (inceleme MAJOR; yeni ön kayıt ve deneme gerekir). Ayar turu yapılmadı.
+- Ekstra: `evaluate.py` `code_hash` state.py'yi kapsamıyor ve state `id`'si deftere yazılmıyor (hakem tarafı; kullanıcı onayı gerekir).
+- State servisi v0: ilk uzman sonucuna göre "genişler ya da atılır" (BACKTEST §15.7): öneri tutulsun (küçük, testli), yeni uzman yeni ön kayıtla eklensin.
+
 ## Kararlar (2026-10-02, kullanıcı adına; MISSION'a işlendi)
 
 1. PR #2 main'e birleşti (gerçekçi hakem, G2, arama). Benim dalımdaki paralel sertleştirme (`b8ec86e`, `claude/blissful-ptolemy-4kmtvf`) birleştirilmez, arşiv olarak dalda kalır.

@@ -411,7 +411,7 @@ Kural: beklenen değerler **testte elle hesaplanır**; çıktıyı kendisiyle ka
 | SPA boyutu | Sentetik iid null'da SPA p'leri liberal (bağımsız incelemede n = 1096, K = 88: p_upper < 0,05 oranı ≈ %8; yöntemin kendisinden, blok-20 bootstrap + max); 0,05'e yakın p'ler sınırda okunur. Gerçek veri sonucu (p_consistent 0,11) zaten anlamlı değil |
 | Kill switch eşiği | Planlanan %1 risk/birimde %25 eşik hafta içinde tetiklenir (tam Turtle S1 2022-04-11, S2 2022-05/08); ölçekli boyut (s* ≈ 0,16–0,17) önerisi test edilmedi |
 
-## 15. Market state servisi ve uzman arayüzü [PLANLI] (tasarım 2026-10-02; kod yok)
+## 15. Market state servisi ve uzman arayüzü [KISMEN: v0 kodda ve testli, Zone Fade'de bir kez gerçek veride kullanıldı] (tasarım 2026-10-02)
 
 Amaç: her uzmanın kendi piyasa durumunu (market state) istediği zaman dilimlerinde (1h, 4h, 1d, 3d) veri katmanından almasını sağlamak. Uzman ihtiyacını beyan eder, servis hesaplar ve yalnızca karar anında bilinen veriyi verir. Mevcut sözleşme (§4: `book -> {sym: DataFrame[target, stop]}`) ve hakem değişmez. **Katalog baştan yazılmaz** (MISSION kural 4): bir özellik, ancak bir uzman onu istediğinde servise girer.
 
@@ -459,6 +459,8 @@ Hakemde eksik olanlar: hedefte çıkış (take-profit) ve koşullu giriş. Terci
 `kepler/state.py` (servis, ≲300 satır beklenir), `kepler/experts/` (uzmanlar: araştırma kodu), `tests/test_state.py`. Hakem+yapıştırma sayısına girmez (veri/araştırma tarafı); satır sayısı yine her raporda yazılır.
 
 ### 15.7 İlk sürüm sınırı
+**Durum (v0 kodlandı):** `kepler/state.py` (servis; 3d çıpa, 1d ATR + impuls, 3d fractal swing, 4h karar ızgarası, lazy 1h hacim profili, önbellek), `kepler/experts/zone_fade.py` (uzman + yönetici + K1 rotasyonu), `tests/test_state.py` (§15.5'in 7 kuralı, elle hesaplı) ve `tests/test_zone_fade.py` (yönetici, hakem e2e). Hedefte çıkış ve koşullu giriş **sinyalle taklit edildi, hakemde değişiklik yok** (§15.4 tercihi yetti). §15.1'deki `lookback`/`context` v0'da yalnızca geçerlilik penceresi/boş; swing seviyesinde dokunuş sayısı v0'da yok (uzman istemedi). İlk uzmanın sonucu: `reports/zone_fade.md`.
+
 v0 yalnızca ilk uzmanın (arz/talep bölgesi fade, `reports/` altındaki ön kayıt) istediklerini sunar: 3d ve 1d OHLC, ATR, swing seviyeleri, hacim profili, 4h/1h tetik verisi. Mevcut sinyallerin (trend, momentum, funding) bu servise taşınması şimdilik yapılmaz. Servis, ilk uzmanın sonucundan sonra genişler ya da atılır.
 
 ## 16. Değişiklik kaydı
@@ -466,6 +468,7 @@ v0 yalnızca ilk uzmanın (arz/talep bölgesi fade, `reports/` altındaki ön ka
 | Tarih | Değişiklik |
 |---|---|
 | 2026-10-02 | §15 Market state servisi ve uzman arayüzü (tasarım, [PLANLI]); ilk uzman: arz/talep bölgesi fade |
+| 2026-10-02 | State servisi v0 (`kepler/state.py`) ve Zone Fade uzmanı (`kepler/experts/zone_fade.py`) kodlandı, testlendi; ön kayıtlı tek koşu `reports/zone_fade.md`; hakem değişmedi, kart değişmedi |
 | 2026-10-02 | Ensemble v1 (`kepler/ensemble.py`: piyasa durumu → uzmanlar → aday → risk motoru) ön kayıtlı koşu: ZAYIF (K9); pre2022 raporu; kart değişmedi |
 | 2026-10-02 | Tamamlama: tarihsel stres, işlem sırası MC, kapasite/karekök etki, `Spec.equity_scale` + portföy kill switch, PBO/CSCV, SPA, nested walk-forward kodlandı, testlendi ve gerçek veride kullanıldı (`reports/backtest_completion.md`); [PLANLI]/[KISMEN] kalmadı; yeni [YOK] gerekçeleri (limit emir, cross-margin, purge/CPCV, StepM/MCS, sentetik) yazıldı; `vol_target`/`aggregate`/`sharpe_series` gerçek veride kullanıldı (ön kayıt 4b) |
 | 2026-10-02 | Tam Turtle koşusu: NO_EDGE (K1); kart değişmedi |
