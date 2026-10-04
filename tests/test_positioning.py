@@ -109,6 +109,12 @@ def test_hourly_never_uses_rows_at_or_after_bar_close():
     assert positioning.hourly(d.assign(sum_open_interest=d.sum_open_interest.where(d.index != 12, -5.0))).sum_open_interest.iloc[0] == 111.0
 
 
+def test_hourly_ignores_rows_closer_than_5min_to_close():
+    d = frame(n=12)
+    d.loc[11, "ts"] += pd.Timedelta("4min59s")  # 00:59:59: kapanışa 5 dk'dan yakın
+    assert positioning.hourly(d).sum_open_interest.iloc[0] == 110.0 and positioning.hourly(d).n.iloc[0] == 11
+
+
 def test_hourly_missing_data():
     d = frame(n=36).drop(index=[11, *range(12, 24)]).reset_index(drop=True)  # 00:55 yok, 01:00-01:55 saati tamamen yok
     h = positioning.hourly(d)

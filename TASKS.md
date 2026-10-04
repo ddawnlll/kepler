@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: Pozisyonlanma verisi (OI + long/short + taker) | durum: devam | protokol: TASKS.md "Pozisyonlanma verisi"
+Aktif iş: Pozisyonlanma verisi (OI + long/short + taker) | durum: bitti | protokol: TASKS.md "Pozisyonlanma verisi"
 
 ## İş planı v1 (2026-10-04): EV1'i anla, gerçekliğe bağla, karar ver
 
@@ -387,3 +387,14 @@ Bütçe: yaklaşık 3 saat ve 150 araç çağrısı (öneri; aşılırsa dur ve 
 
 Raporun sonunda: değişen dosyalar, koşulan komutlar ve sonuçları (geçti/kaldı/atlandı), bilinen sınırlar, yapılmayanlar. Doğrulanmamış rakamı "doğrulanmadı" diye yaz. TASKS.md'yi güncelle, commit + push et.
 ```
+
+### Pozisyonlanma verisi: sonuç (2026-10-04, bulut ajanı)
+Bitti. `kepler/data.py` (günlük `metrics` anahtarı/liste, mühür kontrolü günlük ada genişledi), `kepler/qc.py::check_metrics`, `kepler/positioning.py` (indir → tape → saatlik nedensel özellik, `load`), `tests/test_positioning.py` (23 test; 1'i `KEPLER_NET=1`), `tests/test_architecture.py`/`ARCHITECTURE.md` (katman listesi), `BACKTEST.md` §3, §14, §16, `data_manifest/metrics_manifest.json` + `metrics_quality_issues.csv`. Ham veri git'te yok; tape `tape/metrics/SYM.parquet` bu oturumda yerel kökte üretildi (Modal Volume'a **yazılmadı**: `python -m kepler.positioning --root /data --out data_manifest` ile orada yeniden üretilir, idempotent).
+- 23 sembol (genişletilmiş-9 + K7 14), 34 067 gün-zip, tümü sha256 eşleşti (manifest ile yeniden hesap: 0 uyuşmayan), eksik gün yok; DEV_END sonrası dosya istenmedi (test: 2026-04-01 ve sonrası `SealedError`, ağa çıkılmaz).
+- Taker alış hacmi klines tape'inde zaten vardı (`taker_buy_volume`, `taker_buy_quote_volume`; `universe.to_tape` atmıyor): ekleme gerekmedi, mevcut tape/test/rapor değişmedi. Modal Volume'daki gerçek tape'te sütunun bulunduğu **doğrulanmadı** (erişim yok); kod yolu gerçek şekilli zip ve `tape.load` ile testli.
+- `create_time` anlamı BTC'de 5 dk klines ile ölçüldü: 2024-03-03'e kadar dilim sonu, 2024-03-05'ten itibaren dilim başı (BACKTEST §14). Saatlik özellik xx:55'e kadar satırı alır, iki anlamda da sızdırmaz.
+- Uçtan uca BTC: `python -m kepler.positioning --root <kök> --out data_manifest --syms BTCUSDT` → 2 038 gün, 661 565 ham satır, `load` → 48 890 saatlik satır (beklenen 48 912; fark = boş saatler), `end>=2026-04-02` ValueError.
+- QC bulguları düzeltilmedi, raporlandı: ERROR sınıfı kopya-çelişki (8 sembol, 8 satır), sırasız (23 sembol), saniye sapması (10), OI ≤ 0 (23 sembol, 4 054 satır); WARN: birebir kopya, boşluk, NaN, oran ≤ 0, OI sıçraması.
+- Test: yeni dosya 23 geçti/0 kaldı; `pytest -q` tam: 306 geçti, 5 atlandı, 9 kırmızı (hepsi 0.6: TradingView fixture'ı yok, bu işten bağımsız). Ağ testleri (`KEPLER_NET=1` test_positioning + test_data): 30 geçti.
+- Kod sayısı (MISSION 7b yöntemi, `grep -vcE '^\s*(#|$)'`): veri/QC/mühür **439 → 554 (+115)**: data 110→118, qc 146→181, positioning 0→72; tahmin +60–100'ün ve ≲500 tavanının üstünde (kullanıcı "tamamdir" onayı tavanın aşılabileceğini söylemişti; sayı yine bildirildi). Hakem+yapıştırma 473, değişmedi. Araştırma kodu: 0 (strateji/ölçüm betiği yazılmadı). Deftere satır 0, deneme sayacı değişmedi, hakem/denetim/risk/defter/mühür araçlarına ve mühürlü döneme dokunulmadı.
+- Sınırlar: OI/long-short sütunlarında `create_time` anlamı ve top-trader/genel oran tanımı doğrulanmadı; OI=0 ve NaN satırları `hourly`'de temizlenmez; 2024-04…09 sırasız dosyalar `hourly` içinde sıralanır; MATIC verisi 2025-01-22'de biter. Yapılmayanlar: `premiumIndexKlines`, ek semboller, ölçüm/ön kayıt.

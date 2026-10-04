@@ -45,10 +45,11 @@ def build_symbol(root: Path, sym: str, workers: int = 16) -> str:
 def hourly(m: pd.DataFrame) -> pd.DataFrame:
     """5 dk ham satırlardan saatlik özellik. İndeks = bar AÇILIŞ zamanı (klines ile aynı); t satırı t+1h kapanışında bilinir.
 
-    Bar [H, H+1h) için yalnızca create_time ∈ [H, H+1h) satırlarının SON değeri alınır (en geç H+55dk). create_time dönem sonu ise bu
+    Bar [H, H+1h) için yalnızca create_time ∈ [H, H+55dk] satırlarının SON değeri alınır. create_time dönem sonu ise bu
     satır kapanıştan en az 5 dk önce, dönem başı ise tam kapanışta bilinir: iki anlam altında da geleceğe bakmaz. Yinelenen zaman damgasında
     son satır; satırı olmayan saat üretilmez; `n` = saatteki ham satır sayısı (12 = tam, az = eksik veri). Sütun adları ham kalır."""
     m = m.drop_duplicates("ts", keep="last").sort_values("ts").set_index("ts")
+    m = m[m.index - m.index.floor("1h") <= pd.Timedelta("55min")]  # saniye sapmalı (xx:59:59) satırlar da kapanışa 5 dk'dan yakın alınmaz
     g = m.resample("1h")  # etiket ve kapanış solda: [H, H+1h) -> H
     out = g.last()
     out["n"] = g.size()
