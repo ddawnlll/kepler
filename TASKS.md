@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: İş planı v1 (EV1 → karar) | durum: devam (Faz 0 kullanıcı girdisi bekliyor) | protokol: TASKS.md "İş planı v1"
+Aktif iş: Pozisyonlanma verisi (OI + long/short + taker) | durum: devam | protokol: TASKS.md "Pozisyonlanma verisi"
 
 ## İş planı v1 (2026-10-04): EV1'i anla, gerçekliğe bağla, karar ver
 
