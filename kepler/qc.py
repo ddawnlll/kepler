@@ -82,6 +82,45 @@ def check_frame(df: pd.DataFrame, kind: str) -> list[dict]:
     return out
 
 
+M_COLS = ["sum_open_interest", "sum_open_interest_value", "count_toptrader_long_short_ratio", "sum_toptrader_long_short_ratio",
+          "count_long_short_ratio", "sum_taker_long_short_vol_ratio"]  # arşiv `metrics` ham sütunları (5 dakikalık)
+M_STEP = pd.Timedelta("5min")
+
+
+def check_metrics(df: pd.DataFrame) -> list[dict]:
+    """Pozisyonlanma (`metrics`) sembol tape'i için kontroller; ham satırlar üzerinde, düzeltme yok. Boş liste = temiz."""
+    out, ts = [], df["ts"]
+    if ts.dt.tz is None or str(ts.dt.tz) != "UTC":
+        return [_i("not_utc", "ERROR", "zaman damgası UTC değil", len(df))]
+    n_dup = int(ts.duplicated().sum())
+    if n_dup:  # birebir kopya = WARN; aynı zamana farklı değerler = ERROR (hangisinin doğru olduğu bilinmez)
+        conflict = df.drop_duplicates().ts.duplicated().any()
+        out.append(_i("duplicate_ts", "ERROR" if conflict else "WARN", "yinelenen zaman damgası" + (" (çelişkili değerler)" if conflict else " (birebir kopya)"), n_dup, ts[ts.duplicated()].iloc[0]))
+    if (ts.diff() < pd.Timedelta(0)).any():
+        out.append(_i("non_monotonic_ts", "ERROR", "zaman damgaları artan değil", (ts.diff() < pd.Timedelta(0)).sum()))
+    if ts.max() >= SEAL_START:
+        out.append(_i("sealed_period_leak", "ERROR", f"mühür sınırı ({SEAL_START}) sonrası veri var", (ts >= SEAL_START).sum(), ts.max()))
+    if ((ts.dt.minute % 5) | ts.dt.second | ts.dt.microsecond).ne(0).any():
+        out.append(_i("misaligned_ts", "ERROR", "5 dakikaya hizalı değil", ((ts.dt.minute % 5) | ts.dt.second).ne(0).sum()))
+    u = df.drop_duplicates("ts", keep="last").sort_values("ts").reset_index(drop=True)
+    d = u.ts.diff()
+    if (d > M_STEP).any():
+        out.append(_i("gap", "WARN", f"eksik satır: {int(((d[d > M_STEP] / M_STEP) - 1).sum())} adet, {int((d > M_STEP).sum())} boşluk (en uzun {d.max()})", (d > M_STEP).sum(), u.ts[d > M_STEP].iloc[0]))
+    nan = [c for c in M_COLS if df[c].isna().any()]
+    if nan:
+        out.append(_i("nan_value", "WARN", f"NaN: {nan}", df[nan].isna().any(axis=1).sum()))
+    bad = (df["sum_open_interest"] <= 0) | (df["sum_open_interest_value"] <= 0)
+    if bad.any():
+        out.append(_i("non_positive_oi", "ERROR", "OI <= 0", bad.sum(), ts[bad].iloc[0]))
+    neg = (df[M_COLS[2:]] <= 0).any(axis=1)
+    if neg.any():
+        out.append(_i("non_positive_ratio", "WARN", "oran <= 0", neg.sum(), ts[neg].iloc[0]))
+    jump = (u.sum_open_interest.pct_change().abs() > JUMP) & (d == M_STEP)  # yalnızca komşu satır; boşluk zaten 'gap'
+    if jump.any():
+        out.append(_i("oi_jump", "WARN", f"|5 dk OI değişimi| > {JUMP:.0%}", jump.sum(), u.ts[jump].iloc[0]))
+    return out
+
+
 def check_mark_vs_kline(kl: pd.DataFrame, mk: pd.DataFrame) -> list[dict]:
     m = kl.set_index("ts")["close"].to_frame("k").join(mk.set_index("ts")["close"].rename("m"), how="inner")
     div = ((m.k / m.m) - 1).abs() > MARK_DIV

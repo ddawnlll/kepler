@@ -41,7 +41,7 @@ Alt katman üst katmanı import edemez. Düşükten yükseğe:
 
 | Katman | Modüller | Görev |
 |---|---|---|
-| veri | `data qc tape universe` | indirme, kalite, tape yükleme |
+| veri | `data qc tape universe positioning` | indirme, kalite, tape yükleme |
 | temel | `ledger report intents receipt stats capacity stress nested signals` | defter, istatistik, basit sinyaller |
 | risk | `risk portfolio` | boyutlama, kaldıraç, kill switch |
 | durum | `market_state state indicators` | oynaklık/korelasyon/funding, ATR/swing/profil, göstergeler |

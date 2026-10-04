@@ -438,3 +438,6 @@ Raporun sonunda: değişen dosyalar, koşulan komutlar ve sonuçları (geçti/ka
 
 ## Hakem motoru: Nautilus -> numba (2026-10-13, kullanıcı görevi): bitti
 `kepler/referee.py` + `kepler/referee_core.py`; Nautilus bağımlılığı kalktı. Gerçek veri: EV1/ev1_plus_new/all9_equal Nautilus dolumlarıyla satır satır eşleşti (net farkı <= 2,7e-7 USDT). Uçtan uca soğuk ~13 sn, sıcak ~3,4 sn; GPU (A10G) yalnızca tarama deneyi: 5 ms/senaryo (çekirdek). Ayrıntı ve açık boşluklar: `reports/vbt_referee/gunaydin_raporu.pdf`, BACKTEST §6.6.
+
+## Pozisyonlanma dalı entegrasyonu (2026-10-13)
+OI/long-short/taker verisi araçları eski dalından korunarak alınıyor; mevcut 23 sembollük manifest tarihsel kanıttır. Yeni çekirdekte yerel QC/nedensellik testleri ve mümkünse Modal doğrulaması ayrı kaydedilecek.

@@ -11,7 +11,7 @@ PKG = ROOT / "kepler"
 
 # Alt katman üst katmanı import edemez (aynı katman serbest). Düşükten yükseğe.
 LAYERS = [
-    ("veri", ["data", "qc", "tape", "universe"]),
+    ("veri", ["data", "qc", "tape", "universe", "positioning"]),
     ("temel", ["ledger", "report", "intents", "receipt", "stats", "capacity", "stress", "nested", "signals"]),
     ("risk", ["risk", "portfolio"]),
     ("durum", ["market_state", "state", "indicators"]),
