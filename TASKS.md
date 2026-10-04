@@ -1,6 +1,46 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: Repo mimari kuralları + Ensemble katman ayrımı | durum: bitti (inceleme bekliyor) | protokol: ARCHITECTURE.md
+Aktif iş: İş planı v1 (EV1 → karar) | durum: devam (Faz 0 kullanıcı girdisi bekliyor) | protokol: TASKS.md "İş planı v1"
+
+## İş planı v1 (2026-10-04): EV1'i anla, gerçekliğe bağla, karar ver
+
+**Hedef:** ~4 hafta içinde EV1 (ana sistem) için kanıta dayalı tek karar: **ADAY → G3 → küçük canlı (H5)** ya da **NO_DEPLOY**.
+Yeni uzman avı bu planın merkezi değildir; her yeni hipotez Faz 1'in teşhisinden çıkmalı (MISSION kural 4, 11).
+
+**Çıkış noktası (ölçülmüş):** EV1 net +8 297 / 10 000, 6 yıl; Sharpe 1,45, yıllık %13,8, oynaklık %9,5, maks DD %9,7; maliyetler brütün ≈ %10.
+Zayıf yanlar:
+- Netin %60'ı 2020–21'de (2022–26 Sharpe 0,81, alfa t 1,60; bu dönem için null koşulmadı).
+- Tasarım görülmüş veriyle yapıldı; K9 kaldı (range −895).
+- Ortalama brüt pozisyon 0,15× sermaye.
+- $500 hedef boyutları MEXC minimumlarının altında kalabilir (`reports/account_reality.md`, doğrulanmadı).
+- Veri denetimi kırmızı (`reports/data_audit.md`).
+- Deneme sayısı repo 4 117 / Modal 5 434 (`reports/trial_inventory.md`).
+
+| Faz | İş | Bitti sayılması için (kanıt) | Bağımlılık / kim | Durum |
+|---|---|---|---|---|
+| **0 Zemin** | 0.1 Modal erişimi bu ortamda | `modal run ... pytest -q` yeşil | kullanıcı: token | ☐ |
+| | 0.2 Deneme sayacı tek kaynak (N) + defter tek yazar (flock Volume'da çalışmıyor) | N tanımı yazılı; iki konteyner aynı deftere yazamıyor (test) | çekirdek (ledger): kullanıcı kilidi + bağımsız inceleme | ☐ |
+| | 0.3 Veri kırmızılarının EV1'e etkisi: işaretli barlar/boşluklar/mark–last ayrışması/funding aralığı EV1 pozisyonlarına ne kadar değiyor | etkilenen PnL payı tabloda; eşik ön kayıtlı | 0.1 | ☐ |
+| | 0.4 Bugünkü mimari commit'lerinin bağımsız incelemesi (`a2de714`, `4a8ea18`) | bulgular giderildi/belgelendi | kullanıcı + `arch-reviewer` | ☐ |
+| | 0.5 Sızıntı mutantları (V8 LEAK fikri): bilinen 6–10 sızıntı (shift(-1), center, günün nihai hacmi, ileri ffill…) `audit` tarafından %100 yakalanıyor | `tests/test_leak_mutants.py` yeşil, her mutant kırmızıya düşüyor | – | ☐ |
+| | 0.6 `tests/data/tradingview` `.gitignore`'da (`data/`): TV doğrulaması temiz klonda koşmuyor | fixture repoda ya da test açıkça atlanıyor | – | ☐ |
+| **1 EV1 adli analiz** (strateji değişmez; sonuçla EV1 ayarlanmaz) | 1.1 Uzman PnL atfı (E1/E2/E3 + etkileşim artığı) | toplam = net (mutabakat) | 0.1 | ☐ |
+| | 1.2 Ayrıştırma küpü: sembol × yıl × rejim × uzman; brüt → fee → slip → funding | tablo + toplamlar netle birebir | 0.1 | ☐ |
+| | 1.3 Pozisyon dönemleri: giriş gecikmesi, MFE/MAE, tutma, çıkışta geri verilen; karşı-olgu (işlem yok / +k gün tut / erken çık), yalnızca ölçüm (V8 Outcome Cube) | dönem tablosu + "para nerede kaybediliyor" özeti | 1.2 | ☐ |
+| | 1.4 Risk kullanımı: gerçekleşen oynaklık/τ, brüt kullanım, tampon ve IDM etkisi | tablo | 0.1 | ☐ |
+| | 1.5 Sönme testi: 2022-01 → 2026-04 için ayrı rotasyon null'u + DSR (ön kayıtlı not; N +1) | p, DSR raporda | 0.2 | ☐ |
+| **2 Hesap gerçekliği** (paralel) | 2.1 MEXC kontrat kuralları (9 sembol: tick, lot, minVol, contractSize, fee) | `account_reality_data/symbol_rules.csv` doğrulanmış | kullanıcı (proxy 403) | ☐ |
+| | 2.2 Gerçek lot/minimumla EV1 $500 ve $1k/$2k/$5k koşuları (bilgi) | red sayısı, 10k'ya göre takip farkı | 2.1, 0.1 | ☐ |
+| | 2.3 Asgari uygulanabilir sermaye ve sembol listesi | tek cümle karar önerisi | 2.2 | ☐ |
+| **3 Karar noktası** | K9 / ZAYIF: (a) EV2 ön kaydı, (b) ZAYIF kabul → NO_DEPLOY, (c) K9 eşiği (yalnızca sonraki test için) | karar MISSION/TASKS'a işlendi | kullanıcı; Faz 1–2 bitince | ☐ |
+| | EV1 kodunu ve parametrelerini dondur (hash + tarih): ≥ dondurma tarihi gelen veri gerçek ileriye dönük test olur | dondurma kaydı defterde | kullanıcı onayı | ☐ |
+| **4 EV2** (yalnız 3a seçilirse) | Faz 1'in teşhis ettiği tek mekanizmaya yönelik en çok 3 denemelik ön kayıt (ör. rejime göre trend ağırlığı, risk bütçesi τ, delta-nötr carry). `reports/bollinger_protocol.md` taslağı yalnızca teşhis range kaybını trend whipsaw'a bağlarsa aday | K1–K9 kartı; ADAY → G3 | Faz 3 | ☐ |
+| **5 Doğrulama + canlı** (yalnız ADAY) | G3 mühür tek atış; MEXC emir adaptörü + mutabakat + kill switch; küçük canlı (H5) | G3 kararı; canlı ilk 30 gün mutabakatı | kullanıcı komutu | ☐ |
+| **6 Hipotez hattı** (sürekli, bütçeli) | Kaynak sırası: yapısal mekanizma (funding/basis, OI/likidasyon verisi: Binance arşivinde olup olmadığı doğrulanmadı) > kitap kuralları. Çeyrekte en çok 3 ön kayıt; durma kuralı: 3 ardışık NO_EDGE → kaynak değiştir | ön kayıt + rapor | Faz 3'ten sonra | ☐ |
+| **7 Altyapı** (düşük öncelik) | WP1 (Zone Fade arayüze), `portfolio.size` + `risk.py` birleşimi (C), fabrika F2/H4 **ADAY çıkana kadar dondurulur** | – | – | ☐ |
+
+**Kullanıcıdan gereken:** Modal token (0.1), çekirdek kilidi + bağımsız inceleme (0.2, 0.4), MEXC kural çıktısı (2.1), K9 kararı ve EV1 dondurma onayı (Faz 3).
+**Durma kuralı:** Faz 1–2 bitince Faz 3 kararı verilmeden yeni strateji koşusu yapılmaz. Her faz sonunda TASKS güncellenir, commit + push.
 
 Bu dosya görev planıdır, spec değil. Hedef, kapılar ve kurallar `MISSION.md`'de; sistem haritası
 `ARCHITECTURE.md`'de. Çelişki olursa o iki belge kazanır; çelişkiyi raporla.
