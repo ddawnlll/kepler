@@ -6,6 +6,8 @@
 > **Öncelik:** `MISSION.md` ve `BACKTEST.md` bu belgeden üstündür. Çelişki bulunursa belge değil onlar kazanır ve çelişki raporlanır.
 > **Repo yolu:** `docs/factory.md`
 
+> **Dondurulmuş (2026-10-03):** bu belgeye yeni bölüm eklenmez, yalnızca düzeltme ve kısaltma yapılır. Mimari kurallar `ARCHITECTURE.md` + `tests/test_architecture.py`'dedir ve çelişkide kazanır; `kepler/` yerleşimi için §dosya haritası yalnızca hedef gösterir.
+
 ---
 
 ## 0. Tek cümle
@@ -262,7 +264,7 @@ reports/  PROTOCOL_TEMPLATE.md  <ad>_protocol.md  <card_id>_result.md   [VAR: re
 kepler/
   referee.py audit.py evaluate.py ledger.py risk.py stats.py robust.py
   state.py tape.py data.py qc.py universe.py indicators.py ensemble.py turtle.py ...  [VAR]
-  experts/_interface.py                 # [YENİ] uzman sözleşmesi (WP1)
+  experts/_interface.py                 # [KISMEN VAR] `forecast` türü (Ensemble uzmanları); aday yaşam döngüsü türü ve Zone Fade taşıması WP1'de
   experts/zone_fade.py                  # [VAR] referans uzman
 tests/  test_<ad>.py  fixtures/  audit/  leak/
 audits/<run_id>/                        # conformance, leak, realism, redteam

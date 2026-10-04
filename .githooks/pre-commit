@@ -1,0 +1,3 @@
+#!/bin/sh
+# Commit öncesi: korumalı yol kontrolü + mimari test (ajan fark etmeksizin). Kurulum: git config core.hooksPath .githooks
+exec python3 "$(git rev-parse --show-toplevel)/.claude/hooks/guard.py" staged
