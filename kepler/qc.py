@@ -101,7 +101,7 @@ def check_metrics(df: pd.DataFrame) -> list[dict]:
     if ts.max() >= SEAL_START:
         out.append(_i("sealed_period_leak", "ERROR", f"mühür sınırı ({SEAL_START}) sonrası veri var", (ts >= SEAL_START).sum(), ts.max()))
     if ((ts.dt.minute % 5) | ts.dt.second | ts.dt.microsecond).ne(0).any():
-        out.append(_i("misaligned_ts", "ERROR", "5 dakikaya hizalı değil", ((ts.dt.minute % 5) | ts.dt.second).ne(0).sum()))
+        out.append(_i("misaligned_ts", "ERROR", "5 dakikaya hizalı değil", ((ts.dt.minute % 5) | ts.dt.second).ne(0).sum(), ts[((ts.dt.minute % 5) | ts.dt.second).ne(0)].iloc[0]))
     u = df.drop_duplicates("ts", keep="last").sort_values("ts").reset_index(drop=True)
     d = u.ts.diff()
     if (d > M_STEP).any():
