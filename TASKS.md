@@ -1,6 +1,8 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: İş planı v1 (EV1 → karar) | durum: devam (Faz 1.5 bitti; Faz 0 kullanıcı girdisi bekliyor) | protokol: TASKS.md "İş planı v1"
+Aktif iş: 10 edge türü → uzmanlar (aile testi, kullanıcı görevi 2026-10-04) | durum: devam | protokol: reports/edge_experts_protocol.md
+
+(Önceki aktif iş, EV1 iş planı v1, aşağıda; kullanıcı bu iş için Faz 3 durma kuralını kaldırdı, EV1 kararı hâlâ bekliyor.)
 
 ## İş planı v1 (2026-10-04): EV1'i anla, gerçekliğe bağla, karar ver
 
