@@ -1,7 +1,9 @@
 """Ensemble v1 özet tabloları: scripts/ensemble.py çıktıları (JSON) -> tables.md + summary.json. Kart ve karar kuralı reports/ensemble_protocol.md'deki gibi.
 
-  python scripts/ensemble_report.py <işçi çıktı dizini> <çıktı dizini> [kümülatif deneme için ledger dizinleri...]"""
+  python scripts/ensemble_report.py <işçi çıktı dizini> <çıktı dizini> [kümülatif deneme için ledger dizinleri...]
+Tek uzman kipi (reports/edge_experts_protocol.md): EXPERT=<ad> ortam değişkeni; al-tut ve EV1 günlük PnL'i reports/ensemble_data/primary.json'dan, ablasyonlar no_risk/no_buffer (N = 3)."""
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -12,11 +14,15 @@ from kepler import robust, stats
 
 SRC, OUT = Path(sys.argv[1]), Path(sys.argv[2])
 CAP, SPLIT = 10_000.0, "2022-01-01"
-ABL = ("trend_only", "no_xs", "no_carry", "no_risk", "no_buffer")
+EX = os.environ.get("EXPERT", "")
+EV1 = json.loads((Path(__file__).resolve().parents[1] / "reports" / "ensemble_data" / "primary.json").read_text())
+ABL = ("no_risk", "no_buffer") if EX else ("trend_only", "no_xs", "no_carry", "no_risk", "no_buffer")
 SHIFT_STARTS = ("2020-04-01", "2020-05-01", "2020-06-01", "2020-07-01")
 P = {}
 for f in sorted(SRC.glob("primary*.json")):
     P.update(json.loads(f.read_text()))
+if EX:
+    P["bh"] = EV1["bh"]  # aynı al-tut koşusu (aynı Spec ve pencere)
 K7 = json.loads((SRC / "k7.json").read_text())
 BTC = pd.Series(json.loads((SRC / "btc_close.json").read_text()))
 BTC.index = pd.to_datetime(BTC.index, utc=True)
@@ -42,7 +48,8 @@ def pct(x):
 main = P["main"]
 r = ser(main["daily"]) / CAP
 abl = {k: ser(P[f"abl_{k}"]["daily"]) / CAP for k in ABL}
-trial_srs = [stats.moments(r)[0]] + [stats.moments(x)[0] for x in abl.values()]  # N = 6 (birincil + 5 ablasyon; muhafazakâr)
+NT = 1 + len(ABL)
+trial_srs = [stats.moments(r)[0]] + [stats.moments(x)[0] for x in abl.values()]  # EV1: N = 6 (birincil + 5 ablasyon); uzman kipi N = 3; muhafazakâr
 bh = ser(P["bh"]["daily"]) / CAP
 lab = robust.regime(BTC)
 s = main["summary"]
@@ -94,14 +101,15 @@ for name, (lo, hi) in {"2020-04→2022-01": ("2020-04-01", SPLIT), "2022-01→20
     sub[name] = dict(net=float(x.sum() * CAP), sharpe=shp(x), bh_sharpe=shp(y), t_alpha=stats.nw_alpha(xx.to_numpy(), yy.to_numpy(), 5)[2], maxdd=float(stats.max_drawdown(x.to_numpy())))
 years = len(r) / 365
 summ = dict(decision=decision, passed=passed, net=s["net_pnl"], gross=s["gross_pnl"], funding=s["funding"], fee=s["fee"], slippage=s["slippage"], sharpe=shp(r), sharpe_bh=shp(bh), ann_return=float(r.sum() / years),
-            ann_vol=float(r.std() * np.sqrt(365)), p_gross=p_g, p_net=p_n, null_b=len(ng), dsr=dsr, dsr_bonf6=min(1, 6 * p_g), psr0=stats.psr(r), alpha_year=a * 365, beta=b, t_alpha=t, maxdd=dd,
+            ann_vol=float(r.std() * np.sqrt(365)), p_gross=p_g, p_net=p_n, null_b=len(ng), dsr=dsr, dsr_bonf6=min(1, NT * p_g), psr0=stats.psr(r), alpha_year=a * 365, beta=b, t_alpha=t, maxdd=dd,
             boot={L: v["maxdd"] for L, v in boot.items()}, nb={k: dict(net=float(n), sharpe=float(x)) for k, n, x in zip(nb, nb_net, nb_sh)}, halves=halves, shifts=shifts, k7=K7["summary"]["net_pnl"],
             k7_sym=K7["sym_net"], abl=sh_abl, regimes=reg, sub=sub, kill=kill, dd_peak=float(dd_peak.max()), mintrl_years=(stats.min_trl(sr_d, g3, g4) / 365 if sr_d > 0 else None),
             sym_net=main["sym_net"], stress=main["stress"], recon=main["recon"], turnover_year=main["traded"] / years / CAP, gross_mean=main["gross_notional_mean"] / CAP,
-            forecast_abs_mean=main["forecast_abs_mean"], forecast_long_share=main["forecast_long_share"], cap500=P["cap500"]["summary"], cap500_sharpe=shp(ser(P["cap500"]["daily"]) / 500))
+            forecast_abs_mean=main["forecast_abs_mean"], forecast_long_share=main["forecast_long_share"], cap500=None if EX else P["cap500"]["summary"], cap500_sharpe=None if EX else shp(ser(P["cap500"]["daily"]) / 500),
+            family_ok=bool(p_g <= 0.05 / 9), m1_range_net=reg["range"]["total"], m2_corr_ev1=float(r.corr(ser(EV1["main"]["daily"]) / CAP)), flip=None if "flip" not in P else dict(net=P["flip"]["summary"]["net_pnl"], sharpe=shp(ser(P["flip"]["daily"]) / CAP)))
 first_fail = next((k for k in passed if not passed[k]), None)
-md = [f"# Ensemble v1 tabloları (otomatik): karar {decision} (ilk kalan: {first_fail})", "", "| # | test | değer | eşik | geçti |", "|---|---|---|---|---|",
-      f"| K1 | rotasyon null p (brüt; B={len(ng)}) / DSR (N=6) | p={p_g:.4f} (null ort. {ng.mean():.0f} ± {ng.std():.0f}; gerçek {s['gross_pnl']:.0f}) / DSR={dsr:.3f} | p ≤ 0,05; DSR ≥ 0,95 | {k1} |",
+md = [f"# {'Edge uzmanı ' + EX if EX else 'Ensemble v1'} tabloları (otomatik): karar {decision} (ilk kalan: {first_fail}); aile düzeltmesi (p ≤ {0.05 / 9:.4f}): {'geçti' if summ['family_ok'] else 'kaldı'}; M1 range net {summ['m1_range_net']:.0f}; M2 EV1 korelasyonu {summ['m2_corr_ev1']:.2f}" + (f"; ters yön (bilgi): net {summ['flip']['net']:.0f}, Sharpe {summ['flip']['sharpe']:.2f}" if summ["flip"] else ""), "", "| # | test | değer | eşik | geçti |", "|---|---|---|---|---|",
+      f"| K1 | rotasyon null p (brüt; B={len(ng)}) / DSR (N={NT}) | p={p_g:.4f} (null ort. {ng.mean():.0f} ± {ng.std():.0f}; gerçek {s['gross_pnl']:.0f}) / DSR={dsr:.3f} | p ≤ 0,05; DSR ≥ 0,95 | {k1} |",
       f"| K2 | Sharpe vs al-tut / NW alfa | {shp(r):.2f} vs {shp(bh):.2f} / a={a * 365:.3f}/yıl, b={b:.3f}, t={t:.2f} | > ve t ≥ 2 | {k2} |",
       f"| K3 | net Sharpe / fee16+slip6 / gecikme 1 | {shp(r):.2f} / {c(16, 6):.0f} / {c(10, 2, 1):.0f} | ≥ 1,0; > 0; > 0 | {k3} |",
       f"| K4 | maks DD / bootstrap DD95 (blok 10/20/40) | {pct(dd)} / {pct(boot[10]['maxdd'][1])} / {pct(boot[20]['maxdd'][1])} / {pct(boot[40]['maxdd'][1])} | ≤ %25; ≤ %30 | {k4} |",
@@ -124,7 +132,8 @@ md += ["", "## Sembol dağılımı (net)", "| " + " | ".join(main["sym_net"]) + 
 md += ["", "## K7 sembolleri (fee 16 + slip 2; net)", "| " + " | ".join(K7["sym_net"]) + " |", "|" + "---|" * len(K7["sym_net"]), "| " + " | ".join(f"{v:.0f}" for v in K7["sym_net"].values()) + " |"]
 md += ["", "## Stres pencereleri", "| pencere | " + " | ".join(next(iter(main["stress"].values()))) + " |", "|---|" + "---|" * len(next(iter(main["stress"].values())))]
 md += [f"| {k} | " + " | ".join(f"{x:.3g}" if isinstance(x, (int, float)) else str(x) for x in v.values()) + " |" for k, v in main["stress"].items()]
-md += ["", f"500 USD sermaye (bilgi): net {P['cap500']['summary']['net_pnl']:.2f}, Sharpe {summ['cap500_sharpe']:.2f}, red {P['cap500']['summary']['n_rejected']:.0f}, dolum {P['cap500']['summary']['n_fills']:.0f}"]
+if not EX:
+    md += ["", f"500 USD sermaye (bilgi): net {P['cap500']['summary']['net_pnl']:.2f}, Sharpe {summ['cap500_sharpe']:.2f}, red {P['cap500']['summary']['n_rejected']:.0f}, dolum {P['cap500']['summary']['n_fills']:.0f}"]
 n_prev = sum(sum(1 for _ in p.open()) for d in sys.argv[3:] for p in Path(d).rglob("*.jsonl"))
 md += [f"Kümülatif deneme sayısı (ledger satırları): önceki {n_prev} + bu test 1 = {n_prev + 1}."]
 OUT.mkdir(parents=True, exist_ok=True)

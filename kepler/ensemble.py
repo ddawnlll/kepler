@@ -3,12 +3,13 @@ Bu dosya yalnızca KOMPOZİSYON: Params, aday birleştirme (combine), K1 rotasyo
 
 Kitap sözleşmesi (BACKTEST §4): book({sym: kl}) -> {sym: DataFrame[target, stop]}; kl saatlik OHLCV + `fund_hr` (signals.with_funding). Karar her UTC gününün son
 mevcut barına yazılır (gün kapanışı), diğer barlar NaN (tut); stop yok (NaN). Tüm girdiler <= gün kapanışı (nedensel)."""
+import math
 from dataclasses import dataclass, replace
 
 import numpy as np
 import pandas as pd
 
-from kepler.experts import carry, trend, xs_momentum
+from kepler.experts import bollinger, carry, fundcrowd, lowvol, nearhigh, orderflow, trend, volrev, xs_momentum
 from kepler.experts.carry import BASE_FUNDING  # noqa: F401  (geriye uyum: en.BASE_FUNDING)
 from kepler.market_state import market_state, panel  # noqa: F401  (geriye uyum: en.panel, en.market_state)
 from kepler.portfolio import size  # noqa: F401  (geriye uyum: en.size)
@@ -30,6 +31,9 @@ class Params:
     min_days: int = 90  # aktiflik: en az bu kadar günlük kapanış
     warm: int = 30  # panel geçmişi bu kadar günden azsa pozisyon yok
     risk: bool = True  # False: `no_risk` ablasyonu (n = K F / M)
+    expert: str = ""  # boş = EV1; REG anahtarı = o uzman tek başına (ağırlık 1; reports/edge_experts_protocol.md)
+    xp: tuple = ()  # tek uzman kipi: parametre geçersiz kılma (K5 komşusu), (ad, değer) çiftleri
+    flip: bool = False  # tek uzman kipi: yön testi (F -> -F, bilgi)
 
     def scaled(self, s: float) -> "Params":
         """K5 komşusu: tüm geri bakışlar x s (tamsayıya yuvarlanır)."""
@@ -37,16 +41,23 @@ class Params:
         return replace(self, trend_L=tuple(r(x) for x in self.trend_L), xs_L=tuple(r(x) for x in self.xs_L), carry_days=r(self.carry_days), vol_days=r(self.vol_days), corr_days=r(self.corr_days))
 
 
+REG = dict(trend=trend, xs_momentum=xs_momentum, carry=carry, bollinger=bollinger, lowvol=lowvol, nearhigh=nearhigh, fundcrowd=fundcrowd, volrev=volrev, orderflow=orderflow)
+
+
 def experts(close: pd.DataFrame, st: dict, p: Params) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """(E1 trend, E2 kesitsel momentum, E3 carry), her biri [-1, 1]; aktif olmayan hücre NaN. Uzmanlar `kepler/experts/` altında."""
+    if p.expert:
+        return ((-1 if p.flip else 1) * REG[p.expert].forecast(close, st, p),)
     return trend.forecast(close, st, p), xs_momentum.forecast(close, st, p), carry.forecast(close, st, p)
 
 
 def combine(es, st: dict, p: Params) -> pd.DataFrame:
     """F = clip(F_raw · 0,5 / m_d, -1, 1); m_d = d'ye kadarki aktif hücrelerde |F_raw| ortalaması (genişleyen); panel geçmişi < warm gün ise 0."""
     act = st["active"]
-    raw = sum(w * e.fillna(0.0) for w, e in zip(p.weights, es)).where(act)
-    m = raw.abs().sum(axis=1).cumsum() / act.sum(axis=1).cumsum()
+    raw = sum(w * e.fillna(0.0) for w, e in zip((1.0,) if p.expert else p.weights, es)).where(act)
+    ab = raw.abs()
+    tot = pd.Series([math.fsum(r[~np.isnan(r)]) for r in ab.to_numpy()], index=ab.index) if p.expert else ab.sum(axis=1)  # tek uzman kipi: sütun sayısından bağımsız tam toplam (audit kesik panelde 1 ulp farkını sızıntı sanmasın); EV1 yolu aynen
+    m = tot.cumsum() / act.sum(axis=1).cumsum()
     warm = act.any(axis=1).cumsum() >= p.warm
     f = (raw.mul(0.5 / m.where(m > 0), axis=0)).clip(-1, 1)
     return f.where(warm, 0.0).where(act)
