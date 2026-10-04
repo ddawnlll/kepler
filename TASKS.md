@@ -18,12 +18,12 @@ Zayıf yanlar:
 
 | Faz | İş | Bitti sayılması için (kanıt) | Bağımlılık / kim | Durum |
 |---|---|---|---|---|
-| **0 Zemin** | 0.1 Modal erişimi bu ortamda | `modal run ... pytest -q` yeşil | kullanıcı: token | ☐ |
+| **0 Zemin** | 0.1 Modal erişimi bu ortamda | `modal run ... pytest -q` yeşil | kullanıcı: token | ☑ 2026-10-04: token ortamda, `modal` 1.6.1 (`modal[api-proxy-support]`) proxy altında çalışıyor; Modal'de 285 geçti, 4 atlandı, 9 kırmızı (hepsi 0.6: TradingView fixture'ı yok) |
 | | 0.2 Deneme sayacı tek kaynak (N) + defter tek yazar (flock Volume'da çalışmıyor) | N tanımı yazılı; iki konteyner aynı deftere yazamıyor (test) | çekirdek (ledger): kullanıcı kilidi + bağımsız inceleme | ☐ |
 | | 0.3 Veri kırmızılarının EV1'e etkisi: işaretli barlar/boşluklar/mark–last ayrışması/funding aralığı EV1 pozisyonlarına ne kadar değiyor | etkilenen PnL payı tabloda; eşik ön kayıtlı | 0.1 | ☐ |
 | | 0.4 Bugünkü mimari commit'lerinin bağımsız incelemesi (`a2de714`, `4a8ea18`) | bulgular giderildi/belgelendi | kullanıcı + `arch-reviewer` | ☐ |
 | | 0.5 Sızıntı mutantları (V8 LEAK fikri): bilinen 6–10 sızıntı (shift(-1), center, günün nihai hacmi, ileri ffill…) `audit` tarafından %100 yakalanıyor | `tests/test_leak_mutants.py` yeşil, her mutant kırmızıya düşüyor | – | ☐ |
-| | 0.6 `tests/data/tradingview` `.gitignore`'da (`data/`): TV doğrulaması temiz klonda koşmuyor | fixture repoda ya da test açıkça atlanıyor | – | ☐ |
+| | 0.6 `tests/data/tradingview` `.gitignore`'da (`data/`): TV doğrulaması temiz klonda koşmuyor (Modal'de 9 test bu yüzden kırmızı) | fixture yeniden üretilip repoya girer ya da test fixture yoksa açıkça atlanır | kullanıcı: mevcut test dosyası korumalı; fixture TradingView'den yeniden alınmalı | ☐ |
 | **1 EV1 adli analiz** (strateji değişmez; sonuçla EV1 ayarlanmaz) | 1.1 Uzman PnL atfı (E1/E2/E3 + etkileşim artığı) | toplam = net (mutabakat) | 0.1 | ☐ |
 | | 1.2 Ayrıştırma küpü: sembol × yıl × rejim × uzman; brüt → fee → slip → funding | tablo + toplamlar netle birebir | 0.1 | ☐ |
 | | 1.3 Pozisyon dönemleri: giriş gecikmesi, MFE/MAE, tutma, çıkışta geri verilen; karşı-olgu (işlem yok / +k gün tut / erken çık), yalnızca ölçüm (V8 Outcome Cube) | dönem tablosu + "para nerede kaybediliyor" özeti | 1.2 | ☐ |
