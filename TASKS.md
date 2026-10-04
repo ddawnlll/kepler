@@ -309,3 +309,41 @@ Tasarım `BACKTEST.md` §15.10. Sıra: (1) ☑ `reports/levels_event_study_proto
 
 ## Fabrika spesifikasyonu v2 (2026-10-03, kullanıcı isteği; yalnızca tasarım)
 `docs/factory.md` (Opus 5.5 taslağı + 7 blocker düzeltmesi + bürokrasi azaltma + fazsız bağımlılık sırası). Prompt'lar v1'den neredeyse aynen. İş paketleri (§16): WP1 uzman arayüzü (Zone Fade birebir aynı sonuç), WP2 kayıt + legacy içe aktarım + kütüphaneci, WP3 kapılar + `render_report`, WP4 kontrol düzlemi, WP5 runner + promote (C), WP6 VPS altyapısı, WP7 Hermes doğrulama, WP8 prompt'lar + ekilmiş hata takımı, WP9 entegrasyon provası (kabul takımı T1–T14). Sana kalan kararlar: `docs/factory.md` §18.2 (`N_eff` yöntemi, bütçe, repo koruması, ikinci mühür dönemi, müdür açılışı). Hiçbir kod yazılmadı; Hermes davranışı dokümandan okundu, doğrulanmadı.
+
+## Pozisyonlanma verisi (OI + long/short + taker) — bulut ajanı görevi (2026-10-04, kullanıcı isteği; veri işi, strateji yok)
+**Neden (gözlenmiş engel).** Bütün sinyaller, uzmanlar ve göstergeler OHLCV'den (+ funding) türüyor; piyasanın nasıl konumlandığını (OI, kalabalık long/short, taker akışı) ölçen hiçbir girdi yok. Swing (3d karar, 1h/4h giriş) için değerli olan bu; ham işlem akışı, emir defteri ve spread değil (maliyeti spread değil fee belirliyor). Bu görev yalnızca **veriyi** getirir; hipotez, sinyal, hakem koşusu ve defter kaydı yok, deneme sayacına girmez. Sonra gelecek ölçüm (koşullu getiri / olay çalışması) ayrı ön kayıttır.
+
+**Bugün doğrulananlar (2026-10-04; yeniden doğrula, değişmiş olabilir).**
+- Kaynak ücretsiz arşiv: `data/futures/um/daily/metrics/{SYM}/{SYM}-metrics-YYYY-MM-DD.zip` (yalnızca günlük; aylık yok). Her dosyanın `.CHECKSUM`'u var; BTCUSDT-2023-06-15 örneğinde sha256 eşleşti.
+- Kapsam: BTCUSDT 2020-09-01'den, ETH/SOL/XRP/DOGE 2021-12-01'den 2026-10-03'e; dosya sayısı gün sayısına eşit (eksik gün yok). Sembol başına ~20 MB zip, 5 dakikalık 288 satır/gün. Diğer semboller **bakılmadı**.
+- Sütunlar (ham adlar): `create_time, symbol, sum_open_interest, sum_open_interest_value, count_toptrader_long_short_ratio, sum_toptrader_long_short_ratio, count_long_short_ratio, sum_taker_long_short_vol_ratio`. Anlamları ve `create_time`'ın anlık mı dönem sonu mu olduğu **doğrulanmadı**.
+- `liquidationSnapshot` arşivde yok (BTC için boş). `premiumIndexKlines` 1h var (2020-01'den) ama bu görevde **kapsam dışı**.
+- Taker alış hacmi klines'ta hazır sütun (`taker_buy_volume`, `taker_buy_quote_volume`, `kepler/data.py` NAMES). Parquet'e taşınıp taşınmadığı **kontrol edilmedi**.
+- Erişim: Mac'ten `data.binance.vision` SSL hatası verdi, `s3-ap-northeast-1.amazonaws.com/data.binance.vision` çalıştı; `kepler/data.py` iki adresi de tanıyor. `fapi` bulutta 451, gerekmiyor. Modal bulut konteynerinden gRPC proxy'siyle erişilemeyebilir (Zone Fade koşusunda öyleydi): ham veri konteynerde `--root <kök>` altında tutulur.
+
+**Karar (kullanıcı, 2026-10-04, "tamamdir").** Veri/QC kod tavanı (MISSION kural 7b, ≲500 satır, G1 sonunda ~470) bu iş için aşılabilir; tahmin +60–100 satır. Yorum benim: soruya "tamamdir" cevabı onay sayıldı. Sayı yine raporlanır, sessizce geçilmez.
+
+### Görev (bulut ajanı: bu bölümü oku ve işi bitir)
+```text
+Kepler repo'sunda (AGENTS.md ve MISSION.md çelişkide kazanır) kendi dalında çalış. Önce TASKS.md'deki "Aktif iş:" satırını bu iş için güncelle.
+
+Hedef: çekirdek-5, genişletilmiş-9 ve K7'nin 14 sembolü için Binance arşivinden `metrics` verisini indir, doğrula, tape'e koy ve ileride bir uzmanın nedensel kullanabileceği saatlik özellikler olarak sun. Taker alış hacminin klines'tan tape'e gelmesini de çöz. Neden: bütün mevcut sinyaller aynı OHLCV bilgisinin dönüşümü; OI ve konumlanma verisi yeni bilgi olabilir. Bu veri henüz hiçbir şeyi kanıtlamaz; ölçüm ayrı ön kayıttır.
+
+Bitti sayılması için hepsi doğru olmalı:
+1. İndirme mevcut `kepler/data.py` kurallarıyla yürür: sha256 doğrulamalı, idempotent, devam ettirilebilir, bozuk dosya reddedilir. Dev dönemi sonu (`DEV_END`, 2026-03-31) sonrası hiçbir dosya istenmez; mühür testi bu veriyi de kapsar.
+2. Bir sembol-gün için eksik/yinelenen/bozuk satır, sıfır veya negatif OI, aşırı sıçrama ve eksik gün kontrol edilir. Düzeltme yapılmaz, yalnızca raporlanır (`data_manifest/` altında dosya hash'leri, aralıklar, satır sayıları, bulgular; ham veri git'e girmez).
+3. 5 dakikalık satırlardan saatlik özellik üretilir ve bir 1h bar kapanışında yalnızca o anda bilinen bilgiyi kullanır. `create_time` anlamı doğrulanana kadar muhafazakâr davran (bar kapanışından en az bir satır önceki değeri al). Nedensellik, elle hesaplı küçük bir örnek, mühür reddi ve eksik veri testleriyle kanıtlanır; ham sütun adlarını yeniden adlandırma.
+4. Taker sütunlarının tape'te olup olmadığı belli ve gerekiyorsa eklenmiş olur. Mevcut tape değerleri, mevcut testler ve önceki raporlardaki sonuçlar değişmez: ekleme yalnızca yeni sütun olur.
+5. Gerçek veride en az bir sembolde (BTC) uçtan uca koştu; sonuç kanıtlıdır (komut, satır sayıları, hash eşleşmesi). Bu görevin sayısal kanıtı 1–4'tür, bir edge iddiası değil.
+6. `BACKTEST.md` §3'e kısa bir [VAR] notu ve §14'e doğrulanmamışlar (sütun anlamı, `create_time`) eklenir. Veri/QC kodunun satır sayısı (önce/sonra, MISSION kural 7b yöntemiyle) ve araştırma kodu sayısı ayrı yazılır.
+
+Dokunma: hakem, denetim, risk, defter (`ledger.py`, `evaluate`), mühür araçları ve mühürlü dönem. Mühürlü döneme ait bir dosya gerekirse, ağ erişilemezse veya kural çelişirse dur ve raporla. Strateji, sinyal, parametre taraması veya ölçüm yazma; yeni spec belgesi açma.
+
+Bütçe: yaklaşık 3 saat ve 150 araç çağrısı (öneri; aşılırsa dur ve raporla).
+
+İşi bitirene kadar çalış; yalnızca onsuz ilerleyemeyeceğinde veya geri dönüşü zor bir adımdan önce dur. İş bitip kontrol edildiğinde dur ve raporla: istenmeyen özellik, test, dosya veya refactor ekleme; yararlı olacağını düşünürsen sonda bir cümleyle öner.
+
+Çalıştırılabilen bir kod değiştirdiğinde bildirmeden önce değişikliği gerçekten sınayan bir kontrol koş: ilgili testler, yeni komutun kendisi. Yalnızca söz dizimi kontrolü sayılmaz. Kontrol koşamadıysan hangisini ve neden koşamadığını yaz; "bitti" deme. Kurulum gerekiyorsa `uv sync` kullan, sudo ve sistem paket yöneticisi yok.
+
+Raporun sonunda: değişen dosyalar, koşulan komutlar ve sonuçları (geçti/kaldı/atlandı), bilinen sınırlar, yapılmayanlar. Doğrulanmamış rakamı "doğrulanmadı" diye yaz. TASKS.md'yi güncelle, commit + push et.
+```
