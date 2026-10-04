@@ -571,7 +571,7 @@ Mühürlü dönem (son 6 ay, ≥ 2026-04-01) projede **tek atıştır** (MISSION
 
 Hermes üç iş yapar: Telegram köprüsü, profil başına ajan çalıştırma (Kanban) ve zamanlama. **Fabrikanın doğruluğu Hermes'e bağlı değildir:** kayıt, karar ve sayaç `registry/` ve `krunner` script'lerindedir.
 
-**Hermes dokümanından okunanlar (hiçbiri çalıştırılmadı, [DOĞRULANMADI]):**
+**Hermes dokümanından okunanlar** (2026-10-04'te VPS'te `e1e82d7` sürümüyle denendi; her madde için hüküm ve kanıt **§19.2**'de, buradaki metin ilk okumadır):
 
 - **Kanban** işin merkezidir: görevler SQLite `kanban.db`'de, her çalışan tam bir OS süreci, `hermes -p <profil>` ile profilinin modeliyle çalışır. **Görev başına model profilden gelir**; `delegate_task`'ta görev başına model parametresi yoktur (yalnızca genel `delegation.model`).
 - Durumlar: `triage, todo, ready, running, blocked, review, done, archived`. Bağımlılık: `--parent`. Araçlar: `kanban_show`, `kanban_list`, `kanban_complete`, `kanban_block`, `kanban_heartbeat`, `kanban_comment`, `kanban_create`, `kanban_link`, `kanban_unblock`, `kanban_request_review`.
@@ -1804,15 +1804,15 @@ Fabrika **tek seferde** kurulur: aşağıdaki iş paketlerinin hepsi bitmeden "a
 
 ### 18.1 Doğrulanmamışlar
 
-1. **Hermes davranışı:** §13.1'deki tüm maddeler dokümandan okundu, çalıştırılmadı (profil başına gerçek model, araç adları/parametreleri, `max_in_progress`, `no_agent` cron, yazma kısıtı). WP7 kapatır.
-2. **GitHub planı:** özel repoda korumalı dal/ruleset desteği. Yoksa yedek: VPS bare repo + hook (§5.2).
-3. **Sol ve Luna'nın model ailesi** (D10 bu bilgiye dayanıyor) ve **Sol/Luna/Anthropic'in Hermes'te kullanılabilirliği.**
+1. ~~**Hermes davranışı**~~ **Büyük kısmı kapandı (WP7, 2026-10-04):** §19.2. Açık kalanlar orada "DOĞRULANMADI" etiketli.
+2. ~~**GitHub planı**~~ **Çürütüldü:** ücretsiz plan, özel repoda dal koruması/ruleset yok (`HTTP 403 Upgrade to GitHub Pro`). Yedek yol (VPS bare repo + hook) kuruldu ve sınandı: §19.1.
+3. **Sol ve Luna'nın model ailesi** (D10 bu bilgiye dayanıyor): **Sol/Luna/Terra Hermes'te `openai-codex` sağlayıcısında kullanılabilir ve çağrıldı** (§19.2 #2); ailesi hâlâ **doğrulanmadı**. Anthropic'in Hermes'te kullanılabilirliği **denenmedi** (anahtar yok).
 4. **Modal'da ayrı token/workspace ile mühür izolasyonu.**
 5. **15 dakika hedefi:** Nautilus portföy hakemiyle tam zincir ölçülmedi (Zone Fade koşusu referans alınabilir).
 6. **`N_eff` yöntemi ve `legacy_n_eff`** (§10.2) ve sonucun doğurduğu DSR çıtası: kabaca yıllık Sharpe ≈ 2 mertebesi bir çıta bekleniyor, **hesap doğrulanmadı.**
 7. **`max_trials` (8), `consecutive_no_edge_freeze` (3), bütçe tavanları** ilk tahmindir, kalibre edilecek.
 8. **Luna'nın Türkçe sınıflama performansı.** §15.3 karar verecek.
-9. **Kanban `reason` önekleri** (`[INPUT]`, `[STUCK]`, `[ONAY]`, `[INFRA]`) adapter'ın ayrıştırmasına dayanıyor; Hermes'te serbest metin alanı olarak bulunduğu varsayıldı.
+9. ~~**Kanban `reason` önekleri**~~ **Doğrulandı:** Hermes `reason`'ı olduğu gibi saklıyor ve önek yorumlamıyor; ayrıştırma adapter'ındır (§19.2 #5).
 
 ### 18.2 Sana kalan kararlar
 
@@ -1874,3 +1874,68 @@ sohbet botu → jj:  CANDIDATE: H-2026-0051 (F-009). Kırmızı takım CLEAR, 4/
                    Mühür açma Telegram'dan yapılamaz ve proje başına tek atıştır. SSH komutu (jj olarak):
                    ~/kepler-seal/unseal.py --card H-2026-0051
 ```
+
+---
+
+## 19. VPS kurulumu ve Hermes doğrulaması (WP6, WP7) — kayıt, 2026-10-04
+
+Sunucu: AWS, Debian 13, 2 vCPU, 7,8 GB RAM. Hermes `e1e82d7` (2026.9.24). Her hüküm: **DOĞRULANDI** (komutla denendi, çıktısı elde), **ÇÜRÜTÜLDÜ**, **DOĞRULANMADI** (denenmedi). Betikler repoda `factory/vps/`. Bu bölüm bir C yolu (`docs/`) değişikliğidir: kullanıcı talimatıyla yazıldı, bağımsız inceleme bekliyor.
+
+### 19.1 Kurulan altyapı ve T7/T8
+
+| Parça | Nasıl | Durum |
+|---|---|---|
+| OS kullanıcıları `jj` (sudo), `kagent`, `krunner` | `factory/vps/setup.sh` | kuruldu; ev dizinleri 700; `kagent`/`krunner` için linger açık |
+| Repo koruması | GitHub ücretsiz plan: `gh api repos/ddawnlll/kepler/rulesets` ve `.../branches/main/protection` → `HTTP 403 Upgrade to GitHub Pro or make this repository public`. **§5.2 yedek yolu** kuruldu: `/srv/kepler.git` (bare, sahibi `krunner`), `pre-receive` hook'u, `kagent` yalnızca `sudo -u krunner /usr/local/sbin/kepler-receive-pack /srv/kepler.git` ile push eder (sudoers sabit argümanlı; sarmalayıcı `env -i`, `HOME=/home/krunner`, `GIT_CONFIG_GLOBAL=/dev/null` ile ortamı sabitler; hook yalnızca `refs/heads/agent/<güvenli-ad>` kabul eder ve kapalı-başarısızdır) | kuruldu, sınandı. GitHub salt-okunur ayna olarak kalır; `krunner`'ın GitHub `main` token'ı **henüz verilmedi** (ayna push'u ve `merge_gate` WP4) |
+| Çalışma kopyaları | `/srv/kepler` (krunner, 755), `/srv/kepler-agent/kepler` (kagent, 750) | klonlandı (`4f93dec`) |
+| `krunner` Python ortamı | `uv 0.12.23`, `uv sync --python 3.12 --frozen` (repo `requires-python <3.13`; sistem Python'u 3.13) | `EXIT=0` |
+| Durum zamanlayıcısı | `kepler-status.service` + `.timer` (krunner, 15 dk): `python -m factory.status "ledger/*/*.jsonl" ledger/g1_ledger.jsonl --out state/STATUS.md` | çıktı: `deneme: 4118 (hakem 3246, eleme 872) ...`; timer etkin |
+| Hermes | `kagent` altında, kullanıcı servisi `hermes-gateway.service` (linger) | çalışıyor |
+| Gizli değer girişi | `kepler-set-secret <kullanıcı> <dosya> <DEĞİŞKEN>`: terminalden sessiz okur, 600 izinli env dosyasına yazar | denendi |
+
+**T7 / T8 (`factory/vps/test_t7_t8.sh`, son koşu: 40 PASS, 0 FAIL).** Bir "reddedildi" kontrolü yalnızca çıkış koduna değil, çıktıda gerçek bir red mesajına da bağlıdır (yoksa ENOENT de PASS sayılırdı; bağımsız inceleme bunu yakaladı). Testler mutasyonla (bilerek bozulmuş kuruluma karşı) **sınanmadı**; sınanan, doğru kurulumun beklenen davranışıdır.
+- T7 OS reddi: `kagent` `kepler/referee.py`, `MISSION.md`, `state/` yazamıyor; bare repoda `update-ref` ve `hooks/pre-receive` yazamıyor; `sudo -u krunner /bin/sh`, `sudo true` ve `enqueue.py` reddediliyor; sarmalayıcıyı başka depoyla (`/srv/kepler`) çalıştıramıyor. `referee.py` özeti değişmedi.
+- T7 dal yolu: `kagent` `main`'e, `feature/x`'e, tam `refs/heads/agent` adına, `refs/replace/*`, `refs/notes/*`, geçersiz karakterli (`agent/x;y`) dala ve tag'e push edemiyor, `main`'i silemiyor; kendi `~/.gitconfig`'ine `core.hooksPath=/dev/null` koyup denese de `main`'e push edemiyor (sarmalayıcı ortamı sabitliyor); `agent/<ad>` dalına push ve silme çalışıyor; `main` değişmedi. Red mesajı: `remote: REDDEDİLDİ: ajan yalnızca refs/heads/agent/<ad> ... yazabilir: refs/heads/main` / `! [remote rejected] HEAD -> main (pre-receive hook declined)`.
+- T8: `kagent` ve `krunner` `/home/jj/kepler-seal` dizinini listeleyemiyor, kanarya dosyasını okuyamıyor, yazamıyor, `jj` olamıyor, birbirinin ev dizinine giremiyor; `jj` dışında (yalnızca `/` bölümünde, dosya **adına** göre) mühür anahtarı/veri adlı dosya yok.
+- `kepler-set-secret`: ilk sürüm root olarak yazıyordu; kagent'in yerleştirdiği symlink ile root'un okuyabildiği dosyaları kagent'e kopyalatabilirdi. Hedef kullanıcı olarak (`runuser`) yazacak şekilde düzeltildi; testte `~/.hermes/linktest.env -> /home/jj/kepler-seal/CANARY` symlink'i kanarya içeriğini sızdırmadı.
+- **Eksik / yeşil sayılmayan:** (a) T7'nin "ajan dalı korunan yolu değiştirirse `merge_gate` reddeder" yarısı: `merge_gate.py` (WP4) yok. (b) T8'in "Modal Volume'de yalnızca DEV var" kısmı: Modal token'ı verilmedi, yalnızca OS izolasyonu sınandı. Mühür verisi olarak gerçek veri **kullanılmadı**, `CANARY-NOT-REAL-SEAL-DATA` yer tutucusu kullanıldı.
+
+### 19.2 Hermes: doğrulandı / çürütüldü
+
+Testler `kagent` olarak, ayrı bir `wp7test` panosunda ve geçici `kodlayici` / `denetci` profilleriyle yapıldı.
+
+| # | İddia (§13.1/§18.1) | Hüküm | Kanıt |
+|---|---|---|---|
+| 1 | Görev başına model profilden gelir, `delegate_task`'ta görev başına model yoktur | **KISMEN ÇÜRÜTÜLDÜ** | Profil modeli doğru. Ek olarak Kanban'da görev başına `hermes kanban create --model M --provider P` ve `kanban set-model` **vardır**. `W3` (`denetci`, `--model gpt-5.6-terra`) oturumu `state.db`'de `gpt-5.6-terra` olarak kayıtlı, profilin kendi modeli `gpt-5.6-luna` |
+| 2 | İki profil farklı modeli gerçekten çağırıyor | **DOĞRULANDI** | `hermes -p kodlayici -z ... --usage-file`: `"model": "gpt-5.6-sol", "provider": "openai-codex"`; `denetci`: `"model": "gpt-5.6-luna"`. Kanban worker oturumları (`state.db`, `source=kanban`): `kodlayici` → `gpt-5.6-sol`, `denetci` → `gpt-5.6-luna` |
+| 3 | Araç adları | **DOĞRULANDI** (kaynak + davranış) | Kaynakta: `kanban_show/list/complete/block/heartbeat/comment/create/link/unblock/request_review` var; ek olarak `kanban_request_changes`, `kanban_schedule`, `kanban_attach*`. Davranış: worker'lar `kanban_complete` ve `kanban_block` aracını gerçekten çağırdı (`W1`, `W2`). `kanban_block`'un parametre şemasını kaynakta grep'le **bulamadım**; davranış bunu doğruluyor |
+| 4 | `kind ∈ dependency / needs_input / capability / transient` | **DOĞRULANDI** | `hermes kanban block --kind {capability,dependency,needs_input,transient}`; worker `kanban_block(kind=needs_input)` → olay `blocked {'reason': '[INPUT] seans UTC mi?', 'kind': 'needs_input'}`. CLI ile `capability` ve `transient` de `blocked` durumuna geçti. `dependency` bu testte denenmedi |
+| 5 | `[INPUT]/[STUCK]/[ONAY]/[INFRA]` öneki | **DOĞRULANDI** | `reason` olduğu gibi saklanıyor (olay ve `Latest summary`); Hermes öneki yorumlamıyor, ayrıştırma `hermes_adapter.py`'nin işi |
+| 6 | `idempotency-key` | **DOĞRULANDI** | aynı anahtarla ikinci `create` aynı id'yi (`t_fe69abee`) döndürdü |
+| 7 | `--parent` bağımlılığı | **DOĞRULANDI** | çocuk `todo`; ebeveyn `complete` olunca `ready` |
+| 8 | `max_in_progress`, `max_in_progress_per_profile` | **DOĞRULANDI** (`dispatch --dry-run`, 4 hazır görev) | `max_in_progress` 5→4, 2→2, 1→1 spawn; ayarsızken bellekten türetilir (4); `per_profile=1` → 2 spawn + 2 `skipped_per_profile_capped`; `--max 2` → 2. Canlı worker'larla yük altında **denenmedi** |
+| 9 | `no_agent` cron | **DOĞRULANDI** (yerel teslim) | `hermes cron create "every 1m" --no-agent --script status_probe.sh --deliver local`; gateway çalışırken `completed`, çıktı `~/.hermes/cron/output/<job>/...md` içinde `STATUS-PROBE ok 12:24`. **Gateway yokken zamanlayıcı yok:** `cron status` "No scheduler is serving". Telegram teslimi: aşağıda |
+| 10 | Yazma kısıtı: `HERMES_WRITE_SAFE_ROOT` yalnızca dosya araçlarını kısıtlar, terminali değil | **KISMEN DOĞRULANDI** | `agent/file_safety.get_write_denied_error` doğrudan çağrıldı, `HERMES_WRITE_SAFE_ROOT=/srv/kepler-agent` iken `/srv/kepler/kepler/referee.py` ve `/tmp/x` reddedildi, `/srv/kepler-agent/...` serbest; `~/.ssh/authorized_keys` değişkensiz de reddediliyor. Kaynakta değişkeni okuyan tek yer `file_safety`; **terminal aracının kısıtsız olduğu davranışla denenmedi**. Gerçek sınır OS'tir (§19.1 T7) |
+| 11 | Hermes'te harcama limiti yoktur | **DOĞRULANMADI** | config'te aranmadı. Not: ChatGPT Plus oturumunda `cost_status: included`; Plus kotası/limiti ayrı bir bilinmeyen |
+| 12 | "ChatGPT Plus OAuth kritik yolda yok" (§5.4) | **KULLANICI KARARIYLA DEĞİŞTİ** | `hermes auth add openai-codex --type oauth --no-browser` cihaz kodu akışı çalıştı (`openai-codex: logged in`). Test edilen tüm model çağrıları (Sol, Luna, Terra) bu oturumdan gitti; `default` profilin eski modeli (`anthropic/claude-opus-4.6`) için kimlik bilgisi yok ve denenmedi |
+| 13 | Çalışan protokol ihlali, çıkış kodu 75/78, 3 ihlalde blok | **DOĞRULANMADI** | denenmedi. Bulunan: ardışık başarısızlık eşiği `kanban.failure_limit` (varsayılan 2), görev başına `--max-retries` |
+
+**Spec'te olmayan, bulunanlar:**
+- **Dispatcher gateway'in içindedir** (`kanban daemon` kullanımdan kalkmış); tek "host gateway" tüm profilleri çoğullar. Gateway kapalıyken `ready` görev ve cron **hiç ilerlemez**. Dispatcher 60 sn'lik tikle çalışıyor; testte worker'lar görev açıldıktan saniyeler içinde claim edildi (kilit `ip-...:<gateway pid>`).
+- **`kanban.review_dispatch: true`** (varsayılan): `review` durumundaki görev de bir reviewer olarak dispatch ediliyor (`dispatch --dry-run`'da `request-review` sonrası görünür). §13.1'de yoktu.
+- **Acil durdurma:** `hermes pause` yeni işleri (cron, kanban dispatch, yeni gateway turları) durdurur, süren işi öldürmez; `hermes resume` kaldırır. Denendi: pause iken görev `ready` kaldı, `resume` sonrası `done` oldu. **Sentinel `~/.hermes/ESTOP`, `kagent`'in ev dizininde, yani ajan kaldırabilir.** Bağlayıcı durdurma `state/PAUSED` (krunner) ve OS düzeyinde `systemctl stop` olmalı.
+- Kanban `scratch` çalışma alanı görev bitince silinir (`tip_scratch_workspace`); çıktıyı saklamak için `--workspace worktree:` veya `dir:`. `worktree` ve `--completion-contract` yalnızca `--help` düzeyinde incelendi, **denenmedi**.
+- `cua-driver` (GUI kontrol aracı) kütüphane eksikliği (`libX11`) yüzünden kurulmadı; gerekmiyor ve ajan ortamı için istenmeyen bir yetenek.
+- Telegram bağlantısı (polling): `[Telegram] Connected to Telegram (polling mode)` (bot `@kepler123123_bot`, `getMe` doğrulandı, webhook yok). İzin listesi (`TELEGRAM_ALLOWED_USERS`) yokken bilinmeyen göndericiler reddedilir (eşleştirme kodu). **Açılışta kuyruktaki mesajlar atılır** (`platforms.telegram.extra.drop_pending_on_cold_boot: true`, log: `Cold boot: dropping Telegram updates queued while offline`): gateway yeniden başlarken gelen mesaj kaybolur.
+- **Sekreter (ara kurulum, WP8 öncesi):** Telegram'ı `default` profil servis eder (tek gateway). `default` modeli `gpt-5.6-luna` (`openai-codex`), SOUL = repodaki v1 `factory/agents/sekreter.md` (orijinal `SOUL.md.orig` olarak yedekte). `hermes tools disable --platform telegram web browser terminal file code_execution computer_use delegation cronjob connections image_gen tts vision`: Telegram'dan yalnızca sohbet, hafıza, skills, todo, clarify açık. Kuyruğa yazma (`enqueue.py` CLI yok) ve durum okuma (`query.py` yok) **bağlı değil**. Telegram üzerinden uçtan uca cevap **henüz denenmedi** (kullanıcının eşleştirmesi bekleniyor).
+
+### 19.3 Açık riskler
+
+- **D10 (üretici ≠ denetçi model ailesi):** yalnızca ChatGPT Plus bağlıyken tüm modeller (Sol, Luna, Terra) `openai-codex` sağlayıcısındandır; ailelerinin farklı olduğu **doğrulanmadı** ve Anthropic anahtarı yok. D10'a bağlı yol (`CANDIDATE`) için gerçek bir ikinci aile gerekir.
+- **ESTOP'un ajanın yazabildiği dizinde olması** (yukarıda).
+- **GitHub ücretsiz plan:** `main` korumasının tek mekanizması VPS hook'udur; GitHub'daki `main` doğrudan push'a açık kalır (sahibi `ddawnlll` hesabıdır). Ayna olarak kalacaksa `kagent`'e GitHub token'ı verilmemelidir (verilmedi).
+- **`merge_gate.py` (WP4) agent dalı kodunu `krunner` olarak çalıştırmamalı.** §5.2 madde 2 agent dalında `pytest` koşturur; bu, ajan kodunun `krunner` yetkisiyle (bare repo yazma, `~krunner`'daki GitHub/Modal/onay botu token'ları) çalışması demektir ve hook'un tüm korumasını boşa çıkarır. Testler ayrı bir uid'de, sandbox içinde (`NoNewPrivileges`, token'sız ev dizini, ağsız) koşmalı. İncelemede bulundu; bugün çalışan bir yol yok, ama WP4 tasarımında şimdi karar verilmeli.
+- **`factory/enqueue.py` + sudoers kuralı (§5.3) kapalı bırakıldı.** `enqueue.py` bir CLI değil; `QUEUE` yolu göreli (`state/queue.jsonl`, sudo çağıranın cwd'sini korur: kagent symlink'li bir `state/` ile krunner olarak herhangi bir dosyaya satır ekletebilir); `id`/`status`/`**extra` doğrulanmıyor (mevcut bir `needs_human` kaydının id'sine `status=approved` satırı eklenerek B/C onayı atlatılabilir). CLI yazılırken: mutlak yol, `CWD=/srv/kepler` sudoers etiketi, alan beyaz listesi. Sudoers satırı `factory/vps/sudoers.kepler` içinde yorum olarak duruyor.
+- **`jj` kullanıcısının parolası yok**, `sudo` parola ister (cloud imajının NOPASSWD kuralı yalnızca `admin` için). `jj` ile işlem yapılacaksa kullanıcı `passwd jj` ile parola koymalı; bu bir insan adımıdır.
+- **Sertleştirme yok:** `kepler-status.service`'te yalnızca `NoNewPrivileges` ve `PrivateTmp` var (`ProtectHome` vb. yok).
+- Sunucuda `ufw` etkin değil (`systemctl is-active ufw` → `inactive`; kurulu olup olmadığına bakılmadı) ve `sshd` varsayılan ayarda; bunlara dokunulmadı. Ağ erişimi AWS güvenlik grubuna bağlı (**DOĞRULANMADI**).

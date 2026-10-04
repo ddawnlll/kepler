@@ -1,0 +1,5 @@
+# /etc/sudoers.d/kepler: kagent'in krunner olarak yapabildikleri (docs/factory.md §5.3).
+kagent ALL=(krunner) NOPASSWD: /usr/local/sbin/kepler-receive-pack /srv/kepler.git
+# enqueue (§5.3) BİLEREK kapalı: factory/enqueue.py henüz bir CLI değil (WP4), QUEUE yolu göreli ve id/status alanları
+# doğrulanmıyor (incelemede bulundu, docs/factory.md §19.3). CLI yazılınca şu satır, CWD ile ve mutlak yolla açılır:
+# kagent ALL=(krunner) CWD=/srv/kepler NOPASSWD: /srv/kepler/factory/enqueue.py

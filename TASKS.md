@@ -225,7 +225,7 @@ Ağırlıklar kaba tahmindir (G0–G1 çekirdeği bunun 25'i). Durum: ☑ bitti,
 | # | Görev | Ağırlık | Durum | Kanıt / not |
 |---|---|---|---|---|
 | F1 | Repo tarafı: kuyruk (`factory/enqueue.py`), ajan talimatları (`factory/agents/`), `AGENTS.md`/`CLAUDE.md`, Türkçe komut test seti, kurulum özeti, mimari bölümü | 10 | ☑ | tests/test_enqueue.py (5); `factory/commands_tr.yaml` henüz bir modelle koşulmadı |
-| F2 | Kurulum: VPS, Hermes, Telegram, anahtarlar, yazma sınırı, `state` dalı push'u | 15 | ☐ | Kullanıcıdan gerekenler `factory/README.md`'de; hiçbiri doğrulanmadı |
+| F2 | Kurulum: VPS, Hermes, Telegram, anahtarlar, yazma sınırı, `state` dalı push'u | 15 | ◐ | VPS (`ssh a`): 3 OS kullanıcısı, bare repo + hook, Hermes, gateway, status timer kuruldu; T7 (OS+dal) ve T8 (OS) yeşil (`factory/vps/test_t7_t8.sh`, 40 PASS). Hermes bulguları ve kalan riskler: `docs/factory.md` §19. Açık: Telegram eşleştirmesi/uçtan uca, Modal token'ı (T8 Modal kısmı), `merge_gate` (T7 ikinci yarı, WP4), `krunner` GitHub token'ı (ayna push'u) |
 | F3 | Aşama 1 çalışıyor: sekreter + güncelleme ajanı, salt okunur; test seti 10/10 | (F2'de) | ☐ | |
 | G2 | G2 öncesi sertleştirme (devralma notundaki 6 madde) + sinyaller, null, fee duyarlılığı | 20 | ☑ | **Sonuç: NO_EDGE** (`reports/g2.md`; sinyaller `reports/book_signals.md`; 767 hakem kaydı `ledger/g2/`; tablolar `reports/g2_data/`). 130 test yeşil. G3 açılmadı (aday yok) |
 | F4 | Aşama 2: müdür + işçiler | (H4'te) | ☐ | G2 hazır olunca |

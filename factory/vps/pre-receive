@@ -1,0 +1,15 @@
+#!/bin/sh
+# /srv/kepler.git/hooks/pre-receive: ajan itmesi yalnızca refs/heads/agent/<güvenli-ad> yazabilir (docs/factory.md §5.2 yedek yolu).
+# Ajan, kepler-receive-pack sarmalayıcısıyla gelir ve KEPLER_PUSHER=kagent ortamını o koyar (kagent bunu sudo ile değiştiremez).
+# Kapalı-başarısız: KEPLER_PUSHER yoksa bile yalnızca krunner ve jj kısıtsızdır; başka kullanıcı reddedilir.
+who=$(id -un)
+if [ "$KEPLER_PUSHER" = "kagent" ]; then
+  bad=0
+  while read -r old new ref; do
+    if printf '%s\n' "$ref" | grep -Eq '^refs/heads/agent/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$' && ! printf '%s\n' "$ref" | grep -q '\.\.'; then :
+    else echo "REDDEDİLDİ: ajan yalnızca refs/heads/agent/<ad> (harf, rakam, . _ - /) yazabilir: $ref" >&2; bad=1; fi
+  done
+  [ "$bad" = 0 ] || exit 1
+  exit 0
+fi
+case "$who" in krunner|jj) exit 0 ;; *) echo "REDDEDİLDİ: bu kullanıcı ($who) push edemez" >&2; exit 1 ;; esac

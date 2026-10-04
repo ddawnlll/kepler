@@ -1,0 +1,5 @@
+#!/bin/sh
+# /usr/local/sbin/kepler-receive-pack: kagent'in tek push yolu (sudo -u krunner ile). Argümanlar yok sayılır; depo sabit.
+# Ortam sabitlenir: kagent'in ~/.gitconfig'i (core.hooksPath vb.) ve PATH'i krunner'ın git'ine ulaşamaz.
+exec /usr/bin/env -i PATH=/usr/bin:/bin HOME=/home/krunner GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
+  KEPLER_PUSHER=kagent /usr/bin/git receive-pack /srv/kepler.git

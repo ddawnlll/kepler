@@ -1,0 +1,11 @@
+# /etc/systemd/system/kepler-status.timer: 15 dakikada bir durum özeti (docs/factory.md §7.8, §13.1)
+[Unit]
+Description=Kepler durum özeti, 15 dakikada bir
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,11 @@
+# /etc/systemd/system/kepler-status.service: deterministik durum özeti (LLM yok), krunner olarak. Zamanlayıcı: kepler-status.timer
+[Unit]
+Description=Kepler durum özeti (factory.status -> state/STATUS.md)
+
+[Service]
+Type=oneshot
+User=krunner
+WorkingDirectory=/srv/kepler
+NoNewPrivileges=yes
+PrivateTmp=yes
+ExecStart=/home/krunner/.local/bin/uv run --frozen --offline --python 3.12 python -m factory.status "ledger/*/*.jsonl" ledger/g1_ledger.jsonl --out state/STATUS.md
