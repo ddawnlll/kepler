@@ -52,10 +52,12 @@ def combine(es, st: dict, p: Params) -> pd.DataFrame:
     return f.where(warm, 0.0).where(act)
 
 
-def rotate(f: pd.DataFrame, act: pd.DataFrame, u: float) -> pd.DataFrame:
-    """K1 rotasyon null'u: her sembolün günlük F serisi (aktif olmayan gün 0) aynı k = floor(u · gün) ile dairesel kaydırılır, sonra aktif olmayan günler maskelenir."""
-    k = int(u * len(f))
-    return pd.DataFrame(np.roll(f.fillna(0.0).to_numpy(), k, axis=0), index=f.index, columns=f.columns).where(act)
+def rotate(f: pd.DataFrame, act: pd.DataFrame, u: float, rot_from: pd.Timestamp | None = None) -> pd.DataFrame:
+    """K1 rotasyon null'u: her sembolün günlük F serisi (aktif olmayan gün 0) aynı k = floor(u · gün) ile dairesel kaydırılır, sonra aktif olmayan günler maskelenir.
+    rot_from verilirse yalnızca o tarih ve sonrası satırlar (k bu kesitin gün sayısına göre) kaydırılır, öncesi aynen kalır (alt dönem null'u: reports/ensemble_decay_protocol.md)."""
+    x, i = f.fillna(0.0).to_numpy().copy(), 0 if rot_from is None else int(f.index.searchsorted(rot_from))
+    x[i:] = np.roll(x[i:], int(u * (len(f) - i)), axis=0)
+    return pd.DataFrame(x, index=f.index, columns=f.columns).where(act)
 
 
 def place(kl: pd.DataFrame, daily: pd.Series) -> pd.Series:
@@ -67,17 +69,17 @@ def place(kl: pd.DataFrame, daily: pd.Series) -> pd.Series:
     return out
 
 
-def forecasts(kls: dict[str, pd.DataFrame], p: Params, u: float | None = None) -> tuple[pd.DataFrame, dict]:
+def forecasts(kls: dict[str, pd.DataFrame], p: Params, u: float | None = None, rot_from: pd.Timestamp | None = None) -> tuple[pd.DataFrame, dict]:
     close, _ = panel(kls)
     st = market_state(close, kls, p)
     f = combine(experts(close, st, p), st, p)
-    return (rotate(f, st["active"], u) if u is not None else f), st
+    return (rotate(f, st["active"], u, rot_from) if u is not None else f), st
 
 
-def make_book(capital: float, p: Params = Params(), u: float | None = None):
-    """Kitap fabrikası (evaluate.evaluate_book / run_book). u verilirse K1 rotasyon null'u."""
+def make_book(capital: float, p: Params = Params(), u: float | None = None, rot_from: pd.Timestamp | None = None):
+    """Kitap fabrikası (evaluate.evaluate_book / run_book). u verilirse K1 rotasyon null'u (rot_from: yalnızca o tarihten sonrası kaydırılır)."""
     def book(kls):
-        f, st = forecasts(kls, p, u)
+        f, st = forecasts(kls, p, u, rot_from)
         n = size(f, st, capital, p)
         return {s: pd.DataFrame(dict(target=place(kl, n[s]), stop=np.nan), index=kl.index) for s, kl in kls.items()}
     return book

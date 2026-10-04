@@ -3,6 +3,7 @@
   --stage primary  birincil EV1 (evaluate_book: denetim + defter) + kontroller: 5 ablasyon (K8), 6 komşu (K5), maliyet/gecikme (K3), pencere/kaydırma (K6), al-tut (K2), 500 USD (bilgi)
   --stage k7       çapraz varlık (dev K7 kuralı, 2023-07 -> 2026-04, fee 16 + slip 2)
   --stage null     K1 rotasyon null'u (--null-from/--null-to ile bölünür)
+  --stage decay_real | decay_null [--rot window|full]   EV1 sönme testi, W2 = 2022-01 -> 2026-04 (reports/ensemble_decay_protocol.md)
 Veri: /data/pre2022 (2020-01 -> 2021-12) + /data (2022-01 -> 2026-03) sembol başına birleştirilir. Çıktı --out altında JSON; özet scripts/ensemble_report.py."""
 import argparse
 import json
@@ -24,6 +25,7 @@ from kepler import signals as sg
 EXT = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "LINKUSDT", "AVAXUSDT"]
 CAP, SPLIT = 10_000.0, "2022-01-01"
 MAIN, K7_WINDOW = ("2020-04-01", "2026-04-01"), ("2023-07-01", "2026-04-01")
+W2 = ("2022-01-01", "2026-04-01")  # sönme testi alt dönemi (reports/ensemble_decay_protocol.md)
 HALVES = [(f"{y}-{m}-01", f"{y + (m == '07')}-{'01' if m == '07' else '07'}-01") for y in range(2020, 2026) for m in ("01", "07")][1:] + [("2026-01-01", "2026-04-01")]
 SHIFTS = [(f"2020-{m:02d}-01", MAIN[1]) for m in (4, 5, 6, 7)]
 STRESS = {"2021-05": ("2021-05-17", "2021-05-24"), "LUNA": ("2022-05-05", "2022-05-16"), "FTX": ("2022-11-06", "2022-11-15")}
@@ -68,9 +70,9 @@ def data_of(syms, d=None):
     return {s: d[s] for s in syms}
 
 
-def run(p, sp, window=None, syms=EXT, u=None, out=None):
+def run(p, sp, window=None, syms=EXT, u=None, out=None, rot_from=None):
     window, data = window or MAIN, data_of(syms)  # varsayılan çağrı anında (--smoke MAIN'i değiştirir)
-    out = out or en.make_book(sp.capital, p, u)({s: x["kl"] for s, x in data.items()})
+    out = out or en.make_book(sp.capital, p, u, rot_from)({s: x["kl"] for s, x in data.items()})
     res, win, _ = ev.run_book(out, data, sp, *utc(window))
     return res, win, out
 
@@ -124,9 +126,25 @@ def null_draw(i):
     return i, dict(keep(res), u=u)
 
 
+def decay_real(out_dir, dh):
+    """Gerçek EV1, yalnızca W2'de (evaluate_book: denetim + defter; N + 1)."""
+    p, data, sp = en.Params(), data_of(EXT), spec()
+    r = ev.evaluate_book(en.make_book(CAP, p), data, [sp], Path(out_dir) / "ledger_ev1_w2.jsonl", "EV1 sönme testi: W2 = 2022-01 -> 2026-04 (reports/ensemble_decay_protocol.md)", dh, "EV1_W2", asdict(p), W2)[0]
+    return dict(summary=keep(r["res"]), daily=daily(report.book_pnl(r["win"], r["res"], sp)), row_trial=r["row"]["trial"])
+
+
+def decay_null(a):
+    """W2 null'u: rot = "window" (birincil: yalnızca W2 satırları kaydırılır) ya da "full" (bilgi: tüm seri kaydırılır, W2'de hakem). u tohumları K1 ile aynı."""
+    i, rot = a
+    u = float(np.random.default_rng([0, i]).uniform(0.05, 0.95))
+    res, _, _ = run(en.Params(), spec(), window=W2, u=u, rot_from=utc(W2)[0] if rot == "window" else None)
+    return i, dict(keep(res), u=u)
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=["primary", "k7", "null"])
+    ap.add_argument("--stage", required=True, choices=["primary", "k7", "null", "decay_real", "decay_null"])
+    ap.add_argument("--rot", default="window", choices=["window", "full"], help="decay_null: W2 içinde mi (birincil) tüm seride mi (bilgi) kaydırılır")
     ap.add_argument("--out", default="/data/ensemble")
     ap.add_argument("--procs", type=int, default=4)
     ap.add_argument("--b", type=int, default=300)
@@ -137,6 +155,7 @@ if __name__ == "__main__":
     a = ap.parse_args()
     if a.smoke:
         MAIN, K7_WINDOW, HALVES, SHIFTS = ("2021-11-01", "2022-02-01"), ("2025-01-01", "2025-02-01"), [("2021-11-01", "2021-12-15")], [("2021-12-01", "2022-02-01")]
+        W2 = ("2021-12-01", "2022-02-01")
     Path(a.out).mkdir(parents=True, exist_ok=True)
     dh, t0 = ledger.sha(Path("/repo/data_manifest/manifest.json").read_text() + Path("/repo/data_manifest/manifest_pre2022.json").read_text()), time.time()
     roots = [("/data/pre2022", None, SPLIT), ("/data", SPLIT, None)]
@@ -166,6 +185,12 @@ if __name__ == "__main__":
                 print(f"{k} {time.time() - t0:.0f}s net={v['summary']['net_pnl']:.0f}", flush=True)
             tag = "" if not a.only else "_" + a.only.replace(",", "_")
             Path(a.out, f"primary{tag}.json").write_text(json.dumps(res))
+        elif a.stage == "decay_real":
+            Path(a.out, "decay_real.json").write_text(json.dumps(decay_real(a.out, dh)))
+        elif a.stage == "decay_null":
+            hi = a.b if a.null_to is None else a.null_to
+            res = dict(ex.map(decay_null, [(i, a.rot) for i in range(a.null_from, hi)], chunksize=1))
+            Path(a.out, f"decay_null_{a.rot}_{a.null_from}_{hi}.json").write_text(json.dumps(res))
         else:
             hi = a.b if a.null_to is None else a.null_to
             res = dict(ex.map(null_draw, range(a.null_from, hi), chunksize=1))
