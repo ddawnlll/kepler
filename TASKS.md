@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: İş planı v1 (EV1 → karar) | durum: devam (Faz 0 kullanıcı girdisi bekliyor) | protokol: TASKS.md "İş planı v1"
+Aktif iş: İş planı v1 (EV1 → karar) | durum: devam (Faz 1.5 bitti; Faz 0 kullanıcı girdisi bekliyor) | protokol: TASKS.md "İş planı v1"
 
 ## İş planı v1 (2026-10-04): EV1'i anla, gerçekliğe bağla, karar ver
 
@@ -28,7 +28,7 @@ Zayıf yanlar:
 | | 1.2 Ayrıştırma küpü: sembol × yıl × rejim × uzman; brüt → fee → slip → funding | tablo + toplamlar netle birebir | 0.1 | ☐ |
 | | 1.3 Pozisyon dönemleri: giriş gecikmesi, MFE/MAE, tutma, çıkışta geri verilen; karşı-olgu (işlem yok / +k gün tut / erken çık), yalnızca ölçüm (V8 Outcome Cube) | dönem tablosu + "para nerede kaybediliyor" özeti | 1.2 | ☐ |
 | | 1.4 Risk kullanımı: gerçekleşen oynaklık/τ, brüt kullanım, tampon ve IDM etkisi | tablo | 0.1 | ☐ |
-| | 1.5 Sönme testi: 2022-01 → 2026-04 için ayrı rotasyon null'u + DSR (ön kayıtlı not; N +1) | p, DSR raporda | 0.2 | ☐ |
+| | 1.5 Sönme testi: 2022-01 → 2026-04 için ayrı rotasyon null'u + DSR (ön kayıtlı not; N +1) | p, DSR raporda | 0.2 | ☑ 2026-10-05 `reports/ensemble_decay.md` (ön kayıt `d6bb74a`): **KANITSIZ (W2)**: brüt p 0,0100 geçti, DSR(W2) 0,926 < 0,95 kaldı; N +1 (ledger 4 119) |
 | **2 Hesap gerçekliği** (paralel) | 2.1 MEXC kontrat kuralları (9 sembol: tick, lot, minVol, contractSize, fee) | `account_reality_data/symbol_rules.csv` doğrulanmış | kullanıcı (proxy 403) | ☐ |
 | | 2.2 Gerçek lot/minimumla EV1 $500 ve $1k/$2k/$5k koşuları (bilgi) | red sayısı, 10k'ya göre takip farkı | 2.1, 0.1 | ☐ |
 | | 2.3 Asgari uygulanabilir sermaye ve sembol listesi | tek cümle karar önerisi | 2.2 | ☐ |
