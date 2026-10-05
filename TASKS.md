@@ -10,6 +10,7 @@ Aktif iş: 10 edge türü → uzmanlar (aile testi, kullanıcı görevi 2026-10-
 - **Koşulamayanlar:** gerçek maker/likidite (emir defteri yok), haber/NLP (veri yok), execution (uzman değil); volatility selling (opsiyon verisi yok). Vekiller etiketli.
 - **Kod:** 6 yeni uzman `kepler/experts/`, `Params.expert/xp/flip`, `market_state` `dvol`/`tbr`, `scripts/ensemble.py --expert`, `tests/test_edge_experts.py` (22). EV1 yolu değişmedi: günlük PnL birebir (net 8 297,33; 5 561 dolum).
 - **Deneme sayısı N:** 4 119 + 8 = **4 127** (Bollinger yazılmadı).
+- **Keşif eki (2026-10-05, kullanıcı kararı: ön kayıt yok, stop şart):** `scripts/mr_explore.py` (stoplu, rejim kapılı saatlik mean reversion) + `scripts/mr_events.py` (olay çalışması); sonuç `reports/edge_experts.md` "Keşif eki". Özet: kapısız hepsi hesabı bitirdi; range rejimi + hacimsiz uç kapısıyla brüt pozitif ama maliyet yiyor (stopsuz net +937, stoplu −3 418, dönemler kararsız). Ledger dışı, N'ye girmez.
 - **Açık:** BACKTEST.md günlüğü (korumalı; `dvol`/`tbr` [VAR] notu). `evaluate.code_hash` uzman dosyalarını kapsamıyor. Ters yön (Bollinger −F net +8 025) post-hoc: yeni ön kayıt olmadan kullanılmaz.
 
 ## İş planı v1 (2026-10-04): EV1'i anla, gerçekliğe bağla, karar ver

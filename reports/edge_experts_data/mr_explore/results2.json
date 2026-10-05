@@ -1,0 +1,494 @@
+{
+ "range_vol_stop|tum": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": true,
+   "flip": false,
+   "regime": "range",
+   "vol_max": 2.0
+  },
+  "summary": {
+   "net_pnl": -3418.2115274423186,
+   "gross_pnl": 738.92481134742,
+   "fee": 3500.40628012285,
+   "slippage": 700.08125602457,
+   "funding": 43.35119735768156,
+   "exit_cost": 0.0,
+   "liq_fee": 0.0,
+   "n_fills": 3841.0,
+   "n_liq": 0.0,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": -0.45813654767374434,
+  "regimes": {
+   "bull": 461.3573853429241,
+   "bear": -284.2510762792814,
+   "range": -3594.3832525402872
+  },
+  "entries": 1517,
+  "stops": 597,
+  "exits": 920,
+  "n_stop_fills": 597,
+  "traded": 7000812.5602457
+ },
+ "range_vol_stop|2020-21": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": true,
+   "flip": false,
+   "regime": "range",
+   "vol_max": 2.0
+  },
+  "summary": {
+   "net_pnl": -1086.2538050769206,
+   "gross_pnl": -361.32972166822725,
+   "fee": 621.30164143481,
+   "slippage": 124.26032828696201,
+   "funding": 20.637886313078692,
+   "exit_cost": 0.0,
+   "liq_fee": 0.0,
+   "n_fills": 1164.0,
+   "n_liq": 0.0,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": -0.5437663695627848,
+  "regimes": {
+   "bull": -13.399064676688356,
+   "bear": 3.8911012065439183,
+   "range": -1076.7458416067789
+  },
+  "entries": 1517,
+  "stops": 597,
+  "exits": 920,
+  "n_stop_fills": 173,
+  "traded": 1242603.28286962
+ },
+ "range_vol_stop|2022-26": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": true,
+   "flip": false,
+   "regime": "range",
+   "vol_max": 2.0
+  },
+  "summary": {
+   "net_pnl": -2331.957722365397,
+   "gross_pnl": 1100.2545330156481,
+   "fee": 2879.10463868804,
+   "slippage": 575.820927737608,
+   "funding": 22.71331104460286,
+   "exit_cost": 0.0,
+   "liq_fee": 0.0,
+   "n_fills": 2677.0,
+   "n_liq": 0.0,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": -0.4275049886671567,
+  "regimes": {
+   "bull": 474.7564500196073,
+   "bear": -288.1421774858223,
+   "range": -2517.6374109335125
+  },
+  "entries": 1517,
+  "stops": 597,
+  "exits": 920,
+  "n_stop_fills": 424,
+  "traded": 5758209.27737608
+ },
+ "range_vol_nostop|tum": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": false,
+   "flip": false,
+   "regime": "range",
+   "vol_max": 2.0
+  },
+  "summary": {
+   "net_pnl": 937.4034201905945,
+   "gross_pnl": 4916.1653407104,
+   "fee": 3416.158020667,
+   "slippage": 683.2316041334,
+   "funding": 120.62770428059436,
+   "exit_cost": 0.0,
+   "liq_fee": 0.0,
+   "n_fills": 4002.0,
+   "n_liq": 0.0,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": 0.08707859571400005,
+  "regimes": {
+   "bull": 126.75875159127554,
+   "bear": -443.9220856993203,
+   "range": 1255.50133826431
+  },
+  "entries": 1489,
+  "stops": 0,
+  "exits": 1489,
+  "n_stop_fills": 0,
+  "traded": 6832316.0413339995
+ },
+ "range_vol_nostop|2020-21": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": false,
+   "flip": false,
+   "regime": "range",
+   "vol_max": 2.0
+  },
+  "summary": {
+   "net_pnl": -1187.0874132941663,
+   "gross_pnl": -495.408871478801,
+   "fee": 606.145229026,
+   "slippage": 121.2290458052,
+   "funding": 35.69573301583482,
+   "exit_cost": 0.0,
+   "liq_fee": 0.0,
+   "n_fills": 1215.0,
+   "n_liq": 0.0,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": -0.3766248980028191,
+  "regimes": {
+   "bull": -71.91022129821593,
+   "bear": -282.5632710739268,
+   "range": -832.6139209220229
+  },
+  "entries": 1489,
+  "stops": 0,
+  "exits": 1489,
+  "n_stop_fills": 0,
+  "traded": 1212290.458052
+ },
+ "range_vol_nostop|2022-26": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": false,
+   "flip": false,
+   "regime": "range",
+   "vol_max": 2.0
+  },
+  "summary": {
+   "net_pnl": 2124.490833484759,
+   "gross_pnl": 5411.5742121892,
+   "fee": 2810.0127916409997,
+   "slippage": 562.0025583281999,
+   "funding": 84.93197126475971,
+   "exit_cost": 0.0,
+   "liq_fee": 0.0,
+   "n_fills": 2787.0,
+   "n_liq": 0.0,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": 0.27874438626046444,
+  "regimes": {
+   "bull": 198.66897288948292,
+   "bear": -161.35881462538617,
+   "range": 2088.1152591863265
+  },
+  "entries": 1489,
+  "stops": 0,
+  "exits": 1489,
+  "n_stop_fills": 0,
+  "traded": 5620025.583281999
+ },
+ "range_only_stop|tum": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": true,
+   "flip": false,
+   "regime": "range",
+   "vol_max": null
+  },
+  "summary": {
+   "net_pnl": -4871.773507776541,
+   "gross_pnl": 234.51210428813118,
+   "fee": 4302.224643265109,
+   "slippage": 860.4449286530219,
+   "funding": 56.38395985345875,
+   "exit_cost": 0.0,
+   "liq_fee": 0.0,
+   "n_fills": 4482.0,
+   "n_liq": 0.0,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": -0.5717387855679804,
+  "regimes": {
+   "bull": 173.14097200629453,
+   "bear": -152.5796813040255,
+   "range": -4892.3347984788015
+  },
+  "entries": 1804,
+  "stops": 741,
+  "exits": 1063,
+  "n_stop_fills": 741,
+  "traded": 8604449.286530219
+ },
+ "range_only_stop|2020-21": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": true,
+   "flip": false,
+   "regime": "range",
+   "vol_max": null
+  },
+  "summary": {
+   "net_pnl": -2563.249141866227,
+   "gross_pnl": -1749.1726495972741,
+   "fee": 693.7527241356049,
+   "slippage": 138.750544827121,
+   "funding": 18.42677669377313,
+   "exit_cost": 0.0,
+   "liq_fee": 0.0,
+   "n_fills": 1263.0,
+   "n_liq": 0.0,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": -1.205059731089819,
+  "regimes": {
+   "bull": -93.79292679226901,
+   "bear": 82.90582447291608,
+   "range": -2552.3620395468747
+  },
+  "entries": 1804,
+  "stops": 741,
+  "exits": 1063,
+  "n_stop_fills": 207,
+  "traded": 1387505.4482712098
+ },
+ "range_only_stop|2022-26": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": true,
+   "flip": false,
+   "regime": "range",
+   "vol_max": null
+  },
+  "summary": {
+   "net_pnl": -2308.524365910315,
+   "gross_pnl": 1983.6847538854054,
+   "fee": 3608.471919129505,
+   "slippage": 721.694383825901,
+   "funding": 37.95718315968561,
+   "exit_cost": 0.0,
+   "liq_fee": 0.0,
+   "n_fills": 3219.0,
+   "n_liq": 0.0,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": -0.3630136259838599,
+  "regimes": {
+   "bull": 266.93389879855823,
+   "bear": -235.48550577693828,
+   "range": -2339.9727589319295
+  },
+  "entries": 1804,
+  "stops": 741,
+  "exits": 1063,
+  "n_stop_fills": 534,
+  "traded": 7216943.83825901
+ },
+ "vol_only_stop|tum": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": true,
+   "flip": false,
+   "regime": null,
+   "vol_max": 2.0
+  },
+  "summary": {
+   "net_pnl": -9588.164036411108,
+   "gross_pnl": -3598.8749139735855,
+   "fee": 5329.663459855345,
+   "slippage": 1065.932691971069,
+   "funding": 468.2290017895751,
+   "exit_cost": 0.0,
+   "liq_fee": 61.921972400684005,
+   "n_fills": 8419.0,
+   "n_liq": 9.0,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": -1.2231176184182708,
+  "regimes": {
+   "bull": -5648.556693285579,
+   "bear": -768.7671414916108,
+   "range": -993.6471405995592
+  },
+  "entries": 16365,
+  "stops": 6580,
+  "exits": 9784,
+  "n_stop_fills": 1154,
+  "traded": 10659326.91971069
+ },
+ "vol_only_stop|2020-21": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": true,
+   "flip": false,
+   "regime": null,
+   "vol_max": 2.0
+  },
+  "summary": {
+   "net_pnl": -9588.164036411108,
+   "gross_pnl": -3598.8749139735855,
+   "fee": 5329.663459855345,
+   "slippage": 1065.932691971069,
+   "funding": 468.2290017895751,
+   "exit_cost": 0.0,
+   "liq_fee": 61.921972400684005,
+   "n_fills": 8419.0,
+   "n_liq": 9.0,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": -2.2731477984260144,
+  "regimes": {
+   "bull": -5648.556693285606,
+   "bear": -768.7671414917946,
+   "range": -993.6471405995302
+  },
+  "entries": 16365,
+  "stops": 6580,
+  "exits": 9784,
+  "n_stop_fills": 1154,
+  "traded": 10659326.91971069
+ },
+ "vol_only_stop|2022-26": {
+  "P": {
+   "n": 20,
+   "k": 2.0,
+   "s": 2.0,
+   "adx_max": null,
+   "exit_z": 0.0,
+   "max_age": 24,
+   "reset": 1.0,
+   "risk": 0.005,
+   "cap": 0.5,
+   "stop": true,
+   "flip": false,
+   "regime": null,
+   "vol_max": 2.0
+  },
+  "summary": {
+   "net_pnl": -10033.909830292547,
+   "gross_pnl": -4692.161095070035,
+   "fee": 4417.93723202497,
+   "slippage": 883.5874464049941,
+   "funding": 45.31152309017267,
+   "exit_cost": 0.0,
+   "liq_fee": 85.53557988272,
+   "n_fills": 5297.0,
+   "n_liq": 9.0,
+   "n_rejected": 313.0,
+   "funding_missed": 0.0
+  },
+  "sharpe": -1.3416346232475123,
+  "regimes": {
+   "bull": -16.924980615398667,
+   "bear": -9223.664425865682,
+   "range": -792.3858398457975
+  },
+  "entries": 16365,
+  "stops": 6580,
+  "exits": 9784,
+  "n_stop_fills": 847,
+  "traded": 8835874.46404994
+ }
+}

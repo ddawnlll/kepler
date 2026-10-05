@@ -71,3 +71,46 @@ Uzmanlar: `trend`, `xs_momentum`, `carry`, `bollinger`, `lowvol`, `nearhigh`, `f
 - BACKTEST.md değişiklik günlüğü ve MISSION: korumalı çekirdek (`KEPLER_CORE_UNLOCK` gerekir), yazılmadı; gerekli ek: BACKTEST §3'e "dvol/tbr girdileri [VAR]" notu.
 - Hiçbir uzman ensemble'a katılmadı; ters yön (Bollinger −F vb.) için ön kayıt yazılmadı; yeni veri (OI, likidasyon, haber) eklenmedi; G3/mühür açılmadı; Faz 3 kararı ve EV1 dondurma hâlâ kullanıcıda.
 - Önerim (tek cümle): bir sonraki adım yeni uzman değil, K9'u çözen tek mekanizmayı (rejime göre risk bütçesi) ön kayda bağlamak; bu aile testi karşı-trend uzmanlarıyla range'i kapatmanın bull kaybına mal olduğunu gösterdi.
+
+## Keşif eki (2026-10-05, kullanıcı kararıyla ön kayıtsız): stoplu, rejim filtreli, saatlik mean reversion
+**Bu bölümün hiçbir sonucu karar kanıtı değildir.** Görülmüş veride, sonuçlara bakılarak seçilmiş varyantlar; yukarıdaki 9 uzmanlık ön kayıtlı aile testinden ayrıdır. Koşular `run_book` ile (denetimsiz, deftersiz): 20 simülasyon (8 + 12) ve olay tabloları; N sayacına girmez, ama çoklu karşılaştırma riski gerçektir (aşağıdaki hücrelerin çoğunda t < 2, ve ~100 hücre bakıldı).
+Kod: `scripts/mr_explore.py` (saatlik durum makinesi: z ≤ −k / ≥ +k giriş, stop = giriş ∓ 2×ATR(14) hakem stop-market, çıkış z = 0 ya da 24 bar, risk sabit 0,5%/işlem, sembol tavanı 0,5× sermaye), `scripts/mr_events.py` (olay çalışması), ham tablolar `reports/edge_experts_data/mr_explore/`. Nedensellik: `audit.check_causal_book` iki varyantta da boş (temiz). Yönetici doğrulaması: sentetik OU serisinde kâr (+32 bin stoplu, +58 bin stopsuz), rastgele yürüyüşte ≈0 (stopsuz), trendde zarar, ters yön OU'da zarar: yani mantık ve işaret doğru.
+
+**Literatür (araştırma; hepsi ikincil okuma, kuralları tam doğrulanmadı):**
+- Bitcoin'de negatif otokorelasyon / mean reversion **1-2-4 saatlik** ufukta raporlanıyor; Hurst üs 2019-22 arasında 0,42'den 0,49'a yükselmiş (piyasa kısa ufukta daha etkin hâle geldi) ([arXiv 2402.11930](https://arxiv.org/abs/2402.11930v1); yalnızca betimsel, işlem kuralı/maliyet yok).
+- Günlük/haftalık ufukta geri dönüş **küçük ve illikit** coinlerde; en büyük ve likit coinlerde **momentum** ([Up or down? Short-term reversal, momentum, and liquidity effects in cryptocurrency markets](https://ideas.repec.org/a/eee/finana/v78y2021ics1057521921002349.html), 3 600+ coin, maliyet analizi yok). Bizim büyük-9 evrenimizde günlük Bollinger'in başarısızlığıyla uyumlu.
+- Bollinger'in saatlikte günlüğe göre daha iyi çalıştığını söyleyen bir yüksek lisans tezi ([Theseus](https://www.theseus.fi/handle/10024/902903)); kural/stop ayrıntısı ve maliyet varsayımı alıntıdan doğrulanamadı.
+- Pairs trading kriptoda maliyet sonrası çoğunlukla kârsız ([arXiv 2109.10662](https://arxiv.org/pdf/2109.10662v1)); pratik şablonlar ADX < 20-25 ve ATR% filtresiyle yatay piyasa arar (kaynak: TradingView betikleri, kanıt değil).
+
+**Olay çalışması** (|z| ≥ 2, giriş sonraki açılış, çıkış h saat sonra; geri dönüş yönlü bps, + = geri dönüş var; maliyet eşiği 12 bps; t gün-kümeli):
+| koşul | h = 1 | 2 | 4 | 8 | 24 |
+|---|---|---|---|---|---|
+| hepsi, n = 20 saat (57 231 olay) | +1,0 (1,1) | +1,8 (1,2) | −0,5 | −7,8 (−1,9) | −3,0 |
+| hepsi, n = 80 saat (69 668) | −1,9 (−2,2) | −4,0 (−2,5) | −9,7 (−3,1) | −19,8 (−3,2) | −19,7 |
+| 2020-21, n = 20 | +5,1 (2,6) | +9,1 (2,9) | +6,2 | −16,8 | −19,7 |
+| 2022-26, n = 20 | −0,6 | −0,9 | −3,0 | −4,4 | +3,2 |
+| 2020-21 ve ADX > 25, n = 20 | +11,9 (3,7) | +20,2 (3,8) | +18,0 (1,9) | −12,7 | −2,4 |
+| 2022-26 ve ADX > 25, n = 20 | +0,7 | +1,0 | −0,6 | −2,8 | +11,0 |
+| BTC rejimi range, n = 20 (5 201) | −1,4 | −2,1 | −8,8 | −4,6 | **+70,2 (2,8)** |
+| BTC rejimi range, n = 80 | −0,2 | +2,8 | +8,8 | +27,1 (1,6) | **+99,1 (2,1)** |
+| BTC rejimi bull, n = 20 | +3,0 (2,5) | +4,4 | +1,0 | −11,9 (−2,1) | −22,1 (−1,9) |
+| hacim şoku > 2x, n = 20 | 0,0 | +0,9 | −5,3 | −18,7 (−3,1) | −28,2 (−2,2) |
+| hacim ≤ 2x, n = 20 | +1,6 | +2,4 | +2,6 | −0,8 | +13,0 (1,7) |
+Okuma: (1) Saatlik uçta ortalama geri dönüş **yok ya da maliyetin çok altında** (1-2 saatte +1…+2 bps vs 12 bps maliyet); 8-24 saatte devam. (2) Kısa ufuk geri dönüşü yalnızca **2020-21** döneminde ve yüksek ADX'te belirgin (+12…+20 bps) ve 2022-26'da yok: edge zamanla eridi (literatürdeki Hurst artışıyla uyumlu). (3) **Hacim şoklu uçlar devam ediyor** (24 saatte −28 bps): bilgi içeren hareketler; hacimsiz uçlar zayıf geri dönüyor (+13 bps). (4) **BTC range rejiminde 24 saatlik geri dönüş büyük** (+70/+99 bps, t ≈ 2-2,8): tek hücre, sonradan bulundu, 206 range gününden gelen kümeli olaylar; çoklu karşılaştırma altında kırılgan.
+
+**Simülasyon, ilk 8 varyant** (n 20 / 80 saat; ADX ≤ 25 filtresi var/yok; stop var/yok; 2020-04 → 2026-04, fee 10 + slip 2): hepsi hesabı bitirdi (net −9 5xx … −10 2xx, 9 likidasyon). Brüt hepsinde negatif (−3 642 … −7 658), yani sorun maliyet değil; stop brüt kaybı küçülttü (stopsuz −7 621 → stoplu −5 190) ama bitirmedi. Ters yön (`h20_filter_stop_flip`) brüt **+7 278**, ama 18 924 dolumun maliyeti −17 270 → net −10 291. (Hesap battıktan sonraki sayılar geçersiz; yalnızca brüt işareti bilgilidir.)
+
+**Simülasyon, olay çalışmasından sonra seçilen kapı** (BTC rejimi = range, nedensel `robust.regime`; giriş saati hacmi ≤ 2× önceki 24 saat ortalaması; n = 20, k = 2, max 24 saat):
+| varyant | pencere | net | brüt | maliyet | dolum | Sharpe |
+|---|---|---|---|---|---|---|
+| range + hacim, **stoplu** | 2020-04→2026-04 | −3 418 | +739 | −4 200 | 3 841 | −0,46 |
+| range + hacim, stoplu | 2020-21 | −1 086 | −361 | −746 | 1 164 | −0,54 |
+| range + hacim, stoplu | 2022-26 | −2 332 | +1 100 | −3 455 | 2 677 | −0,43 |
+| range + hacim, **stopsuz** | 2020-04→2026-04 | **+937** | +4 916 | −4 099 | 4 002 | +0,09 |
+| range + hacim, stopsuz | 2020-21 | −1 187 | −495 | −727 | 1 215 | −0,38 |
+| range + hacim, stopsuz | 2022-26 | +2 124 | +5 412 | −3 372 | 2 787 | +0,28 |
+| yalnız range (hacim filtresi yok), stoplu | tümü | −4 872 | +235 | −5 163 | 4 482 | −0,57 |
+| yalnız hacim filtresi (rejim kapısı yok), stoplu | tümü | −9 588 | −3 599 | −6 396 | 8 419 | −1,22 (hesap bitti) |
+Okuma: **rejim kapısı hesabı kurtaran şey** (yalnız hacim filtresiyle bull'da −5 649 ve 9 likidasyon). Kapıyla brüt pozitif ama **maliyet brütün tamamına yakınını yiyor**; stopsuz net +937 (Sharpe 0,09), 2020-21 negatif, 2022-26 pozitif: kanıt değil, kararsız. **2×ATR saatlik stop bu kuralda brütü 4 916'dan 739'a düşürdü** (gürültüde erken kesiyor); stop hesabı korumak için şart (kullanıcı kararı), ama bu genişlikte bedeli çok yüksek. Stop mesafesi ayarlanmadı (görülmüş veride ayar = aşırı uyum).
+
+**Ne anlaşıldı (kısa):** (a) bu evrende, bu dönemde saatlik mean reversion **brüt** olarak küçük ve kırılgan; (b) asıl engel taker maliyeti: ~12 bps gidiş-dönüş, bandın beklenen geri dönüşünden büyük; (c) kâr izi yalnızca range rejimi + hacimsiz uç + 24 saatlik tutuşta var ve o da tek hücre; (d) bu tür strateji doğal olarak **pasif (limit) emirle** uygulanır, yani execution edge (maker ücreti ve dolum), ve hakemimizde limit emir/emir defteri olmadığından test edilemiyor (BACKTEST §4). Maker ücreti ~2 bps varsayılırsa (doğrulanmadı) maliyet −4 100'den ≈ −700 civarına iner ve stopsuz net ≈ +4 000 görünür; bu hesap dolum varsayımı yüzünden iyimser ve kanıt değildir.
