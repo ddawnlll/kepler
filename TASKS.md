@@ -1,8 +1,16 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: 10 edge türü → uzmanlar (aile testi, kullanıcı görevi 2026-10-04) | durum: devam | protokol: reports/edge_experts_protocol.md
+Aktif iş: 10 edge türü → uzmanlar (aile testi, kullanıcı görevi 2026-10-04) | durum: bitti | protokol: reports/edge_experts_protocol.md
 
 (Önceki aktif iş, EV1 iş planı v1, aşağıda; kullanıcı bu iş için Faz 3 durma kuralını kaldırdı, EV1 kararı hâlâ bekliyor.)
+
+## Edge ailesi: 10 edge türü → 9 uzman (2026-10-04/05; kullanıcı görevi "hepsini yap"): bitti, ADAY yok
+Ön kayıt `reports/edge_experts_protocol.md` (`e76cf5d`), sonuç `reports/edge_experts.md` (+ `reports/edge_experts_data/<uzman>/`). Defter satırları Modal Volume'da (`/edge/<uzman>/ledger_<uzman>.jsonl`), repoya taşınmadı (`ledger/*` ajan yazamaz; kullanıcı kilidiyle taşınır). Kullanıcı bu iş için "Faz 3 kararından önce yeni koşu yok" kuralını kaldırdı; Faz 3 kararı ve EV1 dondurma hâlâ bekliyor.
+- **Sonuç:** ZAYIF 3 (`trend`, `xs_momentum`, `nearhigh`: hepsi momentum ailesi, hepsinde K9 kalıyor), NO_EDGE 6 (`carry`, `bollinger` [geçersiz koşu: hesap bitti, deftere yazılmadı], `lowvol`, `fundcrowd`, `volrev`, `orderflow`). Ensemble'a giren yok (kapı: K1+K2+aile düzeltmesi+M1+M2; `nearhigh` M1'de kaldı).
+- **Koşulamayanlar:** gerçek maker/likidite (emir defteri yok), haber/NLP (veri yok), execution (uzman değil); volatility selling (opsiyon verisi yok). Vekiller etiketli.
+- **Kod:** 6 yeni uzman `kepler/experts/`, `Params.expert/xp/flip`, `market_state` `dvol`/`tbr`, `scripts/ensemble.py --expert`, `tests/test_edge_experts.py` (22). EV1 yolu değişmedi: günlük PnL birebir (net 8 297,33; 5 561 dolum).
+- **Deneme sayısı N:** 4 119 + 8 = **4 127** (Bollinger yazılmadı).
+- **Açık:** BACKTEST.md günlüğü (korumalı; `dvol`/`tbr` [VAR] notu). `evaluate.code_hash` uzman dosyalarını kapsamıyor. Ters yön (Bollinger −F net +8 025) post-hoc: yeni ön kayıt olmadan kullanılmaz.
 
 ## İş planı v1 (2026-10-04): EV1'i anla, gerçekliğe bağla, karar ver
 

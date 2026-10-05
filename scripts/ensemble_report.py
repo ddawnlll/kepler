@@ -108,7 +108,7 @@ summ = dict(decision=decision, passed=passed, net=s["net_pnl"], gross=s["gross_p
             forecast_abs_mean=main["forecast_abs_mean"], forecast_long_share=main["forecast_long_share"], cap500=None if EX else P["cap500"]["summary"], cap500_sharpe=None if EX else shp(ser(P["cap500"]["daily"]) / 500),
             family_ok=bool(p_g <= 0.05 / 9), m1_range_net=reg["range"]["total"], m2_corr_ev1=float(r.corr(ser(EV1["main"]["daily"]) / CAP)), flip=None if "flip" not in P else dict(net=P["flip"]["summary"]["net_pnl"], sharpe=shp(ser(P["flip"]["daily"]) / CAP)))
 first_fail = next((k for k in passed if not passed[k]), None)
-md = [f"# {'Edge uzmanı ' + EX if EX else 'Ensemble v1'} tabloları (otomatik): karar {decision} (ilk kalan: {first_fail}); aile düzeltmesi (p ≤ {0.05 / 9:.4f}): {'geçti' if summ['family_ok'] else 'kaldı'}; M1 range net {summ['m1_range_net']:.0f}; M2 EV1 korelasyonu {summ['m2_corr_ev1']:.2f}" + (f"; ters yön (bilgi): net {summ['flip']['net']:.0f}, Sharpe {summ['flip']['sharpe']:.2f}" if summ["flip"] else ""), "", "| # | test | değer | eşik | geçti |", "|---|---|---|---|---|",
+md = [f"# {'Edge uzmanı ' + EX if EX else 'Ensemble v1'} tabloları (otomatik){' — GEÇERSİZ KOŞU: hesap bitti, deftere yazılmadı (' + main['invalid'][:60] + '…)' if main.get('invalid') else ''}: karar {decision} (ilk kalan: {first_fail}); aile düzeltmesi (p ≤ {0.05 / 9:.4f}): {'geçti' if summ['family_ok'] else 'kaldı'}; M1 range net {summ['m1_range_net']:.0f}; M2 EV1 korelasyonu {summ['m2_corr_ev1']:.2f}" + (f"; ters yön (bilgi): net {summ['flip']['net']:.0f}, Sharpe {summ['flip']['sharpe']:.2f}" if summ["flip"] else ""), "", "| # | test | değer | eşik | geçti |", "|---|---|---|---|---|",
       f"| K1 | rotasyon null p (brüt; B={len(ng)}) / DSR (N={NT}) | p={p_g:.4f} (null ort. {ng.mean():.0f} ± {ng.std():.0f}; gerçek {s['gross_pnl']:.0f}) / DSR={dsr:.3f} | p ≤ 0,05; DSR ≥ 0,95 | {k1} |",
       f"| K2 | Sharpe vs al-tut / NW alfa | {shp(r):.2f} vs {shp(bh):.2f} / a={a * 365:.3f}/yıl, b={b:.3f}, t={t:.2f} | > ve t ≥ 2 | {k2} |",
       f"| K3 | net Sharpe / fee16+slip6 / gecikme 1 | {shp(r):.2f} / {c(16, 6):.0f} / {c(10, 2, 1):.0f} | ≥ 1,0; > 0; > 0 | {k3} |",
@@ -135,7 +135,8 @@ md += [f"| {k} | " + " | ".join(f"{x:.3g}" if isinstance(x, (int, float)) else s
 if not EX:
     md += ["", f"500 USD sermaye (bilgi): net {P['cap500']['summary']['net_pnl']:.2f}, Sharpe {summ['cap500_sharpe']:.2f}, red {P['cap500']['summary']['n_rejected']:.0f}, dolum {P['cap500']['summary']['n_fills']:.0f}"]
 n_prev = sum(sum(1 for _ in p.open()) for d in sys.argv[3:] for p in Path(d).rglob("*.jsonl"))
-md += [f"Kümülatif deneme sayısı (ledger satırları): önceki {n_prev} + bu test 1 = {n_prev + 1}."]
+if not EX:  # uzman kipinde sayaç ailede toplanır (reports/edge_experts.md)
+    md += [f"Kümülatif deneme sayısı (ledger satırları): önceki {n_prev} + bu test 1 = {n_prev + 1}."]
 OUT.mkdir(parents=True, exist_ok=True)
 (OUT / "tables.md").write_text("\n".join(md))
 (OUT / "summary.json").write_text(json.dumps(summ, indent=1, default=float))

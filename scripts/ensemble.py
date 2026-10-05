@@ -94,9 +94,15 @@ def task(a):
     p = P0
     if kind == "main":
         data, sp = data_of(EXT), spec()
-        ex = p.expert
-        r = ev.evaluate_book(en.make_book(CAP, p), data, [sp], Path(out_dir) / f"ledger_{ex or 'ev1'}.jsonl", f"Edge uzmanı {ex} tek başına (reports/edge_experts_protocol.md)" if ex else
-                             "Ensemble v1: piyasa durumu -> uzmanlar -> aday -> risk motoru (reports/ensemble_protocol.md)", dh, ex or "EV1", asdict(p), MAIN)[0]
+        ex, invalid = p.expert, None
+        try:  # hesap batarsa (likidasyon + reddedilen emir) defter yazmaz (ledger kuralı); sonuç yine hakemden, "geçersiz" bayrağıyla raporlanır (full_systems emsali)
+            r = ev.evaluate_book(en.make_book(CAP, p), data, [sp], Path(out_dir) / f"ledger_{ex or 'ev1'}.jsonl", f"Edge uzmanı {ex} tek başına (reports/edge_experts_protocol.md)" if ex else
+                                 "Ensemble v1: piyasa durumu -> uzmanlar -> aday -> risk motoru (reports/ensemble_protocol.md)", dh, ex or "EV1", asdict(p), MAIN)[0]
+        except ValueError as e:
+            if "reddedilen" not in str(e):
+                raise
+            res_, win_, _ = run(p, sp)
+            r, invalid = dict(res=res_, win=win_, row=dict(trial=None)), str(e)
         pnl = report.book_pnl(r["win"], r["res"], sp)
         out = en.make_book(CAP, p)({s: x["kl"] for s, x in data.items()})
         fills = r["res"]["fills"]
@@ -105,7 +111,7 @@ def task(a):
         sym_net = {s: float(report.hourly_pnl(r["win"][s]["kl"], r["win"][s].get("mark"), r["win"][s].get("funding"), fills[fills.sym == s], sp).sum()) for s in r["win"]}
         gross_notional = pd.DataFrame({s: out[s].target.ffill().fillna(0.0).abs().resample("1D").last() for s in EXT}).fillna(0.0).sum(axis=1)
         f, _ = en.forecasts({s: x["kl"] for s, x in data.items()}, p)
-        return "main", dict(summary=keep(r["res"]), daily=daily(pnl), sym_net=sym_net, stress=st, recon=float(pnl.sum() - r["res"]["summary"]["net_pnl"]), row_trial=r["row"]["trial"],
+        return "main", dict(summary=keep(r["res"]), daily=daily(pnl), sym_net=sym_net, stress=st, recon=float(pnl.sum() - r["res"]["summary"]["net_pnl"]), row_trial=r["row"]["trial"], invalid=invalid,
                             traded=float((fills.qty * fills.px).sum()), gross_notional_mean=float(gross_notional[gross_notional.index >= MAIN[0]].mean()),
                             forecast_abs_mean=float(f.abs().stack().mean()), forecast_long_share=float((f.stack() > 0).mean()))
     if kind == "abl":

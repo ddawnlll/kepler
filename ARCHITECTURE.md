@@ -45,7 +45,7 @@ Alt katman üst katmanı import edemez. Düşükten yükseğe:
 | temel | `ledger report stats capacity stress nested signals` | defter, istatistik, basit sinyaller |
 | risk | `risk portfolio` | boyutlama, kaldıraç, kill switch |
 | durum | `market_state state indicators` | oynaklık/korelasyon/funding, ATR/swing/profil, göstergeler |
-| uzman | `experts/* turtle` | tahmin üretir: `experts/trend`, `xs_momentum`, `carry`, `zone_fade` |
+| uzman | `experts/* turtle` | tahmin üretir: `experts/trend`, `xs_momentum`, `carry`, `zone_fade`; edge ailesi (`reports/edge_experts_protocol.md`): `bollinger`, `lowvol`, `nearhigh`, `fundcrowd`, `volrev`, `orderflow` (`ensemble.Params.expert` ile tek başına koşar; ensemble'a katılmaz) |
 | kompozisyon | `ensemble` | uzmanları birleştirir, kitap sözleşmesi |
 | hakem | `referee audit robust screen evaluate` | tek hakem, denetim, defter girişi |
 
