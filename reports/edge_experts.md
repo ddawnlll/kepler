@@ -135,3 +135,15 @@ Okuma: stop genişledikçe net tek yönlü iyileşiyor (−3 418 → +17), yani 
 | 4 ATR | −1 159 | 2 204 / %21,9 | −454 | 1 776 gün | 7 857 |
 | 6 ATR | +17 | 1 117 / %11,1 | −374 | 1 196 gün | 8 924 |
 Karşılaştırma: EV1 net 8 297, maks DD %9,7. Stopsuz varyantın maks DD'si net kârının 3,3 katı; 6 yılın yaklaşık 3,2 yılı su altında. En kötü gün tüm varyantlarda aynı (2022-04-06); stop o günkü kaybı yarıya indirdi (−1 114 → −374…−526). Rejim kapısı olmadan stopsuz varyantlar hesabı sıfırladı (9 likidasyon). Kapılı stopsuz serinin kuyruğu **gözlenmedi, yok değil**: pozisyon başına kayıp sınırsız, brüt tavan 3×; kriptoda korele bir gün içi çöküş 9 sembolde birden vurursa tek günde %60'a kadar kayıp mümkün (aritmetik üst sınır, gözlem değil).
+
+### Kaldıraç taraması (kullanıcı: az trade + uzun vade + kaldıraç; keşif, gerçek hakem koşusu, ledger dışı, +9 koşu)
+Yıllık hedef oynaklık τ (varsayılan 0,20) yükseltildi; diğer her şey aynı (2020-04 → 2026-04, fee 10 + slip 2, sermaye 10 000). Maks DD sermayenin yüzdesi (K4 tanımı: toplamsal, başlangıç sermayesine göre).
+| sistem | τ | net | yıllık getiri | maks DD (sermayeye) | Sharpe | en kötü gün | likidasyon / red |
+|---|---|---|---|---|---|---|---|
+| EV1 | 0,2 | 8 298 | %13,8 | %9,7 | 1,45 | −471 | 0 / 0 |
+| EV1 | 0,4 | 16 601 | %27,7 | %19,4 | 1,45 | −942 | 0 / 0 |
+| EV1 | 0,6 | 24 903 | %41,5 | %29,1 | 1,45 | −1 413 | 0 / 0 |
+| EV1 | 0,8 | 33 204 | %55,3 | %38,9 | 1,45 | −1 884 | 0 / 0 |
+| `trend` | 0,2 / 0,4 / 0,6 / 0,8 | 9 206 / 18 413 / 27 620 / 36 828 | %15,3 … %61,4 | %12,3 / 24,7 / 37,0 / 49,3 | 1,23 | −618 … −2 473 | 0 / 0 |
+| `nearhigh` | 0,2 / 0,4 / 0,6 / 0,8 | 3 483 / 6 969 / 10 459 / 13 945 | %5,8 … %23,2 | %4,9 / 9,8 / 14,7 / 19,5 | 1,45 | −278 … −1 113 | 0 / 0 |
+Okuma: net ve DD **tam doğrusal** ölçekleniyor, Sharpe sabit (kaldıraç edge yaratmaz; yalnızca getiriyi ve DD'yi aynı oranda büyütür). EV1'in ortalama brüt pozisyonu 0,15× sermaye, yıllık devri 12×, maliyet brütün %4,7'si: yani "az trade, günlük/uzun vade" zaten bu sistem; kaldıraç payı geniş (hakem limiti 10×). K4 sınırları (maks DD ≤ %25, bootstrap DD %95 ≤ %30; EV1 τ = 0,2'de bootstrap %18,7) doğrusal ölçeklemeyle τ ≲ 0,32 (bootstrap sınırı bağlayıcı) → net ≈ +13 000, yıllık ≈ %22, DD %95 ≈ %30 civarı. **Sınırlar:** (1) tümü görülmüş veride ve günlük PnL'den (bar içi DD yok); (2) likidasyon/red yok ama Binance kademeli bakım marjı UNKNOWN; (3) doğrusal ölçek maliyet/funding'in de doğrusal olduğunu varsayar (hakem koşusunda doğrulandı); (4) EV1 K9'u hâlâ kalıyor (kazancın %105'i bull); kaldıraç bu kırılganlığı da büyütür; (5) kuyruk riski (korele çöküş, gap) örneklemde gözlenenin ötesinde olabilir.
