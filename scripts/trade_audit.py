@@ -156,7 +156,7 @@ def main():
         tr[f"c_{n}"] = [sg * wt * (es[n].at[d, s] if d in es[n].index and pd.notna(es[n].at[d, s]) else 0.0) for sg, d, s in zip(sd, day, tr.sym)]  # yön-hizalı katkı (+ = bu uzman pozisyonu destekledi)
     tr.to_csv(out_dir / "trades.csv", index=False)
     fills.to_csv(out_dir / "fills.csv", index=False)
-    hourly = pd.concat({s: c[["pos", "close", "net", "funding", "commission", "exit", "price"]] for s, c in comp.items()}, axis=1)
+    hourly = pd.concat({s: c[["pos", "close", "high", "low", "net", "funding", "commission", "exit", "price"]] for s, c in comp.items()}, axis=1)
     hourly.columns = [f"{s}.{k}" for s, k in hourly.columns]
     hourly.to_csv(out_dir / "hourly.csv")
     gross_h = sum((c.pos.abs() * c.close) for c in comp.values())
