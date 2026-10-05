@@ -1,0 +1,52 @@
+{
+ "cap": 1000.0,
+ "preset": "ev1",
+ "names": [
+  "trend",
+  "xs_momentum",
+  "carry"
+ ],
+ "weights": [
+  0.6,
+  0.2,
+  0.2
+ ],
+ "window": [
+  "2020-04-01",
+  "2026-04-01"
+ ],
+ "summary": {
+  "net_pnl": 829.8541857008677,
+  "gross_pnl": 918.2971806233318,
+  "fee": 35.77044850767,
+  "slippage": 7.154089701534,
+  "funding": -45.43254633426013,
+  "liq_fee": 0.0,
+  "exit_cost": 0.085910379,
+  "n_fills": 5305,
+  "n_liq": 0,
+  "n_stop": 0,
+  "end_position": 180.452341,
+  "engine_commission": 42.924538240000004,
+  "n_rejected": 0,
+  "funding_missed": 0,
+  "funding_mark_fallback": 156
+ },
+ "recon_hourly_vs_referee": 0.03361437484159069,
+ "n_episodes": 1242,
+ "rejected": 0,
+ "stress": {
+  "2021-05": [
+   "2021-05-17",
+   "2021-05-24"
+  ],
+  "LUNA": [
+   "2022-05-05",
+   "2022-05-16"
+  ],
+  "FTX": [
+   "2022-11-06",
+   "2022-11-15"
+  ]
+ }
+}
