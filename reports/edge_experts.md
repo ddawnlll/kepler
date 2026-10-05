@@ -114,3 +114,14 @@ Okuma: (1) Saatlik uçta ortalama geri dönüş **yok ya da maliyetin çok altı
 Okuma: **rejim kapısı hesabı kurtaran şey** (yalnız hacim filtresiyle bull'da −5 649 ve 9 likidasyon). Kapıyla brüt pozitif ama **maliyet brütün tamamına yakınını yiyor**; stopsuz net +937 (Sharpe 0,09), 2020-21 negatif, 2022-26 pozitif: kanıt değil, kararsız. **2×ATR saatlik stop bu kuralda brütü 4 916'dan 739'a düşürdü** (gürültüde erken kesiyor); stop hesabı korumak için şart (kullanıcı kararı), ama bu genişlikte bedeli çok yüksek. Stop mesafesi ayarlanmadı (görülmüş veride ayar = aşırı uyum).
 
 **Ne anlaşıldı (kısa):** (a) bu evrende, bu dönemde saatlik mean reversion **brüt** olarak küçük ve kırılgan; (b) asıl engel taker maliyeti: ~12 bps gidiş-dönüş, bandın beklenen geri dönüşünden büyük; (c) kâr izi yalnızca range rejimi + hacimsiz uç + 24 saatlik tutuşta var ve o da tek hücre; (d) bu tür strateji doğal olarak **pasif (limit) emirle** uygulanır, yani execution edge (maker ücreti ve dolum), ve hakemimizde limit emir/emir defteri olmadığından test edilemiyor (BACKTEST §4). Maker ücreti ~2 bps varsayılırsa (doğrulanmadı) maliyet −4 100'den ≈ −700 civarına iner ve stopsuz net ≈ +4 000 görünür; bu hesap dolum varsayımı yüzünden iyimser ve kanıt değildir.
+
+### Stop genişliği taraması (kullanıcı itirazı: kâr stopla azalıyorsa sorun yönetimde; aynı rejim + hacim kapısı, ön kayıtsız, +9 koşu)
+| stop | tüm dönem net / brüt / stop dolumu | 2020-21 net | 2022-26 net |
+|---|---|---|---|
+| stopsuz | +937 / +4 916 / 0 | −1 187 | +2 124 |
+| 2 ATR | −3 418 / +739 / 597 | −1 086 | −2 332 |
+| 3 ATR | −1 968 / +864 / 385 | −791 | −1 177 |
+| 4 ATR | −1 160 / +964 / 259 | −604 | −556 |
+| 6 ATR | +17 / +1 431 / 113 | −282 | +300 |
+Okuma: stop genişledikçe net tek yönlü iyileşiyor (−3 418 → +17), yani 2 ATR gerçekten "gürültünün içinde" seçilmişti; ama 6 ATR'de bile brüt 4 916'dan 1 431'e düşüyor. Mean reversion'ın kârı, önce aleyhe giden sonra dönen **seyrek işlemlerden** geliyor; fiyat stopu bunları zarara çeviriyor. Stopsuz ise gate'siz hesabı bitirdi (ilk 8 varyant); yani yönetim gerçekten gerekli, ama fiyat-mesafe stopu bu stratejiye uygun biçimi değil. Denenmemiş yönetim biçimleri: yapısal geçersizleşme (band genişlemesi |z| > 3,5 ya da BTC rejiminin range'den çıkması), zaman stopu + portföy zarar limiti (kill switch), felaket stopu olarak geniş (≥ 6 ATR) fiyat stopu + küçük boyut.
+Ücret notu: varsayılan fee 10 bps gidiş-dönüş = Binance USDⓈ-M normal kullanıcı taker 0,05% × 2 (kaynak: [Finder](https://www.finder.com/binance-futures-fees); Binance'in kendi sayfası alıntıda boş döndü, resmi sayfa doğrulanmadı); maker 0,02% (4 bps gidiş-dönüş), BNB ile %10 indirim. Slippage 2 bps gidiş-dönüş **varsayım** (BTC için makul, alt coin ve oynak saatler için düşük olabilir).

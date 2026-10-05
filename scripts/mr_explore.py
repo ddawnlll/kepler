@@ -34,6 +34,7 @@ VARIANTS2 = {  # SONRADAN SEÇİLDİ (olay çalışmasından sonra: range rejimi
     "range_vol_stop": dict(adx_max=None, regime="range", vol_max=2.0), "range_vol_nostop": dict(adx_max=None, regime="range", vol_max=2.0, stop=False),
     "range_only_stop": dict(adx_max=None, regime="range"), "vol_only_stop": dict(adx_max=None, vol_max=2.0),
 }
+VARIANTS3 = {f"range_vol_stop{x}atr": dict(adx_max=None, regime="range", vol_max=2.0, s=float(x)) for x in (3, 4, 6)}  # stop genişliği taraması (kullanıcı: kâr stopla azalıyorsa sorun yönetimde); 2 ve stopsuz set 2'de
 WINDOWS = {"tum": E.MAIN, "2020-21": ("2020-04-01", "2022-01-01"), "2022-26": ("2022-01-01", "2026-04-01")}
 
 
@@ -139,8 +140,8 @@ if __name__ == "__main__":
         print("nedensellik, bozuk kesimler:", bad, flush=True)
         Path(a.out, "causal.json").write_text(json.dumps(bad))
         raise SystemExit(0)
-    if a.set == 2:
-        jobs = [(f"{k}|{w}", v, WINDOWS[w] if not a.smoke else window) for k, v in VARIANTS2.items() for w in WINDOWS]
+    if a.set in (2, 3):
+        jobs = [(f"{k}|{w}", v, WINDOWS[w] if not a.smoke else window) for k, v in (VARIANTS2 if a.set == 2 else VARIANTS3).items() for w in WINDOWS]
     else:
         jobs = [(k, VARIANTS[k], window) for k in VARIANTS if not a.only or k in a.only.split(",")]
     with ProcessPoolExecutor(a.procs) as ex:
