@@ -1,5 +1,6 @@
 {
  "decision": "NO_EDGE",
+ "invalid_run": "reddedilen emir / eksik funding olan ko\u015fu ge\u00e7erli sonu\u00e7 de\u011fildir; deftere yaz\u0131lmaz",
  "passed": {
   "K1": false,
   "K2": false,

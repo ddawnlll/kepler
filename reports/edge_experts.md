@@ -57,6 +57,10 @@ Kapı: K1 + K2 + aile düzeltmesi + M1 + M2. `nearhigh`: K1, K2, aile düzeltmes
 - Komşu kuralı tek tip (parametrelerin tamamı ×{0,8; 0,9; 1,1; 1,2}); `bollinger_protocol.md` taslağındaki 24 komşulu ızgara yerine bu kullanıldı (protokolde yazılı).
 - p tabanı 0,0033 (B = 300). Üç momentum uzmanını birbirinden ayıracak çözünürlük yok.
 - Bollinger geçersiz koşuda K4 (maks DD %99,6) ve K5–K8 hesapları da geçersiz hesap üzerinde; karar zaten K1'den NO_EDGE.
+- `volrev` ve `fundcrowd` seyrek uzmanlar (|F| ortalaması 0,14 / 0,19; `combine` ölçeklemesi tetik günlerinde ±1'e doyuruyor): bu iki NO_EDGE sonucu orantılı tahminin değil fiilen işaret-yalnızca varyantın sonucudur (protokolün zinciri böyle tanımlıyor, sapma yok).
+- `test_expert_mode_flip_and_ev1_default_unchanged` ikinci yarısı totolojiktir; EV1 yolunu sayısal koruyan otomatik test yok, koruma yalnızca elle yapılan regresyon (yukarıda) ve bağımsız incelemenin kod okumasıdır. Bağımsız inceleme (tek, `arch-reviewer`): BLOCKER/MAJOR yok; "EV1 birebir" ve gerçek veride denetim iddialarını gerçek veri olmadığından yeniden koşamadı.
+- Deneme sayacı: protokol 9 birincil derken ledger'a 8 satır girdi (Bollinger yazılamadı); DSR için seçim yanlılığı sayacı bir eksik.
+- `scripts/ensemble.py` geçersiz-main yedeği (`except ValueError`) EV1 `main` yolunu da kapsar: reddedilen emirli bir EV1 koşusu artık patlamak yerine `invalid` bayrağıyla sürer; bayrak `primary.json`, `tables.md` başlığı ve `summary.json` (`invalid_run`) içinde.
 - `evaluate.py` `code_hash` yeni uzman dosyalarını kapsamıyor (yalnızca `ensemble.py` kaynağı); ledger satırlarının kod bağlantısı commit ile kurulur: koşular `0f12bf2` + `scripts/ensemble.py` invalid-yedeği (sonraki commit).
 
 ## Yeniden koşmak

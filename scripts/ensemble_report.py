@@ -100,7 +100,7 @@ for name, (lo, hi) in {"2020-04→2022-01": ("2020-04-01", SPLIT), "2022-01→20
     xx, yy = x.align(y, join="inner")
     sub[name] = dict(net=float(x.sum() * CAP), sharpe=shp(x), bh_sharpe=shp(y), t_alpha=stats.nw_alpha(xx.to_numpy(), yy.to_numpy(), 5)[2], maxdd=float(stats.max_drawdown(x.to_numpy())))
 years = len(r) / 365
-summ = dict(decision=decision, passed=passed, net=s["net_pnl"], gross=s["gross_pnl"], funding=s["funding"], fee=s["fee"], slippage=s["slippage"], sharpe=shp(r), sharpe_bh=shp(bh), ann_return=float(r.sum() / years),
+summ = dict(decision=decision, invalid_run=main.get("invalid"), passed=passed, net=s["net_pnl"], gross=s["gross_pnl"], funding=s["funding"], fee=s["fee"], slippage=s["slippage"], sharpe=shp(r), sharpe_bh=shp(bh), ann_return=float(r.sum() / years),
             ann_vol=float(r.std() * np.sqrt(365)), p_gross=p_g, p_net=p_n, null_b=len(ng), dsr=dsr, dsr_bonf6=min(1, NT * p_g), psr0=stats.psr(r), alpha_year=a * 365, beta=b, t_alpha=t, maxdd=dd,
             boot={L: v["maxdd"] for L, v in boot.items()}, nb={k: dict(net=float(n), sharpe=float(x)) for k, n, x in zip(nb, nb_net, nb_sh)}, halves=halves, shifts=shifts, k7=K7["summary"]["net_pnl"],
             k7_sym=K7["sym_net"], abl=sh_abl, regimes=reg, sub=sub, kill=kill, dd_peak=float(dd_peak.max()), mintrl_years=(stats.min_trl(sr_d, g3, g4) / 365 if sr_d > 0 else None),
