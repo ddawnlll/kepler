@@ -48,6 +48,12 @@ REG = dict(trend=trend, xs_momentum=xs_momentum, carry=carry, bollinger=bollinge
 
 
 EV1_NAMES = ("trend", "xs_momentum", "carry")
+NEW_NAMES = ("bollinger", "lowvol", "nearhigh", "fundcrowd", "volrev", "orderflow")
+PRESETS = {  # adlandırılmış bileşimler (Params(**PRESETS[ad])); ağırlıklar sonuca bakmadan sabitlendi, varsayılan Params() hâlâ EV1
+    "ev1": dict(names=EV1_NAMES, weights=(0.6, 0.2, 0.2)),
+    "all9_equal": dict(names=EV1_NAMES + NEW_NAMES, weights=(1 / 9,) * 9),  # 9 uzman eşit ağırlık
+    "ev1_plus_new": dict(names=EV1_NAMES + NEW_NAMES, weights=(0.6, 0.2, 0.2) + (0.1,) * 6),  # EV1 aynen + her yeni uzmana 0,1
+}
 
 
 def composition(p: Params) -> tuple[tuple, tuple]:
