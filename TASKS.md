@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: İş planı v1 (EV1 → karar) | durum: devam (Faz 1.5 bitti; Faz 0 kullanıcı girdisi bekliyor) | protokol: TASKS.md "İş planı v1"
+Aktif iş: İş planı v1 (EV1 → karar) | durum: engelli | sebep: Faz 1.5 bitti; kalan işler ya kullanıcı girdisi bekliyor (0.2, 0.4, 0.6, 2.1, Faz 3) ya da protokol uygulamaya yetmiyor (1.1–1.4: rejim/karşı-olgu tanımları ön kayıtta yok; devam ettirici tasarım kararı vermez) | protokol: TASKS.md "İş planı v1"
 
 ## İş planı v1 (2026-10-04): EV1'i anla, gerçekliğe bağla, karar ver
 
