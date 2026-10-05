@@ -171,6 +171,7 @@ if __name__ == "__main__":
     ap.add_argument("--rot", default="window", choices=["window", "full"], help="decay_null: W2 içinde mi (birincil) tüm seride mi (bilgi) kaydırılır")
     ap.add_argument("--out", default="/data/ensemble")
     ap.add_argument("--procs", type=int, default=4)
+    ap.add_argument("--drop", default="", help="keşif: bileşimden bu üyeyi çıkar (leave-one-out marjinal katkı; --preset ile)")
     ap.add_argument("--cap", type=float, default=None, help="keşif: başlangıç sermayesi (varsayılan 10 000); daily aşaması + veri yüklemesi (lot çözünürlüğü sermayeye bağlı); pozisyon notional dağılımı da yazılır")
     ap.add_argument("--tau", type=float, default=None, help="keşif: yıllık hedef portföy oynaklığı (varsayılan 0,20); kaldıraç taraması için (yalnızca daily aşaması için gözden geçirilmiş)")
     ap.add_argument("--b", type=int, default=300)
@@ -183,6 +184,9 @@ if __name__ == "__main__":
         MAIN, K7_WINDOW, HALVES, SHIFTS = ("2021-11-01", "2022-02-01"), ("2025-01-01", "2025-02-01"), [("2021-11-01", "2021-12-15")], [("2021-12-01", "2022-02-01")]
         W2 = ("2021-12-01", "2022-02-01")
     P0 = en.Params(**(en.PRESETS[a.preset] if a.preset else {}), expert=a.expert, **({"tau": a.tau} if a.tau else {}))
+    if a.drop:
+        keep_ = [i for i, n in enumerate(P0.names) if n != a.drop]
+        P0 = replace(P0, names=tuple(P0.names[i] for i in keep_), weights=tuple(P0.weights[i] for i in keep_))
     Path(a.out).mkdir(parents=True, exist_ok=True)
     dh, t0 = ledger.sha(Path("/repo/data_manifest/manifest.json").read_text() + Path("/repo/data_manifest/manifest_pre2022.json").read_text()), time.time()
     roots = [("/data/pre2022", None, SPLIT), ("/data", SPLIT, None)]
