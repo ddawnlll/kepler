@@ -125,3 +125,13 @@ Okuma: **rejim kapısı hesabı kurtaran şey** (yalnız hacim filtresiyle bull'
 | 6 ATR | +17 / +1 431 / 113 | −282 | +300 |
 Okuma: stop genişledikçe net tek yönlü iyileşiyor (−3 418 → +17), yani 2 ATR gerçekten "gürültünün içinde" seçilmişti; ama 6 ATR'de bile brüt 4 916'dan 1 431'e düşüyor. Mean reversion'ın kârı, önce aleyhe giden sonra dönen **seyrek işlemlerden** geliyor; fiyat stopu bunları zarara çeviriyor. Stopsuz ise gate'siz hesabı bitirdi (ilk 8 varyant); yani yönetim gerçekten gerekli, ama fiyat-mesafe stopu bu stratejiye uygun biçimi değil. Denenmemiş yönetim biçimleri: yapısal geçersizleşme (band genişlemesi |z| > 3,5 ya da BTC rejiminin range'den çıkması), zaman stopu + portföy zarar limiti (kill switch), felaket stopu olarak geniş (≥ 6 ATR) fiyat stopu + küçük boyut.
 Ücret notu: varsayılan fee 10 bps gidiş-dönüş = Binance USDⓈ-M normal kullanıcı taker 0,05% × 2 (kaynak: [Finder](https://www.finder.com/binance-futures-fees); Binance'in kendi sayfası alıntıda boş döndü, resmi sayfa doğrulanmadı); maker 0,02% (4 bps gidiş-dönüş), BNB ile %10 indirim. Slippage 2 bps gidiş-dönüş **varsayım** (BTC için makul, alt coin ve oynak saatler için düşük olabilir).
+
+### Drawdown karşılaştırması (aynı kapı, tüm dönem; günlük PnL'den, sermaye 10 000; kullanıcı itirazı: stopsuz net yüksek ama batma riski)
+| stop | net | maks DD ($ / tepeye göre %) | en kötü gün | suda geçen en uzun süre | min equity |
+|---|---|---|---|---|---|
+| stopsuz | +938 | 3 058 / %30,2 | −1 114 (2022-04-06) | 1 183 gün | 7 063 |
+| 2 ATR | −3 417 | 4 553 / %45,0 | −526 | 1 776 gün | 5 569 |
+| 3 ATR | −1 967 | 3 262 / %32,4 | −510 | 1 776 gün | 6 819 |
+| 4 ATR | −1 159 | 2 204 / %21,9 | −454 | 1 776 gün | 7 857 |
+| 6 ATR | +17 | 1 117 / %11,1 | −374 | 1 196 gün | 8 924 |
+Karşılaştırma: EV1 net 8 297, maks DD %9,7. Stopsuz varyantın maks DD'si net kârının 3,3 katı; 6 yılın yaklaşık 3,2 yılı su altında. En kötü gün tüm varyantlarda aynı (2022-04-06); stop o günkü kaybı yarıya indirdi (−1 114 → −374…−526). Rejim kapısı olmadan stopsuz varyantlar hesabı sıfırladı (9 likidasyon). Kapılı stopsuz serinin kuyruğu **gözlenmedi, yok değil**: pozisyon başına kayıp sınırsız, brüt tavan 3×; kriptoda korele bir gün içi çöküş 9 sembolde birden vurursa tek günde %60'a kadar kayıp mümkün (aritmetik üst sınır, gözlem değil).
