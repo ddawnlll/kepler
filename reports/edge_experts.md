@@ -156,3 +156,11 @@ Altyapı: `ensemble.PRESETS` (varsayılan `Params()` = `ev1`, DEĞİŞMEDİ). A�
 | `all9_equal` | 1 110 | %1,8 | %14,3 | 0,26 | −0,41 | 1 185 / −216 / 66 | 0,29 | 0,24 |
 | `ev1_plus_new` | 8 111 | %13,5 | %6,8 | 1,89 | 0,91 | 6 969 / 479 / −615 | 3,53 | 1,17 |
 Okuma: eşit ağırlıkla 9 uzman kötü (zayıf/negatif uzmanlar karışımı çökertiyor). EV1 + küçük ağırlıklı yeni uzmanlar ise net'i neredeyse koruyup (−%2) Sharpe'ı 1,45 → 1,89, maks DD'yi %9,7 → %6,8, range kaybını −895 → −615 ve 2022-26 Sharpe'ını 0,81 → 1,17 çıkarıyor. Mekanizma: karşı-trend uzmanlarının (bollinger, volrev, fundcrowd) range'de kazanıp bull'da kaybetmesi EV1'in tersi yönde. **Bu kanıt değil:** (1) görülmüş veride, tek koşu; (2) ağırlık, uzmanların tek tek sonuçlarını gördükten sonra sabitlendi (seçilim yanlılığı); (3) rotasyon null'u / DSR / K1–K9 kartı koşulmadı; (4) EV1 korelasyonu 0,91, yani fark küçük bir ek. Varsayılanı değiştirmek için en azından aynı K-kartının (null, komşu ağırlıklar, pencereler, K7) koşulması gerekir.
+
+### Başlangıç bakiyesi $1 000 (kullanıcı önerisi; keşif, gerçek hakem, ledger dışı; `--cap 1000`)
+Lot çözünürlüğü kuralı (sinyal-bağımsız, `scripts/ensemble.py::load`) ve min notional 5 USDT (hakem varsayılanı) ile. **Gerçek borsa lot/min-notional kuralları UNKNOWN** (`reports/account_reality.md`; MEXC/Binance sembol kuralları doğrulanmadı).
+| bileşim | net | brüt | fee / slip / funding | dolum | red / likidasyon |
+|---|---|---|---|---|---|
+| `ev1` @ $1 000 | +829,9 (= 10 000'deki 8 297,3'ün %10'u) | 918,3 | −35,8 / −7,2 / −45,4 | 5 305 | 0 / 0 |
+| `ev1_plus_new` @ $1 000 | +790,5 | 838,1 | −31,5 / −6,3 / −9,8 | 5 041 | 0 / 0 |
+Getiri yüzdesi sermayeyle aynı (doğrusal), ama **pozisyonlar çok küçük**: EV1'de sembol başına hedef notional medyanı ≈ $11–19; hedeflerin %15–23'ü $5'in, %53–75'i $20'nin altında, **%100'ü $100'ün altında**. Borsa minimum notional'ı sembole göre yüksekse (BTC/ETH için belleğimde 100/20 USDT, **doğrulanmadı**) $1 000'da BTC/ETH pozisyonları açılamaz ve sonuç bu satırlardan farklı olur. Küçük hesap için kaldıraç (τ) ve sembol listesi birlikte düşünülmeli: τ yükselince pozisyonlar doğrusal büyür (≈ ×3 için τ = 0,6; tahmin).

@@ -171,6 +171,7 @@ if __name__ == "__main__":
     ap.add_argument("--rot", default="window", choices=["window", "full"], help="decay_null: W2 içinde mi (birincil) tüm seride mi (bilgi) kaydırılır")
     ap.add_argument("--out", default="/data/ensemble")
     ap.add_argument("--procs", type=int, default=4)
+    ap.add_argument("--cap", type=float, default=None, help="keşif: başlangıç sermayesi (varsayılan 10 000); daily aşaması + veri yüklemesi (lot çözünürlüğü sermayeye bağlı); pozisyon notional dağılımı da yazılır")
     ap.add_argument("--tau", type=float, default=None, help="keşif: yıllık hedef portföy oynaklığı (varsayılan 0,20); kaldıraç taraması için (yalnızca daily aşaması için gözden geçirilmiş)")
     ap.add_argument("--b", type=int, default=300)
     ap.add_argument("--null-from", type=int, default=0)
@@ -196,7 +197,7 @@ if __name__ == "__main__":
         Path(a.out, "k7.json").write_text(json.dumps(dict(summary=keep(res), daily=daily(report.book_pnl(win, res, sp)), syms=syms, sym_net=sym_net)))
         print(f"k7 bitti {time.time() - t0:.0f}s", keep(res), flush=True)
         raise SystemExit(0)
-    load(EXT, roots)
+    load(EXT, roots, cap=a.cap or CAP)
     print("veri:", {s: (str(D[s]["kl"].index[0]), str(D[s]["kl"].index[-1]), len(D[s]["kl"])) for s in EXT}, flush=True)
     with ProcessPoolExecutor(a.procs) as ex:
         if a.stage == "primary":
@@ -216,8 +217,13 @@ if __name__ == "__main__":
             tag = "" if not a.only else "_" + a.only.replace(",", "_")
             Path(a.out, f"primary{tag}.json").write_text(json.dumps(res))
         elif a.stage == "daily":
-            res, win, _ = run(P0, spec())
-            Path(a.out, "daily.json").write_text(json.dumps(dict(summary=keep(res), daily=daily(report.book_pnl(win, res, spec())))))
+            cap = a.cap or CAP
+            sp = spec(cap=cap)
+            out = en.make_book(cap, P0)({s: D[s]["kl"] for s in EXT})
+            res, win, _ = run(P0, sp, out=out)
+            nz = {s: out[s].target.dropna().abs()[lambda t: t > 0] for s in EXT}  # tutulan/açılan hedef notional dağılımı (USDT)
+            size = {s: dict(n=int(len(t)), median=float(t.median()), p10=float(t.quantile(0.1)), below5=float((t < 5).mean()), below20=float((t < 20).mean()), below100=float((t < 100).mean())) for s, t in nz.items()}
+            Path(a.out, "daily.json").write_text(json.dumps(dict(summary=keep(res), daily=daily(report.book_pnl(win, res, sp)), cap=cap, target_size=size)))
         elif a.stage == "decay_real":
             Path(a.out, "decay_real.json").write_text(json.dumps(decay_real(a.out, dh)))
         elif a.stage == "decay_null":
