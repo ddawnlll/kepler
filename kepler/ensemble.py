@@ -1,5 +1,7 @@
-"""Kepler Ensemble v1 (EV1), ana sistem: piyasa durumu -> uzmanlar -> aday -> risk motoru. Kurallar ve parametreler reports/ensemble_protocol.md'de koddan önce sabitlendi.
-Bu dosya yalnızca KOMPOZİSYON: Params, aday birleştirme (combine), K1 rotasyonu, kitap sözleşmesi. Parçalar: kepler/market_state.py, kepler/experts/{trend,xs_momentum,carry}.py, kepler/portfolio.py.
+"""Kepler Ensemble: TEK altyapı. piyasa durumu -> uzmanlar -> aday -> risk motoru -> hakem. Uzmanlar (`REG`) takılabilir üyelerdir; bileşim `Params.names` (üyeler) + `Params.weights` (ağırlıklar).
+EV1 ayrı bir sistem değil, bu altyapının VARSAYILAN bileşimidir: names = (trend, xs_momentum, carry), weights = (0,6; 0,2; 0,2). Başka bir uzman eklemek = names/weights'e eklemek;
+tek uzman testi = tek üyeli bileşim. Kurallar ve parametreler reports/ensemble_protocol.md'de koddan önce sabitlendi (EV1) ve reports/edge_experts_protocol.md'de (diğer üyeler).
+Bu dosya yalnızca KOMPOZİSYON: Params, aday birleştirme (combine), K1 rotasyonu, kitap sözleşmesi. Parçalar: kepler/market_state.py, kepler/experts/*.py, kepler/portfolio.py.
 
 Kitap sözleşmesi (BACKTEST §4): book({sym: kl}) -> {sym: DataFrame[target, stop]}; kl saatlik OHLCV + `fund_hr` (signals.with_funding). Karar her UTC gününün son
 mevcut barına yazılır (gün kapanışı), diğer barlar NaN (tut); stop yok (NaN). Tüm girdiler <= gün kapanışı (nedensel)."""
@@ -22,7 +24,8 @@ class Params:
     carry_days: int = 7
     vol_days: int = 30
     corr_days: int = 90
-    weights: tuple = (0.6, 0.2, 0.2)  # E1 trend, E2 kesitsel momentum, E3 carry
+    names: tuple = ("trend", "xs_momentum", "carry")  # bileşim üyeleri (REG anahtarları), weights ile aynı sırada; varsayılan = EV1
+    weights: tuple = (0.6, 0.2, 0.2)  # varsayılan EV1: E1 trend, E2 kesitsel momentum, E3 carry; negatif ağırlık = ters yön
     tau: float = 0.20  # yıllık hedef portföy oynaklığı
     vol_floor: float = 0.25
     buffer: float = 0.2  # tam tahmin pozisyonunun oranı
@@ -31,9 +34,9 @@ class Params:
     min_days: int = 90  # aktiflik: en az bu kadar günlük kapanış
     warm: int = 30  # panel geçmişi bu kadar günden azsa pozisyon yok
     risk: bool = True  # False: `no_risk` ablasyonu (n = K F / M)
-    expert: str = ""  # boş = EV1; REG anahtarı = o uzman tek başına (ağırlık 1; reports/edge_experts_protocol.md)
-    xp: tuple = ()  # tek uzman kipi: parametre geçersiz kılma (K5 komşusu), (ad, değer) çiftleri
-    flip: bool = False  # tek uzman kipi: yön testi (F -> -F, bilgi)
+    expert: str = ""  # kısayol: dolu ise bileşim = (expert,) ağırlık 1 (tek uzman testi); names/weights'in yerine geçer
+    xp: tuple = ()  # uzman parametrelerini geçersiz kılma (K5 komşusu), (ad, değer) çiftleri
+    flip: bool = False  # kısayol: expert ile birlikte ağırlık -1 (yön testi, bilgi)
 
     def scaled(self, s: float) -> "Params":
         """K5 komşusu: tüm geri bakışlar x s (tamsayıya yuvarlanır)."""
@@ -44,19 +47,25 @@ class Params:
 REG = dict(trend=trend, xs_momentum=xs_momentum, carry=carry, bollinger=bollinger, lowvol=lowvol, nearhigh=nearhigh, fundcrowd=fundcrowd, volrev=volrev, orderflow=orderflow)
 
 
-def experts(close: pd.DataFrame, st: dict, p: Params) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """(E1 trend, E2 kesitsel momentum, E3 carry), her biri [-1, 1]; aktif olmayan hücre NaN. Uzmanlar `kepler/experts/` altında."""
-    if p.expert:
-        return ((-1 if p.flip else 1) * REG[p.expert].forecast(close, st, p),)
-    return trend.forecast(close, st, p), xs_momentum.forecast(close, st, p), carry.forecast(close, st, p)
+EV1_NAMES = ("trend", "xs_momentum", "carry")
+
+
+def composition(p: Params) -> tuple[tuple, tuple]:
+    """(üye adları, ağırlıklar): `expert` kısayolu doluysa tek üye, değilse names/weights (varsayılan = EV1)."""
+    return ((p.expert,), (-1.0 if p.flip else 1.0,)) if p.expert else (tuple(p.names), tuple(p.weights))
+
+
+def experts(close: pd.DataFrame, st: dict, p: Params) -> tuple[pd.DataFrame, ...]:
+    """Bileşimdeki her üyenin tahmini (varsayılan EV1: trend, kesitsel momentum, carry), her biri [-1, 1]; aktif olmayan hücre NaN. Uzmanlar `kepler/experts/` altında, kayıt `REG`."""
+    return tuple(REG[n].forecast(close, st, p) for n in composition(p)[0])
 
 
 def combine(es, st: dict, p: Params) -> pd.DataFrame:
     """F = clip(F_raw · 0,5 / m_d, -1, 1); m_d = d'ye kadarki aktif hücrelerde |F_raw| ortalaması (genişleyen); panel geçmişi < warm gün ise 0."""
     act = st["active"]
-    raw = sum(w * e.fillna(0.0) for w, e in zip((1.0,) if p.expert else p.weights, es)).where(act)
+    raw = sum(w * e.fillna(0.0) for w, e in zip(composition(p)[1], es)).where(act)
     ab = raw.abs()
-    tot = pd.Series([math.fsum(r[~np.isnan(r)]) for r in ab.to_numpy()], index=ab.index) if p.expert else ab.sum(axis=1)  # tek uzman kipi: sütun sayısından bağımsız tam toplam (audit kesik panelde 1 ulp farkını sızıntı sanmasın); EV1 yolu aynen
+    tot = pd.Series([math.fsum(r[~np.isnan(r)]) for r in ab.to_numpy()], index=ab.index) if composition(p)[0] != EV1_NAMES else ab.sum(axis=1)  # EV1 dışı bileşimler: sütun sayısından bağımsız tam toplam (audit kesik panelde 1 ulp farkını sızıntı sanmasın); EV1 sayısal yolu aynen dondurulmuş
     m = tot.cumsum() / act.sum(axis=1).cumsum()
     warm = act.any(axis=1).cumsum() >= p.warm
     f = (raw.mul(0.5 / m.where(m > 0), axis=0)).clip(-1, 1)
