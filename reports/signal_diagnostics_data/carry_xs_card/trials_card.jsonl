@@ -1,0 +1,1 @@
+{"trial": 1, "time": 1791326890.735945, "source": "diagnostic", "hypothesis": "reports/preregistration/carry_xs_card.md K1", "config": {"test": "K1 rotation null", "B": 300, "thr": 0.016666666666666666}, "code_hash": "290af1b078f5f92128e68fea4e345f0ec5deb92e11d49374138fe9bc242eb838", "result": {"p": 0.05647840531561462, "dsr": 0.9885410336467555, "passed": false}}

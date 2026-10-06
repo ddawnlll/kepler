@@ -1,0 +1,54 @@
+{
+ "name": "B2",
+ "comp": {
+  "names": [
+   "trend",
+   "xs_momentum",
+   "carry",
+   "bollinger",
+   "lowvol",
+   "nearhigh",
+   "fundcrowd",
+   "volrev",
+   "orderflow"
+  ],
+  "weights": [
+   0.6,
+   0.2,
+   0.2,
+   0.1,
+   0.1,
+   0.1,
+   0.1,
+   0.1,
+   0.1
+  ]
+ },
+ "hyst": false,
+ "ledger": false,
+ "n_symbols": 196,
+ "summary": {
+  "net_pnl": 3551.600686723271,
+  "gross_pnl": 3592.00175489891,
+  "fee": 313.89068210235,
+  "slippage": 62.77813642047,
+  "funding": 337.35731970566144,
+  "liq_fee": 0.0,
+  "exit_cost": 1.08956935848,
+  "n_fills": 11528.0,
+  "n_liq": 0.0,
+  "n_stop": 0.0,
+  "end_position": 24345.89456,
+  "engine_commission": 376.66881875,
+  "n_rejected": 0.0,
+  "funding_missed": 0.0,
+  "funding_mark_fallback": 1068.0
+ },
+ "sharpe_fixed": 1.0197023954485038,
+ "net_hourly": 3551.705620829534,
+ "window": [
+  "2020-04-01",
+  "2026-04-01"
+ ],
+ "seconds": 510.6881334781647
+}

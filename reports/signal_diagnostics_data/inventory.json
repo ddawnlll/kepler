@@ -1,0 +1,294 @@
+{
+ "binance_archive": {
+  "BTCUSDT": {
+   "metrics": {
+    "first": "2020-09-01",
+    "last": "2026-10-05",
+    "files": 2226
+   },
+   "bookDepth": {
+    "first": "2023-01-01",
+    "last": "2026-10-05",
+    "files": 1371
+   },
+   "bookTicker": {
+    "first": "2023-05-16",
+    "last": "2024-03-30",
+    "files": 320
+   },
+   "aggTrades": {
+    "first": "2019-12-31",
+    "last": "2026-10-05",
+    "files": 2471
+   },
+   "trades": {
+    "first": "2019-09-08",
+    "last": "2026-10-05",
+    "files": 2585
+   },
+   "liquidationSnapshot": null,
+   "monthly_premiumIndexKlines": {
+    "first": "2020-01",
+    "last": "2026-09",
+    "files": 81
+   },
+   "monthly_indexPriceKlines": {
+    "first": "2020-01",
+    "last": "2026-09",
+    "files": 81
+   },
+   "monthly_fundingRate": {
+    "first": "2020-01",
+    "last": "2026-09",
+    "files": 81
+   },
+   "monthly_aggTrades": {
+    "first": "2020-01",
+    "last": "2026-09",
+    "files": 81
+   },
+   "monthly_trades": {
+    "first": "2019-09",
+    "last": "2026-09",
+    "files": 85
+   },
+   "monthly_bookTicker": {
+    "first": "2023-05",
+    "last": "2024-04",
+    "files": 12
+   },
+   "spot_klines_1h": {
+    "first": "2017-08",
+    "last": "2026-09",
+    "files": 110
+   }
+  },
+  "ETHUSDT": {
+   "metrics": {
+    "first": "2021-12-01",
+    "last": "2026-10-05",
+    "files": 1770
+   },
+   "bookDepth": {
+    "first": "2023-01-01",
+    "last": "2026-10-05",
+    "files": 1372
+   },
+   "bookTicker": {
+    "first": "2023-05-16",
+    "last": "2024-03-30",
+    "files": 320
+   },
+   "aggTrades": {
+    "first": "2019-12-31",
+    "last": "2026-10-05",
+    "files": 2471
+   },
+   "trades": {
+    "first": "2019-11-27",
+    "last": "2026-10-05",
+    "files": 2505
+   },
+   "liquidationSnapshot": null,
+   "monthly_premiumIndexKlines": {
+    "first": "2020-01",
+    "last": "2026-09",
+    "files": 81
+   },
+   "monthly_indexPriceKlines": {
+    "first": "2020-01",
+    "last": "2026-09",
+    "files": 81
+   },
+   "monthly_fundingRate": {
+    "first": "2020-01",
+    "last": "2026-09",
+    "files": 81
+   },
+   "monthly_aggTrades": {
+    "first": "2020-01",
+    "last": "2026-09",
+    "files": 81
+   },
+   "monthly_trades": {
+    "first": "2019-11",
+    "last": "2026-09",
+    "files": 83
+   },
+   "monthly_bookTicker": {
+    "first": "2023-05",
+    "last": "2024-04",
+    "files": 12
+   },
+   "spot_klines_1h": {
+    "first": "2017-08",
+    "last": "2026-09",
+    "files": 110
+   }
+  },
+  "SOLUSDT": {
+   "metrics": {
+    "first": "2021-12-01",
+    "last": "2026-10-05",
+    "files": 1770
+   },
+   "bookDepth": {
+    "first": "2023-01-01",
+    "last": "2026-10-05",
+    "files": 1369
+   },
+   "bookTicker": {
+    "first": "2023-05-16",
+    "last": "2024-03-30",
+    "files": 320
+   },
+   "aggTrades": {
+    "first": "2020-09-14",
+    "last": "2026-10-05",
+    "files": 2213
+   },
+   "trades": {
+    "first": "2020-09-14",
+    "last": "2026-10-05",
+    "files": 2213
+   },
+   "liquidationSnapshot": null,
+   "monthly_premiumIndexKlines": {
+    "first": "2020-09",
+    "last": "2026-09",
+    "files": 73
+   },
+   "monthly_indexPriceKlines": {
+    "first": "2020-09",
+    "last": "2026-09",
+    "files": 73
+   },
+   "monthly_fundingRate": {
+    "first": "2020-09",
+    "last": "2026-09",
+    "files": 73
+   },
+   "monthly_aggTrades": {
+    "first": "2020-09",
+    "last": "2026-09",
+    "files": 73
+   },
+   "monthly_trades": {
+    "first": "2020-09",
+    "last": "2026-09",
+    "files": 73
+   },
+   "monthly_bookTicker": {
+    "first": "2023-05",
+    "last": "2024-04",
+    "files": 12
+   },
+   "spot_klines_1h": {
+    "first": "2020-08",
+    "last": "2026-09",
+    "files": 74
+   }
+  },
+  "DOGEUSDT": {
+   "metrics": {
+    "first": "2021-12-01",
+    "last": "2026-10-05",
+    "files": 1770
+   },
+   "bookDepth": {
+    "first": "2023-01-01",
+    "last": "2026-10-05",
+    "files": 1371
+   },
+   "bookTicker": {
+    "first": "2023-05-16",
+    "last": "2024-03-30",
+    "files": 320
+   },
+   "aggTrades": {
+    "first": "2020-07-10",
+    "last": "2026-10-05",
+    "files": 2279
+   },
+   "trades": {
+    "first": "2020-07-10",
+    "last": "2026-10-05",
+    "files": 2279
+   },
+   "liquidationSnapshot": null,
+   "monthly_premiumIndexKlines": {
+    "first": "2020-07",
+    "last": "2026-09",
+    "files": 75
+   },
+   "monthly_indexPriceKlines": {
+    "first": "2020-07",
+    "last": "2026-09",
+    "files": 75
+   },
+   "monthly_fundingRate": {
+    "first": "2020-07",
+    "last": "2026-09",
+    "files": 75
+   },
+   "monthly_aggTrades": {
+    "first": "2020-07",
+    "last": "2026-09",
+    "files": 75
+   },
+   "monthly_trades": {
+    "first": "2020-07",
+    "last": "2026-09",
+    "files": 75
+   },
+   "monthly_bookTicker": {
+    "first": "2023-05",
+    "last": "2024-04",
+    "files": 12
+   },
+   "spot_klines_1h": {
+    "first": "2019-07",
+    "last": "2026-09",
+    "files": 87
+   }
+  },
+  "um_daily_datasets": [
+   "aggTrades",
+   "bookDepth",
+   "bookTicker",
+   "indexPriceKlines",
+   "klines",
+   "markPriceKlines",
+   "metrics",
+   "premiumIndexKlines",
+   "trades"
+  ]
+ },
+ "mexc": {
+  "kline_1h_first": "2020-06-22",
+  "kline_1d_first": "2020-06-05",
+  "funding_records": 1618,
+  "funding_oldest": "2025-04-15",
+  "ticker_has_open_interest_snapshot": true,
+  "note": "OI yaln\u0131zca anl\u0131k (ticker.holdVol); tarihsel OI/likidasyon/long-short u\u00e7lar\u0131 bulunamad\u0131 (kontrol edilen u\u00e7lar: kline, funding_rate/history, ticker, index_price)"
+ },
+ "okx": {
+  "oi_volume_rows": 180,
+  "oi_volume_oldest": "2026-04-10",
+  "long_short_rows": 180,
+  "long_short_oldest": "2026-04-10",
+  "funding_history_rows_per_call": 100,
+  "funding_history_page_oldest": "2026-09-03",
+  "liquidation_orders_endpoint_works": true,
+  "note": "rubik OI/long-short yaln\u0131zca son ~180 g\u00fcn (g\u00fcnl\u00fck); likidasyon u\u00e7 noktas\u0131 yaln\u0131zca yak\u0131n zaman; funding ge\u00e7mi\u015fi sayfal\u0131"
+ },
+ "hyperliquid": {
+  "funding_history_first": "2023-05-12",
+  "note": "funding ge\u00e7mi\u015fi 2023-05'ten; OI/likidasyon ge\u00e7mi\u015fi bu yoklamada kontrol edilmedi"
+ },
+ "unreachable_from_this_environment": {
+  "binance_fapi": "451 (restricted location)",
+  "bybit": "403 (CloudFront country block)",
+  "note": "Binance fapi openInterestHist / Bybit open-interest ge\u00e7mi\u015f derinli\u011fi: do\u011frulanmad\u0131"
+ }
+}

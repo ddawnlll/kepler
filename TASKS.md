@@ -1,10 +1,19 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: ev1_plus_new trade denetimi düzeltmeleri (kullanıcı görevi 2026-10-06) | durum: bitti (push onayı bekliyor) | protokol: reports/fix_progress.md
+Aktif iş: sinyal teşhisi (9 uzmanın IC/kalibrasyon/sönme/kümelenme; nötr bölge + carry yeniden kurulumu; kullanıcı görevi 2026-10-06) | durum: bitti (push onayı bekliyor) | protokol: reports/preregistration/signal_diagnostics.md
+
+(Önceki aktif iş: ev1_plus_new trade denetimi düzeltmeleri | durum: bitti (push onayı bekliyor) | protokol: reports/fix_progress.md)
 
 (Önceki aktif iş: 10 edge türü → uzmanlar (aile testi, kullanıcı görevi 2026-10-04) | durum: bitti | protokol: reports/edge_experts_protocol.md)
 
 (Önceki aktif iş, EV1 iş planı v1, aşağıda; kullanıcı bu iş için Faz 3 durma kuralını kaldırdı, EV1 kararı hâlâ bekliyor.)
+
+## Sinyal teşhisi (2026-10-06, kullanıcı görevi): bitti, push onayı bekliyor
+Ön kayıtlar `reports/preregistration/{signal_diagnostics,neutral_zone_hysteresis,carry_rebuild}.md` (her biri ilgili koşudan önceki commit'te), rapor `reports/signal_diagnostics.md` (`scripts/signal_diag_report.py` üretir), ham çıktılar `reports/signal_diagnostics_data/`, ilerleme `reports/signal_progress.md`. Dinamik evren (aylık top-20, delist dahil), 9 uzman, 6 ufuk, IC-TS + IC-XS, Holm(108).
+- **Sonuç:** IC ölçütünü geçen 4/9 (`carry` yalnızca kesitsel, `lowvol`, `nearhigh`, `volrev`); `trend` ve `xs_momentum` ham p ≈ 0,005 ama Holm'da kaldı (kural gereği AT; kullanıcı kararı gerekir); trend zaman serisi IC'si ≈ 0 (9 sembolde pozitif görünüyordu). 7 bağımsız fikir (küme). Faz 2.1 nötr bölge + histerezis ÇALIŞMADI (iki çekirdekte); Faz 2.2 `carry_xs` ön elemeyi geçti (net +2 358, Sharpe 1,24; netin %84'ü bull; K1–K9 koşulmadı).
+- **Kod:** `scripts/signal_diag*.py`, `scripts/signal_phase2*.py`, `scripts/signal_data_inventory.py`, `kepler/experts/carry_xs.py` (REG'e eklenmedi), testler `tests/test_signal_diag.py`, `test_carry_xs.py`, `test_signal_phase2.py`.
+- **Deneme sayısı:** önceki N = 4 775; bu iş +315 (muhafazakâr, betimsel dahil) → 5 090; birincil sayı +138 → 4 913. Defter `reports/signal_diagnostics_data/trials*.jsonl` ve `phase2/ledger_phase2_*.jsonl` (`ledger/*` ajan tarafından yazılamadığı için ayrı dosya).
+- **`carry_xs` K1–K9 kartı (2026-10-06, kullanıcı isteği "edge var mı"):** ön kayıt `reports/preregistration/carry_xs_card.md` (`1873adb`), sonuç `reports/carry_xs_card.md` (`scripts/carryxs_card_report.py`). **Karar NO_EDGE (K1 sınırda kaldı):** rotasyon null'u brüt p = 0,056 (eşik 0,0167), DSR 0,989; K2 (alfa t 3,0), K3 (fee 16 + slip 6'da net +2 050), K4, K5, K6, K8 geçti; K7 koşulamadı, K9 kaldı (bull payı > %80). 'Edge kanıtlandı' ve 'edge yok' denemez. N +1 → 5 091 (muhafazakâr).
 
 ## Edge ailesi: 10 edge türü → 9 uzman (2026-10-04/05; kullanıcı görevi "hepsini yap"): bitti, ADAY yok
 Ön kayıt `reports/edge_experts_protocol.md` (`e76cf5d`), sonuç `reports/edge_experts.md` (+ `reports/edge_experts_data/<uzman>/`). Defter satırları Modal Volume'da (`/edge/<uzman>/ledger_<uzman>.jsonl`), repoya taşınmadı (`ledger/*` ajan yazamaz; kullanıcı kilidiyle taşınır). Kullanıcı bu iş için "Faz 3 kararından önce yeni koşu yok" kuralını kaldırdı; Faz 3 kararı ve EV1 dondurma hâlâ bekliyor.

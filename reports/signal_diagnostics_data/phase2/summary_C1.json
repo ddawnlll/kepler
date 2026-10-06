@@ -1,0 +1,38 @@
+{
+ "name": "C1",
+ "comp": {
+  "names": [
+   "carry_xs"
+  ],
+  "weights": [
+   1.0
+  ]
+ },
+ "hyst": false,
+ "ledger": true,
+ "n_symbols": 196,
+ "summary": {
+  "net_pnl": 2358.404267050124,
+  "gross_pnl": 1706.8521291203465,
+  "fee": 307.74558293110005,
+  "slippage": 61.54911658622001,
+  "funding": 1021.9410952892175,
+  "liq_fee": 0.0,
+  "exit_cost": 1.09425784212,
+  "n_fills": 10251.0,
+  "n_liq": 0.0,
+  "n_stop": 0.0,
+  "end_position": 33510.39108,
+  "engine_commission": 369.29469935,
+  "n_rejected": 0.0,
+  "funding_missed": 0.0,
+  "funding_mark_fallback": 1068.0
+ },
+ "sharpe_fixed": 1.2365168512278288,
+ "net_hourly": 2358.2413718777543,
+ "window": [
+  "2020-04-01",
+  "2026-04-01"
+ ],
+ "seconds": 1362.356701850891
+}

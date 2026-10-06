@@ -1,0 +1,38 @@
+{
+ "name": "T1",
+ "comp": {
+  "names": [
+   "trend"
+  ],
+  "weights": [
+   1.0
+  ]
+ },
+ "hyst": true,
+ "ledger": true,
+ "n_symbols": 196,
+ "summary": {
+  "net_pnl": 3523.6781728157653,
+  "gross_pnl": 4962.765754756771,
+  "fee": 371.44963301255,
+  "slippage": 74.28992660251001,
+  "funding": -991.980040991705,
+  "liq_fee": 0.0,
+  "exit_cost": 1.36798133424,
+  "n_fills": 12254.0,
+  "n_liq": 0.0,
+  "n_stop": 0.0,
+  "end_position": 19947.33774,
+  "engine_commission": 445.73955962,
+  "n_rejected": 0.0,
+  "funding_missed": 0.0,
+  "funding_mark_fallback": 1068.0
+ },
+ "sharpe_fixed": 0.521919561931724,
+ "net_hourly": 3523.157828751814,
+ "window": [
+  "2020-04-01",
+  "2026-04-01"
+ ],
+ "seconds": 1572.2888135910034
+}
