@@ -483,13 +483,44 @@ def stage_checks(out: Path):
     print("kontroller", {k: v for k, v in res.items() if k != "raw_target"})
 
 
+def stage_carryxs(out: Path):
+    """Faz 2.2 bilgi ölçümleri (ön kayıt `carry_rebuild.md`): `carry_xs` tahmininin IC-TS/IC-XS'i (6 ufuk; nokta + blok bootstrap SE, p ile iddia yok) ve 9 uzmanla tahmin korelasyonu.
+    Panel (Y, aktiflik) Faz 1 ile aynı; yalnızca F farklı."""
+    from kepler.experts import carry_xs
+    P = load_panel(out / "panel_dyn20.npz")
+    mem = members(20)
+    kls, _, _ = load_symbols(sorted(mem.sym.unique()))
+    close, st, _ = forecasts(kls, mem)
+    idx = pd.DatetimeIndex(P["index"])
+    Fx = carry_xs.forecast(close, st, en.Params()).reindex(idx)[P["columns"]].to_numpy(float)
+    act = P["act"]
+    Fm = np.where(act, Fx, np.nan)
+    T = act.shape[0]
+    res, rows = {}, []
+    for h in sx.HORIZONS:
+        C = sx.block_counts(T, 2000, max(20, 2 * h), 0)
+        for kind in ("ts", "xs"):
+            est, boots = cell_ic(Fm, P["Y"][h], kind, C)
+            res[f"{kind}|{h}"] = sx.summarize(est, boots)
+            rows.append(dict(kind="descriptive", expert="carry_xs", spec=dict(what="phase2_info", ic=kind, h=h), result=res[f"{kind}|{h}"]))
+    A = {n: np.nan_to_num(np.where(act, P["F"][n], np.nan)) for n in EXPERTS}
+    A["carry_xs"] = np.nan_to_num(Fm)
+    res["corr_cell"] = sx.cell_spearman(A, act).loc["carry_xs"].round(4).to_dict()
+    res["corr_xs_daily"] = sx.daily_xs_corr(A, act).loc["carry_xs"].round(4).to_dict()
+    (out / "carryxs.json").write_text(json.dumps(clean(res), indent=1))
+    ch = hashlib.sha256((Path(__file__).read_text() + Path(sx.__file__).read_text()).encode()).hexdigest()
+    (out / "ledger_signal_diag_carryxs.jsonl").unlink(missing_ok=True)
+    write_ledger(rows, out / "ledger_signal_diag_carryxs.jsonl", 4775 + 300, ch, "panel_dyn20")
+    print("carry_xs", {k: round(v["ic"], 4) for k, v in res.items() if k.startswith(("ts", "xs"))}, res["corr_cell"]["trend"])
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=["panel", "analyze", "checks"])
+    ap.add_argument("--stage", required=True, choices=["panel", "analyze", "checks", "carryxs"])
     ap.add_argument("--out", required=True)
     ap.add_argument("--b", type=int, default=2000)
     a = ap.parse_args()
-    {"panel": lambda: stage_panel(Path(a.out)), "analyze": lambda: stage_analyze(Path(a.out), a.b), "checks": lambda: stage_checks(Path(a.out))}[a.stage]()
+    {"panel": lambda: stage_panel(Path(a.out)), "analyze": lambda: stage_analyze(Path(a.out), a.b), "checks": lambda: stage_checks(Path(a.out)), "carryxs": lambda: stage_carryxs(Path(a.out))}[a.stage]()
 
 
 if __name__ == "__main__":
