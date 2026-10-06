@@ -35,13 +35,13 @@ def ic_tables(r):
 
 
 def decision_table(r, chk):
-    rows = ["| uzman | H | karar | en iyi hücre | IC [ham %95 AA] | düzeltilmiş AA (108) | z | Holm p | alt dönemde + | negatif anlamlı | max \\|ρ\\| diğer (kopya?) | küme |", "|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    rows = ["| uzman | H | karar | en iyi hücre | IC [ham %95 AA] | düzeltilmiş AA (108) | z | Holm p | alt dönemde + | negatif anlamlı | max \\|ρ\\| diğer (≥ 0,5: aynı fikir) | küme |", "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for n in EXPERTS:
         c, d = r["cards"][n], r["desc"][n]
         b = c["best"]
         raw = chk["raw_target"].get(f"{n}|{b['type']}|{b['h']}") if b else None
         rows.append(f"| `{n}` | {c['H']} | **{c['decision']}** | {b['type'].upper()} h={b['h']} | {f(b['ic'], 3, True)} [{f(b['lo'], 3, True)}, {f(b['hi'], 3, True)}] | [{f(b['lo_c'], 3, True)}, {f(b['hi_c'], 3, True)}] | {f(b['z'], 2)} | {f(b['p_holm'], 4)} | {c.get('n_pos_periods')}/3 | "
-                    f"{'EVET' if c['neg_sig'] else 'hayır'} | {d['max_corr_other']['expert']} {d['max_corr_other']['rho']:+.2f} ({'kopya' if d['copy'] else 'değil'}) | {r['clusters'][n]} |" if b else f"| `{n}` | {c['H']} | **{c['decision']}** | pozitif hücre yok | | | | | | | | {r['clusters'][n]} |")
+                    f"{'EVET' if c['neg_sig'] else 'hayır'} | {d['max_corr_other']['expert']} {d['max_corr_other']['rho']:+.2f} ({'aynı fikir' if d['copy'] else 'değil'}) | {r['clusters'][n]} |" if b else f"| `{n}` | {c['H']} | **{c['decision']}** | pozitif hücre yok | | | | | | | | {r['clusters'][n]} |")
     return "\n".join(rows)
 
 
@@ -194,7 +194,7 @@ def main():
           "## Faz 2: ön kayıtlı iki test (dinamik evren, mevcut hakem, tek seferlik)", "", phase2(p2), "", nar.get("phase2", ""), ""]
     if cx:
         L += ["`carry_xs` tahmin düzeyi (bilgi; SE ile, p yok): " + "; ".join(f"{k.upper().replace('|', ' h=')}: {v['ic']:+.3f} (SE {v['se']:.3f})" for k, v in cx.items() if k.startswith(("ts|", "xs|")) and k.split("|")[1] in ("5", "20", "40")) + f". Tahmin korelasyonu (hücre havuzlu): trend {cx['corr_cell']['trend']:+.2f}, eski carry {cx['corr_cell']['carry']:+.2f}, lowvol {cx['corr_cell']['lowvol']:+.2f}, fundcrowd {cx['corr_cell']['fundcrowd']:+.2f}.", ""]
-    L += ["## Veri envanteri (Faz 0.3; yalnızca envanter, pipeline kurulmadı)", "", inventory(inv), "", "Maliyet notu (kaba, doğrulanmamış): `metrics` günlük dosya ~20 MB/sembol-yıl düzeyindeydi (`TASKS.md` notu); 20 üyeli dinamik evren ≈ 200 sembol için yüzlerce GB-saat değil, ~10⁴ dosya; indirme/ayrıştırma BTC/ETH/SOL için bir günlük iş, tam evren için 2–3 gün (tahmin). "
+    L += ["## Veri envanteri (Faz 0.3; yalnızca envanter, pipeline kurulmadı)", "", inventory(inv), "", "Maliyet notu (kaba tahmin, doğrulanmadı): `metrics` zip'leri BTC için ~20 MB/sembol-yıl düzeyindeydi (`TASKS.md` notu); ~200 sembolün tam geçmişi onlarca GB ve ~10⁴ dosya; BTC/ETH/SOL için bir günlük iş, tam evren için birkaç gün. "
           "aggTrades/trades tick düzeyi ve çok büyük (BTC tek başına yıllarca günlük GB); L2 tam geçmişi ücretsiz kaynaklarda yok.", "",
           "### Yeni veri kaynaklarının momentum'dan bağımsız bilgi taşıma ihtimali (yargı; kanıt değil)", "", nar.get("new_data", ""), "",
           "## Deneme sayacı (araştırma defteri)", "",

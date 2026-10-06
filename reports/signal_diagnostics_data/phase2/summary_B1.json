@@ -1,0 +1,38 @@
+{
+ "name": "B1",
+ "comp": {
+  "names": [
+   "trend"
+  ],
+  "weights": [
+   1.0
+  ]
+ },
+ "hyst": false,
+ "ledger": false,
+ "n_symbols": 196,
+ "summary": {
+  "net_pnl": 3586.427924357391,
+  "gross_pnl": 5040.759294624341,
+  "fee": 379.08941730195005,
+  "slippage": 75.81788346039001,
+  "funding": -998.0104418083702,
+  "liq_fee": 0.0,
+  "exit_cost": 1.4136276962399998,
+  "n_fills": 12285.0,
+  "n_liq": 0.0,
+  "n_stop": 0.0,
+  "end_position": 20124.40774,
+  "engine_commission": 454.90730048999995,
+  "n_rejected": 0.0,
+  "funding_missed": 0.0,
+  "funding_mark_fallback": 1068.0
+ },
+ "sharpe_fixed": 0.5285134866326023,
+ "net_hourly": 3585.8951789592575,
+ "window": [
+  "2020-04-01",
+  "2026-04-01"
+ ],
+ "seconds": 322.68316626548767
+}

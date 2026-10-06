@@ -1,0 +1,38 @@
+{
+ "name": "C0",
+ "comp": {
+  "names": [
+   "carry"
+  ],
+  "weights": [
+   1.0
+  ]
+ },
+ "hyst": false,
+ "ledger": false,
+ "n_symbols": 196,
+ "summary": {
+  "net_pnl": -1040.4319956998431,
+  "gross_pnl": -2907.189767194574,
+  "fee": 137.00628725845,
+  "slippage": 27.40125745169,
+  "funding": 2033.0184200446308,
+  "liq_fee": 0.0,
+  "exit_cost": 1.85310383976,
+  "n_fills": 4986.0,
+  "n_liq": 0.0,
+  "n_stop": 0.0,
+  "end_position": 46819.77705,
+  "engine_commission": 164.40754498,
+  "n_rejected": 0.0,
+  "funding_missed": 0.0,
+  "funding_mark_fallback": 1068.0
+ },
+ "sharpe_fixed": -0.16787146105759326,
+ "net_hourly": -1040.644004051291,
+ "window": [
+  "2020-04-01",
+  "2026-04-01"
+ ],
+ "seconds": 292.5276596546173
+}

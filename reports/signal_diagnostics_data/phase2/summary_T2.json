@@ -1,0 +1,54 @@
+{
+ "name": "T2",
+ "comp": {
+  "names": [
+   "trend",
+   "xs_momentum",
+   "carry",
+   "bollinger",
+   "lowvol",
+   "nearhigh",
+   "fundcrowd",
+   "volrev",
+   "orderflow"
+  ],
+  "weights": [
+   0.6,
+   0.2,
+   0.2,
+   0.1,
+   0.1,
+   0.1,
+   0.1,
+   0.1,
+   0.1
+  ]
+ },
+ "hyst": true,
+ "ledger": true,
+ "n_symbols": 196,
+ "summary": {
+  "net_pnl": 3429.410711704393,
+  "gross_pnl": 3458.843261030851,
+  "fee": 306.8026771814,
+  "slippage": 61.36053543628,
+  "funding": 339.6960210097021,
+  "liq_fee": 0.0,
+  "exit_cost": 0.96535771848,
+  "n_fills": 11459.0,
+  "n_liq": 0.0,
+  "n_stop": 0.0,
+  "end_position": 24173.84456,
+  "engine_commission": 368.16321263,
+  "n_rejected": 0.0,
+  "funding_missed": 0.0,
+  "funding_mark_fallback": 1068.0
+ },
+ "sharpe_fixed": 0.9897989994173662,
+ "net_hourly": 3429.5156457935736,
+ "window": [
+  "2020-04-01",
+  "2026-04-01"
+ ],
+ "seconds": 959.7084267139435
+}
