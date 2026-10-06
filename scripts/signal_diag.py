@@ -436,13 +436,60 @@ def stage_analyze(out: Path, B: int):
     print("tamam", res["result"]["n_trials"], f"{time.time() - t0:.0f}s")
 
 
+def stage_checks(out: Path):
+    """Gerçek veride (a) φ'nin ham funding olaylarından bağımsız yeniden hesabı (karar anında bilinen), (b) rejim etiketinin kesilmiş seride değişmemesi, (c) HAM getiri hedefiyle IC nokta tahminleri
+    (oynaklık normalizasyonunun yarattığı olası yapaylık için duyarlılık; p/karar yok, deftere girmez)."""
+    from kepler import robust
+    res = {}
+    kls, _, fund = load_symbols(["BTCUSDT", "ETHUSDT", "DOGEUSDT", "ADAUSDT"])
+    p = en.Params()
+    close, _ = en.panel(kls)
+    st = en.market_state(close, kls, p)
+    rng = np.random.default_rng(0)
+    cand = close.index[(close.index >= DEC_START) & (close.index <= DEC_LAST)]
+    worst, gaps = 0.0, 0
+    for s in kls:
+        ev = fund[s]
+        ts, rate, itv = _ns(ev.index.round("1min")), ev.last_funding_rate.to_numpy(float), ev.funding_interval_hours.to_numpy(float)
+        for d in rng.choice(cand, 20, replace=False):
+            T = pd.Timestamp(d) + pd.Timedelta(days=1)
+            bars = pd.date_range(T - pd.Timedelta(hours=168), T - pd.Timedelta(hours=1), freq="1h")
+            hr = []
+            for b in bars:
+                k = np.searchsorted(ts, _ns(pd.DatetimeIndex([b + pd.Timedelta(hours=1)]))[0], side="right") - 1
+                hr.append(rate[k] / itv[k] if k >= 0 else np.nan)
+            pres = np.isin(_ns(bars), _ns(kls[s].index))  # rolling ortalama yalnızca mevcut barları görür (kline boşluğu: veri sözleşmesi)
+            want = np.nanmean(np.array(hr)[pres]) * 24 * 365
+            got = st["phi"][s].get(pd.Timestamp(d), np.nan)
+            worst, gaps = max(worst, abs(got - want)), gaps + int(not pres.all())
+    res["phi_recompute_max_abs_diff"], res["phi_samples_with_kline_gaps"], res["phi_samples"] = float(worst), gaps, 20 * len(kls)
+    btc = close["BTCUSDT"].dropna()
+    full, bad = robust.regime(btc), 0
+    for k in (500, 900, 1300, 1700, 2000):
+        bad += int(not robust.regime(btc.iloc[:k]).fillna("x").equals(full.iloc[:k].fillna("x")))
+    res["regime_truncation_mismatches"] = bad
+    P = load_panel(out / "panel_dyn20.npz")
+    r = json.loads((out / "results.json").read_text())
+    act, raw = P["act"], {}
+    for n in EXPERTS:
+        F = np.where(act, P["F"][n], np.nan)
+        for kind in ("ts", "xs"):
+            for h in sx.HORIZONS:
+                R = P["Y"][h] * P["sigma"] * np.sqrt(h / 365.0)
+                est = sx.ic_ts(F, R, None)[0] if kind == "ts" else sx.ic_xs(F, R, None)[0]
+                raw[f"{n}|{kind}|{h}"] = dict(raw=float(est), norm=r["family"][f"{n}|{kind}|{h}"]["ic"])
+    res["raw_target"] = raw
+    (out / "checks.json").write_text(json.dumps(clean(res), indent=1))
+    print("kontroller", {k: v for k, v in res.items() if k != "raw_target"})
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=["panel", "analyze"])
+    ap.add_argument("--stage", required=True, choices=["panel", "analyze", "checks"])
     ap.add_argument("--out", required=True)
     ap.add_argument("--b", type=int, default=2000)
     a = ap.parse_args()
-    {"panel": lambda: stage_panel(Path(a.out)), "analyze": lambda: stage_analyze(Path(a.out), a.b)}[a.stage]()
+    {"panel": lambda: stage_panel(Path(a.out)), "analyze": lambda: stage_analyze(Path(a.out), a.b), "checks": lambda: stage_checks(Path(a.out))}[a.stage]()
 
 
 if __name__ == "__main__":
