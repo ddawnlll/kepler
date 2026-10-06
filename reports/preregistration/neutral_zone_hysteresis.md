@@ -19,7 +19,7 @@ Hedef notional: n'_i = n_i (risk motorunun olağan çıktısı) eğer s_i ≠ 0 
 - **Dönem / spec:** 2020-04-01 → 2026-04-01, sermaye 10 000, fee 10 + slip 2 bps RT, kaldıraç 10, mmr 0,005, `gross_cap` 3×, likidasyon açık (`scripts/ensemble.py::spec`). Mühür dokunulmaz.
 - **Çekirdek 1 (trend):** bileşim = (trend) ağırlık 1: taban (histerezissiz) vs histerezisli.
 - **Çekirdek 2 (mevcut ensemble):** `ev1_plus_new` (`ensemble.PRESETS`; önceki denetimin konusu): taban vs histerezisli.
-- Taban koşuları ölçümdür (`run_book`, deftere girmez); histerezisli iki koşu `evaluate.evaluate_book` ile (nedensellik denetimi + defter, `/data/signal_diag/ledger_phase2.jsonl`): **N + 2**.
+- Taban koşuları ölçümdür (`run_book`, deftere girmez); histerezisli iki koşu `evaluate.evaluate_book` ile (nedensellik denetimi + defter, `/data/signal_diag/phase2/ledger_phase2_<koşu>.jsonl` (eşzamanlı konteynerler aynı dosyaya yazmasın diye koşu başına)): **N + 2**.
 
 ## Ölçüt ve karar (her çekirdek için ayrı; Bonferroni α = 0,05 / 2)
 Birincil ölçü: sabit sermaye yıllık Sharpe (`scripts/audit_metrics.sharpe_fixed`), günlük net PnL. ΔSharpe = histerezisli − taban; eşleştirilmiş durağan blok bootstrap (günler, ortalama blok 20, B = 2 000, tohum 0, iki seri aynı tarih örneğiyle).
