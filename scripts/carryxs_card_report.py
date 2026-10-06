@@ -112,7 +112,12 @@ def main():
          "## Ayrıntı", "", "**K5 komşuları:** " + "; ".join(f"×{k[3:]}: net {v['net']:+.0f}, Sharpe {v['sharpe']:.2f} (carry_days {v['carry_days']})" for k, v in nbs.items()) + ".", "",
          "**K6 yarıyıllar (net):** " + ", ".join(f"{k[4:15]}: {v:+.0f}" for k, v in halves.items()) + ".", "",
          f"**K1 bilgi:** aynı p'nin Faz 1 ailesinin Bonferroni eşiğine (0,05/108 = {0.05 / 108:.5f}) karşısı B = 300 çözünürlüğüyle ulaşılamaz. Null'ın NET ortalaması {out['K1']['net_null_mean']:+.0f} (gerçek net {c1['summary']['net_pnl']:+.0f}).", "",
-         "## Okuma", "", "NARRATIVE_PLACEHOLDER", "",
+         "## Okuma", "", (f"**Karar mekanik olarak NO_EDGE, ama tablo karışık.** K1 kalıyor: gerçek brüt {gross:+.0f}, rotasyon null'unun %95 dilimine ({out['K1']['null_q'][1]:+.0f}) neredeyse eşit; p = {p:.3f} hem ön kayıtlı eşiğin (0,0167) hem de nominal %5'in biraz üstünde (B = 300'de p'nin örnekleme belirsizliği ≈ ±0,013). "
+          f"Null'ın kendisi pozitif ortalama brüt veriyor ({out['K1']['null_mean']:+.0f} ± {out['K1']['null_sd']:.0f}): kesitsel carry yapısı (dolar-nötr, düşük oynaklık) zamanlama olmadan da küçük pozitif getiri taşıyor; gerçek sonucun bunun ÜSTÜNDE olduğuna dair kanıt zayıf. "
+          f"Öte yandan diğer kartlar güçlü: K2 geçti (alfa t = {t:.2f}, beta ≈ {b:+.3f}, Sharpe {shs:.2f} vs benchmark {shb:.2f}), K3 geçti (fee 16 + slip 6'da bile net {c16:+.0f}, Sharpe {out['K3']['sharpe_fee16_slip6']:.2f}; 1 bar gecikmede net {cd:+.0f}), K4, K5 (komşuların hepsi net > 0, Sharpe 1,3–1,6), K6 ve K8 geçti. "
+          f"K7 koşulamadı; K9 kalıyor (netin ~%{100 * p2['bull'] / c1['summary']['net_pnl']:.0f}'i bull rejiminde; rejim netlerinin toplamına göre pay %{100 * out['K9']['max_share']:.0f}). "
+          "**Sonuç:** 'edge kanıtlandı' denemez, 'edge yok' da denemez. Sinyal düzeyinde bilgi (Faz 1) ve maliyetten/gecikmeden bağımsız dayanıklı bir getiri var; ancak ön kayıtlı zamanlama null'u (K1) bunu şanstan ayıramadı ve kazanç tek rejime yaslanıyor. "
+          "Bu bir NO_EDGE kararının K1 sınırında verildiği ve ZAYIF'a çok yakın bir durumdur; karar kuralı değiştirilmedi."), "",
          "## Dürüstlük notları", "",
          "- Tasarım Faz 1 bulgusundan türetildi (örneklem içi); kart bunu telafi etmez. Zaman-dışı kanıt yalnızca G3 (mühür, yalnızca ADAY ve kullanıcı komutuyla) ve canlıdır.",
          "- K2 benchmark'ı gösterge: maliyetsiz, fonlamasız EW fiyat getirisi (hakem al-tut'u artefakt verir). K7 koşulamadı, K9 Faz 2'de görülmüştü: en iyi olası karar ZAYIF idi.",

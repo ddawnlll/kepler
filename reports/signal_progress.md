@@ -10,3 +10,4 @@ Ortam: yerel venv `/tmp/claude-0/venv` (modal 1.6.1, pandas, numpy, scipy, duckd
 - **Faz 1 sonuç (2026-10-06)**: Modal `--stage panel/analyze/checks/carryxs`; sonuçlar `reports/signal_diagnostics_data/`. 300 defter satırı.
 - **Faz 2 (2026-10-06)**: ön kayıtlar commit edildi, sonra 6 Modal koşusu (B1 T1 B2 T2 C0 C1; T1/T2/C1 `evaluate_book` + defter). `scripts/signal_phase2_report.py` → `phase2/phase2_results.json`. Histerezis ÇALIŞMADI (iki çekirdek), `carry_xs` KABUL (ön eleme).
 - **Faz 3**: `scripts/signal_diag_narrative.py` + `scripts/signal_diag_report.py` → `reports/signal_diagnostics.md`. Push yapılmadı.
+- **K1–K9 kartı (2026-10-06)**: `carry_xs` için ön kayıtlı kart koşuldu (null B=300, K3/K5/K6/K8 hakem koşuları). Konteyner yeniden başlamasında `null_180_200` ve `fixed` işleri öldü; `modal run --detach` ile yeniden koşuldu. Karar NO_EDGE (K1 p=0,056). Rapor `reports/carry_xs_card.md`.
