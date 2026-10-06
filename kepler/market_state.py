@@ -12,10 +12,12 @@ def panel(kls: dict[str, pd.DataFrame]) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def market_state(close: pd.DataFrame, kls: dict[str, pd.DataFrame], p) -> dict:
-    """sigma (yıllık, tabanlı), ret (günlük log getiri), active (bool), phi (yıllık funding, carry_days ortalaması)."""
+    """sigma (yıllık, tabanlı), ret (günlük log getiri), active (bool), phi (yıllık funding, carry_days ortalaması), dvol (günlük quote hacmi), tbr (günlük taker alış payı); son ikisi sütun yoksa NaN."""
     ret = np.log(close).diff()
     sigma = (ret.rolling(p.vol_days, min_periods=max(2, int(p.vol_days * 2 / 3))).std() * np.sqrt(365)).clip(lower=p.vol_floor)
     active = (close.notna().cumsum() >= p.min_days) & close.notna() & sigma.notna()
     phi = pd.DataFrame({s: (kl.fund_hr.rolling(f"{24 * p.carry_days}h").mean() * 24 * 365).resample("1D").last() if "fund_hr" in kl else pd.Series(dtype=float)
                         for s, kl in kls.items()}).reindex(index=close.index, columns=close.columns)
-    return dict(ret=ret, sigma=sigma, active=active, phi=phi)
+    daily = lambda col: pd.DataFrame({s: kl[col].resample("1D").sum(min_count=1) if col in kl else pd.Series(dtype=float) for s, kl in kls.items()}).reindex(index=close.index, columns=close.columns)  # noqa: E731
+    dvol = daily("quote_volume")  # günlük quote hacmi (UTC günün saatlik barları toplamı)
+    return dict(ret=ret, sigma=sigma, active=active, phi=phi, dvol=dvol, tbr=daily("taker_buy_quote_volume") / dvol.where(dvol > 0))

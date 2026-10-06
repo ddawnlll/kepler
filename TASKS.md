@@ -1,6 +1,20 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: İş planı v1 (EV1 → karar) | durum: devam (Faz 1.5 bitti; Faz 0 kullanıcı girdisi bekliyor) | protokol: TASKS.md "İş planı v1"
+Aktif iş: 10 edge türü → uzmanlar (aile testi, kullanıcı görevi 2026-10-04) | durum: bitti | protokol: reports/edge_experts_protocol.md
+
+(Önceki aktif iş, EV1 iş planı v1, aşağıda; kullanıcı bu iş için Faz 3 durma kuralını kaldırdı, EV1 kararı hâlâ bekliyor.)
+
+## Edge ailesi: 10 edge türü → 9 uzman (2026-10-04/05; kullanıcı görevi "hepsini yap"): bitti, ADAY yok
+Ön kayıt `reports/edge_experts_protocol.md` (`e76cf5d`), sonuç `reports/edge_experts.md` (+ `reports/edge_experts_data/<uzman>/`). Defter satırları Modal Volume'da (`/edge/<uzman>/ledger_<uzman>.jsonl`), repoya taşınmadı (`ledger/*` ajan yazamaz; kullanıcı kilidiyle taşınır). Kullanıcı bu iş için "Faz 3 kararından önce yeni koşu yok" kuralını kaldırdı; Faz 3 kararı ve EV1 dondurma hâlâ bekliyor.
+- **Sonuç:** ZAYIF 3 (`trend`, `xs_momentum`, `nearhigh`: hepsi momentum ailesi, hepsinde K9 kalıyor), NO_EDGE 6 (`carry`, `bollinger` [geçersiz koşu: hesap bitti, deftere yazılmadı], `lowvol`, `fundcrowd`, `volrev`, `orderflow`). Ensemble'a giren yok (kapı: K1+K2+aile düzeltmesi+M1+M2; `nearhigh` M1'de kaldı).
+- **Koşulamayanlar:** gerçek maker/likidite (emir defteri yok), haber/NLP (veri yok), execution (uzman değil); volatility selling (opsiyon verisi yok). Vekiller etiketli.
+- **Kod:** 6 yeni uzman `kepler/experts/`, `Params.expert/xp/flip`, `market_state` `dvol`/`tbr`, `scripts/ensemble.py --expert`, `tests/test_edge_experts.py` (22). EV1 yolu değişmedi: günlük PnL birebir (net 8 297,33; 5 561 dolum).
+- **Deneme sayısı N:** 4 119 + 8 = **4 127** (Bollinger yazılmadı).
+- **Hazır bileşimler (2026-10-05):** `ensemble.PRESETS` (`ev1` varsayılan, `all9_equal`, `ev1_plus_new`). `ev1_plus_new` keşifte Sharpe 1,89 / maks DD %6,8 (EV1 1,45 / %9,7) ama kanıt değil; varsayılan değişmedi, K-kartı koşulmadan değiştirilmez.
+- **Yapı (2026-10-05, kullanıcı itirazı "hiyerarşik karmaşa"):** ensemble tek altyapı; uzmanlar takılabilir üye, bileşim `Params.names/weights`; EV1 = varsayılan bileşim. `expert=` yalnızca tek üyeli bileşim kısayolu. EV1 ve tek uzman çıktısı birebir aynı (günlük fark 0,0), `tests/test_ensemble_compose.py` (4).
+- **Keşif eki (2026-10-05, kullanıcı kararı: ön kayıt yok, stop şart):** `scripts/mr_explore.py` (stoplu, rejim kapılı saatlik mean reversion) + `scripts/mr_events.py` (olay çalışması); sonuç `reports/edge_experts.md` "Keşif eki". Özet: kapısız hepsi hesabı bitirdi; range rejimi + hacimsiz uç kapısıyla brüt pozitif ama maliyet yiyor (stopsuz net +937, stoplu −3 418, dönemler kararsız). Ledger dışı, N'ye girmez.
+- **Trade denetimi (2026-10-05, kullanıcı isteği):** `scripts/trade_audit.py` (Modal, veri) + `scripts/trade_audit_report.py` (PDF, LLM'siz); çıktı `reports/trade_audit.pdf` (+ `reports/trade_audit_data/`); EV1 @ $1 000. Nautilus hesaplayıcılarıyla çapraz kontrol (Sharpe/Sortino/DD/oynaklık/kazanma/beklenti aynı; pozisyon sayısı 1 242 = 1 242). Test: `tests/test_trade_audit.py`. Mutabakat farkı 0,034 USDT (`report.hourly_pnl` bilinen küçük fark). **Tek dosya, uzman bazlı (kullanıcı isteği):** `reports/ev1_new_trade_audit.pdf` (= `ev1_plus_new` bileşimi, 9 uzman; Bölüm II uzman bazlı genel bakış + her uzman için ayrı sayfa: tanım, tek başına K-kartı, bileşim içi rol, grafikler; Bölüm III ensemble genel analizi). Bileşim raporları: ev1 / ev1_plus_new / all9_equal (`reports/trade_audit_data/<bileşim>/`; ev1_plus_new için 9 leave-one-out koşusu `loo/`). Maliyet duyarlılığı tablosu (doğrusal yeniden hesap), uzman atfı, tek başına uzman tablosu, bileşim karşılaştırması eklendi. Genişletilmiş sürüm (19-20 sayfa): drawdown tablosu, getiri dağılımı/BTC beta, long/short maruziyet, sinyal kalibrasyonu, sembol incelemesi, MAE/MFE zamanlaması, karşı-olgusal stop ölçümü (saatlik gerçek pozisyon profiliyle; yeniden kurulum 922,6 vs hakem 918,3 USDT).
+- **Açık:** BACKTEST.md günlüğü (korumalı; `dvol`/`tbr` [VAR] notu). `evaluate.code_hash` uzman dosyalarını kapsamıyor. Ters yön (Bollinger −F net +8 025) post-hoc: yeni ön kayıt olmadan kullanılmaz.
 
 ## İş planı v1 (2026-10-04): EV1'i anla, gerçekliğe bağla, karar ver
 
