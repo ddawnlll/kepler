@@ -52,3 +52,6 @@ reports/full_systems_data/*.json
 
 # Trade denetimi: günlük paneller (2,8 MB) repoda kalır; saatlik tablo (16 MB, hourly.parquet) *.parquet kuralıyla dışarıda, Modal komutuyla yeniden üretilir (scripts/trade_audit.py)
 !reports/trade_audit_data/**/panels.parquet
+
+# Rapor üretici ara görselleri (scripts/trade_audit_report.py): yeniden üretilebilir, repoya girmez
+reports/*_figs/

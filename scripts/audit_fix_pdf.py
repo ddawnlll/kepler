@@ -56,6 +56,7 @@ def build(AN: dict, c) -> dict:
             ["audit.check_causal_book (ev1_plus_new kitabı, 16 kesim: sonrası bozuldu + veri kesildi)", f"kötü kesim: {len(cz['check_causal_book_bad'])}", "boş = nedensel"],
             [f"Önek değişmezliği: {pre['real']['n_cuts']} kesim günü (ayda bir); t günü kararı tam veriyle vs t'ye kadar kesilmiş veriyle", f"en büyük mutlak fark {worst_real:.1e}; sapan kesim: {nbad_real}",
              "karşılaştırılan: tahmin ölçeği m_d, toplam F, σ, funding φ, hacim/taker serileri, 9 uzmanın F'si, risk motoru hedef notional'ı (pozisyon), BTC rejim etiketi"],
+            ["Funding girdisi: `with_funding` yalnızca t'ye kadar olan funding olaylarıyla yeniden hesaplandı", f"{pre['funding_recompute']['n_checks']} kontrol (sembol x kesim); sapan: {pre['funding_recompute']['n_bad']}", "fund_hr t öncesi aynı; funding oranı kline kapanışında bilinen son değerdir"],
             ["Pozitif kontrol: m_d tüm-örneklem ortalamasıyla (bilinçli sızıntı)", f"{len(pre['m_fullsample']['bad_cut_days'])}/{pre['m_fullsample']['n_cuts']} kesimde YAKALANDI", f"m farkı {pre['m_fullsample']['worst']['m']['maxdiff']:.3f}; hedef pozisyon farkı {pre['m_fullsample']['worst']['n']['maxdiff']:.1f} USDT"],
             ["Pozitif kontrol: σ 5 gün ileri", f"{len(pre['sigma_future']['bad_cut_days'])}/{pre['sigma_future']['n_cuts']} kesimde YAKALANDI", f"σ farkı {pre['sigma_future']['worst']['sigma']['maxdiff']:.2f}"],
             ["Pozitif kontrol: rejim etiketi 1 gün ileri", f"{len(pre['regime_future']['bad_cut_days'])}/{pre['regime_future']['n_cuts']} kesimde YAKALANDI", "rejim yalnızca analizde kullanılır, kararda değil"],
@@ -94,6 +95,12 @@ def build(AN: dict, c) -> dict:
         rows2.append([f"${cap_:,.0f}".replace(",", " "), fmt(r["net_unrounded"], 1), fmt(r["net_mexc"], 1), pc(r["net_diff_pct"]), f"{r['sharpe_unrounded']:.2f} / {r['sharpe_mexc']:.2f}", r["intents"], f"{r['blocked']} ({pc(r['blocked_share'], 1)})",
                       pc(r["median_rel_pos_err"]), f"{r['pnl_corr']:.3f}", "evet" if mx["converged"][str(int(cap_))] else "hayır"])
     r1k = first[1000]
+    m0 = mx.get("ref_min_notional0")
+    m0_txt = ""
+    if m0 and "net_unrounded0" in r1k:
+        m0_txt = (f" <b>Referans duyarlılığı:</b> ana koşunun yuvarlamasız referansı hakemin varsayılan min_notional = 5 USDT kuralını içerir (borsa kuralı değil, model varsayımı; ince adımla bile artıran emirlerin < 5 USDT olanı gönderilmez). "
+                  f"min_notional = 0'lı referansla $1 000'da net {fmt(r1k['net_unrounded0'], 1)} ({r1k['fills_unrounded0']} dolum; MEXC {fmt(r1k['net_mexc'], 1)}, fark {pc(r1k['net_diff_pct0'])}, Sharpe {r1k['sharpe_unrounded0']:.2f} vs {r1k['sharpe_mexc']:.2f}); "
+                  f"aynı ölçütle asgari sermaye ${fmt(m0['min_capital'], 0)}.")
     top3 = sorted(ps.items(), key=lambda kv: -kv[1]["blocked_share"])[:3]
     top3_txt = ", ".join(f"{k} {pc(v['blocked_share'], 0)}" for k, v in top3)
     fee_lo, fee_hi = min(v["takerFeeRate"] for v in rl.values()), max(v["takerFeeRate"] for v in rl.values())
@@ -105,8 +112,10 @@ def build(AN: dict, c) -> dict:
                    P(f"<b>Okuma.</b> $1 000'da emir niyetlerinin {pc(r1k['blocked_share'], 0)}'i gönderilemiyor (hedef notional 1 sözleşmeden küçük: {top3_txt}); "
                      f"net farkı yalnızca {pc(r1k['net_diff_pct'])} ve Sharpe yukarı ({r1k['sharpe_mexc']:.2f} vs {r1k['sharpe_unrounded']:.2f}) çıkıyor, ama bu 'yuvarlama zararsız' demek değildir: portföy fiilen başka (bazı sembolleri neredeyse hiç taşımayan) bir portföy, "
                      f"pozisyon notional'ı hedeften medyan {pc(r1k['median_rel_pos_err'], 1)} sapıyor ({pc(r1k['share_err_gt_10pct'], 0)} niyette > %10), günlük PnL korelasyonu {r1k['pnl_corr']:.3f}. "
-                     f"Koşu öncesi yazılan ölçüte göre (net farkı ≤ %5, |Sharpe farkı| ≤ 0,10, gönderilemeyen ≤ %5; ızgara $1k/$2,5k/$5k/$10k/$25k) <b>asgari uygulanabilir sermaye ${mx['min_capital']:,}</b>."
-                     f" Yuvarlamasız koşu, aynı sermaye için sezgisel (1e-3 mertebesi) adım kullanır; MEXC kuralları 'min 1 sözleşme'yi gerçek kılar. Ücret/slip varsayımı değişmedi (10 + 2 bps); MEXC liste ücreti taker %{100 * fee_lo:.2g}–{100 * fee_hi:.2g} (tek yön) görünüyor ama hesap ücreti/VIP indirimi doğrulanmadı.".replace(",", " "), B)]
+                     f"PnL etkisi ($1 000, yuvarlamasız → MEXC): brüt {fmt(r1k['gross_unrounded'], 1)} → {fmt(r1k['gross_mexc'], 1)} ({r1k['gross_mexc'] - r1k['gross_unrounded']:+.1f}), fee+slip {fmt(r1k['fee_slip_unrounded'], 1)} → {fmt(r1k['fee_slip_mexc'], 1)}, funding {fmt(r1k['funding_unrounded'], 1)} → {fmt(r1k['funding_mexc'], 1)}; "
+                     f"gönderilen dolum {r1k['n_fills_unrounded']} → {r1k['n_fills_mexc']}. "
+                     f"Koşu öncesi yazılan ölçüte göre (net farkı ≤ %5, |Sharpe farkı| ≤ 0,10, gönderilemeyen ≤ %5; ızgara $1k/$2,5k/$5k/$10k/$25k) <b>asgari uygulanabilir sermaye ${fmt(mx['min_capital'], 0)}</b>."
+                     f" Yuvarlamasız koşu, aynı sermaye için sezgisel (1e-3 mertebesi) adım kullanır; MEXC kuralları 'min 1 sözleşme'yi gerçek kılar. Ücret/slip varsayımı değişmedi (10 + 2 bps); MEXC liste ücreti taker %{100 * fee_lo:.2g}–{100 * fee_hi:.2g} (tek yön) görünüyor ama hesap ücreti/VIP indirimi doğrulanmadı." + m0_txt, B)]
     # ------------------------------------------------------------ I.4 istatistiksel çerçeve
     d = AN["dsr"]
     nm = AN["dsr_nmax"]

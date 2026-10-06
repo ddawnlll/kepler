@@ -506,6 +506,18 @@ def mexc_rounding(D: dict) -> dict:
                          pnl_corr=float(du.corr(dm)), tracking_rmse_usd=float(np.sqrt(((du - dm) ** 2).mean())), tracking_rmse_pct_of_cap=float(np.sqrt(((du - dm) ** 2).mean()) / c),
                          fee_slip_unrounded=u["fee"] + u["slippage"], fee_slip_mexc=m["fee"] + m["slippage"], funding_unrounded=u["funding"], funding_mexc=m["funding"], gross_unrounded=u["gross_pnl"], gross_mexc=m["gross_pnl"]))
     tab = pd.DataFrame(rows)
+    f0 = FIX / "mexc" / "mexc_runs_min0.json"
+    ref0 = None
+    if f0.exists():  # duyarlılık: yuvarlamasız referans min_notional = 0 ile (ana koşunun hakem varsayılanı 5 USDT borsa kuralı değildir)
+        r0 = {int(r["cap"]): r for r in json.loads(f0.read_text())["runs"]}
+        tab["net_unrounded0"] = [r0[int(c)]["net_pnl"] for c in tab.cap]
+        tab["sharpe_unrounded0"] = [r0[int(c)]["sharpe_fixed"] for c in tab.cap]
+        tab["fills_unrounded0"] = [int(r0[int(c)]["n_fills"]) for c in tab.cap]
+        tab["net_diff_pct0"] = tab.net_mexc / tab.net_unrounded0 - 1
+        tab["sharpe_diff0"] = tab.sharpe_mexc - tab.sharpe_unrounded0
+        ok0 = (tab.net_diff_pct0.abs() <= 0.05) & (tab.sharpe_diff0.abs() <= 0.10) & (tab.blocked_share <= 0.05)
+        conv0 = [bool(all(ok0.iloc[i:])) for i in range(len(ok0))]
+        ref0 = dict(converged=dict(zip(tab.cap.astype(int).astype(str), conv0)), min_capital=next((int(tab.cap.iloc[i]) for i, c_ in enumerate(conv0) if c_), None))
     ok = (tab.net_diff_pct.abs() <= 0.05) & (tab.sharpe_diff.abs() <= 0.10) & (tab.blocked_share <= 0.05)  # koşu ÖNCESİ yazılan ölçüt (fix_progress.md)
     conv = [bool(all(ok.iloc[i:])) for i in range(len(ok))]
     first = next((int(tab.cap.iloc[i]) for i, c_ in enumerate(conv) if c_), None)
@@ -515,7 +527,7 @@ def mexc_rounding(D: dict) -> dict:
     per_sym["blocked_share"] = per_sym.blocked / per_sym.intents
     per_sym["contract_usd_median"] = [float(rp1[rp1.sym == s].px.median()) for s in per_sym.sym]  # 1 sözleşmenin medyan USDT değeri
     rl = {s.replace("USDT", ""): dict(contractSize=v["contractSize"], priceUnit=v["priceUnit"], volUnit=v["volUnit"], minVol=v["minVol"], takerFeeRate=v.get("takerFeeRate"), makerFeeRate=v.get("makerFeeRate")) for s, v in rules["symbols"].items()}
-    return dict(rows=tab.to_dict("records"), converged=dict(zip(tab.cap.astype(int).astype(str), conv)), min_capital=first, per_symbol_1000=per_sym.to_dict("records"), rules=rl,
+    return dict(rows=tab.to_dict("records"), converged=dict(zip(tab.cap.astype(int).astype(str), conv)), min_capital=first, ref_min_notional0=ref0, per_symbol_1000=per_sym.to_dict("records"), rules=rl,
                 rules_source=dict(url=rules["source"], fetched_utc=rules["fetched_utc"], doc=rules["doc"], note=rules["note"]),
                 criterion="net farkı ≤ %5 ve |Sharpe farkı| ≤ 0,10 ve gönderilemeyen emir niyeti ≤ %5; asgari sermaye = ızgarada bu ölçütü ve tüm büyük noktaların sağladığı en küçük sermaye (koşu öncesi yazıldı)")
 
@@ -691,7 +703,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     D = load()
     res = dict(headline=headline(D), dsr=dsr_table(D), dsr_nmax=dsr_nmax(D), null=null_table(D), attribution=attribution(D), calibration=calibration(D), size_vol_f=size_vol_f(D), holding=holding_buckets(D),
-               vol_decomp=vol_decomp(D), funding=funding_by_regime(D), benchmarks=benchmarks(D), mexc=mexc_rounding(D), loo=loo_table(D), stop_cf=stop_counterfactual(D), survivorship=survivorship(), cf_runs=cf_runs(D), universe=universe_stats(),
+               vol_decomp=vol_decomp(D), funding=funding_by_regime(D), benchmarks=benchmarks(D), mexc=mexc_rounding(D), loo=loo_table(D), stop_cf=stop_counterfactual(D), survivorship=survivorship(), cf_runs=cf_runs(D), universe=universe_stats(), live_stop=[live_stop_power(D, w) for w in (180, 365, 540)],
                before_after=before_after(D), causal=json.loads((FIX / "causal" / "causal.json").read_text()), recon=D["meta"]["recon"], rounding_note=None)
 
     def conv(o):
@@ -706,6 +718,22 @@ def main():
     (OUT / "analysis.json").write_text(json.dumps(res, indent=1, default=conv, allow_nan=True))
     print("analysis.json yazıldı:", OUT / "analysis.json")
 
+
+
+# ================================================================ Faz 4 girdisi: canlı durdurma kuralı için güç hesabı (ön kayıt taslağı; koşu DEĞİL)
+def live_stop_power(D: dict, window: int = 365, sr_h1: float = 1.0, alpha: float = 0.05) -> dict:
+    """Taslak kural: kayan `window` günlük net Sharpe (sabit sermaye) ≤ eşik ⇒ durdur. Eşik önceden formülle: H1 (gerçek Sharpe = sr_h1) altında yanlış durdurma ≤ alpha (iid-normal yaklaşımı:
+    SD(SR_yıllık) ≈ √(365/window)). Aynı yaklaşımla H0 (gerçek Sharpe = 0) altında yakalama gücü. Tarihsel tetik sayısı yalnızca BETİMSELDİR (görülmüş veri; kural tek aday, seçim yok)."""
+    sd = math.sqrt(365 / window)
+    thr = sr_h1 - norm.ppf(1 - alpha) * sd
+    pnl, cap = D["daily"].net, D["cap"]
+    r = pnl / cap
+    roll = r.rolling(window).mean() / r.rolling(window).std() * math.sqrt(365)
+    trig = roll <= thr
+    first = roll.index[trig.to_numpy().argmax()] if trig.any() else None
+    return dict(window=window, sr_h1=sr_h1, alpha=alpha, sd_annual=sd, threshold=float(thr), power_h0=float(norm.cdf((thr - 0.0) / sd)), power_neg1=float(norm.cdf((thr + 1.0) / sd)),
+                hist_days_below=int(trig.sum()), hist_first_trigger=None if first is None else str(first.date()), hist_min_roll=float(roll.min()), hist_n_days=int(roll.notna().sum()),
+                hist_roll_last=float(roll.dropna().iloc[-1]), note="Tarihsel değerler görülmüş veride betimseldir; kural sonuçtan seçilmedi (formül: eşik = SR_H1 − z(1−α)·SD).")
 
 if __name__ == "__main__":
     main()

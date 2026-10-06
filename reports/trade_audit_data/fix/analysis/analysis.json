@@ -1312,7 +1312,12 @@
     "funding_unrounded": -9.775680753409706,
     "funding_mexc": -4.993647165892046,
     "gross_unrounded": 838.11911227834,
-    "gross_mexc": 825.0394398884007
+    "gross_mexc": 825.0394398884007,
+    "net_unrounded0": 811.2021266254451,
+    "sharpe_unrounded0": 1.888709494531505,
+    "fills_unrounded0": 5297,
+    "net_diff_pct0": -0.030911364381216,
+    "sharpe_diff0": 0.11615387247595343
    },
    {
     "cap": 2500,
@@ -1340,7 +1345,12 @@
     "funding_unrounded": -24.52211495425067,
     "funding_mexc": -19.399653164451948,
     "gross_unrounded": 2148.7717168310805,
-    "gross_mexc": 2108.9210599325293
+    "gross_mexc": 2108.9210599325293,
+    "net_unrounded0": 2028.0617726346077,
+    "sharpe_unrounded0": 1.889156309240642,
+    "fills_unrounded0": 5297,
+    "net_diff_pct0": -0.015036515245250848,
+    "sharpe_diff0": 0.05266907354045158
    },
    {
     "cap": 5000,
@@ -1368,7 +1378,12 @@
     "funding_unrounded": -49.4044226743464,
     "funding_mexc": -43.99213923306388,
     "gross_unrounded": 4298.621844188783,
-    "gross_mexc": 4291.880640144103
+    "gross_mexc": 4291.880640144103,
+    "net_unrounded0": 4055.802883732548,
+    "sharpe_unrounded0": 1.888700195147327,
+    "fills_unrounded0": 5297,
+    "net_diff_pct0": 0.0009896815791001767,
+    "sharpe_diff0": 0.03909235820606627
    },
    {
     "cap": 10000,
@@ -1396,7 +1411,12 @@
     "funding_unrounded": -100.00986441340763,
     "funding_mexc": -94.47763200988092,
     "gross_unrounded": 8595.087719061545,
-    "gross_mexc": 8549.612389985981
+    "gross_mexc": 8549.612389985981,
+    "net_unrounded0": 8112.021266694447,
+    "sharpe_unrounded0": 1.8887094946605916,
+    "fills_unrounded0": 5297,
+    "net_diff_pct0": -0.004599763667970547,
+    "sharpe_diff0": 0.01211382541238848
    },
    {
     "cap": 25000,
@@ -1424,7 +1444,12 @@
     "funding_unrounded": -249.83157909866534,
     "funding_mexc": -244.30763296235784,
     "gross_unrounded": 21490.414968927824,
-    "gross_mexc": 21435.66849005867
+    "gross_mexc": 21435.66849005867,
+    "net_unrounded0": 20280.617724356085,
+    "sharpe_unrounded0": 1.8891563090679635,
+    "fills_unrounded0": 5297,
+    "net_diff_pct0": -0.002317535295846773,
+    "sharpe_diff0": 0.003935334832354531
    }
   ],
   "converged": {
@@ -1435,6 +1460,16 @@
    "25000": true
   },
   "min_capital": 2500,
+  "ref_min_notional0": {
+   "converged": {
+    "1000": false,
+    "2500": true,
+    "5000": true,
+    "10000": true,
+    "25000": true
+   },
+   "min_capital": 2500
+  },
   "per_symbol_1000": [
    {
     "sym": "ADAUSDT",
@@ -2546,6 +2581,53 @@
    "TOMOUSDT": []
   }
  },
+ "live_stop": [
+  {
+   "window": 180,
+   "sr_h1": 1.0,
+   "alpha": 0.05,
+   "sd_annual": 1.4240006242195884,
+   "threshold": -1.3422725915287503,
+   "power_h0": 0.17294104456882886,
+   "power_neg1": 0.4050256463817102,
+   "hist_days_below": 14,
+   "hist_first_trigger": "2024-10-09",
+   "hist_min_roll": -1.8546388814812644,
+   "hist_n_days": 2012,
+   "hist_roll_last": -0.25233806654529656,
+   "note": "Tarihsel de\u011ferler g\u00f6r\u00fclm\u00fc\u015f veride betimseldir; kural sonu\u00e7tan se\u00e7ilmedi (form\u00fcl: e\u015fik = SR_H1 \u2212 z(1\u2212\u03b1)\u00b7SD)."
+  },
+  {
+   "window": 365,
+   "sr_h1": 1.0,
+   "alpha": 0.05,
+   "sd_annual": 1.0,
+   "threshold": -0.6448536269514722,
+   "power_h0": 0.2595110228414442,
+   "power_neg1": 0.6387600313123353,
+   "hist_days_below": 2,
+   "hist_first_trigger": "2022-09-15",
+   "hist_min_roll": -0.6570540597494433,
+   "hist_n_days": 1827,
+   "hist_roll_last": 0.36117740206581533,
+   "note": "Tarihsel de\u011ferler g\u00f6r\u00fclm\u00fc\u015f veride betimseldir; kural sonu\u00e7tan se\u00e7ilmedi (form\u00fcl: e\u015fik = SR_H1 \u2212 z(1\u2212\u03b1)\u00b7SD)."
+  },
+  {
+   "window": 540,
+   "sr_h1": 1.0,
+   "alpha": 0.05,
+   "sd_annual": 0.8221471437193746,
+   "threshold": -0.3523117112346066,
+   "power_h0": 0.33413397832037284,
+   "power_neg1": 0.7845934230454579,
+   "hist_days_below": 0,
+   "hist_first_trigger": null,
+   "hist_min_roll": 0.021857577619429094,
+   "hist_n_days": 1652,
+   "hist_roll_last": 0.9399416916888121,
+   "note": "Tarihsel de\u011ferler g\u00f6r\u00fclm\u00fc\u015f veride betimseldir; kural sonu\u00e7tan se\u00e7ilmedi (form\u00fcl: e\u015fik = SR_H1 \u2212 z(1\u2212\u03b1)\u00b7SD)."
+  }
+ ],
  "before_after": {
   "old": {
    "net": 790.5356978921417,
@@ -3136,6 +3218,10 @@
      "2026-02-21",
      "2026-03-27"
     ]
+   },
+   "funding_recompute": {
+    "n_checks": 162,
+    "n_bad": 0
    }
   },
   "mutant_check_causal_book": {
@@ -3233,7 +3319,7 @@
   ],
   "preset": "ev1_plus_new",
   "cap": 1000.0,
-  "seconds": 75.20625305175781
+  "seconds": 73.68866157531738
  },
  "recon": {
   "hourly": {

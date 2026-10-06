@@ -26,7 +26,8 @@ from reportlab.platypus import CondPageBreak, Image, KeepTogether, PageBreak, Pa
 SRC, PDF = Path(sys.argv[1]), Path(sys.argv[2])
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import audit_fix_pdf as AFP  # noqa: E402  (düzeltme bölümleri; rakamlar analysis.json'dan)
+import audit_fix_pdf as AFP  # noqa: E402
+import audit_metrics as AM  # noqa: E402  (düzeltme bölümleri; rakamlar analysis.json'dan)
 FIG = PDF.parent / (PDF.stem + "_figs")
 FIG.mkdir(parents=True, exist_ok=True)
 BLUE, ORANGE, AQUA, YELLOW, RED = "#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e34948"
@@ -189,7 +190,7 @@ ax[0].axhline(per_month.mean(), color=ORANGE, lw=1.2)
 ax[0].text(per_month.index.to_timestamp()[-1], per_month.mean() + 0.8, f"ortalama {per_month.mean():.1f}/ay", color=INK2, fontsize=8, ha="right")
 ax[0].set_title("Ayda açılan pozisyon sayısı")
 by_year = tr.groupby(tr.opened.dt.year).size()
-ax[1].bar(by_year.index.astype(str), by_year.values, color=BLUE, width=0.6)
+ax[1].bar([str(y)[-2:] for y in by_year.index], by_year.values, color=BLUE, width=0.6)  # 2020 → 20: eksen etiketi çakışması giderildi
 for i, x in enumerate(by_year.values):
     ax[1].text(i, x, str(x), ha="center", va="bottom", fontsize=8, color=INK2)
 ax[1].set_title("Yıla göre")
@@ -443,7 +444,7 @@ tr["wd"] = (tr.opened - pd.Timedelta("1h")).dt.dayofweek
 tr["size_pct"] = tr.avg_notional / tr.eq_at_open
 cal_tabs = {}
 _cal = AN["calibration"]
-fig, axs = plt.subplots(1, 3, figsize=(9.6, 3.2), gridspec_kw=dict(width_ratios=[1, 1.4, 1.5]))
+fig, axs = plt.subplots(1, 3, figsize=(9.6, 2.6), gridspec_kw=dict(width_ratios=[1, 1.4, 1.5]))
 for a, (key, ttl) in zip(axs, (("absf", "|F| çeyreği (1 = en zayıf)"), ("aligned", "Aynı yönde uzman sayısı"), ("regime", "Giriş rejimi / yön"))):
     rows_ = _cal[key]
     ys = np.arange(len(rows_))[::-1]
@@ -568,7 +569,7 @@ finds = [F1["decay_text"],
          f"<b>Nedensellik.</b> Gelecek sızıntısı bulunamadı: audit.check_causal_book kötü kesim {len(_cz['check_causal_book_bad'])}; {_cz['prefix']['real']['n_cuts']} kesim gününde tahmin ölçeği, σ, rejim ve hedef pozisyon için önek farkı 0 (pozitif kontroller yakalandı). Bölüm I.1.",
          f"<b>İstatistiksel kanıt zayıf.</b> Sabit sermaye Sharpe'ı {AN['headline']['primary']['sharpe']:.2f}; blok bootstrap %95 AA {AN['headline']['bootstrap']['sharpe_q']['p2.5']:.2f} – {AN['headline']['bootstrap']['sharpe_q']['p97.5']:.2f}. Rotasyon null'unda p = {_nl['p_gross'] if _nl else float('nan'):.4f} (B = {_nl['B'] if _nl else 0}; bu B ile alt sınır 1/(B+1)). "
          f"DSR(N = {_nn}, havuz σ_SR) ≈ {_row['dsr[havuz]']:.2f}; iyimser σ_SR = 0,25'te {_row['dsr[0,25]']:.2f}. Sonuç σ_SR'a çok duyarlı; DSR ≥ 0,95 iddiası yapılamaz. Bölüm I.4.",
-         f"<b>Uygulanabilirlik ($1 000).</b> MEXC kurallarıyla (min 1 sözleşme) emir niyetlerinin %{100 * _r1k['blocked_share']:.0f}'i gönderilemiyor ({_top3}); net farkı küçük görünse de portföy hedefinden farklı. Asgari uygulanabilir sermaye (ön kayıtlı ölçüt): ${_mx['min_capital']:,}.".replace(",", " ") + " Bölüm I.3.",
+         f"<b>Uygulanabilirlik ($1 000).</b> MEXC kurallarıyla (min 1 sözleşme) emir niyetlerinin %{100 * _r1k['blocked_share']:.0f}'i gönderilemiyor ({_top3}); net farkı küçük görünse de portföy hedefinden farklı. Asgari uygulanabilir sermaye (ön kayıtlı ölçüt): ${AFP.fmt(_mx['min_capital'], 0)}. Bölüm I.3.",
          (f"<b>Hayatta kalma yanlılığı.</b> Aynı sistem her ay o ayın top-9 hacimli sembolleriyle (delist olanlar dahil) yeniden koşulunca net {_sv['net']:.0f} USDT, Sharpe {_sv['sharpe']:.2f} (sabit 9 sembolde {AN['headline']['primary']['sharpe']:.2f}). Bölüm I.5 → 2.9." if _sv else "<b>Hayatta kalma yanlılığı.</b> Veri kaynağında delist olan perp'ler var; yeniden koşu Bölüm I.5 → 2.9."),
          f"<b>Profil.</b> Kazanma oranı {pct((tr.net > 0).mean())}, payoff {win.net.mean() / abs(loss.net.mean()):.1f}× (ort. kazanç {win.net.mean():.2f}, ort. kayıp {loss.net.mean():.2f} USDT); medyan trade {tr.net.median():.2f} USDT, beklenti {tr.net.mean():.2f} USDT/trade. En kötü ardışık kayıp serisi {mx_streak0} trade.",
          f"<b>Yön asimetrisi.</b> Long {len(long_)} trade net {long_.net.sum():+.1f} USDT; short {len(short_)} trade net {short_.net.sum():+.1f} USDT. Bull rejiminde short'lar {len(bull_short)} trade ile {bull_short.net.sum():+.1f} USDT; short funding ({AN['funding']['short_total']:+.1f}) bull rejiminde alınıyor, ayı rejiminde değil (Bölüm I.5 → 2.6).",
@@ -585,7 +586,7 @@ E_ += [KeepTogether([Paragraph("Tanımlar ve sınırlar", H2),
                  "(stop yok). <b>BİRİNCİL Sharpe/oynaklık/drawdown</b> = sabit başlangıç sermayesi tabanlı (BACKTEST K4: günlük getiri = PnL / başlangıç sermayesi, toplamsal equity); <b>ikincil</b> = PnL / önceki gün equity (kâr büyüdükçe payda büyür; ölçüleri olduğundan iyi gösterir). "
                  "Sharpe √365 ile yıllıklaştırılır. <b>MAE/MFE</b> = trade süresince saatlik en kötü/en iyi fiyat sapması (giriş VWAP'ına göre). <b>Kayıp nedeni</b> kural tabanlı etikettir (Ek A), kanıt değildir. "
                  f"Veri saatlik bar: bar içi sıralama bilinmez; slippage varsayımdır. Hedef borsa kuralları MEXC `contract/detail` ile alındı (Bölüm I.3), ana koşu ({CAP:,.0f} USDT) yuvarlamasız sezgisel lot/tik kullanır. "
-                 f"Mutabakat: trade tablosu ve saatlik PnL toplamı hakem net'inden {AN['recon']['net_diff']:.1e} USDT farklı (tek hesap yolu; kalan fark Nautilus'un 8 basamaklı para yuvarlaması; kaynak: kline boşluğundaki funding olayları düzeltildi).".replace(",", " "), SM)])]
+                 f"Mutabakat: trade tablosu ve saatlik PnL toplamı hakem net'inden {AN['recon']['net_diff']:.1e} USDT farklı (tek hesap yolu; kalan fark Nautilus'un 8 basamaklı para yuvarlaması; kaynak: kline boşluğundaki funding olayları düzeltildi).", SM)])]
 
 
 MARK = len(E_)
@@ -647,7 +648,7 @@ E_ += [Paragraph("Sembole göre", H2), tbl(rows, [20 * mm, 18 * mm, 26 * mm, 24 
 top = pd.concat([tr.nlargest(10, "net").assign(k="En iyi"), tr.nsmallest(10, "net").assign(k="En kötü")])
 rows = [["", "Sem.", "Açılış", "Yön", "Gün", "Notional", "Fiyat PnL", "Kom.", "Fund.", "Net", "MFE / MAE bps"]] + [[r.k, r.sym.replace("USDT", ""), f"{r.opened:%Y-%m-%d}", r.side, dayfmt(r.hours / 24), f"{r.avg_notional:.0f}", f"{r.price_pnl:.2f}",
                                                                                                                       f"{r.commission:.2f}", f"{r.funding:.2f}", f"{r.net:.2f}", f"{r.mfe_bps:.0f}/{r.mae_bps:.0f}"] for r in top.itertuples()]
-E_ += [Paragraph("En iyi ve en kötü 10 trade", H2), tbl(rows, [15 * mm, 12 * mm, 20 * mm, 12 * mm, 11 * mm, 16 * mm, 17 * mm, 13 * mm, 13 * mm, 14 * mm, 31 * mm])]
+E_ += [Paragraph("En iyi ve en kötü 10 trade", H2), tbl(rows, [15 * mm, 14 * mm, 20 * mm, 12 * mm, 11 * mm, 16 * mm, 17 * mm, 13 * mm, 13 * mm, 14 * mm, 29 * mm])]
 
 E_ += [PageBreak(), Paragraph("3. Büyüklük ve kaldıraç", H1), img("lev")]
 sz = [["Ölçü", "Değer", "Ölçü", "Değer"],
@@ -678,7 +679,7 @@ E_ += [tbl(rk, [70 * mm, 26 * mm, 26 * mm, 26 * mm, 26 * mm]), Spacer(1, 3),
        Paragraph(f"Gerçekleşen portföy oynaklığı yıllık {pct(vol)} (equity'ye normalize; sabit sermayeye göre {pct(AN['vol_decomp']['vol_fixed_actual'])}); hedef τ = %20. Fark yön karışımı (çeşitlendirme), |F| ölçeği, payda (equity_scale = False) ve tampondan oluşur; tampon oynaklığı neredeyse hiç etkilemez: ayrıştırma Bölüm I.5 → 2.8. "
                  "MAE, trade ortalama notional'ı ile % equity'ye çevrilmiştir (yaklaşık). Stop olmadığından 'trade başına risk' bir üst sınır değil, gözlenen/planlanan dağılımdır; sapmanın kuyruğu örneklemde gözlenenin ötesinde olabilir.", SM)]
 
-E_ += [Paragraph("5. Maliyet", H1), img("costs", 160 * mm)]
+E_ += [CondPageBreak(75 * mm), Paragraph("5. Maliyet", H1), img("costs", 160 * mm)]
 cs = [["Kalem", "Toplam (USDT)", "Trade başına", "Brüt PnL'in %'si"],
       ["Fee", usd(S["fee"]), f"{S['fee'] / len(tr):.3f}", pct(S["fee"] / max(S["gross_pnl"], 1e-9))], ["Slippage (varsayım)", usd(S["slippage"]), f"{S['slippage'] / len(tr):.3f}", pct(S["slippage"] / max(S["gross_pnl"], 1e-9))],
       ["Funding (net)", usd(S["funding"]), f"{S['funding'] / len(tr):.3f}", pct(S["funding"] / max(S["gross_pnl"], 1e-9))], ["Çıkış maliyeti", usd(S["exit_cost"]), "-", "-"],
@@ -696,13 +697,13 @@ for lab, f_, sl_ in sens:
 be = 2e4 * (S["gross_pnl"] + S["funding"] - S["exit_cost"]) / traded_d.sum()
 E_ += [Spacer(1, 4), Paragraph("Maliyet duyarlılığı (aynı dolumlar, komisyon notional ile doğrusal yeniden hesaplandı)", H2), tbl(rows, [62 * mm, 24 * mm, 20 * mm, 20 * mm, 22 * mm, 34 * mm]),
        Paragraph(f"Toplam işlem hacmi {traded_d.sum():,.0f} USDT ({traded_d.sum() / eq.mean() / YEARS:.1f}× ort. equity / yıl). Funding ve dolum kararları sabit tutuldu; fee/slip değişince karar değişmediği varsayılır (kuralda maliyete duyarlı bir adım yok). "
-                 f"Net'i sıfırlayan toplam maliyet ≈ {be:.0f} bps gidiş-dönüş (funding dahil, çıkış maliyeti düşülmüş).".replace(",", " "), SM)]
+                 f"Net'i sıfırlayan toplam maliyet ≈ {be:.0f} bps gidiş-dönüş (funding dahil, çıkış maliyeti düşülmüş).", SM)]
 
 bysym = tr.groupby("sym").agg(price=("price_pnl", "sum"), comm=("commission", "sum"), fund=("funding", "sum"), net=("net", "sum"))
 byside = tr.groupby("side").agg(price=("price_pnl", "sum"), comm=("commission", "sum"), fund=("funding", "sum"), net=("net", "sum"))
 rows = [["Grup", "Fiyat PnL", "Komisyon (fee+slip)", "Funding", "Net"]] + [[i.replace("USDT", ""), f"{r.price:.1f}", f"{-r.comm:.1f}", f"{r.fund:.1f}", f"{r.net:.1f}"] for i, r in pd.concat([bysym, byside]).iterrows()]
 E_ += [Spacer(1, 4), Paragraph("Sembol ve yöne göre maliyet kalemleri (USDT)", H2), tbl(rows, [36 * mm, 34 * mm, 42 * mm, 34 * mm, 30 * mm])]
-E_ += [Spacer(1, 8), Paragraph("6. Kayıp denetimi: paranın nerede kaybedildiği", H1), img("waterfall"),
+E_ += [CondPageBreak(95 * mm), Spacer(1, 8), Paragraph("6. Kayıp denetimi: paranın nerede kaybedildiği", H1), img("waterfall"),
        Paragraph(f"Kaybeden {len(loss)} trade'in toplamı {loss.net.sum():.1f} USDT; kazanan {len(win)} trade {win.net.sum():.1f} USDT. En kötü %5 trade ({max(1, int(len(tr) * 0.05))} adet) toplam zararın "
                  f"%{100 * tr.nsmallest(max(1, int(len(tr) * 0.05)), 'net').net.sum() / loss.net.sum():.0f}'ini oluşturuyor (kuyruk yoğunluğu).", B), img("causes")]
 rows = [["Kayıp nedeni (etiket)", "Trade", "Toplam zarar (USDT)", "Zararın %'si", "Ort. zarar", "Medyan süre (gün)"]] + [[c, int(r.n), f"{r.total:.1f}", pct(r.total / loss.net.sum()), f"{r.avg:.3f}", dayfmt(r.hours / 24)] for c, r in cause_tab.iterrows()]
@@ -731,7 +732,7 @@ E_ += [Paragraph(f"Kaybeden {len(loss)} trade'in {len(gv05)}'i (%{100 * len(gv05
 if "worst" in figs:
     E_ += [img("worst")]
 
-E_ += [CondPageBreak(120 * mm), Paragraph("8. Sinyal kalibrasyonu: giriş koşulları ve güven aralıkları", H1), img("calib")] + F2["calib"] + [Spacer(1, 6)]
+E_ += [CondPageBreak(120 * mm), Paragraph("8. Sinyal kalibrasyonu: giriş koşulları ve güven aralıkları", H1), img("calib")] + F2["calib"]
 
 E_ += [PageBreak(), Paragraph("9. Sembol derin incelemesi", H1), img("sym_cum", 150 * mm), img("sym_expo", 150 * mm), img("sym_heat")]
 sc = []
@@ -760,7 +761,7 @@ def dir_summary(d):
     m_ = json.loads((Path(d) / "meta.json").read_text())
     t_ = pd.read_csv(Path(d) / "trades.csv", parse_dates=["opened", "closed"])
     dd_ = pd.read_csv(Path(d) / "daily.csv", index_col=0, parse_dates=True)
-    sh, mdd = sharpe_of(dd_.net, m_["cap"])
+    sh, mdd = AM.sharpe_fixed(dd_.net, m_["cap"]), AM.max_dd_fixed(dd_.net, m_["cap"])  # birincil tanım: sabit sermaye
     w_, l_ = t_[t_.net > 0], t_[t_.net < 0]
     e_ = dd_.equity
     return dict(name=m_["preset"], net=float(dd_.net.sum()), cagr=float((e_.iloc[-1] / m_["cap"]) ** (365.25 / (dd_.index[-1] - dd_.index[0]).days) - 1), sharpe=sh, maxdd=mdd, n=len(t_), win=float((t_.net > 0).mean()),
@@ -793,7 +794,7 @@ EXP += [Paragraph("Marjinal katkı (leave-one-out) tablosu ve yorumu Bölüm I.5
 cmp_dirs = [d for d in sys.argv[3:] if (Path(d) / "meta.json").exists() and Path(d).resolve() != SRC.resolve()]
 if cmp_dirs:
     ss_ = [dir_summary(SRC)] + [dir_summary(d) for d in cmp_dirs]
-    r1 = [["Bileşim", "Üye", "Net (USDT)", "CAGR", "Sharpe", "Maks DD", "2025+ net"]] + [[x["name"], x["nmem"], f"{x['net']:.1f}", pct(x["cagr"]), f"{x['sharpe']:.2f}", pct(x["maxdd"]), f"{x['recent']:.1f}"] for x in ss_]
+    r1 = [["Bileşim", "Üye", "Net (USDT)", "CAGR", "Sharpe (sabit serm.)", "Maks DD (başl. serm.)", "2025+ net"]] + [[x["name"], x["nmem"], f"{x['net']:.1f}", pct(x["cagr"]), f"{x['sharpe']:.2f}", pct(x["maxdd"]), f"{x['recent']:.1f}"] for x in ss_]
     r2 = [["Bileşim", "Trade", "Kazanma", "Payoff", "Profit factor", "Ort. kaldıraç", "Long net", "Short net"]] + [[x["name"], x["n"], pct(x["win"]), f"{x['payoff']:.1f}", f"{x['pf']:.2f}", f"{x['lev']:.2f}×", f"{x['longn']:.1f}", f"{x['shortn']:.1f}"] for x in ss_]
     EXP += [KeepTogether([Paragraph("Bileşim karşılaştırması (aynı hakem, $1 000)", H2), tbl(r1, [38 * mm, 14 * mm, 26 * mm, 22 * mm, 20 * mm, 24 * mm, 26 * mm]), Spacer(1, 4),
                          tbl(r2, [38 * mm, 18 * mm, 22 * mm, 18 * mm, 24 * mm, 24 * mm, 20 * mm, 20 * mm])])]
@@ -832,7 +833,7 @@ SOLO = {n_: solo_daily(n_) for n_ in NAMES}
 ens_cum = daily.net.cumsum() / CAP * 100
 # genel bakış grafikleri: 9 uzmanın tek başına kümülatif getirisi + korelasyonlar
 nr_ = int(np.ceil(len(NAMES) / 3))
-fig, axs = plt.subplots(nr_, 3, figsize=(9, 2.1 * nr_ + 0.4), sharex=True, squeeze=False)
+fig, axs = plt.subplots(nr_, 3, figsize=(9, 1.65 * nr_ + 0.4), sharex=True, squeeze=False)
 for a_, n_ in zip(axs.ravel(), NAMES):
     if SOLO[n_] is not None:
         c_ = SOLO[n_].cumsum() / 1e4 * 100
@@ -845,7 +846,7 @@ for a_ in axs.ravel()[len(NAMES):]:
 fig.suptitle("Uzmanlar tek başına: kümülatif getiri (% $10 000; ön kayıtlı aile testi, aynı zincir)", x=0.07, ha="left", fontsize=10, fontweight="bold")
 figs["x_solo"] = save(fig, "30_solo")
 solo_df = pd.DataFrame({n_: SOLO[n_] for n_ in NAMES if SOLO[n_] is not None})
-fig, ax = plt.subplots(1, 2 if fcs is not None else 1, figsize=(9.4, 3.9), squeeze=False)
+fig, ax = plt.subplots(1, 2 if fcs is not None else 1, figsize=(9.4, 3.5), squeeze=False)
 for a_, (dfc, ttl) in zip(ax[0], [(solo_df, "Günlük PnL korelasyonu (tek başına koşular)")] + ([(pd.DataFrame({n_: fcs[f"{n_}_mean"] for n_ in NAMES}), "Günlük ort. tahmin (F) korelasyonu")] if fcs is not None else [])):
     cm_ = dfc.corr()
     a_.imshow(cm_.values, cmap=DIV, vmin=-1, vmax=1)
@@ -859,7 +860,7 @@ for a_, (dfc, ttl) in zip(ax[0], [(solo_df, "Günlük PnL korelasyonu (tek baş�
     a_.grid(False)
     a_.set_title(ttl, fontsize=8.5)
 figs["x_corr"] = save(fig, "31_corr")
-EXP += [img("x_solo"), Spacer(1, 4), img("x_corr", 170 * mm)]
+EXP += [img("x_solo", 168 * mm), Spacer(1, 4), img("x_corr", 150 * mm)]
 cmp_ = []
 for n_ in NAMES:
     if SOLO[n_] is not None:

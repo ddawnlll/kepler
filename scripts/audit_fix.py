@@ -141,6 +141,21 @@ def stage_causal(out: Path, n_cuts: int, procs: int):
                 w["n_bad_cuts"] += int(k in bad)
         results[mutant or "real"] = dict(n_cuts=len(rows), worst=worst, bad_cut_days=[r[0] for r in rows if r[2]])
         print(mutant or "real", {k: (round(v["maxdiff"], 12), v["n_bad_cuts"]) for k, v in worst.items()}, f"({time.time() - t0:.0f}s)", flush=True)
+    # (e) funding girdisi: with_funding'i YALNIZCA t'ye kadar olan funding olaylarıyla yeniden hesapla; t öncesi fund_hr aynı olmalı (E.load tam seriden hesaplar; kesik veriyle yeniden hesaplama sızıntıyı gösterir)
+    from kepler import signals as sg
+    fund_bad, fund_n = 0, 0
+    for s, d in E.data_of(E.EXT).items():
+        raw = d["kl"].drop(columns="fund_hr")
+        fr = d["funding"]
+        for day in days[::4]:
+            cut_kl = raw[raw.index < day]
+            cut_f = fr[fr.index.round("1min") <= day]
+            w = sg.with_funding(cut_kl, cut_f)
+            a_, b_ = w.fund_hr.to_numpy(float), d["kl"].fund_hr.reindex(w.index).to_numpy(float)
+            fund_n += 1
+            fund_bad += int(not np.array_equal(np.isnan(a_), np.isnan(b_)) or np.nanmax(np.abs(a_ - b_)) > 1e-15 if len(a_) else 0)
+    results["funding_recompute"] = dict(n_checks=fund_n, n_bad=fund_bad)
+    print("funding yeniden hesap:", results["funding_recompute"], flush=True)
     # (d) mutant kitaplarının audit.check_causal_book'ta yakalanması (denetim gücü)
     ctrl = {}
     for mutant in ("m_fullsample", "sigma_future"):
@@ -220,9 +235,9 @@ def run_rules(cap: float, rules_mode: str, p: en.Params, kls: dict, D: dict) -> 
     out = en.make_book(cap, p)(kls)
     if rules_mode == "mexc":
         data, sp = contract_view(E.data_of(E.EXT, D), mexc_rules()), replace(E.spec(cap=cap), min_notional=0.0)
-    else:
+    else:  # 'unrounded' (ana koşunun spec'i: hakem varsayılanı min_notional = 5 USDT dahil, borsa kuralı DEĞİL) | 'unrounded0' (min_notional = 0: yalnızca ince sezgisel adım)
         data = {s: dict(D[s], step=format(Decimal(10) ** (math.floor(math.log10(0.25 * cap / D[s]["kl"].close.max())) - 3), "f")) for s in E.EXT}
-        sp = E.spec(cap=cap)
+        sp = E.spec(cap=cap) if rules_mode == "unrounded" else replace(E.spec(cap=cap), min_notional=0.0)
     res, win, _ = ev.run_book(out, data, sp, *E.utc(E.MAIN))
     pnl = report.book_pnl(win, res, sp)
     dn = pnl.resample("1D").sum()
@@ -254,12 +269,12 @@ def _rules_job(a):
     return run_rules(a[0], a[1], _GJ["p"], _GJ["kls"], _GJ["D"])
 
 
-def stage_mexc(out: Path, procs: int, caps=(1000.0, 2500.0, 5000.0, 10000.0, 25000.0)):
+def stage_mexc(out: Path, procs: int, caps=(1000.0, 2500.0, 5000.0, 10000.0, 25000.0), modes=("unrounded", "mexc")):
     t0 = time.time()
     kls = load_all()
     p = params()
     _GJ.update(p=p, kls=kls, D=dict(E.D))
-    jobs = [(c, m) for c in caps for m in ("unrounded", "mexc")]
+    jobs = [(c, m) for c in caps for m in modes]
     with ProcessPoolExecutor(procs) as ex:
         res = list(ex.map(_rules_job, jobs))
     out.mkdir(parents=True, exist_ok=True)
@@ -271,7 +286,7 @@ def stage_mexc(out: Path, procs: int, caps=(1000.0, 2500.0, 5000.0, 10000.0, 250
             r["replay"].to_csv(out / f"replay_{tag}.csv", index=False)
             r["fills"].to_csv(out / f"fills_{tag}.csv", index=False)
         table.append(dict(cap=r["cap"], mode=r["mode"], sharpe_fixed=r["sharpe_fixed"], hourly_net_sum=r["hourly_net_sum"], replay_check=r["replay_check"], **r["summary"]))
-    (out / "mexc_runs.json").write_text(json.dumps(dict(runs=table, rules_file=str(RULES_PATH.name), window=E.MAIN, preset=PRESET, seconds=time.time() - t0), indent=1, default=str))
+    (out / ("mexc_runs.json" if "mexc" in modes else "mexc_runs_min0.json")).write_text(json.dumps(dict(runs=table, rules_file=str(RULES_PATH.name), window=E.MAIN, preset=PRESET, seconds=time.time() - t0), indent=1, default=str))
     print("tamam", f"{time.time() - t0:.0f}s")
 
 
@@ -580,7 +595,7 @@ def stage_universe(out: Path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=["causal", "mexc", "trials", "null", "bench", "cf", "surv", "universe"])
+    ap.add_argument("--stage", required=True, choices=["causal", "mexc", "trials", "null", "bench", "cf", "surv", "universe", "mexc0"])
     ap.add_argument("--out", required=True)
     ap.add_argument("--n-cuts", type=int, default=72)
     ap.add_argument("--procs", type=int, default=4)
@@ -588,7 +603,7 @@ def main():
     ap.add_argument("--b-from", type=int, default=0)
     ap.add_argument("--b-to", type=int, default=300)
     a = ap.parse_args()
-    {"causal": lambda: stage_causal(Path(a.out), a.n_cuts, a.procs), "mexc": lambda: stage_mexc(Path(a.out), a.procs), "trials": lambda: stage_trials(Path(a.out)), "null": lambda: stage_null(Path(a.out), a.b_from, a.b_to, a.procs), "bench": lambda: stage_bench(Path(a.out)), "cf": lambda: stage_cf(Path(a.out)), "surv": lambda: stage_surv(Path(a.out), a.top_n), "universe": lambda: stage_universe(Path(a.out))}[a.stage]()
+    {"causal": lambda: stage_causal(Path(a.out), a.n_cuts, a.procs), "mexc": lambda: stage_mexc(Path(a.out), a.procs), "trials": lambda: stage_trials(Path(a.out)), "null": lambda: stage_null(Path(a.out), a.b_from, a.b_to, a.procs), "bench": lambda: stage_bench(Path(a.out)), "cf": lambda: stage_cf(Path(a.out)), "surv": lambda: stage_surv(Path(a.out), a.top_n), "universe": lambda: stage_universe(Path(a.out)), "mexc0": lambda: stage_mexc(Path(a.out), a.procs, modes=("unrounded0",))}[a.stage]()
 
 
 if __name__ == "__main__":
