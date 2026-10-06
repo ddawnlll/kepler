@@ -1,0 +1,47 @@
+{
+ "summary": {
+  "long_only": {
+   "net_pnl": 948.8637085825483,
+   "gross_pnl": 1019.0215175282503,
+   "fee": 16.139857952845002,
+   "slippage": 3.227971590569,
+   "funding": -50.77342483180802,
+   "liq_fee": 0.0,
+   "exit_cost": 0.016554570479999996,
+   "n_fills": 2759.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 0.006579,
+   "engine_commission": 19.36782941,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0,
+   "sharpe_fixed": 2.12262516484982,
+   "net_hourly": 948.8824273655729
+  },
+  "short_x0.5": {
+   "net_pnl": 870.0976893713795,
+   "gross_pnl": 930.0528985557287,
+   "fee": 22.768089445869997,
+   "slippage": 4.553617889173999,
+   "funding": -32.58933344762509,
+   "liq_fee": 0.0,
+   "exit_cost": 0.04416840168,
+   "n_fills": 4435.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 109.110679,
+   "engine_commission": 27.321707429999996,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0,
+   "sharpe_fixed": 2.164356643298759,
+   "net_hourly": 870.1167891002264
+  }
+ },
+ "window": [
+  "2020-04-01",
+  "2026-04-01"
+ ],
+ "seconds": 70.86640977859497
+}

@@ -10,6 +10,7 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
+import matplotlib.dates as mdates  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
@@ -23,6 +24,10 @@ from reportlab.pdfbase.ttfonts import TTFont  # noqa: E402
 from reportlab.platypus import CondPageBreak, Image, KeepTogether, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle  # noqa: E402
 
 SRC, PDF = Path(sys.argv[1]), Path(sys.argv[2])
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import audit_fix_pdf as AFP  # noqa: E402
+import audit_metrics as AM  # noqa: E402  (düzeltme bölümleri; rakamlar analysis.json'dan)
 FIG = PDF.parent / (PDF.stem + "_figs")
 FIG.mkdir(parents=True, exist_ok=True)
 BLUE, ORANGE, AQUA, YELLOW, RED = "#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e34948"
@@ -40,7 +45,8 @@ CAP = meta["cap"]
 tr = pd.read_csv(SRC / "trades.csv", parse_dates=["opened", "closed", "decision_day"])
 daily = pd.read_csv(SRC / "daily.csv", index_col=0, parse_dates=True)
 fills = pd.read_csv(SRC / "fills.csv")
-hourly = pd.read_csv(SRC / "hourly.csv", index_col=0, parse_dates=True) if (SRC / "hourly.csv").exists() else None
+hourly = pd.read_parquet(SRC / "hourly.parquet") if (SRC / "hourly.parquet").exists() else (pd.read_csv(SRC / "hourly.csv", index_col=0, parse_dates=True) if (SRC / "hourly.csv").exists() else None)
+AN = json.loads((SRC.parent / "fix" / "analysis" / "analysis.json").read_text())  # scripts/audit_fix_analysis.py çıktısı: rakamların kaynağı
 S = meta["summary"]
 NAMES = meta["names"]
 STRESS = {k: (pd.Timestamp(v[0], tz="UTC"), pd.Timestamp(v[1], tz="UTC")) for k, v in meta["stress"].items()}
@@ -184,7 +190,7 @@ ax[0].axhline(per_month.mean(), color=ORANGE, lw=1.2)
 ax[0].text(per_month.index.to_timestamp()[-1], per_month.mean() + 0.8, f"ortalama {per_month.mean():.1f}/ay", color=INK2, fontsize=8, ha="right")
 ax[0].set_title("Ayda açılan pozisyon sayısı")
 by_year = tr.groupby(tr.opened.dt.year).size()
-ax[1].bar(by_year.index.astype(str), by_year.values, color=BLUE, width=0.6)
+ax[1].bar([str(y)[-2:] for y in by_year.index], by_year.values, color=BLUE, width=0.6)  # 2020 → 20: eksen etiketi çakışması giderildi
 for i, x in enumerate(by_year.values):
     ax[1].text(i, x, str(x), ha="center", va="bottom", fontsize=8, color=INK2)
 ax[1].set_title("Yıla göre")
@@ -277,10 +283,11 @@ ax.axhline(0, color=AXIS, lw=0.8)
 figs["costs"] = save(fig, "10_costs")
 
 fig, ax = plt.subplots(figsize=(9, 2.8))
-rs = ret.rolling(90).mean() / ret.rolling(90).std() * np.sqrt(365)
+rf_ = daily.net / CAP
+rs = rf_.rolling(90).mean() / rf_.rolling(90).std() * np.sqrt(365)
 ax.plot(rs.index, rs, color=BLUE, lw=1.1)
 ax.axhline(0, color=AXIS, lw=0.8)
-ax.set_title("90 günlük kayan Sharpe")
+ax.set_title("90 günlük kayan Sharpe (sabit sermaye)")
 figs["rollsharpe"] = save(fig, "11_rollsharpe")
 
 worst = tr.nsmallest(4, "net")
@@ -295,6 +302,9 @@ if hourly is not None:
         a.axvline(r.closed, color=ORANGE, lw=0.9)
         a.set_title(f"{r.sym.replace('USDT', '')} {r.side} {r.opened:%Y-%m-%d} · net {r.net:.1f} USDT\nMFE {r.mfe_bps:.0f} / MAE {r.mae_bps:.0f} bps", fontsize=7.5)
         a.tick_params(labelsize=6.5)
+        a.xaxis.set_major_locator(mdates.AutoDateLocator(minticks=3, maxticks=4))  # eksen etiketi çakışması giderildi: az tik + kısa biçim
+        a.xaxis.set_major_formatter(mdates.DateFormatter("%y-%m-%d"))
+    fig.subplots_adjust(hspace=0.6, wspace=0.25)
     figs["worst"] = save(fig, "12_worst")
 
 fig, ax = plt.subplots(1, 2, figsize=(9, 2.9))
@@ -326,11 +336,10 @@ def drawdown_table(e, top=10):
 
 
 dd_tab = drawdown_table(eq)
-r_ = ret.dropna()
+r_ = (daily.net / CAP).dropna()  # birincil: sabit sermaye getirisi
 ret_stats = dict(mean=r_.mean(), std=r_.std(ddof=1), skew=float(r_.skew()), kurt=float(r_.kurt()), var95=float(np.percentile(r_, 5)), var99=float(np.percentile(r_, 1)), cvar95=float(r_[r_ <= np.percentile(r_, 5)].mean()),
                  best=float(r_.max()), worst=float(r_.min()), pos=float((r_ > 0).mean()), ac1=float(r_.autocorr(1)), ac5=float(r_.autocorr(5)))
-wd_mean = r_.groupby(r_.index.dayofweek).mean() * 1e4
-beta_df = pd.concat([ret, BTC_RET], axis=1, keys=["r", "b"]).dropna()
+beta_df = pd.concat([r_, BTC_RET], axis=1, keys=["r", "b"]).dropna()
 beta = float(np.cov(beta_df.r, beta_df.b)[0, 1] / beta_df.b.var())
 alpha_ann = float((beta_df.r.mean() - beta * beta_df.b.mean()) * 365)
 r2 = float(np.corrcoef(beta_df.r, beta_df.b)[0, 1] ** 2)
@@ -347,19 +356,16 @@ ax[1].axhline(0, color=AXIS, lw=0.8)
 ax[1].set_ylabel("180 gün BTC beta")
 figs["underwater"] = save(fig, "14_underwater")
 
-fig, ax = plt.subplots(1, 3, figsize=(9.6, 3.0), gridspec_kw=dict(width_ratios=[1.6, 1, 1.3]))
+fig, ax = plt.subplots(1, 2, figsize=(9.6, 3.0), gridspec_kw=dict(width_ratios=[1.3, 1.3]))
 bins_ = np.linspace(np.percentile(r_, 0.5) * 100, np.percentile(r_, 99.5) * 100, 40)
 ax[0].hist(r_ * 100, bins=bins_, color=BLUE, density=True)
 xs = np.linspace(bins_[0], bins_[-1], 200)
 ax[0].plot(xs, np.exp(-0.5 * ((xs - r_.mean() * 100) / (r_.std() * 100)) ** 2) / (r_.std() * 100 * np.sqrt(2 * np.pi)), color=ORANGE, lw=1.4, label="normal")
 ax[0].set_title("Günlük getiri (%)")
 ax[0].legend()
-ax[1].bar(["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"], wd_mean.values, color=[BLUE if x >= 0 else RED for x in wd_mean.values])
-ax[1].set_title("Haftanın günü (ort. bps)")
-ax[1].tick_params(axis="x", labelsize=6)
-rolling_vol = ret.rolling(90).std() * np.sqrt(365)
-ax[2].plot(rolling_vol.index, 100 * rolling_vol, color=BLUE, lw=1.1)
-ax[2].set_title("90 gün oynaklık (% yıllık)")
+rolling_vol = (daily.net / CAP).rolling(90).std() * np.sqrt(365)  # sabit sermaye (birincil tanım)
+ax[1].plot(rolling_vol.index, 100 * rolling_vol, color=BLUE, lw=1.1)
+ax[1].set_title("90 gün oynaklık (% yıllık, sabit sermaye)")
 figs["retdist"] = save(fig, "15_retdist")
 
 if hourly is not None:
@@ -436,25 +442,23 @@ cc = [f"c_{n}" for n in NAMES]
 tr["n_aligned"] = (tr[cc] > 0).sum(axis=1)
 tr["wd"] = (tr.opened - pd.Timedelta("1h")).dt.dayofweek
 tr["size_pct"] = tr.avg_notional / tr.eq_at_open
-cal_defs = [("absf", "|F| çeyreklik"), ("n_aligned", "Aynı yönde uzman"), ("sig_bps", "Oynaklık üçlüğü"), ("size_pct", "Büyüklük üçlüğü")]
-fig, axs = plt.subplots(1, 4, figsize=(9.6, 3.0))
 cal_tabs = {}
-for a, (col, ttl) in zip(axs, cal_defs):
-    x = tr.dropna(subset=[col, "bps"]).copy()
-    if col == "n_aligned":
-        x["g"] = x[col].astype(int).astype(str)
-    else:
-        q = 4 if col == "absf" else 3
-        x["g"] = pd.qcut(x[col], q, labels=[f"{i + 1}" for i in range(q)], duplicates="drop").astype(str)
-    g = x.groupby("g").agg(n=("net", "size"), med=("net", "median"), win=("net", lambda v: (v > 0).mean()), net=("net", "sum"), avg=("net", "mean"))
-    cal_tabs[col] = g
-    a.bar(g.index, g.avg, color=[BLUE if v >= 0 else RED for v in g.avg], width=0.6)
-    for i, (n_, v) in enumerate(zip(g.n, g.avg)):
-        a.text(i, v, f"n={n_}", ha="center", va="bottom" if v >= 0 else "top", fontsize=6.5, color=INK2)
-    a.set_title(ttl, fontsize=7.5)
-    a.axhline(0, color=AXIS, lw=0.8)
-    a.tick_params(labelsize=7)
-fig.suptitle("Trade başına ortalama net PnL (USDT) giriş koşuluna göre (kırpma yok)", x=0.05, ha="left", fontsize=9.5, fontweight="bold", y=1.04)
+_cal = AN["calibration"]
+fig, axs = plt.subplots(1, 3, figsize=(9.6, 2.6), gridspec_kw=dict(width_ratios=[1, 1.4, 1.5]))
+for a, (key, ttl) in zip(axs, (("absf", "|F| çeyreği (1 = en zayıf)"), ("aligned", "Aynı yönde uzman sayısı"), ("regime", "Giriş rejimi / yön"))):
+    rows_ = _cal[key]
+    ys = np.arange(len(rows_))[::-1]
+    for y_, r_ in zip(ys, rows_):
+        col_ = MUTED if r_["small"] else (BLUE if r_["ci_lo"] > 0 else (RED if r_["ci_hi"] < 0 else INK2))
+        a.plot([r_["ci_lo"], r_["ci_hi"]], [y_, y_], color=col_, lw=1.6)
+        a.plot([r_["mean_bps"]], [y_], "o", color=col_, ms=4)
+    a.set_yticks(ys)
+    a.set_yticklabels([f"{r_['group'].split(' (')[0]} (n={r_['n']})" for r_ in rows_], fontsize=6.3)
+    a.axvline(0, color=AXIS, lw=0.8)
+    a.set_title(ttl, fontsize=8)
+    a.tick_params(axis="x", labelsize=6.5)
+    a.set_xlabel("ort. net bps / trade, %95 AA", fontsize=6.5)
+fig.subplots_adjust(wspace=0.75, bottom=0.2)
 figs["calib"] = save(fig, "20_calib")
 
 # MFE/MAE zamanlaması ve dağılımı (saatlik yoldan)
@@ -488,59 +492,9 @@ if hourly is not None:
     ax[2].legend()
     figs["timing"] = save(fig, "21_timing")
 
-    # karşı-olgusal çıkış kuralları (ölçüm; strateji değil): saatlik GERÇEK pozisyon profiliyle. Trade'in saatlik fiyat PnL'i c_h = pos_{h-1} x (close_h - close_{h-1}) (ilk bar: pos x (close - giriş VWAP)).
+    # açık kalan trade'lerin brüt getirisi (veri sonunda son kapanıştan değerle); stop karşı-olgusalı artık scripts/audit_fix_analysis.py'de (Bölüm I.5 → 2.4)
     for i_, r_ in tr[tr.gross_bps.isna()].iterrows():  # veri sonunda açık kalan trade: son kapanıştan değerle
         tr.at[i_, "gross_bps"] = (1 if r_.side == "long" else -1) * (H_[r_.sym].close.iloc[-1] / r_.vwap_in - 1) * 1e4
-    HF = {s_: H_[s_][["pos", "close", "high", "low"]].ffill() for s_ in SYMS}  # sembol verisinde boşluk (SOL/XRP'de saatlik eksik): son değerle doldur
-    ARR = {s_: dict(idx=HF[s_].index, pos=HF[s_].pos.to_numpy(), close=HF[s_].close.to_numpy(), high=HF[s_].high.to_numpy(), low=HF[s_].low.to_numpy()) for s_ in SYMS}
-
-    def path(r):
-        a = ARR[r.sym]
-        ob, cb = a["idx"].searchsorted(r.opened.floor("1h")), a["idx"].searchsorted(r.closed.floor("1h"))
-        h = np.arange(ob, max(cb, ob + 1))  # pozisyonun tutulduğu barlar [ob, cb)
-        pos_in = np.r_[a["pos"][ob], a["pos"][h[1:] - 1]] if len(h) else np.array([])  # bar boyunca tutulan pozisyon
-        entry0 = a["close"][ob - 1] if ob > 0 else r.vwap_in  # ilk dolum fiyatı ~ önceki bar kapanışı (VWAP değil: kademeli eklemelerde VWAP ilk fiyattan çok uzak olabilir)
-        prev = np.r_[entry0, a["close"][h[:-1]]] if len(h) else np.array([])
-        return h, pos_in, prev, a, entry0
-
-    def cf_exit(r, k, trailing, cache):
-        h, pos_in, prev, a, entry0 = cache
-        c_h = pos_in * (a["close"][h] - prev)  # saatlik fiyat PnL (gerçek profil)
-        base = float(c_h.sum())
-        d = k * r.sig_bps / 1e4
-        if not np.isfinite(d) or len(h) == 0:
-            return base, base, False
-        sd = 1 if r.side == "long" else -1
-        ref = entry0
-        for n_, (hi, lo) in enumerate(zip(a["high"][h], a["low"][h])):
-            stop = ref * (1 - d) if sd > 0 else ref * (1 + d)
-            if (sd > 0 and lo <= stop) or (sd < 0 and hi >= stop):
-                return base, float(c_h[:n_].sum() + pos_in[n_] * (stop - prev[n_])), True
-            if trailing:
-                ref = max(ref, hi) if sd > 0 else min(ref, lo)
-        return base, base, False
-
-    caches = [path(r) for r in tr.itertuples()]
-    base_total = float(sum(float((pi * (a["close"][h] - pv)).sum()) for h, pi, pv, a, _ in caches))
-    cf_rows = []
-    for trailing in (True, False):
-        for k in (1.0, 1.5, 2.0, 3.0, 4.0, 6.0):
-            res_ = [cf_exit(r, k, trailing, c) for r, c in zip(tr.itertuples(), caches)]
-            b_, c_, hit = (np.array([x[i] for x in res_]) for i in range(3))
-            dl = c_ - b_
-            cf_rows.append(dict(rule="İzleyen stop" if trailing else "Sabit stop (girişten)", k=k, delta=float(dl.sum()), hit=float(hit.mean()), helped=int(((dl > 1e-9) & hit).sum()), hurt=int(((dl < -1e-9) & hit).sum()),
-                                helped_usd=float(dl[dl > 1e-9].sum()), hurt_usd=float(dl[dl < -1e-9].sum()), cf_total=float(c_.sum())))
-    cf = pd.DataFrame(cf_rows)
-    fig, ax = plt.subplots(figsize=(9, 2.4))
-    for rule, col in (("İzleyen stop", BLUE), ("Sabit stop (girişten)", ORANGE)):
-        z = cf[cf.rule == rule]
-        ax.plot(z.k, z.delta, color=col, lw=1.8, marker="o", ms=4, label=rule)
-    ax.axhline(0, color=AXIS, lw=0.8)
-    ax.set_xlabel("Stop mesafesi (günlük σ cinsinden)")
-    ax.set_ylabel("Brüt fiyat PnL değişimi (USDT)")
-    ax.set_title("Karşı-olgusal: bu stop kuralı trade başına uygulansaydı (yeniden giriş yok)")
-    ax.legend()
-    figs["cf"] = save(fig, "22_cf")
 
 # ---------------------------------------------------------------- PDF
 ss = getSampleStyleSheet()
@@ -570,37 +524,70 @@ def img(key, w=178 * mm):
     return Image(str(p), width=w, height=w * ih / iw)
 
 
+class Ctx:  # düzeltme bölümleri için biçim yardımcıları (scripts/audit_fix_pdf.py)
+    pass
+
+
+ctx = Ctx()
+ctx.Paragraph, ctx.Spacer, ctx.H1, ctx.H2, ctx.B, ctx.SM, ctx.mm, ctx.tbl, ctx.plt = Paragraph, Spacer, H1, H2, B, SM, mm, tbl, plt
+ctx.BLUE, ctx.ORANGE, ctx.RED, ctx.INK2, ctx.AXIS, ctx.AQUA = BLUE, ORANGE, RED, INK2, AXIS, AQUA
+ctx.driver_net = tr.groupby("driver").net.sum().to_dict()
+ctx.lev_mean = float(lev.mean())
+
+
+def fig_img(fig, name, w=178 * mm):
+    p = save(fig, name)
+    from PIL import Image as PI
+
+    iw, ih = PI.open(p).size
+    return Image(str(p), width=w, height=w * ih / iw)
+
+
+ctx.fig_img = fig_img
+F1, F2 = AFP.build(AN, ctx), AFP.build2(AN, ctx)
+dayfmt = lambda x: f"{x:.1f}".rstrip("0").rstrip(".")  # noqa: E731  (gün/trade sayıları: 133.0 → 133)
 E_ = []
 E_ += [Paragraph(f"Trade denetim raporu: Ensemble ({meta['preset']}), başlangıç bakiyesi {CAP:,.0f} USDT".replace(",", " "), TT),
        Paragraph(f"Dönem {daily.index[0]:%Y-%m-%d} → {daily.index[-1]:%Y-%m-%d} ({YEARS:.1f} yıl), 9 sembol (USDT-M perp), saatlik tarihsel tape, fee 10 + slip 2 bps gidiş-dönüş, kaldıraç limiti 10×. "
-                 f"Bileşim: {', '.join(f'{n} {w:g}' for n, w in zip(meta['names'], meta['weights']))}. Bu rapor <b>script tabanlıdır</b> (scripts/trade_audit.py + trade_audit_report.py); LLM rakam üretmez. "
-                 "Sonuçlar görülmüş veride; geleceği kanıtlamaz.", B), Spacer(1, 4)]
-E_ += [Paragraph("Özet", H1)]
-sm = [["Ölçü", "Değer", "Ölçü", "Değer"],
-      ["Net PnL", f"{usd(net_total)} USDT ({pct(net_total / CAP)})", "Yıllık getiri (CAGR)", pct(cagr)],
-      ["Yıllık oynaklık", pct(vol), "Sharpe / Sortino / Calmar", f"{sharpe:.2f} / {sortino:.2f} / {calmar:.2f}"],
-      ["Maks drawdown", f"{usd(dd_usd.max())} USDT (tepe equity'nin {pct(dd_pct.max())}, başlangıç sermayesinin {pct(dd_usd.max() / CAP)})", "Suda geçen en uzun süre", f"{uw_days} gün"],
-      ["Trade (pozisyon dönemi)", f"{len(tr)}  ({len(win)} kâr / {len(loss)} zarar)", "Dolum (emir yürütme)", f"{int(S['n_fills'])}"],
-      ["Ayda trade (ort. / medyan / maks)", f"{per_month.mean():.1f} / {per_month.median():.0f} / {per_month.max()}", "Haftalık / aylık pozitif oran", f"{pct((week > 0).mean())} / {pct((month > 0).mean())}"],
-      ["Likidasyon / reddedilen emir", f"{int(S['n_liq'])} / {meta['rejected']}", "Mutabakat farkı (saatlik − hakem)", f"{meta['recon_hourly_vs_referee']:.2e} USDT"]]
+                 f"Bileşim: {', '.join(f'{n} {w:g}' for n, w in zip(meta['names'], meta['weights']))}. Bu rapor <b>script tabanlıdır</b> (scripts/trade_audit.py, audit_fix.py, audit_fix_analysis.py, trade_audit_report.py); LLM rakam üretmez. "
+                 "<b>Düzeltilmiş sürüm:</b> iki bağımsız inceleme sonrası ölçüm düzeltmeleri (reports/audit_fixes.md). Bileşim sonuçlar görüldükten sonra kuruldu ve tüm analiz görülmüş veride (örneklem içi / post-hoc); geleceği kanıtlamaz.", B), Spacer(1, 4)]
+E_ += [Paragraph("Özet", H1), Paragraph("Başlık ölçüleri (birincil = sabit sermaye; ikincil = equity'ye normalize) ve dönem bazlı Sharpe aşağıda; <b>ilk bulgu sönmedir</b>.", B), Spacer(1, 3)]
+E_ += [tbl(F1["headline_rows"], [58 * mm, 50 * mm, 44 * mm, 28 * mm]), Spacer(1, 3), tbl(F1["period_rows"], [34 * mm] + [13.6 * mm] * 7 + [17 * mm] * 3)]
 long_, short_ = tr[tr.side == "long"], tr[tr.side == "short"]
 bull_short = tr[(tr.regime == "bull") & (tr.side == "short")]
 big_gb = tr[(tr.net < 0) & (tr.mfe_s >= 2)]
-finds = [f"<b>Profil.</b> Kazanma oranı {pct((tr.net > 0).mean())}, payoff {win.net.mean() / abs(loss.net.mean()):.1f}× (ort. kazanç {win.net.mean():.2f}, ort. kayıp {loss.net.mean():.2f} USDT); medyan trade {tr.net.median():.2f} USDT, beklenti {tr.net.mean():.2f} USDT/trade. En kötü ardışık kayıp serisi {mx_streak0} trade.",
-         f"<b>Yön asimetrisi.</b> Long {len(long_)} trade net {long_.net.sum():+.1f} USDT; short {len(short_)} trade net {short_.net.sum():+.1f} USDT. Bull rejiminde short'lar {len(bull_short)} trade ile {bull_short.net.sum():+.1f} USDT.",
-         f"<b>Paranın kazanıldığı yer uzun trade'ler.</b> 30 günden uzun {int((tr.hours > 720).sum())} trade net {tr[tr.hours > 720].net.sum():+.1f} USDT; 7 günden kısa {int((tr.hours <= 168).sum())} trade net {tr[tr.hours <= 168].net.sum():+.1f} USDT.",
+_cz, _nl, _dsr, _mx = AN["causal"], AN["null"], AN["dsr"], AN["mexc"]
+_nn = _dsr["trials"]["repo_rows"] + _dsr["trials"]["volume_only_nonsmoke_rows"]
+_row = [r for r in _dsr["rows"] if r["n"] == _nn][0]
+_sv = (AN.get("survivorship") or {}).get("top9")
+_r1k = {r["cap"]: r for r in _mx["rows"]}[1000]
+_top3 = "/".join(r["sym"].replace("USDT", "") for r in sorted(_mx["per_symbol_1000"], key=lambda r: -r["blocked_share"])[:3])
+_sc = AN["stop_cf"]["rows"]
+_reg = {r["benchmark"]: r for r in AN["benchmarks"]["regressions"]}
+_btc = _reg["BTC (günlük fiyat getirisi)"]
+finds = [F1["decay_text"],
+         f"<b>Nedensellik.</b> Gelecek sızıntısı bulunamadı: audit.check_causal_book kötü kesim {len(_cz['check_causal_book_bad'])}; {_cz['prefix']['real']['n_cuts']} kesim gününde tahmin ölçeği, σ, rejim ve hedef pozisyon için önek farkı 0 (pozitif kontroller yakalandı). Bölüm I.1.",
+         f"<b>İstatistiksel kanıt zayıf.</b> Sabit sermaye Sharpe'ı {AN['headline']['primary']['sharpe']:.2f}; blok bootstrap %95 AA {AN['headline']['bootstrap']['sharpe_q']['p2.5']:.2f} – {AN['headline']['bootstrap']['sharpe_q']['p97.5']:.2f}. Rotasyon null'unda p = {_nl['p_gross'] if _nl else float('nan'):.4f} (B = {_nl['B'] if _nl else 0}; bu B ile alt sınır 1/(B+1)). "
+         f"DSR(N = {_nn}, havuz σ_SR) ≈ {_row['dsr[havuz]']:.2f}; iyimser σ_SR = 0,25'te {_row['dsr[0,25]']:.2f}. Sonuç σ_SR'a çok duyarlı; DSR ≥ 0,95 iddiası yapılamaz. Bölüm I.4.",
+         f"<b>Uygulanabilirlik ($1 000).</b> MEXC kurallarıyla (min 1 sözleşme) emir niyetlerinin %{100 * _r1k['blocked_share']:.0f}'i gönderilemiyor ({_top3}); net farkı küçük görünse de portföy hedefinden farklı. Asgari uygulanabilir sermaye (ön kayıtlı ölçüt): ${AFP.fmt(_mx['min_capital'], 0)}. Bölüm I.3.",
+         (f"<b>Hayatta kalma yanlılığı.</b> Aynı sistem her ay o ayın top-9 hacimli sembolleriyle (delist olanlar dahil) yeniden koşulunca net {_sv['net']:.0f} USDT, Sharpe {_sv['sharpe']:.2f} (sabit 9 sembolde {AN['headline']['primary']['sharpe']:.2f}). Bölüm I.5 → 2.9." if _sv else "<b>Hayatta kalma yanlılığı.</b> Veri kaynağında delist olan perp'ler var; yeniden koşu Bölüm I.5 → 2.9."),
+         f"<b>Profil.</b> Kazanma oranı {pct((tr.net > 0).mean())}, payoff {win.net.mean() / abs(loss.net.mean()):.1f}× (ort. kazanç {win.net.mean():.2f}, ort. kayıp {loss.net.mean():.2f} USDT); medyan trade {tr.net.median():.2f} USDT, beklenti {tr.net.mean():.2f} USDT/trade. En kötü ardışık kayıp serisi {mx_streak0} trade.",
+         f"<b>Yön asimetrisi.</b> Long {len(long_)} trade net {long_.net.sum():+.1f} USDT; short {len(short_)} trade net {short_.net.sum():+.1f} USDT. Bull rejiminde short'lar {len(bull_short)} trade ile {bull_short.net.sum():+.1f} USDT; short funding ({AN['funding']['short_total']:+.1f}) bull rejiminde alınıyor, ayı rejiminde değil (Bölüm I.5 → 2.6).",
+         f"<b>Para uzun trade'lerden geliyor (çıkışta bilinir, hindsight).</b> 30 günden uzun {int((tr.hours > 720).sum())} trade net {tr[tr.hours > 720].net.sum():+.1f} USDT; 7 günden kısa {int((tr.hours <= 168).sum())} trade net {tr[tr.hours <= 168].net.sum():+.1f} USDT. Süre giriş anında bilinmez; seçim kriteri değildir.",
          f"<b>Kâr geri verme ve sürekli pozisyon.</b> Kaybeden {len(loss)} trade'in {len(big_gb)}'i çıkmadan önce 2 günlük σ'dan fazla lehe gitmişti (toplam zararları {big_gb.net.sum():.1f} USDT). Trade'lerin %{100 * tr.flip_close.mean():.0f}'i doğrudan long↔short çevirme: sistem sürekli pozisyonda (aynı anda ort. {daily.n_symbols_open.mean():.1f}/9 sembol), stop ve izleyen çıkış yok.",
          f"<b>Maliyetler küçük.</b> Fee+slip brüt PnL'in {pct((S['fee'] + S['slippage']) / S['gross_pnl'])}'i, funding (net) {pct(-S['funding'] / S['gross_pnl'])}'i; ikisi birlikte {pct((S['fee'] + S['slippage'] - S['funding']) / S['gross_pnl'])}.",
-         f"<b>Piyasa-nötre yakın, ama son dönem zayıf.</b> BTC beta'sı {beta:.2f} (R² {r2:.2f}). 2025-2026 net {daily.net[daily.index >= '2025-01-01'].sum():+.1f} USDT; en derin drawdown ({pct(dd_tab.depth.iloc[0])}) {dd_tab.peak.iloc[0]:%Y-%m-%d}'den beri {'sürüyor' if pd.isna(dd_tab.recovered.iloc[0]) else 'toparlandı'}.",
-         f"<b>Fiyat stopu kârı götürüyor.</b> Trade bazında saatlik yola uygulanan {len(cf)} stop kuralının {int((cf.delta > 0).sum())}'i brüt fiyat PnL'i artırdı (en iyisi {cf.delta.max():+.0f} USDT, en kötüsü {cf.delta.min():+.0f} USDT; yeniden giriş ve maliyet etkisi yok). Kazanç, derin geri çekilmelere rağmen süren az sayıdaki trend trade'inden geliyor.",
+         f"<b>Piyasa-nötre yakın.</b> BTC beta'sı {_btc['beta']:.3f} (R² {_btc['r2']:.3f}, günlük fiyat getirisine karşı, sabit sermaye getirisi); alfa yıllık {pct(_btc['alfa'] if 'alfa' in _btc else _btc['alpha_annual'])} (t = {_btc['t_alpha']:.1f}); eşit-ağırlık-9, alt sepeti ve TSMOM benchmark'larına karşı da beta ≈ 0 (Bölüm I.5 → 2.5).",
+         f"<b>Stop kârı götürüyor; yeniden girişle de.</b> 12 stop kuralından brüt fiyat PnL'i artıranlar: eski ölçüm {sum(1 for r in _sc if r['A_dprice'] > 0)}, gap'e duyarlı dolum {sum(1 for r in _sc if r['B_dprice'] > 0)}, yeniden girişli sürüm {sum(1 for r in _sc if r['C_dprice'] > 0)} (net, maliyet dahil {sum(1 for r in _sc if r['C_dnet'] > 0)}; en iyi net {max(r['C_dnet'] for r in _sc):+.1f} USDT). Kazanç, derin geri çekilmelere rağmen süren az sayıdaki trend trade'inden geliyor.",
          f"<b>Kaldıraç düşük.</b> Ortalama brüt kaldıraç {lev.mean():.2f}× (maks günlük ortalama {lev.max():.2f}×), limit 10×; ort. trade {tr.avg_notional.mean():.0f} USDT ({pct((tr.avg_notional / tr.eq_at_open).mean())} equity)."]
-E_ += [tbl(sm, [48 * mm, 44 * mm, 46 * mm, 40 * mm]), Paragraph("Öne çıkan bulgular (otomatik üretildi)", H2)] + [Paragraph("• " + f, B) for f in finds] + [Spacer(1, 6), img("equity")]
+E_ += [Paragraph("Öne çıkan bulgular (otomatik üretildi)", H2)] + [Paragraph("• " + f, B) for f in finds] + [Spacer(1, 6), img("equity")]
 E_ += [KeepTogether([Paragraph("Tanımlar ve sınırlar", H2),
-       Paragraph("<b>Trade</b> = bir sembolde pozisyonun sıfırdan sıfıra (ya da yön değişimine) kadar süren dönemi; Nautilus pozisyon sayımıyla aynı (bkz. Bölüm 8). EV1 sürekli yeniden dengelendiği için bir trade içinde birden çok "
+       Paragraph("<b>Trade</b> = bir sembolde pozisyonun sıfırdan sıfıra (ya da yön değişimine) kadar süren dönemi; Nautilus pozisyon sayımıyla aynı (bkz. Bölüm 11). Sistem sürekli yeniden dengelendiği için bir trade içinde birden çok "
                  "kısmi dolum olabilir; <b>dolum</b> ayrı sayılır. <b>Net</b> = fiyat PnL − komisyon (fee+slip) + funding − çıkış maliyeti. <b>Kaldıraç</b> = brüt notional / equity. <b>Planlanan risk</b> = notional × 1 günlük 1σ / equity "
-                 "(EV1'de stop yok). <b>Sharpe/Sortino</b> = günlük getirinin (PnL / önceki gün equity) ortalaması ÷ standart sapması, √365 ile yıllıklaştırılmış; getiri equity'ye normalleştirildiği için sabit sermayeli hesaptan biraz farklıdır. <b>MAE/MFE</b> = trade süresince saatlik en kötü/en iyi fiyat sapması (giriş VWAP'ına göre). <b>Kayıp nedeni</b> kural tabanlı etikettir (Ek A), kanıt değildir. "
-                 "Veri saatlik bar: bar içi sıralama bilinmez; slippage varsayımdır; gerçek borsa lot/min-notional kuralları doğrulanmadı. "
-                 "Mutabakat: trade tablosu saatlik PnL toplamına eşit; hakem net'inden 0,034 USDT (%0,004) farklı, bilinen küçük `report.hourly_pnl` muhasebe farkı, kaynağı tam çözülmedi.", SM)])]
+                 "(stop yok). <b>BİRİNCİL Sharpe/oynaklık/drawdown</b> = sabit başlangıç sermayesi tabanlı (BACKTEST K4: günlük getiri = PnL / başlangıç sermayesi, toplamsal equity); <b>ikincil</b> = PnL / önceki gün equity (kâr büyüdükçe payda büyür; ölçüleri olduğundan iyi gösterir). "
+                 "Sharpe √365 ile yıllıklaştırılır. <b>MAE/MFE</b> = trade süresince saatlik en kötü/en iyi fiyat sapması (giriş VWAP'ına göre). <b>Kayıp nedeni</b> kural tabanlı etikettir (Ek A), kanıt değildir. "
+                 f"Veri saatlik bar: bar içi sıralama bilinmez; slippage varsayımdır. Hedef borsa kuralları MEXC `contract/detail` ile alındı (Bölüm I.3), ana koşu ({CAP:,.0f} USDT) yuvarlamasız sezgisel lot/tik kullanır. "
+                 f"Mutabakat: trade tablosu ve saatlik PnL toplamı hakem net'inden {AN['recon']['net_diff']:.1e} USDT farklı (tek hesap yolu; kalan fark Nautilus'un 8 basamaklı para yuvarlaması; kaynak: kline boşluğundaki funding olayları düzeltildi).", SM)])]
+
 
 MARK = len(E_)
 E_ += [PageBreak(), Paragraph("Bölüm III. Ensemble genel analizi", H1), Paragraph("Aşağıdaki bölümler bileşimin bütününü inceler (zaman içinde PnL, trade istatistikleri, kaldıraç, risk, maliyet, kayıp denetimi).", B),
@@ -621,15 +608,14 @@ wk = [["Haftalık", "Değer", "Aylık", "Değer"],
 E_ += [tbl(wk, [48 * mm, 42 * mm, 48 * mm, 40 * mm]), Spacer(1, 4), img("rollsharpe", 170 * mm)]
 
 E_ += [PageBreak(), Paragraph("1b. Drawdown, getiri dağılımı ve piyasa duyarlılığı", H1), img("underwater")]
-rows = [["#", "Tepe", "Dip", "Toparlanma", "Derinlik", "USDT", "Dibe (gün)", "Toplam (gün)"]]
-for i, r in dd_tab.iterrows():
-    end = r.recovered if pd.notna(r.recovered) else daily.index[-1]
-    rows.append([i + 1, f"{r.peak:%Y-%m-%d}", f"{r.trough:%Y-%m-%d}", f"{r.recovered:%Y-%m-%d}" if pd.notna(r.recovered) else "devam", pct(r.depth), f"{r.depth_usd:.1f}", (r.trough - r.peak).days, f"{(end - r.peak).days}{'+' if pd.isna(r.recovered) else ''}"])
-E_ += [tbl(rows, [8 * mm, 24 * mm, 24 * mm, 26 * mm, 22 * mm, 20 * mm, 24 * mm, 26 * mm]), Spacer(1, 6), img("retdist")]
+rows = [["#", "Tepe", "Dip", "Toparlanma", "Derinlik (tepe equity'nin)", "USDT", "Dibe (gün)", "Toplam (gün; tepe → toparlanma)"]]
+for i, r in enumerate(AN["headline"]["drawdown_table"]):
+    rows.append([i + 1, r["peak"], r["trough"], r["recovered"], pct(r["depth"]), f"{r['usd']:.1f}", (pd.Timestamp(r["trough"]) - pd.Timestamp(r["peak"])).days, f"{r['days']}{'+' if r['recovered'] == 'devam' else ''}"])
+E_ += [tbl(rows, [8 * mm, 22 * mm, 22 * mm, 24 * mm, 26 * mm, 18 * mm, 18 * mm, 40 * mm]), Spacer(1, 6), img("retdist")]
 rs_ = [["Getiri dağılımı (günlük)", "Değer", "Piyasa duyarlılığı", "Değer"],
-       ["Ortalama / oynaklık (bps)", f"{1e4 * ret_stats['mean']:.1f} / {1e4 * ret_stats['std']:.1f}", "BTC beta (günlük getiri)", f"{beta:.3f}"],
+       ["Ortalama / oynaklık (bps, sabit sermaye)", f"{1e4 * ret_stats['mean']:.1f} / {1e4 * ret_stats['std']:.1f}", "BTC beta (günlük getiri)", f"{beta:.3f}"],
        ["Çarpıklık / fazla basıklık", f"{ret_stats['skew']:.2f} / {ret_stats['kurt']:.1f}", "Alfa (yıllık, beta'dan arınmış)", pct(alpha_ann)],
-       ["VaR %95 / %99 (günlük, equity)", f"{pct(ret_stats['var95'])} / {pct(ret_stats['var99'])}", "BTC ile R²", f"{r2:.3f}"],
+       ["VaR %95 / %99 (günlük, sabit sermaye)", f"{pct(ret_stats['var95'])} / {pct(ret_stats['var99'])}", "BTC ile R²", f"{r2:.3f}"],
        ["CVaR %95 (en kötü %5 günün ort.)", pct(ret_stats["cvar95"]), "Net maruziyet ort. mutlak / equity", f"{(daily.net_exposure.abs() / eq).mean():.3f}×"],
        ["En iyi / en kötü gün", f"{pct(ret_stats['best'])} / {pct(ret_stats['worst'])}", "Pozitif gün oranı", pct(ret_stats["pos"])],
        ["Otokorelasyon lag-1 / lag-5", f"{ret_stats['ac1']:.3f} / {ret_stats['ac5']:.3f}", "Haftalık / aylık pozitif", f"{pct((week > 0).mean())} / {pct((month > 0).mean())}"]]
@@ -638,12 +624,10 @@ E_ += [Spacer(1, 4), tbl(rs_, [52 * mm, 36 * mm, 52 * mm, 34 * mm]), Spacer(1, 3
 yrs = []
 for y in sorted(set(daily.index.year)):
     dy, ey, ty = daily[daily.index.year == y], eq[eq.index.year == y], tr[tr.opened.dt.year == y]
-    ry = ret[ret.index.year == y]
     e0 = ey.iloc[0] - dy.net.iloc[0]
-    pk = pd.concat([pd.Series([e0]), ey]).cummax()
-    ddy = ((pk.iloc[1:].to_numpy() - ey.to_numpy()) / pk.iloc[1:].to_numpy()).max()
-    yrs.append([y, f"{dy.net.sum():.1f}", pct(dy.net.sum() / e0), f"{ry.mean() / ry.std(ddof=1) * np.sqrt(365):.2f}" if ry.std() > 0 else "-", pct(ddy), len(ty), pct((ty.net > 0).mean()), f"{ty[ty.side == 'long'].net.sum():.1f}", f"{ty[ty.side == 'short'].net.sum():.1f}", f"{dy.gross_lev_mean.mean():.2f}×"])
-E_ += [Paragraph("Yıl yıl özet", H2), tbl([["Yıl", "Net", "Getiri", "Sharpe", "Maks DD", "Trade", "Kazanma", "Long net", "Short net", "Ort. kaldıraç"]] + yrs, [14 * mm, 18 * mm, 18 * mm, 16 * mm, 18 * mm, 15 * mm, 18 * mm, 20 * mm, 20 * mm, 22 * mm])]
+    py_ = {r["period"]: r for r in AN["headline"]["periods"]}[str(y)]
+    yrs.append([y, f"{dy.net.sum():.1f}", pct(dy.net.sum() / e0), f"{py_['sharpe']:.2f}", pct(py_["maxdd"]), len(ty), pct((ty.net > 0).mean()), f"{ty[ty.side == 'long'].net.sum():.1f}", f"{ty[ty.side == 'short'].net.sum():.1f}", f"{dy.gross_lev_mean.mean():.2f}×"])
+E_ += [Paragraph("Yıl yıl özet (Sharpe ve maks DD: sabit sermaye; getiri: yıl başı equity)", H2), tbl([["Yıl", "Net", "Getiri", "Sharpe", "Maks DD (başl. serm.)", "Trade", "Kazanma", "Long net", "Short net", "Ort. kaldıraç"]] + yrs, [14 * mm, 18 * mm, 18 * mm, 16 * mm, 18 * mm, 15 * mm, 18 * mm, 20 * mm, 20 * mm, 22 * mm])]
 
 E_ += [PageBreak(), Paragraph("2. Trade istatistikleri", H1), img("count")]
 pf = win.net.sum() / abs(loss.net.sum())
@@ -656,15 +640,15 @@ ts_ = [["Ölçü", "Değer", "Ölçü", "Değer"],
        ["Profit factor", f"{pf:.2f}", "Beklenti (USDT/trade)", f"{tr.net.mean():.3f}"],
        ["En iyi / en kötü trade (USDT)", f"{tr.net.max():.2f} / {tr.net.min():.2f}", "En uzun ardışık kayıp serisi", f"{mx_streak} trade"],
        ["Long / short trade", f"{(tr.side == 'long').sum()} / {(tr.side == 'short').sum()}", "Long / short net PnL (USDT)", f"{tr[tr.side == 'long'].net.sum():.1f} / {tr[tr.side == 'short'].net.sum():.1f}"],
-       ["Tutma süresi medyan / p90 (gün)", f"{tr.hours.median() / 24:.1f} / {tr.hours.quantile(0.9) / 24:.1f}", "Trade başına dolum (ort.)", f"{tr.n_fills.mean():.1f}"]]
+       ["Tutma süresi medyan / p90 (gün)", f"{dayfmt(tr.hours.median() / 24)} / {dayfmt(tr.hours.quantile(0.9) / 24)}", "Trade başına dolum (ort.)", f"{tr.n_fills.mean():.1f}"]]
 E_ += [tbl(ts_, [52 * mm, 36 * mm, 50 * mm, 36 * mm]), Spacer(1, 4), img("hist"), img("hold")]
 bs = tr.groupby("sym").agg(n=("net", "size"), net=("net", "sum"), win=("net", lambda x: (x > 0).mean()), avg=("net", "mean"), notional=("avg_notional", "mean"), hours=("hours", "median")).sort_values("net")
-rows = [["Sembol", "Trade", "Net PnL", "Kazanma", "Ort. PnL", "Ort. notional", "Medyan süre (gün)"]] + [[i.replace("USDT", ""), r.n, f"{r.net:.2f}", pct(r.win), f"{r.avg:.3f}", f"{r.notional:.1f}", f"{r.hours / 24:.1f}"] for i, r in bs.iterrows()]
+rows = [["Sembol", "Trade", "Net PnL", "Kazanma", "Ort. PnL", "Ort. notional", "Medyan süre (gün)"]] + [[i.replace("USDT", ""), int(r.n), f"{r.net:.2f}", pct(r.win), f"{r.avg:.3f}", f"{r.notional:.1f}", dayfmt(r.hours / 24)] for i, r in bs.iterrows()]
 E_ += [Paragraph("Sembole göre", H2), tbl(rows, [20 * mm, 18 * mm, 26 * mm, 24 * mm, 26 * mm, 28 * mm, 32 * mm])]
 top = pd.concat([tr.nlargest(10, "net").assign(k="En iyi"), tr.nsmallest(10, "net").assign(k="En kötü")])
-rows = [["", "Sem.", "Açılış", "Yön", "Gün", "Notional", "Fiyat PnL", "Kom.", "Fund.", "Net", "MFE / MAE bps"]] + [[r.k, r.sym.replace("USDT", ""), f"{r.opened:%Y-%m-%d}", r.side, f"{r.hours / 24:.1f}", f"{r.avg_notional:.0f}", f"{r.price_pnl:.2f}",
+rows = [["", "Sem.", "Açılış", "Yön", "Gün", "Notional", "Fiyat PnL", "Kom.", "Fund.", "Net", "MFE / MAE bps"]] + [[r.k, r.sym.replace("USDT", ""), f"{r.opened:%Y-%m-%d}", r.side, dayfmt(r.hours / 24), f"{r.avg_notional:.0f}", f"{r.price_pnl:.2f}",
                                                                                                                       f"{r.commission:.2f}", f"{r.funding:.2f}", f"{r.net:.2f}", f"{r.mfe_bps:.0f}/{r.mae_bps:.0f}"] for r in top.itertuples()]
-E_ += [Paragraph("En iyi ve en kötü 10 trade", H2), tbl(rows, [15 * mm, 12 * mm, 20 * mm, 12 * mm, 11 * mm, 16 * mm, 17 * mm, 13 * mm, 13 * mm, 14 * mm, 31 * mm])]
+E_ += [Paragraph("En iyi ve en kötü 10 trade", H2), tbl(rows, [15 * mm, 14 * mm, 20 * mm, 12 * mm, 11 * mm, 16 * mm, 17 * mm, 13 * mm, 13 * mm, 14 * mm, 29 * mm])]
 
 E_ += [PageBreak(), Paragraph("3. Büyüklük ve kaldıraç", H1), img("lev")]
 sz = [["Ölçü", "Değer", "Ölçü", "Değer"],
@@ -676,7 +660,7 @@ sz = [["Ölçü", "Değer", "Ölçü", "Değer"],
       ["Yıllık devir (toplam işlem hacmi / ort. equity / yıl)", f"{traded / eq.mean() / YEARS:.1f}×", "Hakem kaldıraç limiti", "10×"]]
 E_ += [tbl(sz, [60 * mm, 32 * mm, 50 * mm, 32 * mm]), Spacer(1, 4),
        Paragraph(f"Sistem sermayeyi ağırlıkla kullanmıyor: ortalama brüt kaldıraç {lev.mean():.2f}×, hakem limiti 10×. Likidasyona uzaklık çok geniş (brüt kaldıraç ≈ {lev.max():.2f}×); asıl kısıt drawdown bütçesidir. "
-                 "Not: hedef notional'lar küçük (medyan trade ≈ " + f"{tr.avg_notional.median():.0f} USDT); gerçek borsa minimum notional/lot kuralları bu bakiyede BTC/ETH için engel olabilir (doğrulanmadı).", SM)]
+                 "Not: hedef notional'lar küçük (medyan trade ≈ " + f"{tr.avg_notional.median():.0f} USDT); MEXC'in gerçek lot kuralı (min 1 sözleşme) bu bakiyede {_top3} sembollerinde emir niyetlerinin büyük kısmını gönderilemez kılar (Bölüm I.3; kurallar contract/detail ile doğrulandı).", SM)]
 if "longshort" in figs:
     gross_hr = sum(expo[s].abs() for s in SYMS) / eq_h
     hr_net = sum(H_[s].net for s in SYMS)
@@ -692,10 +676,10 @@ rk = [["Ölçü", "Ortalama", "Medyan", "p95", "Maks"],
       ["Gerçekleşen net PnL (% equity)", pct3(tr.net_pct_eq.mean()), pct3(tr.net_pct_eq.median()), pct3(tr.net_pct_eq.quantile(0.05)), pct3(tr.net_pct_eq.min())],
       ["MAE (bps, giriş VWAP'ına göre)", f"{tr.mae_bps.mean():.0f}", f"{tr.mae_bps.median():.0f}", f"{tr.mae_bps.quantile(0.05):.0f}", f"{tr.mae_bps.min():.0f}"]]
 E_ += [tbl(rk, [70 * mm, 26 * mm, 26 * mm, 26 * mm, 26 * mm]), Spacer(1, 3),
-       Paragraph(f"Gerçekleşen portföy oynaklığı yıllık {pct(vol)}; hedef τ = %20 tam tahminde, tampon ve tahmin ölçeği (ortalama |F| = 0,5) yüzünden gerçekleşen bunun yaklaşık yarısı. "
+       Paragraph(f"Gerçekleşen portföy oynaklığı yıllık {pct(vol)} (equity'ye normalize; sabit sermayeye göre {pct(AN['vol_decomp']['vol_fixed_actual'])}); hedef τ = %20. Fark yön karışımı (çeşitlendirme), |F| ölçeği, payda (equity_scale = False) ve tampondan oluşur; tampon oynaklığı neredeyse hiç etkilemez: ayrıştırma Bölüm I.5 → 2.8. "
                  "MAE, trade ortalama notional'ı ile % equity'ye çevrilmiştir (yaklaşık). Stop olmadığından 'trade başına risk' bir üst sınır değil, gözlenen/planlanan dağılımdır; sapmanın kuyruğu örneklemde gözlenenin ötesinde olabilir.", SM)]
 
-E_ += [Paragraph("5. Maliyet", H1), img("costs", 160 * mm)]
+E_ += [CondPageBreak(75 * mm), Paragraph("5. Maliyet", H1), img("costs", 160 * mm)]
 cs = [["Kalem", "Toplam (USDT)", "Trade başına", "Brüt PnL'in %'si"],
       ["Fee", usd(S["fee"]), f"{S['fee'] / len(tr):.3f}", pct(S["fee"] / max(S["gross_pnl"], 1e-9))], ["Slippage (varsayım)", usd(S["slippage"]), f"{S['slippage'] / len(tr):.3f}", pct(S["slippage"] / max(S["gross_pnl"], 1e-9))],
       ["Funding (net)", usd(S["funding"]), f"{S['funding'] / len(tr):.3f}", pct(S["funding"] / max(S["gross_pnl"], 1e-9))], ["Çıkış maliyeti", usd(S["exit_cost"]), "-", "-"],
@@ -713,16 +697,16 @@ for lab, f_, sl_ in sens:
 be = 2e4 * (S["gross_pnl"] + S["funding"] - S["exit_cost"]) / traded_d.sum()
 E_ += [Spacer(1, 4), Paragraph("Maliyet duyarlılığı (aynı dolumlar, komisyon notional ile doğrusal yeniden hesaplandı)", H2), tbl(rows, [62 * mm, 24 * mm, 20 * mm, 20 * mm, 22 * mm, 34 * mm]),
        Paragraph(f"Toplam işlem hacmi {traded_d.sum():,.0f} USDT ({traded_d.sum() / eq.mean() / YEARS:.1f}× ort. equity / yıl). Funding ve dolum kararları sabit tutuldu; fee/slip değişince karar değişmediği varsayılır (kuralda maliyete duyarlı bir adım yok). "
-                 f"Net'i sıfırlayan toplam maliyet ≈ {be:.0f} bps gidiş-dönüş (funding dahil, çıkış maliyeti düşülmüş).".replace(",", " "), SM)]
+                 f"Net'i sıfırlayan toplam maliyet ≈ {be:.0f} bps gidiş-dönüş (funding dahil, çıkış maliyeti düşülmüş).", SM)]
 
 bysym = tr.groupby("sym").agg(price=("price_pnl", "sum"), comm=("commission", "sum"), fund=("funding", "sum"), net=("net", "sum"))
 byside = tr.groupby("side").agg(price=("price_pnl", "sum"), comm=("commission", "sum"), fund=("funding", "sum"), net=("net", "sum"))
 rows = [["Grup", "Fiyat PnL", "Komisyon (fee+slip)", "Funding", "Net"]] + [[i.replace("USDT", ""), f"{r.price:.1f}", f"{-r.comm:.1f}", f"{r.fund:.1f}", f"{r.net:.1f}"] for i, r in pd.concat([bysym, byside]).iterrows()]
 E_ += [Spacer(1, 4), Paragraph("Sembol ve yöne göre maliyet kalemleri (USDT)", H2), tbl(rows, [36 * mm, 34 * mm, 42 * mm, 34 * mm, 30 * mm])]
-E_ += [Spacer(1, 8), Paragraph("6. Kayıp denetimi: paranın nerede kaybedildiği", H1), img("waterfall"),
+E_ += [CondPageBreak(95 * mm), Spacer(1, 8), Paragraph("6. Kayıp denetimi: paranın nerede kaybedildiği", H1), img("waterfall"),
        Paragraph(f"Kaybeden {len(loss)} trade'in toplamı {loss.net.sum():.1f} USDT; kazanan {len(win)} trade {win.net.sum():.1f} USDT. En kötü %5 trade ({max(1, int(len(tr) * 0.05))} adet) toplam zararın "
                  f"%{100 * tr.nsmallest(max(1, int(len(tr) * 0.05)), 'net').net.sum() / loss.net.sum():.0f}'ini oluşturuyor (kuyruk yoğunluğu).", B), img("causes")]
-rows = [["Kayıp nedeni (etiket)", "Trade", "Toplam zarar (USDT)", "Zararın %'si", "Ort. zarar", "Medyan süre (gün)"]] + [[c, int(r.n), f"{r.total:.1f}", pct(r.total / loss.net.sum()), f"{r.avg:.3f}", f"{r.hours / 24:.1f}"] for c, r in cause_tab.iterrows()]
+rows = [["Kayıp nedeni (etiket)", "Trade", "Toplam zarar (USDT)", "Zararın %'si", "Ort. zarar", "Medyan süre (gün)"]] + [[c, int(r.n), f"{r.total:.1f}", pct(r.total / loss.net.sum()), f"{r.avg:.3f}", dayfmt(r.hours / 24)] for c, r in cause_tab.iterrows()]
 E_ += [tbl(rows, [64 * mm, 14 * mm, 28 * mm, 26 * mm, 20 * mm, 24 * mm]), Spacer(1, 4)]
 E_ += [KeepTogether([Paragraph("Kırılımlar", H2), img("breakdown")])]
 sr = tr.groupby(["regime", "side"]).agg(n=("net", "size"), net=("net", "sum"), win=("net", lambda x: (x > 0).mean()), avgw=("net", lambda x: x[x > 0].mean()), avgl=("net", lambda x: x[x < 0].mean()))
@@ -732,9 +716,9 @@ E_ += [Spacer(1, 4)]
 dr = tr.groupby("driver").agg(n=("net", "size"), net=("net", "sum"), win=("net", lambda x: (x > 0).mean()), loss=("net", lambda x: x[x < 0].sum()))
 rows = [["Sürücü uzman (giriş günü en büyük yön-hizalı katkı)", "Trade", "Net PnL", "Kazanma", "Toplam zarar"]] + [[i, int(r.n), f"{r.net:.1f}", pct(r.win), f"{r.loss:.1f}"] for i, r in dr.iterrows()]
 E_ += [tbl(rows, [80 * mm, 18 * mm, 24 * mm, 26 * mm, 26 * mm]), Spacer(1, 3),
-       Paragraph("Uzman atfı yaklaşıktır: pozisyonu en çok destekleyen uzman 'sürücü' sayılır; etkileşim artığı (üç uzmanın birleşimi) ayrıca ölçülmedi.", SM)]
+       Paragraph("Sürücü uzman yalnızca bir sezgiseldir (pozisyonu en çok destekleyen uzmanın trade'in tüm net'ini alması); doğrusal atıf ve artığı Bölüm I.5 → 2.1'de. Bu tabloyu uzman katkısı olarak okumayın.", SM)]
 hb = [(">0 gün", tr.hours <= 24 * 7, "≤ 7 gün"), ("", (tr.hours > 24 * 7) & (tr.hours <= 24 * 30), "7-30 gün"), ("", tr.hours > 24 * 30, "> 30 gün")]
-rows = [["Tutma süresi", "Trade", "Net PnL", "Kazanma", "Ort. net (USDT)"]] + [[lab, int(m.sum()), f"{tr[m].net.sum():.1f}", pct((tr[m].net > 0).mean()), f"{tr[m].net.mean():.3f}"] for _, m, lab in hb]
+rows = [["Tutma süresi (ÇIKIŞTA BİLİNİR: hindsight)", "Trade", "Net PnL", "Kazanma", "Ort. net (USDT)"]] + [[lab, int(m.sum()), f"{tr[m].net.sum():.1f}", pct((tr[m].net > 0).mean()), f"{tr[m].net.mean():.3f}"] for _, m, lab in hb]
 E_ += [Spacer(1, 4), tbl(rows, [50 * mm, 22 * mm, 30 * mm, 28 * mm, 34 * mm])]
 dn = daily.net
 stress_rows = [["Şok penceresi", "Net PnL (USDT)", "En kötü gün (USDT)"]] + [[k, f"{dn[a:b].sum():.2f}", f"{dn[a:b].min():.2f}"] for k, (a, b) in STRESS.items()]
@@ -748,20 +732,7 @@ E_ += [Paragraph(f"Kaybeden {len(loss)} trade'in {len(gv05)}'i (%{100 * len(gv05
 if "worst" in figs:
     E_ += [img("worst")]
 
-E_ += [PageBreak(), Paragraph("8. Sinyal kalibrasyonu: güçlü tahmin daha iyi trade mi?", H1), img("calib")]
-rows = [["Giriş koşulu", "Grup", "Trade", "Kazanma", "Ort. net (USDT)", "Medyan net (USDT)", "Toplam net"]]
-labels = {"absf": "|F| çeyreklik (1 = en zayıf)", "n_aligned": "Aynı yönde uzman sayısı", "sig_bps": "Oynaklık üçlüğü (1 = en düşük)", "size_pct": "Büyüklük üçlüğü (1 = en küçük)"}
-for col, g in cal_tabs.items():
-    for gi, r in g.iterrows():
-        rows.append([labels[col], gi, int(r.n), pct(r.win), f"{r.avg:.3f}", f"{r.med:.3f}", f"{r.net:.1f}"])
-E_ += [tbl(rows, [54 * mm, 14 * mm, 16 * mm, 22 * mm, 28 * mm, 30 * mm, 24 * mm])]
-gq = cal_tabs["absf"]
-gs_ = cal_tabs["size_pct"]
-E_ += [Spacer(1, 3), Paragraph(f"Trade başına ortalama net PnL, |F| çeyreklerinde {gq.avg.iloc[0]:.2f} → {gq.avg.iloc[1]:.2f} → {gq.avg.iloc[2]:.2f} → {gq.avg.iloc[3]:.2f} USDT: tek yönlü bir artış yok, yalnızca en güçlü çeyrek belirgin yüksek. "
-                                f"Büyüklük üçlüklerinde {gs_.avg.iloc[0]:.2f} / {gs_.avg.iloc[1]:.2f} / {gs_.avg.iloc[2]:.2f} USDT: en küçük iki üçlük zararda, en büyük üçlük toplam net'in {100 * gs_.net.iloc[-1] / tr.net.sum():.0f}%'ini üretiyor "
-                                "(büyüklük = tahmin / oynaklık; yani yüksek inançlı, düşük oynaklıklı trade'ler kazandırıyor, küçük trade'ler maliyeti ve gürültüyü taşıyor). Küçük gruplarda gürültü yüksektir; kanıt değil.", SM)]
-wdt = tr.groupby("wd").agg(n=("net", "size"), net=("net", "sum"), win=("net", lambda v: (v > 0).mean()), bps=("bps", lambda v: v.clip(v.quantile(0.02), v.quantile(0.98)).mean()))
-E_ += [Paragraph("Giriş günü (haftanın günü)", H2), tbl([["Gün", "Trade", "Net PnL", "Kazanma", "Ort. bps"]] + [[["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"][i], int(r.n), f"{r.net:.1f}", pct(r.win), f"{r.bps:.0f}"] for i, r in wdt.iterrows()], [26 * mm, 22 * mm, 28 * mm, 26 * mm, 26 * mm])]
+E_ += [CondPageBreak(120 * mm), Paragraph("8. Sinyal kalibrasyonu: giriş koşulları ve güven aralıkları", H1), img("calib")] + F2["calib"]
 
 E_ += [PageBreak(), Paragraph("9. Sembol derin incelemesi", H1), img("sym_cum", 150 * mm), img("sym_expo", 150 * mm), img("sym_heat")]
 sc = []
@@ -769,26 +740,17 @@ for s_ in SYMS:
     t_ = tr[tr.sym == s_]
     cum = H_[s_].net.resample("1D").sum().cumsum()
     sdd = ((cum + CAP).cummax() - (cum + CAP)).max()
-    sc.append([s_.replace("USDT", ""), len(t_), f"{t_.net.sum():.1f}", f"{t_[t_.side == 'long'].net.sum():.1f}", f"{t_[t_.side == 'short'].net.sum():.1f}", pct((t_.net > 0).mean()), f"{t_.net.mean():.3f}", f"{t_.hours.median() / 24:.1f}", f"{t_.avg_notional.mean():.1f}", f"{sdd:.1f}"])
+    sc.append([s_.replace("USDT", ""), int(len(t_)), f"{t_.net.sum():.1f}", f"{t_[t_.side == 'long'].net.sum():.1f}", f"{t_[t_.side == 'short'].net.sum():.1f}", pct((t_.net > 0).mean()), f"{t_.net.mean():.3f}", dayfmt(t_.hours.median() / 24), f"{t_.avg_notional.mean():.1f}", f"{sdd:.1f}"])
 E_ += [tbl([["Sembol", "Trade", "Net", "Long net", "Short net", "Kazanma", "Ort. PnL", "Medyan gün", "Ort. notional", "Maks sembol DD (USDT)"]] + sc, [16 * mm, 14 * mm, 17 * mm, 19 * mm, 19 * mm, 18 * mm, 17 * mm, 20 * mm, 20 * mm, 26 * mm])]
 
-E_ += [PageBreak(), Paragraph("10. MAE/MFE zamanlaması ve karşı-olgusal çıkış kuralları", H1), img("timing")]
+E_ += [CondPageBreak(110 * mm), Paragraph("10. MAE/MFE zamanlaması", H1), img("timing")]
 q_ = lambda x: f"{x.quantile(0.25):.1f} / {x.median():.1f} / {x.quantile(0.75):.1f}"  # noqa: E731
 rows = [["Ölçü (25% / medyan / 75%)", "Kâr eden trade", "Zarar eden trade"],
         ["MFE (σ cinsinden)", q_(win.mfe_s), q_(loss.mfe_s)], ["MAE (σ cinsinden)", q_(win.mae_s), q_(loss.mae_s)],
         ["Zirvenin trade süresindeki yeri (0-1)", q_(win.peak_frac.dropna()), q_(loss.peak_frac.dropna())],
         ["Kârın ne kadarı realize edildi (çıkış / MFE)", q_(win.retained.dropna()), q_(loss.retained.dropna())]]
-E_ += [tbl(rows, [70 * mm, 50 * mm, 50 * mm]), Spacer(1, 5), img("cf")]
-rows = [["Kural", "Mesafe (σ)", "Stop tetiklenen trade", "Lehine (trade / USDT)", "Aleyhine (trade / USDT)", "Net değişim (USDT)", "Toplam brüt fiyat PnL"]] + [[r.rule, f"{r.k:g}", pct(r.hit), f"{r.helped} / {r.helped_usd:+.1f}", f"{r.hurt} / {r.hurt_usd:+.1f}", f"{r.delta:+.1f}", f"{r.cf_total:.1f}"] for r in cf.itertuples()]
-bestcf = cf.sort_values("delta", ascending=False).iloc[0]
-worstcf = cf.sort_values("delta").iloc[0]
-E_ += [tbl(rows, [36 * mm, 17 * mm, 26 * mm, 30 * mm, 30 * mm, 24 * mm, 25 * mm]), Spacer(1, 3),
-       Paragraph(f"<b>Okuma:</b> denenen {len(cf)} stop kuralının {int((cf.delta > 0).sum())}'i toplam brüt fiyat PnL'i artırdı. En az zararlı: {bestcf.rule} {bestcf.k:g}σ ({bestcf.delta:+.1f} USDT, tetiklenen trade'lerin %{100 * bestcf.hit:.0f}'i); "
-                 f"en zararlı: {worstcf.rule} {worstcf.k:g}σ ({worstcf.delta:+.1f} USDT). Dar stoplar (≤ 3σ) kârı büyük ölçüde keser: kazancı trend süren az sayıdaki büyük trade'ler taşıyor ve o trade'ler yol boyunca stop mesafesinden daha derin geri çekiliyor. "
-                 "Geniş 'felaket' stopu (≥ 6σ) maliyeti küçük tutuyor; tek başına bir kuyruk riski sigortası olarak değerlendirilebilir, ama bu yalnızca bir ölçümdür.", B),
-       Paragraph(f"Referans: saatlik gerçek pozisyon profilinden yeniden kurulan brüt fiyat PnL toplamı {base_total:.1f} USDT; hakemin brüt fiyat PnL'i {tr.price_pnl.sum():.1f} USDT (aradaki fark saatlik yeniden kurulumun yaklaşıklığıdır). "
-                 "<b>Bu bir ölçümdür, strateji testi değil:</b> stop, trade'in kendi saatlik yüksek/düşük yoluna uygulanır; stop seviyesinde dolum varsayılır (gap yok, iyimser); stop sonrası yeniden giriş yok; boyutlama ve portföy etkileşimi yeniden hesaplanmaz; "
-                 "aynı saatte hem stop hem yeni zirve olursa önce stop kontrol edilir (kötümser). Tümü görülmüş veride; bir kural önermek için yeterli değildir.", SM)]
+E_ += [tbl(rows, [70 * mm, 50 * mm, 50 * mm]), Spacer(1, 4),
+       Paragraph("Karşı-olgusal stop kuralları (eski sürüm, gap'siz ve yeniden girişsiz) artık Bölüm I.5 → 2.4'te: gap'e duyarlı dolum ve yeniden girişli sürümle yan yana.", SM)]
 
 import os  # noqa: E402
 
@@ -799,7 +761,7 @@ def dir_summary(d):
     m_ = json.loads((Path(d) / "meta.json").read_text())
     t_ = pd.read_csv(Path(d) / "trades.csv", parse_dates=["opened", "closed"])
     dd_ = pd.read_csv(Path(d) / "daily.csv", index_col=0, parse_dates=True)
-    sh, mdd = sharpe_of(dd_.net, m_["cap"])
+    sh, mdd = AM.sharpe_fixed(dd_.net, m_["cap"]), AM.max_dd_fixed(dd_.net, m_["cap"])  # birincil tanım: sabit sermaye
     w_, l_ = t_[t_.net > 0], t_[t_.net < 0]
     e_ = dd_.equity
     return dict(name=m_["preset"], net=float(dd_.net.sum()), cagr=float((e_.iloc[-1] / m_["cap"]) ** (365.25 / (dd_.index[-1] - dd_.index[0]).days) - 1), sharpe=sh, maxdd=mdd, n=len(t_), win=float((t_.net > 0).mean()),
@@ -807,14 +769,14 @@ def dir_summary(d):
                 recent=float(dd_.net[dd_.index >= "2025-01-01"].sum()), nmem=len(m_["names"]))
 
 
-EXP = [PageBreak(), Paragraph("Bölüm II. Uzman bazlı analiz: genel bakış", H1)]
+EXP = [CondPageBreak(80 * mm), Paragraph("Bölüm II. Uzman bazlı analiz: genel bakış", H1)]
 sh_all = tr[cc].abs().div(tr[cc].abs().sum(axis=1).replace(0, np.nan), axis=0).mean()
 drv = tr.groupby("driver").agg(n=("net", "size"), net=("net", "sum"), win=("net", lambda v: (v > 0).mean()))
 rows = [["Uzman", "Ağırlık", "Ağırlık payı", "Ort. |katkı| payı", "Sürücü olduğu trade", "Sürücü net PnL", "Sürücü kazanma"]]
 for n_, w_ in zip(NAMES, meta["weights"]):
     dr_ = drv.loc[n_] if n_ in drv.index else None
     rows.append([n_, f"{w_:.3g}", pct(abs(w_) / sum(abs(x) for x in meta["weights"])), pct(sh_all[f"c_{n_}"]), int(dr_.n) if dr_ is not None else 0, f"{dr_.net:.1f}" if dr_ is not None else "-", pct(dr_.win) if dr_ is not None else "-"])
-EXP += [Paragraph(f"Bileşim: {meta['preset']} ({len(NAMES)} uzman). 'Sürücü' = giriş gününde pozisyon yönünü en çok destekleyen uzman; 'katkı payı' = |ağırlık × tahmin|'in uzmanlar arasındaki payı (trade ortalaması). Atıf yaklaşıktır, etkileşim artığı ölçülmedi.", SM), tbl(rows, [32 * mm, 18 * mm, 24 * mm, 28 * mm, 30 * mm, 26 * mm, 26 * mm]), Spacer(1, 6)]
+EXP += [Paragraph(f"Bileşim: {meta['preset']} ({len(NAMES)} uzman). 'Sürücü' = giriş gününde pozisyon yönünü en çok destekleyen uzman; 'katkı payı' = |ağırlık × tahmin|'in uzmanlar arasındaki payı (trade ortalaması). Atıf yaklaşıktır; doğrusal atıf ve artığı Bölüm I.5 → 2.1'de.", SM), tbl(rows, [32 * mm, 18 * mm, 24 * mm, 28 * mm, 30 * mm, 26 * mm, 26 * mm]), Spacer(1, 6)]
 # tek başına uzman sonuçları (reports/edge_experts_data: ön kayıtlı aile testi, $10 000, tam K-kartı)
 solo = []
 for n_ in NAMES:
@@ -825,30 +787,14 @@ for n_ in NAMES:
 if solo:
     EXP += [Paragraph("Uzmanlar tek başına (reports/edge_experts.md, $10 000, 2020-04 → 2026-04, tam K1-K9 kartı)", H2),
            tbl([["Uzman", "Karar", "Getiri", "Sharpe", "Maks DD", "K1 p (brüt)", "DSR", "Kalan kartlar", "EV1 kor."]] + solo, [28 * mm, 18 * mm, 16 * mm, 16 * mm, 16 * mm, 20 * mm, 14 * mm, 34 * mm, 16 * mm]), Spacer(1, 6)]
-# leave-one-out marjinal katkı (SRC/loo/<uzman>/daily.json: bileşimden o uzman çıkarılıp hakemle yeniden koşuldu)
-loo_dir = SRC / "loo"
-LOO = {}
-if loo_dir.exists():
-    sh0, dd0 = sharpe_of(daily.net)
-    rows = [["Bileşimden çıkarılan", "Net (USDT)", "Δ net", "Sharpe", "Δ Sharpe", "Maks DD", "Δ DD (puan)"]]
-    for n_ in NAMES:
-        f_ = loo_dir / n_ / "daily.json"
-        if not f_.exists():
-            continue
-        j_ = json.loads(f_.read_text())
-        pn = pd.Series(j_["daily"])
-        pn.index = pd.to_datetime(pn.index, utc=True)
-        sh_, dd_ = sharpe_of(pn.sort_index())
-        rows.append([n_, f"{pn.sum():.1f}", f"{pn.sum() - daily.net.sum():+.1f}", f"{sh_:.2f}", f"{sh_ - sh0:+.2f}", pct(dd_), f"{100 * (dd_ - dd0):+.1f}"])
-        LOO[n_] = (float(pn.sum() - daily.net.sum()), sh_ - sh0, 100 * (dd_ - dd0))
-    rows.insert(1, ["(hiçbiri: tam bileşim)", f"{daily.net.sum():.1f}", "-", f"{sh0:.2f}", "-", pct(dd0), "-"])
-    EXP += [Paragraph("Marjinal katkı: her uzman bileşimden çıkarılıp yeniden koşuldu (leave-one-out; aynı hakem, aynı veri)", H2), tbl(rows, [46 * mm, 24 * mm, 20 * mm, 20 * mm, 20 * mm, 20 * mm, 24 * mm]),
-           Paragraph("Δ net/Sharpe pozitifse uzman çıkarılınca sonuç iyileşti (uzmanın katkısı negatif), negatifse kötüleşti. Ağırlık yeniden normalleştirilmez ama `combine` tahmin ölçeği (ortalama |F| = 0,5) otomatik uyum sağlar. Görülmüş veride, tek koşu.", SM), Spacer(1, 6)]
+# leave-one-out marjinal katkı: tablo ve doğru okuma Bölüm I.5 → 2.7'de (scripts/audit_fix_analysis.py::loo_table, sabit sermaye)
+LOO = {r["expert"]: (r["d_net"], r["d_sharpe"], 100 * r["d_maxdd"]) for r in AN["loo"]["rows"]}
+EXP += [Paragraph("Marjinal katkı (leave-one-out) tablosu ve yorumu Bölüm I.5 → 2.7'dedir; uzman sayfalarındaki Δ değerleri aynı kaynaktandır (sabit sermaye Sharpe).", SM), Spacer(1, 6)]
 # bileşimler arası karşılaştırma (komut satırında verilen ek veri dizinleri)
 cmp_dirs = [d for d in sys.argv[3:] if (Path(d) / "meta.json").exists() and Path(d).resolve() != SRC.resolve()]
 if cmp_dirs:
     ss_ = [dir_summary(SRC)] + [dir_summary(d) for d in cmp_dirs]
-    r1 = [["Bileşim", "Üye", "Net (USDT)", "CAGR", "Sharpe", "Maks DD", "2025+ net"]] + [[x["name"], x["nmem"], f"{x['net']:.1f}", pct(x["cagr"]), f"{x['sharpe']:.2f}", pct(x["maxdd"]), f"{x['recent']:.1f}"] for x in ss_]
+    r1 = [["Bileşim", "Üye", "Net (USDT)", "CAGR", "Sharpe (sabit serm.)", "Maks DD (başl. serm.)", "2025+ net"]] + [[x["name"], x["nmem"], f"{x['net']:.1f}", pct(x["cagr"]), f"{x['sharpe']:.2f}", pct(x["maxdd"]), f"{x['recent']:.1f}"] for x in ss_]
     r2 = [["Bileşim", "Trade", "Kazanma", "Payoff", "Profit factor", "Ort. kaldıraç", "Long net", "Short net"]] + [[x["name"], x["n"], pct(x["win"]), f"{x['payoff']:.1f}", f"{x['pf']:.2f}", f"{x['lev']:.2f}×", f"{x['longn']:.1f}", f"{x['shortn']:.1f}"] for x in ss_]
     EXP += [KeepTogether([Paragraph("Bileşim karşılaştırması (aynı hakem, $1 000)", H2), tbl(r1, [38 * mm, 14 * mm, 26 * mm, 22 * mm, 20 * mm, 24 * mm, 26 * mm]), Spacer(1, 4),
                          tbl(r2, [38 * mm, 18 * mm, 22 * mm, 18 * mm, 24 * mm, 24 * mm, 20 * mm, 20 * mm])])]
@@ -887,7 +833,7 @@ SOLO = {n_: solo_daily(n_) for n_ in NAMES}
 ens_cum = daily.net.cumsum() / CAP * 100
 # genel bakış grafikleri: 9 uzmanın tek başına kümülatif getirisi + korelasyonlar
 nr_ = int(np.ceil(len(NAMES) / 3))
-fig, axs = plt.subplots(nr_, 3, figsize=(9, 2.1 * nr_ + 0.4), sharex=True, squeeze=False)
+fig, axs = plt.subplots(nr_, 3, figsize=(9, 1.65 * nr_ + 0.4), sharex=True, squeeze=False)
 for a_, n_ in zip(axs.ravel(), NAMES):
     if SOLO[n_] is not None:
         c_ = SOLO[n_].cumsum() / 1e4 * 100
@@ -900,7 +846,7 @@ for a_ in axs.ravel()[len(NAMES):]:
 fig.suptitle("Uzmanlar tek başına: kümülatif getiri (% $10 000; ön kayıtlı aile testi, aynı zincir)", x=0.07, ha="left", fontsize=10, fontweight="bold")
 figs["x_solo"] = save(fig, "30_solo")
 solo_df = pd.DataFrame({n_: SOLO[n_] for n_ in NAMES if SOLO[n_] is not None})
-fig, ax = plt.subplots(1, 2 if fcs is not None else 1, figsize=(9.4, 3.9), squeeze=False)
+fig, ax = plt.subplots(1, 2 if fcs is not None else 1, figsize=(9.4, 3.5), squeeze=False)
 for a_, (dfc, ttl) in zip(ax[0], [(solo_df, "Günlük PnL korelasyonu (tek başına koşular)")] + ([(pd.DataFrame({n_: fcs[f"{n_}_mean"] for n_ in NAMES}), "Günlük ort. tahmin (F) korelasyonu")] if fcs is not None else [])):
     cm_ = dfc.corr()
     a_.imshow(cm_.values, cmap=DIV, vmin=-1, vmax=1)
@@ -914,7 +860,7 @@ for a_, (dfc, ttl) in zip(ax[0], [(solo_df, "Günlük PnL korelasyonu (tek baş�
     a_.grid(False)
     a_.set_title(ttl, fontsize=8.5)
 figs["x_corr"] = save(fig, "31_corr")
-EXP += [img("x_solo"), Spacer(1, 4), img("x_corr", 170 * mm)]
+EXP += [img("x_solo", 168 * mm), Spacer(1, 4), img("x_corr", 150 * mm)]
 cmp_ = []
 for n_ in NAMES:
     if SOLO[n_] is not None:
@@ -939,7 +885,7 @@ for n_, w_ in zip(NAMES, meta["weights"]):
     wn_, ls_ = dt_[dt_.net > 0], dt_[dt_.net < 0]
     rowsB = [["Bu bileşimde ($1 000)", "Değer", "Ölçü", "Değer"],
              ["Sürücü olduğu trade / net PnL", f"{len(dt_)} / {dt_.net.sum():.1f} USDT", "Sürücü kazanma oranı", pct((dt_.net > 0).mean()) if len(dt_) else "-"],
-             ["Ort. kazanç / ort. kayıp (sürücü trade)", f"{wn_.net.mean():.2f} / {ls_.net.mean():.2f}" if len(wn_) and len(ls_) else "-", "Medyan tutma (gün) / medyan MFE-MAE (σ)", f"{dt_.hours.median() / 24:.1f} / {dt_.mfe_s.median():.1f} - {dt_.mae_s.median():.1f}" if len(dt_) else "-"],
+             ["Ort. kazanç / ort. kayıp (sürücü trade)", f"{wn_.net.mean():.2f} / {ls_.net.mean():.2f}" if len(wn_) and len(ls_) else "-", "Medyan tutma (gün) / medyan MFE-MAE (σ)", f"{dayfmt(dt_.hours.median() / 24)} / {dt_.mfe_s.median():.1f} / {dt_.mae_s.median():.1f}" if len(dt_) else "-"],
              ["Ort. |katkı| payı", pct(sh_all[f"c_{n_}"]), "Ort. |F| / pozitif F payı (aktif semboller)", f"{fcs[f'{n_}_abs'].mean():.2f} / {pct(fcs[f'{n_}_pos'].mean())}" if fcs is not None else "-"],
              ["Bileşimden çıkarılınca Δ net / Δ Sharpe", f"{lo_[0]:+.1f} USDT / {lo_[1]:+.2f}" if lo_ else "ölçülmedi", "Çıkarılınca Δ maks DD (puan)", f"{lo_[2]:+.1f}" if lo_ else "ölçülmedi"]]
     EXP += [tbl(rowsB, [58 * mm, 40 * mm, 44 * mm, 36 * mm]), Spacer(1, 5)]
@@ -965,6 +911,9 @@ for n_, w_ in zip(NAMES, meta["weights"]):
         ax[0].step(c_.index, c_, color=BLUE, lw=1.2, where="post")
         ax[0].axhline(0, color=AXIS, lw=0.7)
         ax[0].set_title("Sürücü olduğu trade'ler: kümülatif net", fontsize=8)
+        ax[0].xaxis.set_major_locator(mdates.YearLocator(2))  # eksen etiketi çakışması giderildi
+        ax[0].xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+        ax[0].tick_params(labelsize=6.5)
         for a_, key, ttl in ((ax[1], "regime", "Rejim"), (ax[2], "side", "Yön"), (ax[3], dt_.closed.dt.year, "Yıl")):
             g_ = dt_.groupby(key).net.sum() if isinstance(key, str) else dt_.groupby(key).net.sum()
             a_.bar([str(x) for x in g_.index], g_.values, color=[BLUE if v >= 0 else RED for v in g_.values], width=0.6)
@@ -972,6 +921,10 @@ for n_, w_ in zip(NAMES, meta["weights"]):
             a_.grid(axis="x", visible=False)
             a_.set_title(ttl + " (net USDT)", fontsize=8)
             a_.tick_params(labelsize=6.5)
+            if ttl == "Yıl":
+                a_.set_xticks(range(len(g_.index)))
+                a_.set_xticklabels([str(x)[-2:] for x in g_.index], fontsize=6.5)  # 2020 → 20: çakışmayı önler
+        fig.subplots_adjust(wspace=0.45)
         figs[f"x_{n_}_b"] = save(fig, f"33_{n_}_b")
         EXP += [img(f"x_{n_}_b")]
     else:
@@ -987,9 +940,9 @@ if naut is not None:
            Paragraph("Nautilus'un kendi PnL'i funding içermez (funding hakemde Nautilus dışında muhasebeleşir), bu yüzden kazanma/beklenti karşılaştırması fiyat−komisyon tabanında yapıldı. Sharpe/Sortino/DD/oynaklık aynı günlük getiri serisi üzerinde iki bağımsız uygulamayla hesaplandı.", SM)]
 else:
     E_ += [Paragraph("Nautilus çapraz kontrolü bu ortamda koşulamadı (nautilus_trader yok).", B)]
-E_ += [Spacer(1, 4), tbl([["Kontrol", "Sonuç"], ["Saatlik PnL bileşimi vs hakem net'i", f"fark {meta['recon_hourly_vs_referee']:.2e} USDT"], ["Pozisyon dönemleri net toplamı vs hakem net'i", f"fark {tr.net.sum() - S['net_pnl']:.2e} USDT"],
+E_ += [Spacer(1, 4), tbl([["Kontrol", "Sonuç"], ["Saatlik PnL bileşimi vs hakem net'i (tek hesap yolu)", f"fark {AN['recon']['net_diff']:.2e} USDT"], ["Pozisyon dönemleri net toplamı vs hakem net'i (aynı yol)", f"fark {tr.net.sum() - S['net_pnl']:.2e} USDT"],
                       ["Reddedilen emir / likidasyon / eksik funding", f"{meta['rejected']} / {int(S['n_liq'])} / {int(S['funding_missed'])}"],
-                      ["Nedensellik denetimi", ("EV1 için evaluate_book'ta geçti (ledger/ensemble); bu koşu run_book ile (denetimsiz) tekrarlandı" if meta["preset"] == "ev1" else "Bu bileşim için evaluate_book denetimi bu raporda koşulmadı (run_book). Uzman bazında nedensellik/gelecek-bozma testleri tests/test_edge_experts.py'de; bileşim düzeyinde audit.check_causal_book çalıştırılmadı (doğrulanmadı).")]], [70 * mm, 100 * mm])]
+                      ["Nedensellik denetimi", f"ev1_plus_new kitabı için audit.check_causal_book koşuldu (kötü kesim {len(AN['causal']['check_causal_book_bad'])}) + {AN['causal']['prefix']['real']['n_cuts']} kesim gününde önek-değişmezlik (fark 0); ayrıntı Bölüm I.1. evaluate_book (defter) bu rapor için koşulmadı."]], [70 * mm, 100 * mm])]
 E_ += [PageBreak(), Paragraph("Ek A. Kayıp nedeni kuralları (kural tabanlı, öncelik sırasıyla)", H1),
        Paragraph("Yalnızca net &lt; 0 olan trade'ler sınıflanır; ilk uyan kural geçerlidir. (1) <b>Maliyet / funding yedi</b>: brüt fiyat PnL ≥ 0 ama komisyon+funding ile net &lt; 0. "
                  "(2) <b>Şok penceresi</b>: trade LUNA (2022-05-05→05-16), FTX (2022-11-06→11-15) ya da 2021-05-17→05-24 ile örtüşüyor. (3) <b>Büyük kârı geri verdi</b>: MFE ≥ 2σ. (4) <b>Orta kârı geri verdi</b>: 0,5σ ≤ MFE &lt; 2σ. "
@@ -997,11 +950,17 @@ E_ += [PageBreak(), Paragraph("Ek A. Kayıp nedeni kuralları (kural tabanlı, �
                  "eşikler (0,5σ, 2σ, 72 saat) bu rapor için bir kez seçildi, ayarlanmadı; farklı eşikler dağılımı değiştirir. İlk sürümde sabit 50 bps eşiği kullanılmıştı ve zararın %91'i tek kategoriye düşüyordu (medyan 7 gün tutulan bir "
                  "trend sisteminde her trade 50 bps'i aşar), bu yüzden oynaklığa göre ölçeklendi. Etiketler nedensellik iddiası değildir.", B),
        Paragraph("Ek B. Dosyalar ve yeniden üretim", H2),
-       Paragraph("Veri: <font name='DV'>modal run modal_app.py --cmd \"python scripts/trade_audit.py --cap 1000 --out /data/audit/ev1_1000\"</font>; Rapor: <font name='DV'>python scripts/trade_audit_report.py &lt;indirilen dizin&gt; reports/trade_audit.pdf</font>. "
-                 "Ham tablolar: trades.csv, daily.csv, fills.csv, meta.json (reports/trade_audit_data/).", B)]
+       Paragraph("Veri (Modal): <font name='DV'>modal run modal_app.py --cmd \"python scripts/trade_audit.py --preset ev1_plus_new --cap 1000 --out /data/audit_fix/base\"</font> (taban); düzeltme aşamaları: <font name='DV'>python scripts/audit_fix.py --stage causal|mexc|trials|null|bench|cf|surv|universe --out /data/audit_fix/&lt;ad&gt;</font>; "
+                 "çıktılar <font name='DV'>modal volume get kepler-data audit_fix/&lt;ad&gt; reports/trade_audit_data/fix/</font> ile indirilir. Analiz (yerel): <font name='DV'>python scripts/audit_fix_analysis.py</font> → reports/trade_audit_data/fix/analysis/analysis.json. "
+                 "Rapor: <font name='DV'>python scripts/trade_audit_report.py reports/trade_audit_data/ev1_plus_new reports/trade_audit.pdf</font>. Ham tablolar: trades.csv, daily.csv, fills.csv, meta.json, panels.parquet (reports/trade_audit_data/); hourly.parquet (16 MB) repoda yok, Modal komutuyla yeniden üretilir.", B)]
 
 
-E_[MARK:MARK] = EXP
+PART1 = [PageBreak(), Paragraph("Bölüm I. Ölçüm düzeltmeleri ve istatistiksel çerçeve", H1),
+         Paragraph("Bu bölüm önceki raporun iki bağımsız incelemesinde bulunan sorunların düzeltmelerini içerir. <b>Amaç ölçümü düzeltmektir, stratejiyi iyileştirmek değil</b>: hiçbir parametre/eşik/ağırlık aranmadı; yeni koşular (MEXC yuvarlama, null, benchmark, karşı-olgusal, evren) "
+                   "hakemle, deftersiz (N'ye girmeyen ölçüm koşuları) yapıldı ve tümü görülmüş veride (örneklem içi / post-hoc). Koşu öncesi sabitlenen ölçütler reports/fix_progress.md'de. Rakamların kaynağı reports/trade_audit_data/fix/ (komutlar Ek B).", B)]
+PART1 += F1["causal"] + F1["before_after"] + F1["mexc"] + F1["dsr"] + F1["null"] + F1["boot"] + F1["wf"]
+PART1 += [Paragraph("I.5 Analiz düzeltmeleri", H1)] + F2["attr"] + F2["vol"] + F2["size"] + F2["hold"] + F2["stop"] + F2["bench"] + F2["short"] + F2["loo"] + F2["surv"]
+E_[MARK:MARK] = PART1 + EXP
 
 
 def footer(c, d):

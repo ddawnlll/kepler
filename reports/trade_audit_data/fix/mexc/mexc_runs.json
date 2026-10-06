@@ -1,0 +1,461 @@
+{
+ "runs": [
+  {
+   "cap": 1000.0,
+   "mode": "unrounded",
+   "sharpe_fixed": 1.8618035738263312,
+   "hourly_net_sum": 790.5356978921418,
+   "replay_check": null,
+   "net_pnl": 790.5161766234382,
+   "gross_pnl": 838.11911227834,
+   "fee": 31.458580134509997,
+   "slippage": 6.291716026902,
+   "funding": -9.775680753409706,
+   "liq_fee": 0.0,
+   "exit_cost": 0.07695874007999999,
+   "n_fills": 5041.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 218.236379,
+   "engine_commission": 37.75029623,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0
+  },
+  {
+   "cap": 1000.0,
+   "mode": "mexc",
+   "sharpe_fixed": 2.0048633670074585,
+   "hourly_net_sum": 786.1403511326499,
+   "replay_check": {
+    "BTCUSDT": [
+     468,
+     468,
+     0.0
+    ],
+    "ETHUSDT": [
+     251,
+     251,
+     0.0
+    ],
+    "SOLUSDT": [
+     407,
+     407,
+     0.0
+    ],
+    "XRPUSDT": [
+     588,
+     588,
+     0.0
+    ],
+    "BNBUSDT": [
+     505,
+     505,
+     0.0
+    ],
+    "DOGEUSDT": [
+     314,
+     314,
+     0.0
+    ],
+    "ADAUSDT": [
+     625,
+     625,
+     0.0
+    ],
+    "LINKUSDT": [
+     683,
+     683,
+     0.0
+    ],
+    "AVAXUSDT": [
+     555,
+     555,
+     0.0
+    ]
+   },
+   "net_pnl": 786.1267621025087,
+   "gross_pnl": 825.0394398884007,
+   "fee": 28.209090224999997,
+   "slippage": 5.641818045,
+   "funding": -4.993647165892046,
+   "liq_fee": 0.0,
+   "exit_cost": 0.06812235,
+   "n_fills": 4396.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 185.0,
+   "engine_commission": 33.850908270000005,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0
+  },
+  {
+   "cap": 2500.0,
+   "mode": "unrounded",
+   "sharpe_fixed": 1.8910397519316953,
+   "hourly_net_sum": 2028.2897391511929,
+   "replay_check": null,
+   "net_pnl": 2028.240996707772,
+   "gross_pnl": 2148.7717168310805,
+   "fee": 79.84690350721499,
+   "slippage": 15.969380701443,
+   "funding": -24.52211495425067,
+   "liq_fee": 0.0,
+   "exit_cost": 0.1923209604,
+   "n_fills": 5267.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 545.583374,
+   "engine_commission": 95.816284,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0
+  },
+  {
+   "cap": 2500.0,
+   "mode": "mexc",
+   "sharpe_fixed": 1.9418253827810936,
+   "hourly_net_sum": 1997.6102876476566,
+   "replay_check": {
+    "BTCUSDT": [
+     471,
+     471,
+     0.0
+    ],
+    "ETHUSDT": [
+     489,
+     489,
+     0.0
+    ],
+    "SOLUSDT": [
+     580,
+     580,
+     0.0
+    ],
+    "XRPUSDT": [
+     589,
+     589,
+     0.0
+    ],
+    "BNBUSDT": [
+     521,
+     521,
+     0.0
+    ],
+    "DOGEUSDT": [
+     508,
+     508,
+     0.0
+    ],
+    "ADAUSDT": [
+     628,
+     628,
+     0.0
+    ],
+    "LINKUSDT": [
+     684,
+     684,
+     0.0
+    ],
+    "AVAXUSDT": [
+     578,
+     578,
+     0.0
+    ]
+   },
+   "net_pnl": 1997.566790872077,
+   "gross_pnl": 2108.9210599325293,
+   "fee": 76.47985990499998,
+   "slippage": 15.295971980999997,
+   "funding": -19.399653164451948,
+   "liq_fee": 0.0,
+   "exit_cost": 0.17878401,
+   "n_fills": 5048.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 466.0,
+   "engine_commission": 91.77583196,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0
+  },
+  {
+   "cap": 5000.0,
+   "mode": "unrounded",
+   "sharpe_fixed": 1.8895755744794251,
+   "hourly_net_sum": 4057.0830661727455,
+   "replay_check": null,
+   "net_pnl": 4056.9855270923854,
+   "gross_pnl": 4298.621844188783,
+   "fee": 159.87255710296003,
+   "slippage": 31.974511420592002,
+   "funding": -49.4044226743464,
+   "liq_fee": 0.0,
+   "exit_cost": 0.3848258985,
+   "n_fills": 5290.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 1091.077849,
+   "engine_commission": 191.84706874,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0
+  },
+  {
+   "cap": 5000.0,
+   "mode": "mexc",
+   "sharpe_fixed": 1.9277925533533933,
+   "hourly_net_sum": 4059.912327290883,
+   "replay_check": {
+    "BTCUSDT": [
+     472,
+     472,
+     0.0
+    ],
+    "ETHUSDT": [
+     585,
+     585,
+     0.0
+    ],
+    "SOLUSDT": [
+     620,
+     620,
+     0.0
+    ],
+    "XRPUSDT": [
+     589,
+     589,
+     0.0
+    ],
+    "BNBUSDT": [
+     522,
+     522,
+     0.0
+    ],
+    "DOGEUSDT": [
+     560,
+     560,
+     0.0
+    ],
+    "ADAUSDT": [
+     629,
+     629,
+     0.0
+    ],
+    "LINKUSDT": [
+     684,
+     684,
+     0.0
+    ],
+    "AVAXUSDT": [
+     583,
+     583,
+     0.0
+    ]
+   },
+   "net_pnl": 4059.816837135039,
+   "gross_pnl": 4291.880640144103,
+   "fee": 156.423996055,
+   "slippage": 31.284799211,
+   "funding": -43.99213923306388,
+   "liq_fee": 0.0,
+   "exit_cost": 0.36286851,
+   "n_fills": 5244.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 936.0,
+   "engine_commission": 187.70879517,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0
+  },
+  {
+   "cap": 10000.0,
+   "mode": "unrounded",
+   "sharpe_fixed": 1.888410665059259,
+   "hourly_net_sum": 8110.7591410021205,
+   "replay_check": null,
+   "net_pnl": 8110.563928496837,
+   "gross_pnl": 8595.087719061545,
+   "fee": 319.78694895875,
+   "slippage": 63.95738979175,
+   "funding": -100.00986441340763,
+   "liq_fee": 0.0,
+   "exit_cost": 0.7695874008,
+   "n_fills": 5295.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 2182.36379,
+   "engine_commission": 383.74433884,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0
+  },
+  {
+   "cap": 10000.0,
+   "mode": "mexc",
+   "sharpe_fixed": 1.90082332007298,
+   "hourly_net_sum": 8074.899820163648,
+   "replay_check": {
+    "BTCUSDT": [
+     472,
+     472,
+     0.0
+    ],
+    "ETHUSDT": [
+     605,
+     605,
+     0.0
+    ],
+    "SOLUSDT": [
+     623,
+     623,
+     0.0
+    ],
+    "XRPUSDT": [
+     589,
+     589,
+     0.0
+    ],
+    "BNBUSDT": [
+     522,
+     522,
+     0.0
+    ],
+    "DOGEUSDT": [
+     579,
+     579,
+     0.0
+    ],
+    "ADAUSDT": [
+     629,
+     629,
+     0.0
+    ],
+    "LINKUSDT": [
+     684,
+     684,
+     0.0
+    ],
+    "AVAXUSDT": [
+     584,
+     584,
+     0.0
+    ]
+   },
+   "net_pnl": 8074.707885998102,
+   "gross_pnl": 8549.612389985981,
+   "fee": 316.402037165,
+   "slippage": 63.280407433,
+   "funding": -94.47763200988092,
+   "liq_fee": 0.0,
+   "exit_cost": 0.74442738,
+   "n_fills": 5287.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 1875.0,
+   "engine_commission": 379.6824446,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0
+  },
+  {
+   "cap": 25000.0,
+   "mode": "unrounded",
+   "sharpe_fixed": 1.8890719072069835,
+   "hourly_net_sum": 20280.029255365745,
+   "replay_check": null,
+   "net_pnl": 20279.541830961556,
+   "gross_pnl": 21490.414968927824,
+   "fee": 799.265291053,
+   "slippage": 159.85305821060004,
+   "funding": -249.83157909866534,
+   "liq_fee": 0.0,
+   "exit_cost": 1.923209604,
+   "n_fills": 5296.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 5455.83374,
+   "engine_commission": 959.11834929,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0
+  },
+  {
+   "cap": 25000.0,
+   "mode": "mexc",
+   "sharpe_fixed": 1.893091643900318,
+   "hourly_net_sum": 20234.096491618184,
+   "replay_check": {
+    "BTCUSDT": [
+     472,
+     472,
+     0.0
+    ],
+    "ETHUSDT": [
+     605,
+     605,
+     0.0
+    ],
+    "SOLUSDT": [
+     623,
+     623,
+     0.0
+    ],
+    "XRPUSDT": [
+     589,
+     589,
+     0.0
+    ],
+    "BNBUSDT": [
+     522,
+     522,
+     0.0
+    ],
+    "DOGEUSDT": [
+     587,
+     587,
+     0.0
+    ],
+    "ADAUSDT": [
+     629,
+     629,
+     0.0
+    ],
+    "LINKUSDT": [
+     684,
+     684,
+     0.0
+    ],
+    "AVAXUSDT": [
+     585,
+     585,
+     0.0
+    ]
+   },
+   "net_pnl": 20233.616676958314,
+   "gross_pnl": 21435.66849005867,
+   "fee": 796.5262017399999,
+   "slippage": 159.30524034799998,
+   "funding": -244.30763296235784,
+   "liq_fee": 0.0,
+   "exit_cost": 1.9127380499999997,
+   "n_fills": 5296.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 4700.0,
+   "engine_commission": 955.8314421099999,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0
+  }
+ ],
+ "rules_file": "mexc_rules.json",
+ "window": [
+  "2020-04-01",
+  "2026-04-01"
+ ],
+ "preset": "ev1_plus_new",
+ "seconds": 145.2308247089386
+}

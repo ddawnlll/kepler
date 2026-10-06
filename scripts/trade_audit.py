@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import audit_fix as AF  # noqa: E402  (panels, size_parts)
 import ensemble as E  # noqa: E402  (load, spec, utc, data_of, D, EXT, MAIN, STRESS)
 
 from kepler import ensemble as en  # noqa: E402
@@ -35,15 +36,24 @@ def components(kl: pd.DataFrame, mark, funding, fl: pd.DataFrame, sp) -> pd.Data
     if funding is not None and len(funding):
         rate = funding.last_funding_rate.copy()
         rate.index = rate.index.round("1min")
-        mk = (mark.close.reindex(kl.index) if mark is not None else kl.close).fillna(kl.close)  # report.hourly_pnl yalnızca eksik anahtarda düşer, NaN değerde düşmez: hakem ikisinde de düşer
+        mcl = mark.close if mark is not None else kl.close  # hakemle aynı kural: T'de biten barın MARK kapanışı; yoksa/NaN ise kline kapanışı; ikisi de yoksa atla
+        lo_t, hi_t = kl.index[0] + pd.Timedelta("1h"), kl.index[-1] + pd.Timedelta("1h")
         for T, r in rate.items():
+            if not lo_t <= T <= hi_t:
+                continue
             b = T - pd.Timedelta("1h")
-            if b in pos.index:
-                fund[b] += -pos[b] * mk[b] * r
+            j = pos.index.searchsorted(b)  # T-1sa barı kline'da yoksa (veri boşluğu) hakem pozisyonu bir sonraki barın öncesinden alır (= son mevcut barın sonu) ve sonraki mevcut bara yazar
+            if j >= len(pos):
+                continue
+            c = mcl.get(b, np.nan)
+            c = kl.close.get(b, np.nan) if pd.isna(c) and mark is not None else c
+            if pd.isna(c):
+                continue
+            fund.iloc[j] += -(pos.iloc[j] if pos.index[j] == b else pos.iloc[j - 1]) * c * r
     ex = pd.Series(0.0, index=kl.index)
     ex.iloc[-1] = abs(pos.iloc[-1]) * kl.close.iloc[-1] * (sp.fee_rt_bps + sp.slip_rt_bps) / 2 / 1e4
     net = base + fund
-    return pd.DataFrame(dict(pos=pos, net=net, funding=fund, commission=comm, exit=ex, price=base + comm + ex, close=kl.close, high=kl.high, low=kl.low))
+    return pd.DataFrame(dict(pos=pos, net=net, funding=fund, commission=comm, exit=ex, price=base + comm + ex, open=kl.open, close=kl.close, high=kl.high, low=kl.low))
 
 
 def episodes(sym: str, fl: pd.DataFrame, h: pd.DataFrame, eq: pd.Series) -> list[dict]:
@@ -115,6 +125,23 @@ def episodes(sym: str, fl: pd.DataFrame, h: pd.DataFrame, eq: pd.Series) -> list
     return rows
 
 
+def reconcile(res: dict, comp: dict, fills: pd.DataFrame, win: dict, funding_gap: int) -> dict:
+    """TEK mutabakat yolu: saatlik bileşenlerin (components) toplamı ile hakem arasındaki fark, kalem kalem. Raporda her yerde bu sözlük kullanılır (net_diff = net_h - net_ref).
+    price_cash = fills'ten nakit akışı kimliği (-Σ işaretli_qty x px + son poz x son kapanış): Nautilus muhasebesinden bağımsız. price_ref = hakem brüt (gross_pnl) = net + fee + slip + çıkış - funding + liq_fee."""
+    s = res["summary"]
+    price_cash = 0.0
+    for sym, c in comp.items():
+        f = fills[fills.sym == sym]
+        price_cash += float(-(np.where(f.side == "BUY", f.qty, -f.qty) * f.px).sum() + c.pos.iloc[-1] * win[sym]["kl"].close.iloc[-1])
+    h = dict(price=float(sum(c.price.sum() for c in comp.values())), commission=float(sum(c.commission.sum() for c in comp.values())), funding=float(sum(c.funding.sum() for c in comp.values())),
+             exit=float(sum(c.exit.sum() for c in comp.values())))
+    ref = dict(price=float(s["gross_pnl"]), commission=float(s["fee"] + s["slippage"] + s["liq_fee"]), funding=float(s["funding"]), exit=float(s["exit_cost"]))
+    net_h, net_ref = h["price"] - h["commission"] + h["funding"] - h["exit"], float(s["net_pnl"])
+    return dict(hourly=h, referee=ref, price_cash=price_cash, engine_commission=float(fills.commission.sum()), net_h=net_h, net_ref=net_ref, net_diff=net_h - net_ref,
+                item_diff=dict(price_vs_cash=h["price"] - price_cash, price_cash_vs_ref=price_cash - ref["price"], commission=h["commission"] - ref["commission"],
+                               funding=h["funding"] - ref["funding"], exit=h["exit"] - ref["exit"]), funding_events_without_bar=funding_gap)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
@@ -135,7 +162,12 @@ def main():
     comp = {s: components(win[s]["kl"], win[s].get("mark"), win[s].get("funding"), fills[fills.sym == s], sp) for s in win}
     net_h = pd.concat([c.net for c in comp.values()], axis=1).fillna(0.0).sum(axis=1).sort_index()
     eq_h = a.cap + net_h.cumsum()
-    recon = float(net_h.sum() - res["summary"]["net_pnl"])
+    gap = 0  # funding olayı olup T-1sa barı kline'da olmayan sayısı (hakem sonraki bardan öder; saatlik yol atlar)
+    for s_, d_ in win.items():
+        fi = d_["funding"].index.round("1min") if d_.get("funding") is not None else []
+        gap += int(sum(1 for T in fi if (T - pd.Timedelta("1h")) not in d_["kl"].index and d_["kl"].index[0] < T <= d_["kl"].index[-1] + pd.Timedelta("1h")))
+    rec = reconcile(res, comp, fills, win, gap)
+    recon = rec["net_diff"]
     names, w = en.composition(p)
     close_d, _ = en.panel(kls)
     st = en.market_state(close_d, kls, p)
@@ -163,9 +195,10 @@ def main():
         tr[f"c_{n}"] = [sg * wt * (es[n].at[d, s] if d in es[n].index and pd.notna(es[n].at[d, s]) else 0.0) for sg, d, s in zip(sd, day, tr.sym)]  # yön-hizalı katkı (+ = bu uzman pozisyonu destekledi)
     tr.to_csv(out_dir / "trades.csv", index=False)
     fills.to_csv(out_dir / "fills.csv", index=False)
-    hourly = pd.concat({s: c[["pos", "close", "high", "low", "net", "funding", "commission", "exit", "price"]] for s, c in comp.items()}, axis=1)
+    hourly = pd.concat({s: c[["pos", "open", "close", "high", "low", "net", "funding", "commission", "exit", "price"]] for s, c in comp.items()}, axis=1)
     hourly.columns = [f"{s}.{k}" for s, k in hourly.columns]
-    hourly.to_csv(out_dir / "hourly.csv")
+    hourly.to_parquet(out_dir / "hourly.parquet", compression="zstd")
+    AF.write_panels(AF.panels(kls, p, a.cap), out_dir / "panels.parquet")
     gross_h = sum((c.pos.abs() * c.close) for c in comp.values())
     net_exp_h = sum((c.pos * c.close) for c in comp.values())
     d = pd.DataFrame(dict(equity=eq_h.resample("1D").last(), net=net_h.resample("1D").sum(), gross_lev_mean=(gross_h / eq_h).resample("1D").mean(), gross_lev_max=(gross_h / eq_h).resample("1D").max(),
@@ -175,7 +208,7 @@ def main():
     d.to_csv(out_dir / "daily.csv")
     pd.DataFrame(dict(regime=reg)).to_csv(out_dir / "regimes.csv")
     res["positions"].to_csv(out_dir / "nautilus_positions.csv", index=False)
-    meta = dict(cap=a.cap, preset=a.preset, names=names, weights=w, window=window, summary=res["summary"], recon_hourly_vs_referee=recon, n_episodes=len(tr), rejected=len(res["rejected"]), stress=E.STRESS)
+    meta = dict(cap=a.cap, preset=a.preset, names=names, weights=w, window=window, summary=res["summary"], recon_hourly_vs_referee=recon, recon=rec, n_episodes=len(tr), rejected=len(res["rejected"]), stress=E.STRESS)
     (out_dir / "meta.json").write_text(json.dumps(meta, default=str, indent=1))
     print("tamam:", len(tr), "dönem,", len(fills), "dolum; mutabakat farkı", recon, "; net", res["summary"]["net_pnl"], "; dönemler toplamı", float(tr.net.sum()), flush=True)
 

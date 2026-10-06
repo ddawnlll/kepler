@@ -1,0 +1,1444 @@
+{
+ "summary": {
+  "repo_rows": 4119,
+  "repo_files": 46,
+  "volume_rows": 5445,
+  "volume_files": 84,
+  "volume_rows_identical_to_repo": 4118,
+  "volume_only_rows": 1327,
+  "volume_only_nonsmoke_rows": 656,
+  "volume_only_smoke_rows": 671
+ },
+ "files": [
+  {
+   "loc": "repo",
+   "path": "backtest_completion/ledger_misc.jsonl",
+   "n": 3,
+   "sha": "aed2068ea168a24b8b7e97ba12710285aaa1bfc7fde118f1c4a3caaf305de4b9",
+   "sources": {
+    "referee": 3,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "backtest_completion/ledger_nested_donchian.jsonl",
+   "n": 270,
+   "sha": "08a90ffcc1d966ea9bf7c42c710a49259dcbc4f5f1823a7a05e781cbc81fb3f9",
+   "sources": {
+    "referee": 270,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "backtest_completion/ledger_nested_ema.jsonl",
+   "n": 216,
+   "sha": "cbfa6af3e3a898ed58e3199f5ec0465a62d8869d33438054f91fe161e27ed27e",
+   "sources": {
+    "referee": 216,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "backtest_completion/ledger_nested_tsmom.jsonl",
+   "n": 189,
+   "sha": "cf631afddad379d4305254a8121f5244df14d85eca3cd56d6a8e3eb9f7907aa7",
+   "sources": {
+    "referee": 189,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "backtest_completion/ledger_nested_xs_carry.jsonl",
+   "n": 27,
+   "sha": "f178190e52f343dc7796127fa37f8a177f91a13b10691c23f04193ba6e14ba56",
+   "sources": {
+    "referee": 27,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "backtest_completion/ledger_nested_xs_mom.jsonl",
+   "n": 54,
+   "sha": "3a771602edcc5ee139f6ec064567bffd1581a923097337c9523da59227396ec2",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "backtest_completion/ledger_nested_xs_rev.jsonl",
+   "n": 36,
+   "sha": "aba62f500a79b74b6d12a5ffa5e565c1ba7449ff17df3cccec00adea512ec9c5",
+   "sources": {
+    "referee": 36,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "backtest_completion/ledger_risk.jsonl",
+   "n": 6,
+   "sha": "5198ff95a33e0a12cb23d1537c9f803eb142c647b6572447d7b1a7b1c16cff24",
+   "sources": {
+    "referee": 6,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "backtest_completion/ledger_scaled.jsonl",
+   "n": 4,
+   "sha": "ce30b92d96d7673db3e2129f5a3c2c280e85ce02b2da45c57d4cf951c90a65a6",
+   "sources": {
+    "referee": 4,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "ensemble/ledger_ev1.jsonl",
+   "n": 1,
+   "sha": "3d51ba395b20f4313111d7ea296cd538326a3d305fce464088e51bde808ecd43",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "ensemble_decay/ledger_ev1_w2.jsonl",
+   "n": 1,
+   "sha": "49a6f30f71ca94178b68a91ec3ca7e56322c3ca8b357e002848b4e280c4104ee",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "full_systems/ledger_attempt1.jsonl",
+   "n": 10,
+   "sha": "1d754bce0a407e6547120f6abf748e018c18794f3a8bf973b3384375d1a2c094",
+   "sources": {
+    "referee": 10,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "full_systems/ledger_run2.jsonl",
+   "n": 10,
+   "sha": "3887f23ce6cc9122976935b671edbdcbe4fb89a010cb1db38cdec2eb7d483034",
+   "sources": {
+    "referee": 10,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "g1_ledger.jsonl",
+   "n": 112,
+   "sha": "f6c87ac14ed0897d95be673c02064702fcd3747f6a5ead795aaad35398b4af14",
+   "sources": {
+    "referee": 32,
+    "screen": 80
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "g2/ledger_carry_funding.jsonl",
+   "n": 117,
+   "sha": "af83fe645e6ceb8fadd150a0e152e621d8dc9ef56e0f55450443947076c3225e",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "g2/ledger_donchian_trend.jsonl",
+   "n": 117,
+   "sha": "24534a211c499c2d5226a5f8cd1c616e8a395495e339573bca8648987effddab",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "g2/ledger_dual_mom_5.jsonl",
+   "n": 65,
+   "sha": "6f2ecd2b7bb4b3dd6563daef0d73fd38ec8a6f81fa17a3843adb2eb1cb0d9f9e",
+   "sources": {
+    "referee": 65,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "g2/ledger_dual_mom_9.jsonl",
+   "n": 117,
+   "sha": "e04f286a0d429fe4773ab541cfc9ce225542852aa0e9a424e928f3160f81473b",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "g2/ledger_tsmom.jsonl",
+   "n": 117,
+   "sha": "31e57861b25bfec4ced0bf5a7d4f87cda4a6f27d463e46c63e1c6507f87a6705",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "g2/ledger_turtle_s1.jsonl",
+   "n": 117,
+   "sha": "25b6f86245f3c747c94ab0b56af8ecfe1052ce440e3426f6456c9bc64ec29dbf",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "g2/ledger_turtle_s2.jsonl",
+   "n": 117,
+   "sha": "51a25b988b5452a2aeee2a6b1f87ec8f9e158891857ab6066aadbf618702d519",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_repl_donchian.jsonl",
+   "n": 84,
+   "sha": "2699e4609a158d0628a2b20948eed59c09991cd7d728eea97b747f166628cb5f",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_repl_ema.jsonl",
+   "n": 84,
+   "sha": "9c144a5e8b56844570c92e1b20321c1317e2bf0bfbd2e540730c5909757bb73c",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_repl_tsmom.jsonl",
+   "n": 84,
+   "sha": "1ab3d825714c40b042c2b1d673cdb26b8315c52882bf110b9a711640fe41503a",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_repl_xs_carry.jsonl",
+   "n": 84,
+   "sha": "51c99a4a838f30e6a865f6fae399d70b197809d7f35b6ad5bba77f86b460ea24",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_repl_xs_mom.jsonl",
+   "n": 84,
+   "sha": "ff1b9a1fc5e0623f5770006f99f7d86d6d23ac1e9444567cea9072486ddc770a",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_repl_xs_rev.jsonl",
+   "n": 84,
+   "sha": "014386450ae31d55722bf41c8b4fd3097b92fd6a94962daa3b39697dddbb5f2b",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_screen_donchian.jsonl",
+   "n": 270,
+   "sha": "1ae9f06c076737021b5410869bac342508229a86b02f0f1a50d7935110ea28c6",
+   "sources": {
+    "referee": 0,
+    "screen": 270
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_screen_ema.jsonl",
+   "n": 216,
+   "sha": "c21534941ad9323c3b8f7e3d162b9d580da2156765a5140f8d24bc8149a49530",
+   "sources": {
+    "referee": 0,
+    "screen": 216
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_screen_tsmom.jsonl",
+   "n": 189,
+   "sha": "705d36eba1ed0145cb189d3e956700f324bde477900a86e62410ac3d96643198",
+   "sources": {
+    "referee": 0,
+    "screen": 189
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_screen_xs_carry.jsonl",
+   "n": 27,
+   "sha": "2ea350c1921a307b566f27a0c4829ae166a32d6745939ff824ea70cb7e093252",
+   "sources": {
+    "referee": 0,
+    "screen": 27
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_screen_xs_mom.jsonl",
+   "n": 54,
+   "sha": "b4a35634cc53a403d9a59048eb9cda37dd1657cebcddfcb3d758224cba037421",
+   "sources": {
+    "referee": 0,
+    "screen": 54
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_screen_xs_rev.jsonl",
+   "n": 36,
+   "sha": "2e73e03792e48a403b8c0599cefbea2a66f0c2da11c2dd5b03e4b22ac920c891",
+   "sources": {
+    "referee": 0,
+    "screen": 36
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_search_donchian.jsonl",
+   "n": 270,
+   "sha": "fabfa6c716f9ef57b63aaa97e5ae62bd7f8652970e8e3d3f3711345a94ecb55e",
+   "sources": {
+    "referee": 270,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_search_ema.jsonl",
+   "n": 216,
+   "sha": "a134c42c7805597024343285a27bd231bca338750b46e9d94f69165dd8b0065a",
+   "sources": {
+    "referee": 216,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_search_tsmom.jsonl",
+   "n": 189,
+   "sha": "6a6deb3d5225bdc0b8e92daff1c33c56d579442771ce72a729700fd7d6bc82e9",
+   "sources": {
+    "referee": 189,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_search_xs_carry.jsonl",
+   "n": 27,
+   "sha": "5c1bd26a1ebdac5103043fc6c6fb05cb5085d0600dfb5361dde0e88d73ae74ed",
+   "sources": {
+    "referee": 27,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_search_xs_mom.jsonl",
+   "n": 54,
+   "sha": "0be31cd1d62d2b5f0df904369f2813bddd853bb715dee19721875555cd309675",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_search_xs_rev.jsonl",
+   "n": 36,
+   "sha": "50fb4666930911ae3e9fafd92c451b2ce2c49102fa6d6b1d0c78e4a269d9f698",
+   "sources": {
+    "referee": 36,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_val_donchian.jsonl",
+   "n": 54,
+   "sha": "cc7e28232de349bb8a5a1936aec8aa8772ca4186342a48395772e6b3f18b90bf",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_val_ema.jsonl",
+   "n": 54,
+   "sha": "213dd58166fbe7278c01dd79812d2a58ee8bac0bdc22ef36f7e6f421005b1223",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_val_tsmom.jsonl",
+   "n": 54,
+   "sha": "7ccb8c57a8f4ced8fa55f7bf0e967057027332257782e1c91e028781b434a641",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_val_xs_carry.jsonl",
+   "n": 54,
+   "sha": "5f3ae7cf4fb99864b5bc10613cc397b6e864cb4d736ad862628e1faa4a3695a0",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_val_xs_mom.jsonl",
+   "n": 54,
+   "sha": "89e38a44060e0b3f356d1439e37bdfbcf569805dee6448304069ca5a9325620d",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "search/ledger_val_xs_rev.jsonl",
+   "n": 54,
+   "sha": "9a83a2f5275c2de627fe93b2459556719f34bec00ec0c5c24a661c89659debe9",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "repo",
+   "path": "zone_fade/ledger_zf1.jsonl",
+   "n": 1,
+   "sha": "21c9dcce37340d09d37fc436f311cf4cd8ee9d8a03270b133615a7bee32d5b1f",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "completion/ledger_misc.jsonl",
+   "n": 3,
+   "sha": "aed2068ea168a24b8b7e97ba12710285aaa1bfc7fde118f1c4a3caaf305de4b9",
+   "sources": {
+    "referee": 3,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "completion/ledger_nested_donchian.jsonl",
+   "n": 270,
+   "sha": "08a90ffcc1d966ea9bf7c42c710a49259dcbc4f5f1823a7a05e781cbc81fb3f9",
+   "sources": {
+    "referee": 270,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "completion/ledger_nested_ema.jsonl",
+   "n": 216,
+   "sha": "cbfa6af3e3a898ed58e3199f5ec0465a62d8869d33438054f91fe161e27ed27e",
+   "sources": {
+    "referee": 216,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "completion/ledger_nested_tsmom.jsonl",
+   "n": 189,
+   "sha": "cf631afddad379d4305254a8121f5244df14d85eca3cd56d6a8e3eb9f7907aa7",
+   "sources": {
+    "referee": 189,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "completion/ledger_nested_xs_carry.jsonl",
+   "n": 27,
+   "sha": "f178190e52f343dc7796127fa37f8a177f91a13b10691c23f04193ba6e14ba56",
+   "sources": {
+    "referee": 27,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "completion/ledger_nested_xs_mom.jsonl",
+   "n": 54,
+   "sha": "3a771602edcc5ee139f6ec064567bffd1581a923097337c9523da59227396ec2",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "completion/ledger_nested_xs_rev.jsonl",
+   "n": 36,
+   "sha": "aba62f500a79b74b6d12a5ffa5e565c1ba7449ff17df3cccec00adea512ec9c5",
+   "sources": {
+    "referee": 36,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "completion/ledger_risk.jsonl",
+   "n": 6,
+   "sha": "5198ff95a33e0a12cb23d1537c9f803eb142c647b6572447d7b1a7b1c16cff24",
+   "sources": {
+    "referee": 6,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "completion/ledger_scaled.jsonl",
+   "n": 4,
+   "sha": "ce30b92d96d7673db3e2129f5a3c2c280e85ce02b2da45c57d4cf951c90a65a6",
+   "sources": {
+    "referee": 4,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "edge/carry/ledger_carry.jsonl",
+   "n": 1,
+   "sha": "9fa143a68fb65269bbeb841dc444dd229d2d58c21dbf4f578ac1d40d17d84faa",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "edge/fundcrowd/ledger_fundcrowd.jsonl",
+   "n": 1,
+   "sha": "0f8027c765c41051d3e161f2976cb954b78d0874ab3d1a1c7a33862ed5118c5b",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "edge/lowvol/ledger_lowvol.jsonl",
+   "n": 1,
+   "sha": "7df213f87f64124deec1b27a07e2627f763e3c96b9fd7d377a2614d8310c6dc0",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "edge/nearhigh/ledger_nearhigh.jsonl",
+   "n": 1,
+   "sha": "da1245bafb4d34344550707a722cd911632490ca7fc957145f11f102561c5ef0",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "edge/orderflow/ledger_orderflow.jsonl",
+   "n": 1,
+   "sha": "09d1fa1e3fa0da2172a6b4a4831f4651938970aa09c1c0880f78c4984952d4aa",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "edge/trend/ledger_trend.jsonl",
+   "n": 1,
+   "sha": "572c7d63e808d8e6a4f7ed51e457f6f6f858bdc68548d15a9077e0561a2bfcf9",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "edge/volrev/ledger_volrev.jsonl",
+   "n": 1,
+   "sha": "52f4bb3ba1d2bea26a7d5dcb8c1a926450da8acbe406be32024cf5c3173b7231",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "edge/xs_momentum/ledger_xs_momentum.jsonl",
+   "n": 1,
+   "sha": "5e0ea5135cce2313ee7bfdd9ce14b83037d8c39e6268d3e5a514467860502a28",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "edge_smoke/ledger_bollinger.jsonl",
+   "n": 1,
+   "sha": "99cca9a9efb2a8a061feeb694eacbbbd9710fb5b7cf1449218291d8f7f0b6e4e",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "ensemble/ledger_ev1.jsonl",
+   "n": 1,
+   "sha": "3d51ba395b20f4313111d7ea296cd538326a3d305fce464088e51bde808ecd43",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "ensemble_decay/ledger_ev1_w2.jsonl",
+   "n": 1,
+   "sha": "49a6f30f71ca94178b68a91ec3ca7e56322c3ca8b357e002848b4e280c4104ee",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "ensemble_decay_smoke/ledger_ev1_w2.jsonl",
+   "n": 1,
+   "sha": "393316d282786f5436598cf78ff23528b264083fcd6e2459fd91d58d3b8a0716",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "ensemble_smoke/ledger_ev1.jsonl",
+   "n": 1,
+   "sha": "8b526a4665a2f8764035a15eaa2de93bb1f52d65bd9358d247a2f4358a0ad45e",
+   "sources": {
+    "referee": 1,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "full/ledger.jsonl",
+   "n": 10,
+   "sha": "1d754bce0a407e6547120f6abf748e018c18794f3a8bf973b3384375d1a2c094",
+   "sources": {
+    "referee": 10,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "full/ledger_run2.jsonl",
+   "n": 10,
+   "sha": "3887f23ce6cc9122976935b671edbdcbe4fb89a010cb1db38cdec2eb7d483034",
+   "sources": {
+    "referee": 10,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "full_smoke/ledger.jsonl",
+   "n": 12,
+   "sha": "003b1d75c89e47ad222136c161f4274eb56f64ed0bd5d2f2e4209816c5a54dd5",
+   "sources": {
+    "referee": 12,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "g2/ledger_carry_funding.jsonl",
+   "n": 117,
+   "sha": "af83fe645e6ceb8fadd150a0e152e621d8dc9ef56e0f55450443947076c3225e",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "g2/ledger_donchian_trend.jsonl",
+   "n": 117,
+   "sha": "24534a211c499c2d5226a5f8cd1c616e8a395495e339573bca8648987effddab",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "g2/ledger_dual_mom_5.jsonl",
+   "n": 65,
+   "sha": "6f2ecd2b7bb4b3dd6563daef0d73fd38ec8a6f81fa17a3843adb2eb1cb0d9f9e",
+   "sources": {
+    "referee": 65,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "g2/ledger_dual_mom_9.jsonl",
+   "n": 117,
+   "sha": "e04f286a0d429fe4773ab541cfc9ce225542852aa0e9a424e928f3160f81473b",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "g2/ledger_tsmom.jsonl",
+   "n": 117,
+   "sha": "31e57861b25bfec4ced0bf5a7d4f87cda4a6f27d463e46c63e1c6507f87a6705",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "g2/ledger_turtle_s1.jsonl",
+   "n": 117,
+   "sha": "25b6f86245f3c747c94ab0b56af8ecfe1052ce440e3426f6456c9bc64ec29dbf",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "g2/ledger_turtle_s2.jsonl",
+   "n": 117,
+   "sha": "51a25b988b5452a2aeee2a6b1f87ec8f9e158891857ab6066aadbf618702d519",
+   "sources": {
+    "referee": 117,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_a.jsonl",
+   "n": 4,
+   "sha": "c369f5405fcfb1eb7b198b8232075dd519fd98435b86b591988d6adff81e05f8",
+   "sources": {
+    "referee": 4,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022_donchian.jsonl",
+   "n": 54,
+   "sha": "44c3835fa1c0b2996843bd1cb8ea82892a9610d98cdc4d5fe74edf49057c4cff",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022_ema.jsonl",
+   "n": 54,
+   "sha": "bbd6062694ef4661c3e8a3c7b94b76dc3a7f4e52bf99538a30a3f4d4b820fb9f",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022_tsmom.jsonl",
+   "n": 54,
+   "sha": "1734d7ba1ec7a6567c0ee28be3e6e2c7fcc7a6330246321c6f790864af72e6ef",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022_xs_carry.jsonl",
+   "n": 54,
+   "sha": "b8fa3a04396f324b9b7ea519800dea6111d588f6d9d4471faa78d5281241d57b",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022_xs_mom.jsonl",
+   "n": 54,
+   "sha": "a097ef62c4cd1377377ef115bae7cd5a54a5e88b310d1bca98cccf805cd8d336",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022_xs_rev.jsonl",
+   "n": 51,
+   "sha": "7d73cd20e1109e96ac1012979a7961817f56c57e0f0ed7ca1c5d43257e7e6a13",
+   "sources": {
+    "referee": 51,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022r2_donchian.jsonl",
+   "n": 54,
+   "sha": "71c723df2c7f603515dcd73ca89a53bd94ccfccb01a8c1de51e44e4630f56e2a",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022r2_ema.jsonl",
+   "n": 54,
+   "sha": "296cb9489964918f43882549d1a34cd5c92592f3b693de14d40da2550ca1e6b4",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022r2_tsmom.jsonl",
+   "n": 54,
+   "sha": "ab2111e7b669d9716f3075233bac73aa95ac5acb1668298d8c6982cad8a54a7f",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022r2_xs_carry.jsonl",
+   "n": 54,
+   "sha": "53fcb6b33659f4266a3755b1a101a32a2dfd49e70acce9de7dac6c3901d5fc39",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022r2_xs_mom.jsonl",
+   "n": 54,
+   "sha": "d79eda372e9c9e1a67bb0bc83d1665356f54834ee0b81c2d66216ff591878ddf",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_out/ledger_pre2022r2_xs_rev.jsonl",
+   "n": 53,
+   "sha": "80da40eecc763751c6f0f7c10c9460fc2482b930c7838989ce8445ed21c7e611",
+   "sources": {
+    "referee": 53,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_a.jsonl",
+   "n": 4,
+   "sha": "53103bab78bb228a842676c8ed419f3485adcac0913f89a31c36b5f152b6208c",
+   "sources": {
+    "referee": 4,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022_donchian.jsonl",
+   "n": 72,
+   "sha": "b724d6e365a32b6c5a4924ac501e9c7cb498011abedf978a12e1afab1f9dd916",
+   "sources": {
+    "referee": 72,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022_ema.jsonl",
+   "n": 72,
+   "sha": "d642c2d19f8c222aae8c595f24e0278b44d96f81ae8a6780eb2b008ca25c8837",
+   "sources": {
+    "referee": 72,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022_tsmom.jsonl",
+   "n": 72,
+   "sha": "f3d72169bfc1fdbb9e97f1c46ca862a4ef5732248394913470dce305764933d2",
+   "sources": {
+    "referee": 72,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022_xs_carry.jsonl",
+   "n": 72,
+   "sha": "adbadb838fdeee1317896d5d017b194c1615ca3c5cbe045dd3ca1c960f69531d",
+   "sources": {
+    "referee": 72,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022_xs_mom.jsonl",
+   "n": 72,
+   "sha": "1bf1e3c6ccce5967b80e35b8cca675516fdeb1f61be623dadb68300069108448",
+   "sources": {
+    "referee": 72,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022_xs_rev.jsonl",
+   "n": 72,
+   "sha": "926e2163c02840e32b3c7de6e6d6c7dfe555daedc34d0a1162501d3b2bc61552",
+   "sources": {
+    "referee": 72,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022r2_donchian.jsonl",
+   "n": 36,
+   "sha": "51b096c79c3cf48766ca909724aa9bd78e790473e11cc7454a97c44a899e45d2",
+   "sources": {
+    "referee": 36,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022r2_ema.jsonl",
+   "n": 36,
+   "sha": "e9bf2430e89b3b725b899c64a8ccd7b417498709a02e9e1cca0a200bb864b81d",
+   "sources": {
+    "referee": 36,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022r2_tsmom.jsonl",
+   "n": 36,
+   "sha": "940be769b9cf6fe27392369dad7d1923acc74e03647de5d3fab672e49d1f1e80",
+   "sources": {
+    "referee": 36,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022r2_xs_carry.jsonl",
+   "n": 36,
+   "sha": "ee7bc74b4163b3a7fbe06f9814d367b11c5c8eb17629603687eb476e7038bf2f",
+   "sources": {
+    "referee": 36,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022r2_xs_mom.jsonl",
+   "n": 36,
+   "sha": "941b67e726e50d6cd5281b62b37de3dbfb0348cc42411785771fecbc147b9220",
+   "sources": {
+    "referee": 36,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_pre2022r2_xs_rev.jsonl",
+   "n": 36,
+   "sha": "f8663ff845183fd9e9d7a2cd27050cd4373ae781caf7209879bf49c0146828cd",
+   "sources": {
+    "referee": 36,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "pre2022_smoke/ledger_t_donchian.jsonl",
+   "n": 4,
+   "sha": "d02da426c311cb10d7188296da00464d6528f41c29c5305a99add942de46b3c2",
+   "sources": {
+    "referee": 4,
+    "screen": 0
+   },
+   "smoke": true
+  },
+  {
+   "loc": "volume",
+   "path": "reports/ledger.jsonl",
+   "n": 112,
+   "sha": "f6c87ac14ed0897d95be673c02064702fcd3747f6a5ead795aaad35398b4af14",
+   "sources": {
+    "referee": 32,
+    "screen": 80
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_repl_donchian.jsonl",
+   "n": 84,
+   "sha": "2699e4609a158d0628a2b20948eed59c09991cd7d728eea97b747f166628cb5f",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_repl_ema.jsonl",
+   "n": 84,
+   "sha": "9c144a5e8b56844570c92e1b20321c1317e2bf0bfbd2e540730c5909757bb73c",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_repl_tsmom.jsonl",
+   "n": 84,
+   "sha": "1ab3d825714c40b042c2b1d673cdb26b8315c52882bf110b9a711640fe41503a",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_repl_xs_carry.jsonl",
+   "n": 84,
+   "sha": "51c99a4a838f30e6a865f6fae399d70b197809d7f35b6ad5bba77f86b460ea24",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_repl_xs_mom.jsonl",
+   "n": 84,
+   "sha": "ff1b9a1fc5e0623f5770006f99f7d86d6d23ac1e9444567cea9072486ddc770a",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_repl_xs_rev.jsonl",
+   "n": 84,
+   "sha": "014386450ae31d55722bf41c8b4fd3097b92fd6a94962daa3b39697dddbb5f2b",
+   "sources": {
+    "referee": 84,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_screen_donchian.jsonl",
+   "n": 270,
+   "sha": "1ae9f06c076737021b5410869bac342508229a86b02f0f1a50d7935110ea28c6",
+   "sources": {
+    "referee": 0,
+    "screen": 270
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_screen_ema.jsonl",
+   "n": 216,
+   "sha": "c21534941ad9323c3b8f7e3d162b9d580da2156765a5140f8d24bc8149a49530",
+   "sources": {
+    "referee": 0,
+    "screen": 216
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_screen_tsmom.jsonl",
+   "n": 189,
+   "sha": "705d36eba1ed0145cb189d3e956700f324bde477900a86e62410ac3d96643198",
+   "sources": {
+    "referee": 0,
+    "screen": 189
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_screen_xs_carry.jsonl",
+   "n": 27,
+   "sha": "2ea350c1921a307b566f27a0c4829ae166a32d6745939ff824ea70cb7e093252",
+   "sources": {
+    "referee": 0,
+    "screen": 27
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_screen_xs_mom.jsonl",
+   "n": 54,
+   "sha": "b4a35634cc53a403d9a59048eb9cda37dd1657cebcddfcb3d758224cba037421",
+   "sources": {
+    "referee": 0,
+    "screen": 54
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_screen_xs_rev.jsonl",
+   "n": 36,
+   "sha": "2e73e03792e48a403b8c0599cefbea2a66f0c2da11c2dd5b03e4b22ac920c891",
+   "sources": {
+    "referee": 0,
+    "screen": 36
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_search_donchian.jsonl",
+   "n": 270,
+   "sha": "fabfa6c716f9ef57b63aaa97e5ae62bd7f8652970e8e3d3f3711345a94ecb55e",
+   "sources": {
+    "referee": 270,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_search_ema.jsonl",
+   "n": 216,
+   "sha": "a134c42c7805597024343285a27bd231bca338750b46e9d94f69165dd8b0065a",
+   "sources": {
+    "referee": 216,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_search_tsmom.jsonl",
+   "n": 189,
+   "sha": "6a6deb3d5225bdc0b8e92daff1c33c56d579442771ce72a729700fd7d6bc82e9",
+   "sources": {
+    "referee": 189,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_search_xs_carry.jsonl",
+   "n": 27,
+   "sha": "5c1bd26a1ebdac5103043fc6c6fb05cb5085d0600dfb5361dde0e88d73ae74ed",
+   "sources": {
+    "referee": 27,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_search_xs_mom.jsonl",
+   "n": 54,
+   "sha": "0be31cd1d62d2b5f0df904369f2813bddd853bb715dee19721875555cd309675",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_search_xs_rev.jsonl",
+   "n": 36,
+   "sha": "50fb4666930911ae3e9fafd92c451b2ce2c49102fa6d6b1d0c78e4a269d9f698",
+   "sources": {
+    "referee": 36,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_val_donchian.jsonl",
+   "n": 54,
+   "sha": "cc7e28232de349bb8a5a1936aec8aa8772ca4186342a48395772e6b3f18b90bf",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_val_ema.jsonl",
+   "n": 54,
+   "sha": "213dd58166fbe7278c01dd79812d2a58ee8bac0bdc22ef36f7e6f421005b1223",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_val_tsmom.jsonl",
+   "n": 54,
+   "sha": "7ccb8c57a8f4ced8fa55f7bf0e967057027332257782e1c91e028781b434a641",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_val_xs_carry.jsonl",
+   "n": 54,
+   "sha": "5f3ae7cf4fb99864b5bc10613cc397b6e864cb4d736ad862628e1faa4a3695a0",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_val_xs_mom.jsonl",
+   "n": 54,
+   "sha": "89e38a44060e0b3f356d1439e37bdfbcf569805dee6448304069ca5a9325620d",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  },
+  {
+   "loc": "volume",
+   "path": "search/ledger_val_xs_rev.jsonl",
+   "n": 54,
+   "sha": "9a83a2f5275c2de627fe93b2459556719f34bec00ec0c5c24a661c89659debe9",
+   "sources": {
+    "referee": 54,
+    "screen": 0
+   },
+   "smoke": false
+  }
+ ]
+}
