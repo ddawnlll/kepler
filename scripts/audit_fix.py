@@ -25,7 +25,7 @@ from nautilus_trader.config import LoggerConfig  # noqa: E402
 from kepler import audit  # noqa: E402
 from kepler import ensemble as en  # noqa: E402
 from kepler import evaluate as ev  # noqa: E402
-from kepler import portfolio, referee, report, robust  # noqa: E402
+from kepler import portfolio, referee, report, robust, tape  # noqa: E402
 
 # Nautilus rc5 `BacktestEngineConfig(bypass_logging=True)` bayrağını yok sayıyor (INFO günlükleri hakem koşusunu saatlerce yavaşlatır). referee.py'ye DOKUNMADAN, bu işlemde motor yapılandırmasını
 # günlüksüz kurarız; sonuç değişmez (taban koşu 790,5162 ile birebir doğrulanır, stage_base).
@@ -376,14 +376,175 @@ def stage_trials(out: Path):
     print(json.dumps(summary, indent=1))
 
 
+# ---------------------------------------------------------------- 1.2 rotasyon null'u (ensemble.rotate: tüm semboller aynı dairesel kaydırma)
+def _null_job(i):
+    p, sp = _GJ["p"], E.spec(cap=CAP)
+    if i < 0:  # gerçek (kaydırmasız) koşu, aynı kod yolu
+        u = None
+    else:
+        u = float(np.random.default_rng([0, i]).uniform(0.05, 0.95))  # K1 ile aynı tohumlar (reports/ensemble_protocol.md)
+    res, win, _ = E.run(p, sp, u=u)
+    pnl = report.book_pnl(win, res, sp)
+    dn = pnl.resample("1D").sum()
+    s = res["summary"]
+    return dict(i=i, u=u, net=float(s["net_pnl"]), gross=float(s["gross_pnl"]), fee=float(s["fee"]), slip=float(s["slippage"]), funding=float(s["funding"]), n_fills=int(s["n_fills"]),
+                sharpe_fixed=sharpe_fixed(dn, CAP), net_hourly=float(pnl.sum()))
+
+
+def stage_null(out: Path, b_from: int, b_to: int, procs: int):
+    t0 = time.time()
+    kls = load_all()
+    _GJ.update(p=params(), kls=kls, D=dict(E.D))
+    idx = ([-1] if b_from == 0 else []) + list(range(b_from, b_to))
+    with ProcessPoolExecutor(procs) as ex:
+        rows = list(ex.map(_null_job, idx))
+    out.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(rows).to_csv(out / f"null_{b_from}_{b_to}.csv", index=False)
+    print("tamam", len(rows), f"{time.time() - t0:.0f}s")
+
+
+# ---------------------------------------------------------------- 2.5 benchmark'lar ve 2.6 karşı-olgusallar (post-hoc, betimsel)
+def _daily_of(pnl: pd.Series) -> pd.Series:
+    return pnl.resample("1D").sum()
+
+
+def stage_bench(out: Path):
+    from kepler import signals as sg
+    t0 = time.time()
+    kls = load_all()
+    data = E.data_of(E.EXT)
+    sp = E.spec(cap=CAP)
+    notional = CAP / len(E.EXT)
+    res_all = {}
+    # (a) tek lookback'li basit TSMOM: tsmom(365, aylık) (reports/book_signals.md'de veriye bakmadan sabit), birim ±1 x notional, aynı hakem/Spec
+    book = {s: pd.DataFrame(dict(target=sg.tsmom(365)(kls[s]) * notional, stop=np.nan), index=kls[s].index) for s in E.EXT}
+    r, win, _ = ev.run_book(book, data, sp, *E.utc(E.MAIN))
+    res_all["tsmom365"] = (r, report.book_pnl(win, r, sp))
+    # (b) eşit notional long al-tut (K2 ile aynı), (c) BTC al-tut (sermaye kadar notional)
+    sp_nc = replace(sp, gross_cap=None)
+    res_all["ew_long"] = robust.buy_hold(data, sp_nc, CAP / len(E.EXT), E.MAIN)
+    res_all["btc_hold"] = robust.buy_hold({"BTCUSDT": data["BTCUSDT"]}, sp_nc, CAP, E.MAIN)
+    out.mkdir(parents=True, exist_ok=True)
+    summ = {}
+    for k, (r, pnl) in res_all.items():
+        dn = _daily_of(pnl)
+        dn.to_csv(out / f"daily_{k}.csv", header=["net"])
+        summ[k] = dict({a: float(b) for a, b in r["summary"].items()}, sharpe_fixed=sharpe_fixed(dn, CAP), net_hourly=float(pnl.sum()))
+    # alt sepeti: 8 alt'ın (BTC hariç) eşit ağırlıklı günlük fiyat getirisi (fiyat; maliyetsiz)
+    close = pd.DataFrame({s: kls[s].close.resample("1D").last() for s in E.EXT})
+    rets = close.pct_change()
+    rets.to_csv(out / "daily_price_returns.csv")
+    (out / "bench.json").write_text(json.dumps(dict(summary=summ, window=E.MAIN, notional_per_symbol=notional, seconds=time.time() - t0), indent=1, default=str))
+    print("tamam", f"{time.time() - t0:.0f}s")
+
+
+def stage_cf(out: Path):
+    t0 = time.time()
+    kls = load_all()
+    data = E.data_of(E.EXT)
+    sp = E.spec(cap=CAP)
+    p = params()
+    book = en.make_book(CAP, p)(kls)
+    variants = {
+        "long_only": {s: b.assign(target=b.target.clip(lower=0.0)) for s, b in book.items()},
+        "short_x0.5": {s: b.assign(target=b.target.where(~(b.target < 0), b.target * 0.5)) for s, b in book.items()},
+    }
+    out.mkdir(parents=True, exist_ok=True)
+    summ = {}
+    for k, bk in variants.items():
+        res, win, _ = ev.run_book(bk, data, sp, *E.utc(E.MAIN))
+        pnl = report.book_pnl(win, res, sp)
+        dn = _daily_of(pnl)
+        dn.to_csv(out / f"daily_{k}.csv", header=["net"])
+        res["fills"].to_csv(out / f"fills_{k}.csv", index=False)
+        summ[k] = dict({a: float(b) for a, b in res["summary"].items()}, sharpe_fixed=sharpe_fixed(dn, CAP), net_hourly=float(pnl.sum()))
+    (out / "cf.json").write_text(json.dumps(dict(summary=summ, window=E.MAIN, seconds=time.time() - t0), indent=1, default=str))
+    print("tamam", f"{time.time() - t0:.0f}s")
+
+
+# ---------------------------------------------------------------- 2.9 hayatta kalma yanlılığı: tarihsel likit evren (delist olanlar dahil)
+def load_dynamic(syms: list, cap: float = CAP):
+    """E.load ile aynı kural (kline + funding birleştirme, sezgisel tick/step), ama sembol yalnızca bulunduğu kökten(lerden) yüklenir (delist/geç listelenen semboller her iki kökte olmayabilir)."""
+    from kepler import signals as sg
+    for s in syms:
+        parts = []
+        for r, lo, hi in ROOTS:
+            if (Path(r) / "tape" / "klines" / f"{s}.parquet").exists():
+                part = tape.load(r, s, start=lo, end=hi)
+                if len(part["klines"]):
+                    parts.append(part)
+        if not parts:
+            continue
+        d = {k: pd.concat([p_[k] for p_ in parts]).sort_index() for k in ("klines", "mark", "funding")}
+        for k in d:
+            d[k] = d[k][~d[k].index.duplicated()]
+        kl = sg.with_funding(d["klines"][["open", "high", "low", "close", "volume", "quote_volume", "taker_buy_quote_volume"]], d["funding"])
+        q = Decimal(10) ** (math.floor(math.log10(kl.close.min())) - 5)
+        st = Decimal(10) ** (math.floor(math.log10(0.25 * cap / kl.close.max())) - 3)
+        E.D[s] = dict(kl=kl, funding=d["funding"], mark=d["mark"], tick=format(q, "f"), step=format(st, "f"))
+
+
+def members(top_n: int) -> pd.DataFrame:
+    """Aylık üyelik (month, sym): iki kökün `universe.parquet`ı (ay M üyeleri = M-1 hacim sıralaması, nedensel; delist olanlar dahil; stable/emtia dışlı) rank ≤ top_n; kullanılamaz kesim kuralı `tape.membership`."""
+    parts = [tape.membership(r)[lambda d: d["rank"] <= top_n] for r in ("/data/pre2022", "/data")]
+    df = pd.concat(parts, ignore_index=True)
+    df = df[df.month >= "2020-03"]  # pencere 2020-04-01'den başlar (üyelik 2020-02'den var; 2020-03 ısınma için)
+    return df.drop_duplicates(["month", "sym"])[["month", "sym"]]
+
+
+def stage_surv(out: Path, top_n: int, procs: int = 1):
+    t0 = time.time()
+    mem = members(top_n)
+    syms = sorted(mem.sym.unique())
+    E.D.clear()
+    load_dynamic(syms)
+    syms = [s for s in syms if s in E.D]
+    kls = {s: E.D[s]["kl"] for s in syms}
+    orig = en.market_state
+
+    def ms(close, kl_, p):
+        st = orig(close, kl_, p)
+        mask = pd.DataFrame(False, index=close.index, columns=close.columns)
+        mon = close.index.strftime("%Y-%m")
+        for m, g in mem.groupby("month"):
+            mask.loc[mon == m, [c for c in g.sym if c in mask.columns]] = True
+        return dict(st, active=st["active"] & mask)
+
+    en.market_state = ms
+    p = params()
+    book = en.make_book(CAP, p)(kls)
+    sp = E.spec(cap=CAP)
+    res, win, _ = ev.run_book(book, E.data_of(syms), sp, *E.utc(E.MAIN))
+    pnl = report.book_pnl(win, res, sp)
+    dn = pnl.resample("1D").sum()
+    per_sym = {s: float(report.hourly_pnl(win[s]["kl"], win[s].get("mark"), win[s].get("funding"), res["fills"][res["fills"].sym == s], sp).sum()) for s in win}
+    n_active = {}
+    close, _x = en.panel(kls)
+    act = ms(close, kls, p)["active"]
+    for y in range(2020, 2027):
+        a = act[act.index.year == y]
+        if len(a):
+            n_active[y] = dict(mean=float(a.sum(axis=1).mean()), distinct=int((a.any(axis=0)).sum()))
+    out.mkdir(parents=True, exist_ok=True)
+    tag = f"top{top_n}"
+    dn.to_csv(out / f"daily_{tag}.csv", header=["net"])
+    (out / f"surv_{tag}.json").write_text(json.dumps(dict(top_n=top_n, n_symbols_loaded=len(syms), symbols=syms, summary={k: float(v) for k, v in res["summary"].items()}, sharpe_fixed=sharpe_fixed(dn, CAP), per_symbol_net=per_sym,
+                                                          n_active_by_year=n_active, net_hourly=float(pnl.sum()), window=E.MAIN, delisted_in_universe=sorted(s for s in syms if s in ("LUNAUSDT", "FTTUSDT", "EOSUSDT", "GALUSDT", "MATICUSDT", "RNDRUSDT", "TOMOUSDT", "LUNA2USDT")),
+                                                          seconds=time.time() - t0), indent=1, default=str))
+    print("tamam", tag, f"{time.time() - t0:.0f}s", "net", res["summary"]["net_pnl"], "rejected", res["summary"]["n_rejected"])
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=["causal", "mexc", "trials"])
+    ap.add_argument("--stage", required=True, choices=["causal", "mexc", "trials", "null", "bench", "cf", "surv"])
     ap.add_argument("--out", required=True)
     ap.add_argument("--n-cuts", type=int, default=72)
     ap.add_argument("--procs", type=int, default=4)
+    ap.add_argument("--top-n", type=int, default=9)
+    ap.add_argument("--b-from", type=int, default=0)
+    ap.add_argument("--b-to", type=int, default=300)
     a = ap.parse_args()
-    {"causal": lambda: stage_causal(Path(a.out), a.n_cuts, a.procs), "mexc": lambda: stage_mexc(Path(a.out), a.procs), "trials": lambda: stage_trials(Path(a.out))}[a.stage]()
+    {"causal": lambda: stage_causal(Path(a.out), a.n_cuts, a.procs), "mexc": lambda: stage_mexc(Path(a.out), a.procs), "trials": lambda: stage_trials(Path(a.out)), "null": lambda: stage_null(Path(a.out), a.b_from, a.b_to, a.procs), "bench": lambda: stage_bench(Path(a.out)), "cf": lambda: stage_cf(Path(a.out)), "surv": lambda: stage_surv(Path(a.out), a.top_n)}[a.stage]()
 
 
 if __name__ == "__main__":
