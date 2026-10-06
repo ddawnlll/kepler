@@ -45,7 +45,7 @@ def hyst_state(f: pd.DataFrame, th_out: float, th_in: float) -> pd.DataFrame:
     return pd.DataFrame(out, index=f.index, columns=f.columns)
 
 
-def make_book(p: en.Params, mem: pd.DataFrame, hyst: bool, cap: float = CAPR):
+def make_book(p: en.Params, mem: pd.DataFrame, hyst: bool, cap: float = CAPR, u: float | None = None):
     """Kitap fabrikası: `ensemble.make_book` ile aynı zincir (durum → uzmanlar → combine → size → place); dinamik evren üyeliği active'e eklenir; hyst: n' = n (s ≠ 0 ve işaret uyumlu), aksi 0."""
     def book(kls):
         close, _ = en.panel(kls)
@@ -53,6 +53,8 @@ def make_book(p: en.Params, mem: pd.DataFrame, hyst: bool, cap: float = CAPR):
         st = dict(st, active=st["active"] & sd.member_mask(close.index, close.columns, mem))
         es = (carry_xs.forecast(close, st, p),) if p.names == ("carry_xs",) else en.experts(close, st, p)
         f = en.combine(es, st, p)
+        if u is not None:  # K1 rotasyon null'u: günlük F aynı k ile dairesel kaydırılır
+            f = en.rotate(f, st["active"], u)
         n = portfolio.size(f, st, cap, p)
         if hyst:
             s = hyst_state(f, TH_OUT, TH_IN)
