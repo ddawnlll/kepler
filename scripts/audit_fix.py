@@ -463,6 +463,31 @@ def stage_cf(out: Path):
 
 
 # ---------------------------------------------------------------- 2.9 hayatta kalma yanlılığı: tarihsel likit evren (delist olanlar dahil)
+def _load_safe(root: str, sym: str, lo, hi) -> dict:
+    """`tape.load`; arşivde fundingRate dosyası olmayan sembol (ICPUSDT pre2022, reports/pre2022_protocol.md) için funding boş döner (o dönemde funding maliyeti sayılmaz: iyimser, raporda yazılır).
+    Mühür sınırı burada da zorunlu (tape.load ile aynı)."""
+    try:
+        return tape.load(root, sym, start=lo, end=hi)
+    except Exception as e:  # noqa: BLE001
+        if "fundingRate" not in str(e):
+            raise
+        import duckdb
+        lo_, hi_ = pd.Timestamp(lo or "1970-01-01", tz="UTC"), pd.Timestamp(hi, tz="UTC") if hi else tape.SEAL_START
+        if hi_ > tape.SEAL_START:
+            raise ValueError("mühür sınırı aşılıyor")
+        cut = tape._usable(root).get(sym)
+        hi_ = min(hi_, pd.Timestamp(cut)) if cut else hi_
+        out = {}
+        for name, kind in tape.KINDS.items():
+            p_ = Path(root) / "tape" / kind / f"{sym}.parquet"
+            if name == "funding" and not p_.exists():
+                out[name] = pd.DataFrame(dict(funding_interval_hours=pd.Series(dtype=float), last_funding_rate=pd.Series(dtype=float)), index=pd.DatetimeIndex([], tz="UTC", name="ts"))
+                continue
+            df = duckdb.execute(f"select * exclude (ts_unit) from read_parquet('{p_}') where ts >= ? and ts < ? order by ts", [lo_, hi_]).df()
+            out[name] = df.set_index(pd.DatetimeIndex(df.pop("ts")).tz_convert("UTC"))
+        return out
+
+
 def load_dynamic(syms: list, cap: float = CAP):
     """E.load ile aynı kural (kline + funding birleştirme, sezgisel tick/step), ama sembol yalnızca bulunduğu kökten(lerden) yüklenir (delist/geç listelenen semboller her iki kökte olmayabilir)."""
     from kepler import signals as sg
@@ -470,7 +495,7 @@ def load_dynamic(syms: list, cap: float = CAP):
         parts = []
         for r, lo, hi in ROOTS:
             if (Path(r) / "tape" / "klines" / f"{s}.parquet").exists():
-                part = tape.load(r, s, start=lo, end=hi)
+                part = _load_safe(r, s, lo, hi)
                 if len(part["klines"]):
                     parts.append(part)
         if not parts:
@@ -534,9 +559,28 @@ def stage_surv(out: Path, top_n: int, procs: int = 1):
     print("tamam", tag, f"{time.time() - t0:.0f}s", "net", res["summary"]["net_pnl"], "rejected", res["summary"]["n_rejected"])
 
 
+def stage_universe(out: Path):
+    """Evren istatistikleri (hakemsiz): sabit-9 (EXT) ile aylık hacim evreni (top-9 / top-20) örtüşmesi, delist olan sembollerin üyelik ayları. Kaynak: iki kökün universe.parquet'ı (tape.membership kuralı)."""
+    mem = pd.concat([tape.membership(r).assign(root=r) for r in ("/data/pre2022", "/data")], ignore_index=True)
+    mem = mem[mem.month >= "2020-04"]
+    ext = set(E.EXT)
+    res = {}
+    for n in (9, 20):
+        m = mem[mem["rank"] <= n]
+        g = m.groupby("month").sym.apply(lambda x: set(x))
+        res[f"top{n}"] = dict(n_months=int(len(g)), ext_share_mean=float(np.mean([len(x & ext) / len(x) for x in g])), ext_share_min=float(np.min([len(x & ext) / len(x) for x in g])),
+                              months_with_nonext=int(sum(1 for x in g if x - ext)), distinct_symbols=int(m.sym.nunique()), ext_months={s: int(m[m.sym == s].month.nunique()) for s in sorted(ext)})
+    dl = ("LUNAUSDT", "LUNA2USDT", "FTTUSDT", "EOSUSDT", "GALUSDT", "MATICUSDT", "RNDRUSDT", "TOMOUSDT")
+    res["delisted_membership_months_top20"] = {s: sorted(mem[(mem.sym == s) & (mem["rank"] <= 20)].month.unique().tolist()) for s in dl}
+    res["delisted_membership_months_top9"] = {s: sorted(mem[(mem.sym == s) & (mem["rank"] <= 9)].month.unique().tolist()) for s in dl}
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "universe_stats.json").write_text(json.dumps(res, indent=1))
+    print(json.dumps({k: v for k, v in res.items() if k.startswith("top")}, indent=1)[:600])
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=["causal", "mexc", "trials", "null", "bench", "cf", "surv"])
+    ap.add_argument("--stage", required=True, choices=["causal", "mexc", "trials", "null", "bench", "cf", "surv", "universe"])
     ap.add_argument("--out", required=True)
     ap.add_argument("--n-cuts", type=int, default=72)
     ap.add_argument("--procs", type=int, default=4)
@@ -544,7 +588,7 @@ def main():
     ap.add_argument("--b-from", type=int, default=0)
     ap.add_argument("--b-to", type=int, default=300)
     a = ap.parse_args()
-    {"causal": lambda: stage_causal(Path(a.out), a.n_cuts, a.procs), "mexc": lambda: stage_mexc(Path(a.out), a.procs), "trials": lambda: stage_trials(Path(a.out)), "null": lambda: stage_null(Path(a.out), a.b_from, a.b_to, a.procs), "bench": lambda: stage_bench(Path(a.out)), "cf": lambda: stage_cf(Path(a.out)), "surv": lambda: stage_surv(Path(a.out), a.top_n)}[a.stage]()
+    {"causal": lambda: stage_causal(Path(a.out), a.n_cuts, a.procs), "mexc": lambda: stage_mexc(Path(a.out), a.procs), "trials": lambda: stage_trials(Path(a.out)), "null": lambda: stage_null(Path(a.out), a.b_from, a.b_to, a.procs), "bench": lambda: stage_bench(Path(a.out)), "cf": lambda: stage_cf(Path(a.out)), "surv": lambda: stage_surv(Path(a.out), a.top_n), "universe": lambda: stage_universe(Path(a.out))}[a.stage]()
 
 
 if __name__ == "__main__":

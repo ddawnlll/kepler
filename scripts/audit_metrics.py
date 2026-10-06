@@ -6,10 +6,14 @@ Tanımlar (BACKTEST §9, K4):
 - İKİNCİL: equity'ye normalize: r = PnL / önceki gün equity; DD = tepe equity'nin yüzdesi.
 - Suda kalma: tepe tarihinden toparlanma tarihine (equity ≥ tepe ilk gün) ya da veri sonuna TAKVİM günü; tek tanım (`drawdown_table`), rapordaki her yerde bu.
 """
+import sys
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
-from kepler import stats
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from kepler import stats  # noqa: E402
 
 PERIODS = {"2020–21": ("2020-04-01", "2021-12-31"), "2022–24": ("2022-01-01", "2024-12-31"), "2025+": ("2025-01-01", "2026-03-31")}
 

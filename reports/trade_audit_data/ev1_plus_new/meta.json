@@ -44,7 +44,34 @@
   "funding_missed": 0,
   "funding_mark_fallback": 156
  },
- "recon_hourly_vs_referee": 0.019521268703556416,
+ "recon_hourly_vs_referee": -6.928416951268446e-09,
+ "recon": {
+  "hourly": {
+   "price": 838.1191123399997,
+   "commission": 37.75029623,
+   "funding": -9.775680753409766,
+   "exit": 0.07695874008000006
+  },
+  "referee": {
+   "price": 838.11911227834,
+   "commission": 37.750296161411995,
+   "funding": -9.775680753409706,
+   "exit": 0.07695874007999999
+  },
+  "price_cash": 838.1191123399996,
+  "engine_commission": 37.75029623,
+  "net_h": 790.5161766165098,
+  "net_ref": 790.5161766234382,
+  "net_diff": -6.928416951268446e-09,
+  "item_diff": {
+   "price_vs_cash": 1.1368683772161603e-13,
+   "price_cash_vs_ref": 6.165953436720883e-08,
+   "commission": 6.858800105646878e-08,
+   "funding": -6.039613253960852e-14,
+   "exit": 6.938893903907228e-17
+  },
+  "funding_events_without_bar": 30
+ },
  "n_episodes": 1029,
  "rejected": 0,
  "stress": {

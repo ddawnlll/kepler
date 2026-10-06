@@ -14,6 +14,7 @@ import pandas as pd
 from scipy.stats import norm
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import audit_metrics as am  # noqa: E402
 
 from kepler import stats  # noqa: E402
@@ -99,7 +100,11 @@ def dsr_table(D: dict) -> dict:
             row[f"dsr[{slab}]"] = float(stats.psr(r, sr0))
         rows.append(row)
     sr_d, g3, g4, t = stats.moments(r)
-    return dict(rows=rows, psr0=float(stats.psr(r, 0.0)), sharpe_annual=float(stats.annual(sr_d)), skew=g3, kurt=g4, T=t, pool_n=len(pool), pool_sd_annual=float(stats.annual(sd_pool)),
+    tj = json.loads((FIX / "trials" / "trials.json").read_text())["files"]
+    repo_sha = {f["sha"] for f in tj if f["loc"] == "repo"}
+    only = [f for f in tj if f["loc"] == "volume" and f["sha"] not in repo_sha and not f["smoke"]]
+    detail = dict(pre2022_out=int(sum(f["n"] for f in only if f["path"].startswith("pre2022_out/"))), edge=int(sum(f["n"] for f in only if f["path"].startswith("edge/"))))
+    return dict(detail=detail, rows=rows, psr0=float(stats.psr(r, 0.0)), sharpe_annual=float(stats.annual(sr_d)), skew=g3, kurt=g4, T=t, pool_n=len(pool), pool_sd_annual=float(stats.annual(sd_pool)),
                 pool_sharpe_annual=dict(min=float(stats.annual(min(pool.values()))), median=float(stats.annual(np.median(list(pool.values())))), max=float(stats.annual(max(pool.values())))),
                 trials=ts, min_trl_days=float(stats.min_trl(sr_d, g3, g4, 0.0)))
 
@@ -444,7 +449,9 @@ def funding_by_regime(D: dict) -> dict:
     out = cur.merge(entry, on=["side", "regime"], how="outer").fillna(0.0)
     tot = out.groupby("side")[["funding_usd", "funding_usd_entry_regime"]].sum()
     return dict(rows=out.to_dict("records"), totals=tot.reset_index().to_dict("records"), short_total=float(tot.loc["short", "funding_usd"]), long_total=float(tot.loc["long", "funding_usd"]),
-                short_bear_share=float(out[(out.side == "short") & (out.regime == "bear")].funding_usd.sum() / tot.loc["short", "funding_usd"]) if tot.loc["short", "funding_usd"] else float("nan"))
+                short_bear_share=float(out[(out.side == "short") & (out.regime == "bear")].funding_usd.sum() / tot.loc["short", "funding_usd"]) if tot.loc["short", "funding_usd"] else float("nan"),
+                short_bull_share=float(out[(out.side == "short") & (out.regime == "bull")].funding_usd.sum() / tot.loc["short", "funding_usd"]) if tot.loc["short", "funding_usd"] else float("nan"),
+                short_bear_usd=float(out[(out.side == "short") & (out.regime == "bear")].funding_usd.sum()))
 
 
 # ================================================================ H. benchmark'lar, beta ve alfa (2.5)
@@ -470,9 +477,9 @@ def benchmarks(D: dict) -> dict:
         d = pd.read_csv(FIX / "bench" / f"daily_{k}.csv", index_col=0, parse_dates=True).net.reindex(pnl.index).fillna(0.0)
         runs[k] = dict(label=label, net=bench[k]["net_pnl"], gross=bench[k]["gross_pnl"], funding=bench[k]["funding"], fee_slip=bench[k]["fee"] + bench[k]["slippage"], n_fills=bench[k]["n_fills"],
                        sharpe_fixed=am.sharpe_fixed(d, cap), sharpe_equity=am.sharpe_equity(d, cap), vol_equity=am.vol_equity(d, cap), maxdd_equity=am.max_dd_equity(d, cap),
-                       maxdd_fixed=am.max_dd_fixed(d, cap), final_equity=float(cap + d.sum()))
+                       maxdd_fixed=am.max_dd_fixed(d, cap), maxdd_usd=float(am.max_dd_fixed(d, cap) * cap), final_equity=float(cap + d.sum()))
     runs["strategy"] = dict(label="ev1_plus_new", net=float(pnl.sum()), sharpe_fixed=am.sharpe_fixed(pnl, cap), sharpe_equity=am.sharpe_equity(pnl, cap), vol_equity=am.vol_equity(pnl, cap),
-                            maxdd_equity=am.max_dd_equity(pnl, cap), maxdd_fixed=am.max_dd_fixed(pnl, cap))
+                            maxdd_equity=am.max_dd_equity(pnl, cap), maxdd_fixed=am.max_dd_fixed(pnl, cap), maxdd_usd=float(am.max_dd_fixed(pnl, cap) * cap))
     # fiyat-getirisi Sharpe'ları (maliyet ve funding hariç; gösterge): günlük dengelemeli benchmark
     ps = {k: float(b.mean() / b.std(ddof=1) * np.sqrt(365)) for k, b in series.items() if "TSMOM" not in k}
     return dict(regressions=reg, runs=runs, price_return_sharpe=ps, note="Regresyon: r_strateji = a + b r_benchmark + e; a yıllıklaştırılmış (x365); t Newey–West (gecikme 5). Benchmark'ın maliyet/funding'i regresyonda yok (fiyat getirisi).")
@@ -507,7 +514,7 @@ def mexc_rounding(D: dict) -> dict:
     per_sym = rp1.groupby("sym").agg(intents=("sent", "size"), blocked=("sent", lambda x: int((~x).sum())), median_tgt_usd=("tgt", lambda x: float(x.abs().median()))).reset_index()
     per_sym["blocked_share"] = per_sym.blocked / per_sym.intents
     per_sym["contract_usd_median"] = [float(rp1[rp1.sym == s].px.median()) for s in per_sym.sym]  # 1 sözleşmenin medyan USDT değeri
-    rl = {s.replace("USDT", ""): dict(contractSize=v["contractSize"], priceUnit=v["priceUnit"], volUnit=v["volUnit"], minVol=v["minVol"]) for s, v in rules["symbols"].items()}
+    rl = {s.replace("USDT", ""): dict(contractSize=v["contractSize"], priceUnit=v["priceUnit"], volUnit=v["volUnit"], minVol=v["minVol"], takerFeeRate=v.get("takerFeeRate"), makerFeeRate=v.get("makerFeeRate")) for s, v in rules["symbols"].items()}
     return dict(rows=tab.to_dict("records"), converged=dict(zip(tab.cap.astype(int).astype(str), conv)), min_capital=first, per_symbol_1000=per_sym.to_dict("records"), rules=rl,
                 rules_source=dict(url=rules["source"], fetched_utc=rules["fetched_utc"], doc=rules["doc"], note=rules["note"]),
                 criterion="net farkı ≤ %5 ve |Sharpe farkı| ≤ 0,10 ve gönderilemeyen emir niyeti ≤ %5; asgari sermaye = ızgarada bu ölçütü ve tüm büyük noktaların sağladığı en küçük sermaye (koşu öncesi yazıldı)")
@@ -633,3 +640,72 @@ def stop_counterfactual(D: dict) -> dict:
         rows.append(rec)
     return dict(rows=rows, base_price_pnl=base_total, n_trades=len(prepared),
                 note="Taban = saatlik profilden yeniden kurulan fiyat PnL'i (hakemin 838,1'ine yakın; fark eski rapordaki gibi 1 bar gecikmeli profil yaklaşıklığı). A = önceki rapordaki yöntem.")
+
+
+# ================================================================ L. hayatta kalma yanlılığı (2.9) ve öncesi/sonrası
+def survivorship() -> dict | None:
+    out = {}
+    for tag in ("top9", "top20"):
+        f = FIX / "surv" / f"surv_{tag}.json"
+        if not f.exists():
+            continue
+        j = json.loads(f.read_text())
+        d = pd.read_csv(FIX / "surv" / f"daily_{tag}.csv", index_col=0, parse_dates=True).net
+        out[tag] = dict(top_n=j["top_n"], n_symbols=j["n_symbols_loaded"], net=j["summary"]["net_pnl"], gross=j["summary"]["gross_pnl"], funding=j["summary"]["funding"], n_fills=j["summary"]["n_fills"],
+                        n_rejected=j["summary"]["n_rejected"], n_liq=j["summary"]["n_liq"], sharpe=am.sharpe_fixed(d, 1000.0), maxdd=am.max_dd_fixed(d, 1000.0), periods=am.period_table(d, 1000.0).to_dict("records"),
+                        per_symbol_top=sorted(j["per_symbol_net"].items(), key=lambda kv: kv[1])[:5] + sorted(j["per_symbol_net"].items(), key=lambda kv: kv[1])[-5:],
+                        delisted={s: j["per_symbol_net"].get(s) for s in j["delisted_in_universe"]}, n_active_by_year=j["n_active_by_year"])
+    return out or None
+
+
+def cf_runs(D: dict) -> list[dict]:
+    """Post-hoc karşı-olgusallar (hakem, $1 000): tam bileşim, long-only, short x0,5. Betimsel; seçim değil."""
+    cap = D["cap"]
+    j = json.loads((FIX / "cf" / "cf.json").read_text())["summary"]
+    rows = [dict(label="Tam bileşim (ana koşu)", net=float(D["daily"].net.sum()), sharpe=am.sharpe_fixed(D["daily"].net, cap), maxdd=am.max_dd_fixed(D["daily"].net, cap), n_fills=float(D["meta"]["summary"]["n_fills"]), funding=float(D["meta"]["summary"]["funding"]))]
+    for k, lab in (("long_only", "Long-only (short hedefleri 0)"), ("short_x0.5", "Short x 0,5")):
+        d = pd.read_csv(FIX / "cf" / f"daily_{k}.csv", index_col=0, parse_dates=True).net
+        rows.append(dict(label=lab + " [post-hoc]", net=float(j[k]["net_pnl"]), sharpe=am.sharpe_fixed(d, cap), maxdd=am.max_dd_fixed(d, cap), n_fills=float(j[k]["n_fills"]), funding=float(j[k]["funding"])))
+    return rows
+
+
+def universe_stats() -> dict | None:
+    f = FIX / "universe" / "universe_stats.json"
+    return json.loads(f.read_text()) if f.exists() else None
+
+
+def before_after(D: dict) -> dict:
+    """Önceki raporun başlık değerleri (git geçmişindeki ilk tabanlı çıktılar: fix/before/*) ile yeni tanımlar. Önceki: equity'ye normalize Sharpe/oynaklık/DD."""
+    old_d = pd.read_csv(FIX / "before" / "daily.csv", index_col=0, parse_dates=True)
+    old_m = json.loads((FIX / "before" / "meta.json").read_text())
+    cap = D["cap"]
+    eq_old = old_d.equity
+    under = eq_old < eq_old.cummax()
+    runs = (under != under.shift()).cumsum()
+    return dict(old=dict(net=float(old_d.net.sum()), sharpe_equity=am.sharpe_equity(old_d.net, cap), vol_equity=am.vol_equity(old_d.net, cap), maxdd_equity=am.max_dd_equity(old_d.net, cap),
+                         recon=float(old_m["recon_hourly_vs_referee"]), underwater_days_old_def=int(under.groupby(runs).sum().max())),
+                new=dict(net=float(D["daily"].net.sum()), recon=float(D["meta"]["recon_hourly_vs_referee"])))
+
+
+def main():
+    OUT.mkdir(parents=True, exist_ok=True)
+    D = load()
+    res = dict(headline=headline(D), dsr=dsr_table(D), dsr_nmax=dsr_nmax(D), null=null_table(D), attribution=attribution(D), calibration=calibration(D), size_vol_f=size_vol_f(D), holding=holding_buckets(D),
+               vol_decomp=vol_decomp(D), funding=funding_by_regime(D), benchmarks=benchmarks(D), mexc=mexc_rounding(D), loo=loo_table(D), stop_cf=stop_counterfactual(D), survivorship=survivorship(), cf_runs=cf_runs(D), universe=universe_stats(),
+               before_after=before_after(D), causal=json.loads((FIX / "causal" / "causal.json").read_text()), recon=D["meta"]["recon"], rounding_note=None)
+
+    def conv(o):
+        if isinstance(o, (np.floating, np.integer)):
+            return o.item()
+        if isinstance(o, (pd.Timestamp,)):
+            return str(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        raise TypeError(type(o))
+
+    (OUT / "analysis.json").write_text(json.dumps(res, indent=1, default=conv, allow_nan=True))
+    print("analysis.json yazıldı:", OUT / "analysis.json")
+
+
+if __name__ == "__main__":
+    main()

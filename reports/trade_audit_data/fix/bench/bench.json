@@ -1,0 +1,67 @@
+{
+ "summary": {
+  "tsmom365": {
+   "net_pnl": 7.779509652023444,
+   "gross_pnl": 879.7327143874121,
+   "fee": 8.316570639510001,
+   "slippage": 1.663314127902,
+   "funding": -861.5583018643366,
+   "liq_fee": 0.0,
+   "exit_cost": 0.41501810363999997,
+   "n_fills": 73.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 1106.03989,
+   "engine_commission": 9.979884760000001,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0,
+   "sharpe_fixed": 0.0013928748539180805,
+   "net_hourly": 8.075877759752643
+  },
+  "ew_long": {
+   "net_pnl": 4700.174756031429,
+   "gross_pnl": 15484.137732860141,
+   "fee": 0.49999512512,
+   "slippage": 0.099999025024,
+   "funding": -10773.472505888709,
+   "liq_fee": 0.0,
+   "exit_cost": 9.89047678986,
+   "n_fills": 9.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 34181.471371,
+   "engine_commission": 0.59999415,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 156.0,
+   "sharpe_fixed": 0.04603181794963617,
+   "net_hourly": 4703.344843136969
+  },
+  "btc_hold": {
+   "net_pnl": 4334.630286552078,
+   "gross_pnl": 9829.04104260074,
+   "fee": 0.49999893395,
+   "slippage": 0.09999978678999999,
+   "funding": -5487.313333981622,
+   "liq_fee": 0.0,
+   "exit_cost": 6.497423346299999,
+   "n_fills": 1.0,
+   "n_liq": 0.0,
+   "n_stop": 0.0,
+   "end_position": 0.158687,
+   "engine_commission": 0.59999872,
+   "n_rejected": 0.0,
+   "funding_missed": 0.0,
+   "funding_mark_fallback": 24.0,
+   "sharpe_fixed": 0.15325877546330363,
+   "net_hourly": 4334.630286552088
+  }
+ },
+ "window": [
+  "2020-04-01",
+  "2026-04-01"
+ ],
+ "notional_per_symbol": 111.11111111111111,
+ "seconds": 44.160224199295044
+}
