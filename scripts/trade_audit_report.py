@@ -602,7 +602,9 @@ E_ += [KeepTogether([Paragraph("Tanımlar ve sınırlar", H2),
                  "Veri saatlik bar: bar içi sıralama bilinmez; slippage varsayımdır; gerçek borsa lot/min-notional kuralları doğrulanmadı. "
                  "Mutabakat: trade tablosu saatlik PnL toplamına eşit; hakem net'inden 0,034 USDT (%0,004) farklı, bilinen küçük `report.hourly_pnl` muhasebe farkı, kaynağı tam çözülmedi.", SM)])]
 
-E_ += [PageBreak(), Paragraph("1. Zaman içinde PnL", H1), img("monthly"), Spacer(1, 4)]
+MARK = len(E_)
+E_ += [PageBreak(), Paragraph("Bölüm III. Ensemble genel analizi", H1), Paragraph("Aşağıdaki bölümler bileşimin bütününü inceler (zaman içinde PnL, trade istatistikleri, kaldıraç, risk, maliyet, kayıp denetimi).", B),
+       Paragraph("1. Zaman içinde PnL", H1), img("monthly"), Spacer(1, 4)]
 yr = daily.net.groupby(daily.index.year).sum()
 yrp = yr / eq.groupby(eq.index.year).first().shift(0).clip(lower=1)
 rows = [["Yıl", "Net PnL (USDT)", "Getiri (% yıl başı equity)", "En iyi ay (%)", "En kötü ay (%)", "Pozitif ay"]]
@@ -805,14 +807,14 @@ def dir_summary(d):
                 recent=float(dd_.net[dd_.index >= "2025-01-01"].sum()), nmem=len(m_["names"]))
 
 
-E_ += [CondPageBreak(120 * mm), Paragraph("9b. Bileşim ve uzmanlar", H1)]
+EXP = [PageBreak(), Paragraph("Bölüm II. Uzman bazlı analiz: genel bakış", H1)]
 sh_all = tr[cc].abs().div(tr[cc].abs().sum(axis=1).replace(0, np.nan), axis=0).mean()
 drv = tr.groupby("driver").agg(n=("net", "size"), net=("net", "sum"), win=("net", lambda v: (v > 0).mean()))
 rows = [["Uzman", "Ağırlık", "Ağırlık payı", "Ort. |katkı| payı", "Sürücü olduğu trade", "Sürücü net PnL", "Sürücü kazanma"]]
 for n_, w_ in zip(NAMES, meta["weights"]):
     dr_ = drv.loc[n_] if n_ in drv.index else None
     rows.append([n_, f"{w_:.3g}", pct(abs(w_) / sum(abs(x) for x in meta["weights"])), pct(sh_all[f"c_{n_}"]), int(dr_.n) if dr_ is not None else 0, f"{dr_.net:.1f}" if dr_ is not None else "-", pct(dr_.win) if dr_ is not None else "-"])
-E_ += [Paragraph(f"Bileşim: {meta['preset']} ({len(NAMES)} uzman). 'Sürücü' = giriş gününde pozisyon yönünü en çok destekleyen uzman; 'katkı payı' = |ağırlık × tahmin|'in uzmanlar arasındaki payı (trade ortalaması). Atıf yaklaşıktır, etkileşim artığı ölçülmedi.", SM), tbl(rows, [32 * mm, 18 * mm, 24 * mm, 28 * mm, 30 * mm, 26 * mm, 26 * mm]), Spacer(1, 6)]
+EXP += [Paragraph(f"Bileşim: {meta['preset']} ({len(NAMES)} uzman). 'Sürücü' = giriş gününde pozisyon yönünü en çok destekleyen uzman; 'katkı payı' = |ağırlık × tahmin|'in uzmanlar arasındaki payı (trade ortalaması). Atıf yaklaşıktır, etkileşim artığı ölçülmedi.", SM), tbl(rows, [32 * mm, 18 * mm, 24 * mm, 28 * mm, 30 * mm, 26 * mm, 26 * mm]), Spacer(1, 6)]
 # tek başına uzman sonuçları (reports/edge_experts_data: ön kayıtlı aile testi, $10 000, tam K-kartı)
 solo = []
 for n_ in NAMES:
@@ -821,10 +823,11 @@ for n_ in NAMES:
         j_ = json.loads(f_.read_text())
         solo.append([n_, j_["decision"], pct(j_["net"] / 10000), f"{j_['sharpe']:.2f}", pct(j_["maxdd"]), f"{j_['p_gross']:.4f}", f"{j_['dsr']:.3f}", ",".join(k for k, v in j_["passed"].items() if not v) or "-", f"{j_['m2_corr_ev1']:.2f}"])
 if solo:
-    E_ += [Paragraph("Uzmanlar tek başına (reports/edge_experts.md, $10 000, 2020-04 → 2026-04, tam K1-K9 kartı)", H2),
+    EXP += [Paragraph("Uzmanlar tek başına (reports/edge_experts.md, $10 000, 2020-04 → 2026-04, tam K1-K9 kartı)", H2),
            tbl([["Uzman", "Karar", "Getiri", "Sharpe", "Maks DD", "K1 p (brüt)", "DSR", "Kalan kartlar", "EV1 kor."]] + solo, [28 * mm, 18 * mm, 16 * mm, 16 * mm, 16 * mm, 20 * mm, 14 * mm, 34 * mm, 16 * mm]), Spacer(1, 6)]
 # leave-one-out marjinal katkı (SRC/loo/<uzman>/daily.json: bileşimden o uzman çıkarılıp hakemle yeniden koşuldu)
 loo_dir = SRC / "loo"
+LOO = {}
 if loo_dir.exists():
     sh0, dd0 = sharpe_of(daily.net)
     rows = [["Bileşimden çıkarılan", "Net (USDT)", "Δ net", "Sharpe", "Δ Sharpe", "Maks DD", "Δ DD (puan)"]]
@@ -837,8 +840,9 @@ if loo_dir.exists():
         pn.index = pd.to_datetime(pn.index, utc=True)
         sh_, dd_ = sharpe_of(pn.sort_index())
         rows.append([n_, f"{pn.sum():.1f}", f"{pn.sum() - daily.net.sum():+.1f}", f"{sh_:.2f}", f"{sh_ - sh0:+.2f}", pct(dd_), f"{100 * (dd_ - dd0):+.1f}"])
+        LOO[n_] = (float(pn.sum() - daily.net.sum()), sh_ - sh0, 100 * (dd_ - dd0))
     rows.insert(1, ["(hiçbiri: tam bileşim)", f"{daily.net.sum():.1f}", "-", f"{sh0:.2f}", "-", pct(dd0), "-"])
-    E_ += [Paragraph("Marjinal katkı: her uzman bileşimden çıkarılıp yeniden koşuldu (leave-one-out; aynı hakem, aynı veri)", H2), tbl(rows, [46 * mm, 24 * mm, 20 * mm, 20 * mm, 20 * mm, 20 * mm, 24 * mm]),
+    EXP += [Paragraph("Marjinal katkı: her uzman bileşimden çıkarılıp yeniden koşuldu (leave-one-out; aynı hakem, aynı veri)", H2), tbl(rows, [46 * mm, 24 * mm, 20 * mm, 20 * mm, 20 * mm, 20 * mm, 24 * mm]),
            Paragraph("Δ net/Sharpe pozitifse uzman çıkarılınca sonuç iyileşti (uzmanın katkısı negatif), negatifse kötüleşti. Ağırlık yeniden normalleştirilmez ama `combine` tahmin ölçeği (ortalama |F| = 0,5) otomatik uyum sağlar. Görülmüş veride, tek koşu.", SM), Spacer(1, 6)]
 # bileşimler arası karşılaştırma (komut satırında verilen ek veri dizinleri)
 cmp_dirs = [d for d in sys.argv[3:] if (Path(d) / "meta.json").exists() and Path(d).resolve() != SRC.resolve()]
@@ -846,9 +850,132 @@ if cmp_dirs:
     ss_ = [dir_summary(SRC)] + [dir_summary(d) for d in cmp_dirs]
     r1 = [["Bileşim", "Üye", "Net (USDT)", "CAGR", "Sharpe", "Maks DD", "2025+ net"]] + [[x["name"], x["nmem"], f"{x['net']:.1f}", pct(x["cagr"]), f"{x['sharpe']:.2f}", pct(x["maxdd"]), f"{x['recent']:.1f}"] for x in ss_]
     r2 = [["Bileşim", "Trade", "Kazanma", "Payoff", "Profit factor", "Ort. kaldıraç", "Long net", "Short net"]] + [[x["name"], x["n"], pct(x["win"]), f"{x['payoff']:.1f}", f"{x['pf']:.2f}", f"{x['lev']:.2f}×", f"{x['longn']:.1f}", f"{x['shortn']:.1f}"] for x in ss_]
-    E_ += [KeepTogether([Paragraph("Bileşim karşılaştırması (aynı hakem, $1 000)", H2), tbl(r1, [38 * mm, 14 * mm, 26 * mm, 22 * mm, 20 * mm, 24 * mm, 26 * mm]), Spacer(1, 4),
+    EXP += [KeepTogether([Paragraph("Bileşim karşılaştırması (aynı hakem, $1 000)", H2), tbl(r1, [38 * mm, 14 * mm, 26 * mm, 22 * mm, 20 * mm, 24 * mm, 26 * mm]), Spacer(1, 4),
                          tbl(r2, [38 * mm, 18 * mm, 22 * mm, 18 * mm, 24 * mm, 24 * mm, 20 * mm, 20 * mm])])]
 
+
+# ---------------------------------------------------------------- uzman bazlı sayfalar
+INFO = {
+    "trend": ("Trend / momentum", "Çok ufuklu z-skor trend: L ∈ {7, 14, 28, 56} gün için z = ln(C_d / C_{d−L}) / (σ_günlük √L), f_L = clip(z/2, −1, 1), uzman = f_L ortalaması. Süreklilik yönünde tahmin.", "L = 7 / 14 / 28 / 56 gün; σ = 30 günlük oynaklık"),
+    "xs_momentum": ("Cross-sectional momentum", "Aktif semboller 14/28/56 günlük getiriye göre sıralanır; q = 2·(sıra − 1)/(n − 1) − 1, en yüksek getiri +1. n < 4 ise 0. Dolar-nötr eğilimli.", "L = 14 / 28 / 56 gün; n ≥ 4"),
+    "carry": ("Carry (funding)", "Düşük funding long, yüksek funding short: F = clip(2·(−(φ − 0,1095)/σ), −1, 1); φ = 7 günlük ortalama yıllık funding, 0,1095 = taban faiz bileşeni.", "φ penceresi 7 gün; σ = 30 günlük oynaklık"),
+    "bollinger": ("Mean-reversion", "z = (C − SMA_n) / std_n (popülasyon std); F = clip(−z/k, −1, 1): alt banda doğru long, üst banda doğru short. std = 0 ise 0.", "n = 20, k = 2"),
+    "lowvol": ("Risk-premium vekili (düşük oynaklık)", "Aktif semboller son L günün gerçekleşen oynaklığına göre sıralanır; en düşük oynaklık +1 (dolar-nötr). n < 4 ise 0. Opsiyon verisi olmadığından volatility selling değil, düşük-oynaklık anomalisinin vekili.", "L = 60 gün"),
+    "nearhigh": ("Behavioral (çıpalama / az tepki)", "x = C / max(C, son L gün); semboller x'e göre sıralanır, zirveye en yakın +1. Zirveye yakın olanın devam edeceği varsayımı (George-Hwang tipi), kesitsel.", "L = 180 gün"),
+    "fundcrowd": ("Structural (funding kalabalığı)", "z = funding'in kendi L günlük geçmişine göre z-skoru; yalnızca |z| > eşik iken F = −clip(z/3, −1, 1): aşırı pozitif funding short, aşırı negatif long. Likidasyon/OI verisi olmadığından vekil.", "L = 90 gün, eşik 1,5"),
+    "volrev": ("Liquidity vekili (hacim şoku geri dönüşü)", "v = günlük quote hacmi / önceki L günün ortalaması; v > eşik iken F = −clip(r1 / (2·σ_günlük), −1, 1) (günlük getirinin tersi). Taker olarak uygulanır; gerçek maker/market making değildir.", "L = 30 gün, eşik 1,5"),
+    "orderflow": ("Information vekili (order-flow)", "imb = 2·taker_alış_payı − 1; z = (3 günlük ort. imb − L günlük ort.) / L günlük std; F = clip(z/2, −1, 1): agresif alış akışı devam eder varsayımı. Haber/NLP değildir.", "L = 60 gün, m = 3 gün"),
+}
+fcs = pd.read_csv(SRC / "forecasts.csv", index_col=0, parse_dates=True) if (SRC / "forecasts.csv").exists() else None
+
+
+def solo_daily(n_):
+    f_ = ROOT_ / "reports" / "edge_experts_data" / n_ / "primary.json"
+    if not f_.exists():
+        return None
+    x_ = pd.Series(json.loads(f_.read_text())["main"]["daily"])
+    x_.index = pd.to_datetime(x_.index, utc=True)
+    return x_.sort_index()
+
+
+def solo_sum(n_):
+    f_ = ROOT_ / "reports" / "edge_experts_data" / n_ / "summary.json"
+    return json.loads(f_.read_text()) if f_.exists() else None
+
+
+SOLO = {n_: solo_daily(n_) for n_ in NAMES}
+ens_cum = daily.net.cumsum() / CAP * 100
+# genel bakış grafikleri: 9 uzmanın tek başına kümülatif getirisi + korelasyonlar
+nr_ = int(np.ceil(len(NAMES) / 3))
+fig, axs = plt.subplots(nr_, 3, figsize=(9, 2.1 * nr_ + 0.4), sharex=True, squeeze=False)
+for a_, n_ in zip(axs.ravel(), NAMES):
+    if SOLO[n_] is not None:
+        c_ = SOLO[n_].cumsum() / 1e4 * 100
+        a_.plot(c_.index, c_, color=BLUE, lw=1.1)
+        a_.set_title(f"{n_}  {c_.iloc[-1]:+.0f}%", fontsize=8.5)
+    a_.axhline(0, color=AXIS, lw=0.7)
+    a_.tick_params(labelsize=6.5)
+for a_ in axs.ravel()[len(NAMES):]:
+    a_.axis("off")
+fig.suptitle("Uzmanlar tek başına: kümülatif getiri (% $10 000; ön kayıtlı aile testi, aynı zincir)", x=0.07, ha="left", fontsize=10, fontweight="bold")
+figs["x_solo"] = save(fig, "30_solo")
+solo_df = pd.DataFrame({n_: SOLO[n_] for n_ in NAMES if SOLO[n_] is not None})
+fig, ax = plt.subplots(1, 2 if fcs is not None else 1, figsize=(9.4, 3.9), squeeze=False)
+for a_, (dfc, ttl) in zip(ax[0], [(solo_df, "Günlük PnL korelasyonu (tek başına koşular)")] + ([(pd.DataFrame({n_: fcs[f"{n_}_mean"] for n_ in NAMES}), "Günlük ort. tahmin (F) korelasyonu")] if fcs is not None else [])):
+    cm_ = dfc.corr()
+    a_.imshow(cm_.values, cmap=DIV, vmin=-1, vmax=1)
+    a_.set_xticks(range(len(cm_)))
+    a_.set_xticklabels(cm_.columns, fontsize=6.5, rotation=60, ha="right")
+    a_.set_yticks(range(len(cm_)))
+    a_.set_yticklabels(cm_.index, fontsize=6.5)
+    for i_ in range(len(cm_)):
+        for j_ in range(len(cm_)):
+            a_.text(j_, i_, f"{cm_.values[i_, j_]:.1f}", ha="center", va="center", fontsize=6, color=INK if abs(cm_.values[i_, j_]) < 0.6 else "white")
+    a_.grid(False)
+    a_.set_title(ttl, fontsize=8.5)
+figs["x_corr"] = save(fig, "31_corr")
+EXP += [img("x_solo"), Spacer(1, 4), img("x_corr", 170 * mm)]
+cmp_ = []
+for n_ in NAMES:
+    if SOLO[n_] is not None:
+        al_ = pd.concat([SOLO[n_], daily.net], axis=1, keys=["a", "b"]).dropna()
+        cmp_.append((n_, float(al_.a.corr(al_.b))))
+EXP += [Paragraph("Uzmanın tek başına günlük PnL'inin bileşimle korelasyonu: " + "; ".join(f"{n_} {c_:+.2f}" for n_, c_ in cmp_) + ".", SM)]
+
+for n_, w_ in zip(NAMES, meta["weights"]):
+    kind, desc, par = INFO[n_]
+    sj = solo_sum(n_)
+    dt_ = tr[tr.driver == n_]
+    EXP += [PageBreak(), Paragraph(f"Uzman: {n_}", H1), Paragraph(f"<b>{kind}</b>. {desc}", B), Paragraph(f"Parametreler (ön kayıtlı, sabit): {par}. Ağırlık bu bileşimde {w_:g} ({pct(abs(w_) / sum(abs(x) for x in meta['weights']))}).", SM), Spacer(1, 4)]
+    if sj is not None:
+        fails = ",".join(k for k, v in sj["passed"].items() if not v) or "-"
+        rowsA = [["Tek başına ($10 000, tam K1-K9 kartı)", "Değer", "Ölçü", "Değer"],
+                 ["Karar", sj["decision"], "Getiri / Sharpe", f"{pct(sj['net'] / 10000)} / {sj['sharpe']:.2f}"],
+                 ["K1 p (brüt) / DSR", f"{sj['p_gross']:.4f} / {sj['dsr']:.3f}", "Maks DD (sermaye)", pct(sj["maxdd"])],
+                 ["Kalan kartlar", fails, "Range rejimi net (M1)", f"{sj['m1_range_net']:.0f} USDT"],
+                 ["EV1 ile günlük PnL korelasyonu (M2)", f"{sj['m2_corr_ev1']:.2f}", "Ters yön (bilgi) net", f"{sj['flip']['net']:.0f} USDT"]]
+        EXP += [tbl(rowsA, [58 * mm, 40 * mm, 44 * mm, 36 * mm]), Spacer(1, 4)]
+    lo_ = LOO.get(n_)
+    wn_, ls_ = dt_[dt_.net > 0], dt_[dt_.net < 0]
+    rowsB = [["Bu bileşimde ($1 000)", "Değer", "Ölçü", "Değer"],
+             ["Sürücü olduğu trade / net PnL", f"{len(dt_)} / {dt_.net.sum():.1f} USDT", "Sürücü kazanma oranı", pct((dt_.net > 0).mean()) if len(dt_) else "-"],
+             ["Ort. kazanç / ort. kayıp (sürücü trade)", f"{wn_.net.mean():.2f} / {ls_.net.mean():.2f}" if len(wn_) and len(ls_) else "-", "Medyan tutma (gün) / medyan MFE-MAE (σ)", f"{dt_.hours.median() / 24:.1f} / {dt_.mfe_s.median():.1f} - {dt_.mae_s.median():.1f}" if len(dt_) else "-"],
+             ["Ort. |katkı| payı", pct(sh_all[f"c_{n_}"]), "Ort. |F| / pozitif F payı (aktif semboller)", f"{fcs[f'{n_}_abs'].mean():.2f} / {pct(fcs[f'{n_}_pos'].mean())}" if fcs is not None else "-"],
+             ["Bileşimden çıkarılınca Δ net / Δ Sharpe", f"{lo_[0]:+.1f} USDT / {lo_[1]:+.2f}" if lo_ else "ölçülmedi", "Çıkarılınca Δ maks DD (puan)", f"{lo_[2]:+.1f}" if lo_ else "ölçülmedi"]]
+    EXP += [tbl(rowsB, [58 * mm, 40 * mm, 44 * mm, 36 * mm]), Spacer(1, 5)]
+    fig, ax = plt.subplots(1, 2, figsize=(9.4, 2.7))
+    if SOLO[n_] is not None:
+        sc_ = SOLO[n_].cumsum() / 1e4 * 100
+        ax[0].plot(sc_.index, sc_, color=BLUE, lw=1.4, label=f"{n_} tek başına ($10 000)")
+    ax[0].plot(ens_cum.index, ens_cum, color=INK2, lw=1.1, label=f"{meta['preset']} ($1 000)")
+    ax[0].axhline(0, color=AXIS, lw=0.7)
+    ax[0].set_title("Kümülatif getiri (% başlangıç sermayesi)", fontsize=8.5)
+    ax[0].legend(fontsize=7, loc="upper left")
+    if fcs is not None:
+        ax[1].plot(fcs.index, fcs[f"{n_}_mean"].rolling(30).mean(), color=BLUE, lw=1.1, label="ort. F (30 gün)")
+        ax[1].plot(fcs.index, fcs[f"{n_}_abs"].rolling(30).mean(), color=ORANGE, lw=1.1, label="ort. |F| (30 gün)")
+        ax[1].axhline(0, color=AXIS, lw=0.7)
+        ax[1].legend(fontsize=7, loc="upper left")
+    ax[1].set_title("Tahmin: yön eğilimi ve güç (aktif semboller)", fontsize=8.5)
+    figs[f"x_{n_}_a"] = save(fig, f"32_{n_}_a")
+    EXP += [img(f"x_{n_}_a")]
+    if len(dt_) >= 10:
+        fig, ax = plt.subplots(1, 4, figsize=(9.6, 2.5), gridspec_kw=dict(width_ratios=[1.7, 1, 0.8, 1.4]))
+        c_ = dt_.sort_values("closed").set_index("closed").net.cumsum()
+        ax[0].step(c_.index, c_, color=BLUE, lw=1.2, where="post")
+        ax[0].axhline(0, color=AXIS, lw=0.7)
+        ax[0].set_title("Sürücü olduğu trade'ler: kümülatif net", fontsize=8)
+        for a_, key, ttl in ((ax[1], "regime", "Rejim"), (ax[2], "side", "Yön"), (ax[3], dt_.closed.dt.year, "Yıl")):
+            g_ = dt_.groupby(key).net.sum() if isinstance(key, str) else dt_.groupby(key).net.sum()
+            a_.bar([str(x) for x in g_.index], g_.values, color=[BLUE if v >= 0 else RED for v in g_.values], width=0.6)
+            a_.axhline(0, color=AXIS, lw=0.7)
+            a_.grid(axis="x", visible=False)
+            a_.set_title(ttl + " (net USDT)", fontsize=8)
+            a_.tick_params(labelsize=6.5)
+        figs[f"x_{n_}_b"] = save(fig, f"33_{n_}_b")
+        EXP += [img(f"x_{n_}_b")]
+    else:
+        EXP += [Paragraph(f"Bu bileşimde sürücü olduğu trade sayısı {len(dt_)}; trade bazlı grafik için yetersiz (≥ 10 gerekir).", SM)]
 E_ += [CondPageBreak(90 * mm), Paragraph("11. Nautilus çapraz kontrolü ve veri bütünlüğü", H1)]
 if naut is not None:
     rows = [["Ölçü", "Bu rapor (pandas)", "Nautilus hesaplayıcısı", "Not"],
@@ -872,6 +999,9 @@ E_ += [PageBreak(), Paragraph("Ek A. Kayıp nedeni kuralları (kural tabanlı, �
        Paragraph("Ek B. Dosyalar ve yeniden üretim", H2),
        Paragraph("Veri: <font name='DV'>modal run modal_app.py --cmd \"python scripts/trade_audit.py --cap 1000 --out /data/audit/ev1_1000\"</font>; Rapor: <font name='DV'>python scripts/trade_audit_report.py &lt;indirilen dizin&gt; reports/trade_audit.pdf</font>. "
                  "Ham tablolar: trades.csv, daily.csv, fills.csv, meta.json (reports/trade_audit_data/).", B)]
+
+
+E_[MARK:MARK] = EXP
 
 
 def footer(c, d):

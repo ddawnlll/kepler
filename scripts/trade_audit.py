@@ -142,6 +142,13 @@ def main():
     es = dict(zip(names, en.experts(close_d, st, p)))
     f_tot = en.combine(tuple(es.values()), st, p)
     reg = robust.regime(close_d["BTCUSDT"])
+    fc = {}  # uzman bazlı günlük tahmin istatistikleri (aktif semboller üzerinden): ort. F (long/short eğilimi), ort. |F|, pozitif pay
+    for n in names:
+        e_ = es[n].where(st["active"])
+        fc[f"{n}_mean"], fc[f"{n}_abs"] = e_.mean(axis=1), e_.abs().mean(axis=1)
+        fc[f"{n}_pos"] = (e_ > 0).sum(axis=1) / e_.notna().sum(axis=1).replace(0, np.nan)
+    fc["total_abs"] = f_tot.where(st["active"]).abs().mean(axis=1)
+    pd.DataFrame(fc).to_csv(out_dir / "forecasts.csv")
     rows = []
     for s in win:
         rows += episodes(s, fills[fills.sym == s], comp[s], eq_h)
