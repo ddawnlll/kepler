@@ -1,6 +1,8 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: ev1_plus_new trade denetimi düzeltmeleri (kullanıcı görevi 2026-10-06) | durum: bitti (push onayı bekliyor) | protokol: reports/fix_progress.md
+Aktif iş: sinyal teşhisi (9 uzmanın IC/kalibrasyon/sönme/kümelenme; nötr bölge + carry yeniden kurulumu; kullanıcı görevi 2026-10-06) | durum: devam | protokol: reports/preregistration/signal_diagnostics.md
+
+(Önceki aktif iş: ev1_plus_new trade denetimi düzeltmeleri | durum: bitti (push onayı bekliyor) | protokol: reports/fix_progress.md)
 
 (Önceki aktif iş: 10 edge türü → uzmanlar (aile testi, kullanıcı görevi 2026-10-04) | durum: bitti | protokol: reports/edge_experts_protocol.md)
 
