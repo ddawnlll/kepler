@@ -83,7 +83,7 @@ class Adapter(Strategy):
         self.B, self.spec, self.fills, self.rejected, self.split = B, spec, [], [], spec.fill == "next_open"
         self.last, self.px = dict.fromkeys(B, 0.0), {}
         self.stop, self.lvl, self.prot = dict.fromkeys(B, math.nan), {}, set()  # strateji stopu; (stop, LP) koruyucu seviyeler; koruyucu emir kimlikleri
-        self.cash, self.fund_i = 0.0, dict.fromkeys(B, 0)  # settlement'ta uygulanmış funding toplamı (USDT); sembol başına bir sonraki işlenecek funding indeksi
+        self.cash, self.cash_ref, self.mc, self.fund_i = 0.0, 0.0, {}, dict.fromkeys(B, 0)  # settlement'ta uygulanmış funding toplamı (USDT); cash_ref: son tam likidasyon-fiyatı taramasındaki cash; mc: sembol başına açık pozisyon başlangıç marjı (yalnız dolumda değişir); sembol başına bir sonraki işlenecek funding indeksi
         self.missed = self.fallback = 0
         self.halt, self.dead = {}, set()  # halt[k]: stop sonrası yön, hedef yönü değişene kadar yeniden giriş yok; dead: likide olan sembol, işlem yok
 
@@ -109,13 +109,20 @@ class Adapter(Strategy):
             self.cash += amt
             hit |= amt != 0
         self.fund_i[k] = i
-        if hit:  # bakiye değişti: funding'i alan sembolün koruyucu emri hemen yenilenir; diğer açık pozisyonlar yalnız likidasyon fiyatı > %0,2 kaydıysa (ortak cüzdan; aksi halde O(olay x pozisyon) emir fırtınası)
-            for j in self.B:
-                q, px = self.pos(j), self.px.get(j)
-                if j in self.dead or q == 0 or not px:
-                    continue
-                if j == k or (lp := self._lp(j, q)) is None or (old := self.lvl.get(j, (None, None))[1]) is None or abs(lp - old) > 0.002 * px:
-                    self.refresh(j, px)
+        if hit:  # bakiye değişti: funding'i alan sembolün likidasyon seviyesi yeni bakiyeyle yeniden kurulur; seviye > %0,2 kaymadıysa dokunulmaz (O(olay x pozisyon) emir fırtınası olmasın)
+            self._relevel(k)
+            if abs(self.cash - self.cash_ref) > 0.002 * self.spec.capital:  # ortak cüzdan: diğer açık pozisyonlar yalnız cash belirgin kaydığında toplu taranır
+                self.cash_ref = self.cash
+                for j in [j for j, v in self.mc.items() if v and j != k]:
+                    self._relevel(j)
+
+    def _relevel(self, j):
+        q, px = self.pos(j), self.px.get(j)
+        if j in self.dead or q == 0 or not px:
+            return
+        lp, old = self._lp(j, q), self.lvl.get(j, (None, None))[1]
+        if lp is None or old is None or abs(lp - old) > 0.002 * px:
+            self.refresh(j, px)
 
     def on_start(self):
         for b in self.B.values():
@@ -154,9 +161,10 @@ class Adapter(Strategy):
             self.refresh(k, c)
 
     def _lp(self, k, q):
-        """k sembolünün likidasyon fiyatı: ortak cüzdan (bakiye + uygulanmış funding − diğer pozisyonların başlangıç marjı), tek sembol cross formülü."""
+        """k sembolünün likidasyon fiyatı: ortak cüzdan (bakiye + uygulanmış funding − DİĞER pozisyonların başlangıç marjı; self.mc), tek sembol cross formülü."""
+        m = self.mc
         position = self.cache.positions_open(instrument_id=self.B[k]["iid"])[0]
-        wb = float(self.portfolio.account(VENUE).balance_total(USDT)) + self.cash - sum(abs(float(self.pos(j))) * float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open) / self.spec.leverage for j in self.B if j != k and self.pos(j) != 0)
+        wb = float(self.portfolio.account(VENUE).balance_total(USDT)) + self.cash - (sum(m.values()) - m.get(k, 0.0))
         return liq_price(q, float(position.avg_px_open), wb, self.spec.mmr) if self.spec.liq else None
 
     def refresh(self, k, px):
