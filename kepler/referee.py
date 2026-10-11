@@ -32,8 +32,8 @@ from nautilus_trader.model import (AccountType, AggregationSource, Bar, BarAggre
 from nautilus_trader.trading import Strategy
 
 from kepler import tape
-from kepler.funding import schedule
-from kepler.intents import finalize
+from kepler.funding import consume, schedule
+from kepler.intents import finalize, intent_row
 
 HOUR_NS = 3_600_000_000_000
 USDT = Currency("USDT", 8, 0, "Tether", CurrencyType.CRYPTO)
@@ -86,7 +86,7 @@ class Adapter(Strategy):
         self.B, self.spec, self.fills, self.rejected, self.split = B, spec, [], [], spec.fill == "next_open"
         self.last, self.px = dict.fromkeys(B, 0.0), {}
         self.stop, self.lvl, self.prot = dict.fromkeys(B, math.nan), {}, set()  # strateji stopu; (stop, LP) koruyucu seviyeler; koruyucu emir kimlikleri
-        self.cash, self.fund_i = 0.0, dict.fromkeys(B, 0)  # settlement'ta uygulanmış funding toplamı (USDT); sembol başına bir sonraki işlenecek funding indeksi
+        self.cash, self.cash_ref, self.mc, self.fund_i = 0.0, 0.0, {}, dict.fromkeys(B, 0)  # settlement'ta uygulanmış funding toplamı (USDT); cash_ref: son tam likidasyon-fiyatı taramasındaki cash; mc: sembol başına açık pozisyon başlangıç marjı (yalnız dolumda değişir); sembol başına bir sonraki işlenecek funding indeksi
         self.missed = self.fallback = 0
         self.intents, self.by_order = [], {}  # niyet kaydı (#11): her hedef DEĞİŞİMİ bir satır; emir kimliği -> satır
         self.halt, self.dead = {}, set()  # halt[k]: stop sonrası yön, hedef yönü değişene kadar yeniden giriş yok; dead: likide olan sembol, işlem yok
@@ -101,22 +101,22 @@ class Adapter(Strategy):
 
     def settle(self, k, te, pos):
         """k sembolünün zamanı <= te olan bekleyen funding olaylarını `pos` pozisyonu (karar öncesi) ve mark kapanışıyla BİR KEZ uygular. Sıfır olmayan tutar varsa koruyucu emirler yeni bakiyeyle yeniden kurulur."""
-        ev, i, hit = self.B[k]["fund"], self.fund_i[k], False
-        while i < len(ev) and ev[i][0] <= te:
-            _, rate, c, fb = ev[i]
-            i += 1
-            if math.isnan(c):
-                self.missed += 1  # mark da kline da yok: sessizce atlanmaz, özette sayılır
-                continue
-            self.fallback += fb
-            amt = -float(pos) * c * rate
-            self.cash += amt
-            hit |= amt != 0
-        self.fund_i[k] = i
-        if hit:  # bakiye değişti: açık pozisyonların likidasyon seviyesi (ortak cüzdan) güncellenir
-            for j in self.B:
-                if j not in self.dead and self.pos(j) != 0 and self.px.get(j):
-                    self.refresh(j, self.px[j])
+        amt, miss, fb, self.fund_i[k] = consume(self.B[k]["fund"], self.fund_i[k], te, float(pos))
+        self.cash, self.missed, self.fallback, hit = self.cash + amt, self.missed + miss, self.fallback + fb, amt != 0
+        if hit:  # bakiye değişti: funding'i alan sembolün likidasyon seviyesi yeni bakiyeyle yeniden kurulur; seviye > %0,2 kaymadıysa dokunulmaz (O(olay x pozisyon) emir fırtınası olmasın)
+            self._relevel(k)
+            if abs(self.cash - self.cash_ref) > 0.002 * self.spec.capital:  # ortak cüzdan: diğer açık pozisyonlar yalnız cash belirgin kaydığında toplu taranır
+                self.cash_ref = self.cash
+                for j in [j for j, v in self.mc.items() if v and j != k]:
+                    self._relevel(j)
+
+    def _relevel(self, j):
+        q, px = self.pos(j), self.px.get(j)
+        if j in self.dead or q == 0 or not px:
+            return
+        lp, old = self._lp(j, q), self.lvl.get(j, (None, None))[1]
+        if lp is None or old is None or abs(lp - old) > 0.002 * px:
+            self.refresh(j, px)
 
     def on_start(self):
         for b in self.B.values():
@@ -161,10 +161,15 @@ class Adapter(Strategy):
             self.refresh(k, c)
 
     def intent(self, k, t, tgt, px, pos, want, status) -> int:
-        """Niyet satırı. tgt = istenen işaretli notional (equity ölçekli), want = lot/tavan sonrası hedef miktar, gap = istenen − (gönderildiyse yuvarlanmış hedef, değilse fiilen tutulan pozisyon) notional; filled/reason dolum ve red sırasında güncellenir."""
-        self.intents.append(dict(sym=k.removesuffix("-PERP"), ts=t, target_notional=float(tgt), px=float(px), pos_qty=float(pos), want_qty=float(want), delta_qty=float(want - pos),
-                                 gap_notional=float(tgt) - float(want if status == "sent" else pos) * float(px), status=status, filled_qty=0.0, reason=""))
+        self.intents.append(intent_row(k, t, tgt, px, pos, want, status))
         return len(self.intents) - 1
+
+    def _lp(self, k, q):
+        """k sembolünün likidasyon fiyatı: ortak cüzdan (bakiye + uygulanmış funding − DİĞER pozisyonların başlangıç marjı; self.mc), tek sembol cross formülü."""
+        m = self.mc
+        position = self.cache.positions_open(instrument_id=self.B[k]["iid"])[0]
+        wb = float(self.portfolio.account(VENUE).balance_total(USDT)) + self.cash - (sum(m.values()) - m.get(k, 0.0))
+        return liq_price(q, float(position.avg_px_open), wb, self.spec.mmr) if self.spec.liq else None
 
     def refresh(self, k, px):
         """Sembol başına TEK koruyucu emir: stop ile likidasyon fiyatından fiyata YAKIN olanı (aynı tikte iki stop'un sırası belirsiz olmasın; yakın olan fiyat yolunda önce vurulur).
@@ -173,9 +178,7 @@ class Adapter(Strategy):
         self.cancel_all_orders(b["iid"])
         if q == 0 or k in self.dead:
             return
-        position = self.cache.positions_open(instrument_id=b["iid"])[0]
-        wb = float(self.portfolio.account(VENUE).balance_total(USDT)) + self.cash - sum(abs(float(self.pos(j))) * float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open) / self.spec.leverage for j in self.B if j != k and self.pos(j) != 0)
-        lp = liq_price(q, float(position.avg_px_open), wb, self.spec.mmr) if self.spec.liq else None
+        lp = self._lp(k, q)
         q_ = lambda v: None if v is None or math.isnan(v) else float(Decimal(str(v)).quantize(b["tick"]))  # noqa: E731
         s, lp = q_(self.stop[k]), q_(lp)
         lvls = [v for v in (s, lp) if v is not None]

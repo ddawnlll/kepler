@@ -5,6 +5,12 @@ COLS = ["sym", "ts", "target_notional", "px", "pos_qty", "want_qty", "delta_qty"
 NOT_SENT = ["blocked_minimum", "noop_lot", "blocked_halt"]
 
 
+def intent_row(k, t, tgt, px, pos, want, status) -> dict:
+    """Niyet satırı. tgt = istenen işaretli notional (equity ölçekli), want = lot/tavan sonrası hedef miktar, gap = istenen − (gönderildiyse yuvarlanmış hedef, değilse fiilen tutulan pozisyon) notional; filled/reason dolum ve red sırasında güncellenir."""
+    return dict(sym=k.removesuffix("-PERP"), ts=t, target_notional=float(tgt), px=float(px), pos_qty=float(pos), want_qty=float(want), delta_qty=float(want - pos),
+                gap_notional=float(tgt) - float(want if status == "sent" else pos) * float(px), status=status, filled_qty=0.0, reason="")
+
+
 def finalize(rows: list[dict]) -> tuple[pd.DataFrame, dict]:
     """Gönderildi ama hiç dolmadı ve red de yok → engine_unfilled (örn. fiyat hassasiyeti "Skipping fill": başarı sayılmaz); kısmi dolum → partial. Dönüş: (tablo, özet alanları)."""
     df = pd.DataFrame(rows, columns=COLS)
