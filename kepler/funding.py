@@ -23,3 +23,17 @@ def schedule(kl: pd.DataFrame, mark: pd.DataFrame | None, funding: pd.DataFrame 
             fb = int(not math.isnan(c))
         out.append((ts, rate, c, fb))
     return sorted(out, key=lambda e: e[0])
+
+
+def consume(ev: list, i: int, te: int, pos: float) -> tuple[float, int, int, int]:
+    """Zamanı <= te olan bekleyen olayları `pos` (karar öncesi) pozisyonuyla uygular: (toplam tutar, eksik olay, kline-geri-düşüş sayısı, yeni indeks). Mark da kline da yoksa olay atlanmaz, eksik sayılır."""
+    amt = miss = fb = 0
+    while i < len(ev) and ev[i][0] <= te:
+        _, rate, c, f = ev[i]
+        i += 1
+        if math.isnan(c):
+            miss += 1
+            continue
+        fb += f
+        amt += -pos * c * rate
+    return amt, miss, fb, i
