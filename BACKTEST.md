@@ -196,6 +196,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 ## 7. Denetim ve defter [VAR]
 
 - **Tek giriş:** `kepler/evaluate.py::evaluate(signal, kl, specs, ledger_path, hypothesis, data, funding, mark, notional, name, params, window, size, kill_dd)`.
+- **Deney kimliği (#12):** her hakem kaydı `receipt` taşır (`kepler/receipt.py`): `economic_id` = f(kepler/ paketinin tüm kaynak içeriği + betik, kanonik config, kitap closure'ı [Params, üyelik tablosu, hyst], hakemin tükettiği kline/funding/mark içerik hash'i + sembol kümesi + kesim). Git SHA, kirli-diff hash'i, uv.lock, çalışma ortamı, run_id/attempt/zaman AYRI tutulur ve kimliğe girmez. Eski satırlar değişmez; `receipt` yoksa `legacy_partial_provenance`. Sınır: tüm paket hash'i muhafazakârdır (yorum değişikliği de kimliği değiştirir); kullanılmayan mühürlü veri ve anahtarlar receipt'e girmez (yalnız verilen veri hash'lenir).
   Sıra: Spec gerçekçilik kontrolü → `audit.assert_causal` (16 kesim noktasında geleceği bozar, geçmiş kararlar değişmemeli) →
   belirlenimlilik (sinyal iki kez aynı) → |unit| ≤ 1 → hakem → `ledger.record`.
 - `window=(başlangıç, bitiş)`: sinyal tam seride hesaplanır (ısınma), hakem yalnızca pencerede koşar; pencere başında tutulan pozisyon açık hedef olur.
@@ -332,6 +333,7 @@ Tam Turtle S1/S2 (Motor v2: N-boyutlama, 2N stop, piramit, birim sınırları; `
 | `test_liq_mark.py` | 7 | 10x senaryo, mark geçince likidasyon (last geçince değil), short tarafı, mark eksikse kline, LP ≈ 1/kaldıraç − mmr |
 | `test_funding_settlement.py` | 6 | #10: E03 (funding sonrası marj ihlali likidasyon), hayatta kalan sınır (5 ödeme), sıfır-funding parity ve çift sayım yok, short alır, equity_scale funding'i görür, iki sembol ortak nakit akışı |
 | `test_intents_reconcile.py` | 5 | #11: E04 blocked_minimum, lot no-op, niyet↔dolum izi, boşluk/boş saat funding mutabakatı, açık pozisyon çıkış değerlemesi, ayrışmanın yakalanması |
+| `test_receipt.py` | 8 | #12: aynı girdi aynı kimlik; closure/config/üyelik/fiyat/funding/mark/kesim/paket kodu değişince kimlik değişir; köken sırsız; legacy işareti |
 | `test_review_fixes.py` | 9 | funding aralıkları, NaN/ms sapması, fitil/NaN hacim, red/eksik funding deftere girmez, boşlukta likidasyon gap fiyatından |
 | `test_trust.py` | 7 | nedensellik (sızdıran ve uzunluğa bağlı sinyal yakalanır), belirlenimlilik hash'i, pencereli = tam tape, flat = 0, rastgele ≈ −maliyet |
 | `test_signals.py` | 11 | Turtle giriş/çıkış/flip, Donchian trend filtresi (350 gün EMA), aylık sinyal yerleşimi, dual momentum, carry ve nedensel funding birleşimi, tüm sinyaller nedensel ve |x| ≤ 1, kesitsel dolar-nötr, EMA trend |

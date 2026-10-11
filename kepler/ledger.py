@@ -26,7 +26,7 @@ def trial_count(path) -> int:
     return sum(1 for _ in p.open()) if p.exists() else 0
 
 
-def record(path, source: str, hypothesis: str, config: dict, code: str, data: str, result: dict | None = None, score: float | None = None) -> dict:
+def record(path, source: str, hypothesis: str, config: dict, code: str, data: str, result: dict | None = None, score: float | None = None, receipt: dict | None = None) -> dict:
     if source not in ("referee", "screen"):
         raise ValueError("source referee veya screen olmalı")
     if source == "screen" and result is not None:
@@ -39,12 +39,14 @@ def record(path, source: str, hypothesis: str, config: dict, code: str, data: st
         raise ValueError("hakem kaydı nedensellik denetiminden (evaluate) geçmemiş: config.audit_causal=True yok")
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
-    json.dumps([config, result, score], default=str, allow_nan=False)  # satır sayacı artmadan önce doğrula
+    json.dumps([config, result, score, receipt], default=str, allow_nan=False)  # satır sayacı artmadan önce doğrula
     with p.open("a+") as f:  # append-only: mevcut satırlar asla yeniden yazılmaz; flock: eşzamanlı yazarlarda sayaç/satır yarışı olmaz
         fcntl.flock(f, fcntl.LOCK_EX)
         f.seek(0)
         row = dict(trial=sum(1 for _ in f) + 1, time=time.time(), source=source, hypothesis=hypothesis, config=config,
                    config_hash=sha(config), code_hash=code, data_hash=data, result=result, score=score)
+        if receipt is not None:
+            row.update(receipt=receipt, economic_id=receipt["economic_id"])  # eski satırlarda yok: provenance_status 'legacy_partial_provenance'
         f.write(json.dumps(row, default=str, allow_nan=False) + "\n")  # NaN/inf sessizce yazılmaz (JSONL bozulmasın)
         f.flush()
     return row

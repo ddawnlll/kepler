@@ -7,7 +7,7 @@ from dataclasses import asdict
 
 import pandas as pd
 
-from kepler import audit, ledger, referee, report, risk, signals, tape, turtle
+from kepler import audit, ledger, receipt, referee, report, risk, tape
 
 MIN_SLIP_RT_BPS = 1.0  # UNKNOWN: gerçek slippage ölçülmedi; majörlerde alt sınır varsayımı, duyarlılık ızgarası g2'de
 
@@ -33,7 +33,7 @@ def evaluate(signal, kl: pd.DataFrame, specs: list, ledger_path, hypothesis: str
     if not keep.any():
         raise ValueError("pencerede bar yok")
     unit = unit.ffill()  # NaN = tut: pencere başında tutulan pozisyon açık hedef olur (pencereler bağımsız koşar)
-    code = ledger.code_hash(referee.__file__, __file__, audit.__file__, ledger.__file__, tape.__file__, inspect.getsourcefile(signal))
+    sig_src = inspect.getsourcefile(signal)
     out = []
     for sp in specs:
         k, mk = kl[keep], None if mark is None else mark.loc[(mark.index >= lo) & (mark.index < hi)]
@@ -46,7 +46,8 @@ def evaluate(signal, kl: pd.DataFrame, specs: list, ledger_path, hypothesis: str
             tgt, tripped = risk.kill_switch(tgt, risk.equity_curve(k, mk, funding, res, sp), kill_dd)
             res = referee.run(k, tgt, sp, funding, mk) if tripped is not None else res
         cfg = dict(name=name, params=params or {}, notional=notional, spec=asdict(sp), window=[str(lo), str(hi)], audit_causal=True, sized=size is not None, kill_dd=kill_dd, kill_at=str(tripped))
-        out.append(dict(res=res, row=ledger.record(ledger_path, "referee", hypothesis, cfg, code, data, result=res["summary"])))
+        rc = receipt.make(cfg, {"SYM": dict(kl=kl, funding=funding, mark=mark)}, cut=(lo, hi), book=signal, extra_files=[sig_src] if sig_src else [])  # #12: tüm kod + config + kullanılan veri içeriği
+        out.append(dict(res=res, row=ledger.record(ledger_path, "referee", hypothesis, cfg, rc["code_hash"], data, result=res["summary"], receipt=rc)))
     return out
 
 
@@ -79,7 +80,7 @@ def evaluate_book(book, data: dict[str, dict], specs: list, ledger_path, hypothe
         raise ValueError("kitap belirlenimsiz")
     utc = lambda x: pd.Timestamp(x).tz_localize("UTC") if pd.Timestamp(x).tzinfo is None else pd.Timestamp(x).tz_convert("UTC")  # noqa: E731
     lo, hi = (utc(window[0]), utc(window[1])) if window else (min(k.index[0] for k in kls.values()), max(k.index[-1] for k in kls.values()) + pd.Timedelta("1h"))
-    code = ledger.code_hash(referee.__file__, __file__, audit.__file__, ledger.__file__, tape.__file__, inspect.getsourcefile(book), risk.__file__, turtle.__file__, signals.__file__)
+    book_src = inspect.getsourcefile(book)
     rows = []
     for sp in specs:
         res, win, tripped = run_book(out, data, sp, lo, hi, kill_dd)
@@ -88,5 +89,6 @@ def evaluate_book(book, data: dict[str, dict], specs: list, ledger_path, hypothe
             raise ValueError(f"PnL mutabakatı tutmadı: fark {rc['diff']:.6f} > tolerans {rc['tol']:.6f} USDT")
         res["summary"]["recon_diff"] = rc["diff"]
         cfg = dict(name=name, params=params or {}, spec=asdict(sp), window=[str(lo), str(hi)], audit_causal=True, book=True, symbols=sorted(win), kill_dd=kill_dd, kill_at=str(tripped))
-        rows.append(dict(res=res, win=win, row=ledger.record(ledger_path, "referee", hypothesis, cfg, code, data_hash, result=res["summary"])))
+        rc = receipt.make(cfg, win, cut=(lo, hi), book=book, extra_files=[book_src] if book_src else [])  # win = hakemin gerçekten tükettiği pencere verisi
+        rows.append(dict(res=res, win=win, row=ledger.record(ledger_path, "referee", hypothesis, cfg, rc["code_hash"], data_hash, result=res["summary"], receipt=rc)))
     return rows

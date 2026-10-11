@@ -42,7 +42,7 @@ Alt katman üst katmanı import edemez. Düşükten yükseğe:
 | Katman | Modüller | Görev |
 |---|---|---|
 | veri | `data qc tape universe` | indirme, kalite, tape yükleme |
-| temel | `ledger report intents funding stats capacity stress nested signals` | defter, istatistik, basit sinyaller |
+| temel | `ledger report intents funding receipt stats capacity stress nested signals` | defter, istatistik, basit sinyaller |
 | risk | `risk portfolio` | boyutlama, kaldıraç, kill switch |
 | durum | `market_state state indicators` | oynaklık/korelasyon/funding, ATR/swing/profil, göstergeler |
 | uzman | `experts/* turtle` | tahmin üretir: `experts/trend`, `xs_momentum`, `carry`, `zone_fade`; edge ailesi (`reports/edge_experts_protocol.md`): `bollinger`, `lowvol`, `nearhigh`, `fundcrowd`, `volrev`, `orderflow`. **Ensemble tek altyapıdır**: uzmanlar `ensemble.REG`'e kayıtlı takılabilir üyeler, bileşim `Params.names` + `Params.weights`. EV1 ayrı bir sistem değil, varsayılan bileşimdir (trend 0,6 / xs_momentum 0,2 / carry 0,2); yeni uzman henüz hiçbir bileşime ağırlıkla girmedi (kapı: `reports/edge_experts.md`) |
