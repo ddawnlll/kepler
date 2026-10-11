@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: ev1_plus_new trade denetimi düzeltmeleri (kullanıcı görevi 2026-10-06) | durum: bitti (push onayı bekliyor) | protokol: reports/fix_progress.md
+Aktif iş: null fan-out exit-code/birleşim bütünlüğü (issue #19; #10–#14 korumalı çekirdek, kullanıcı kilidi bekleniyor) | durum: devam | protokol: yok (araç düzeltmesi, ön kayıt gerekmez)
 
 (Önceki aktif iş: 10 edge türü → uzmanlar (aile testi, kullanıcı görevi 2026-10-04) | durum: bitti | protokol: reports/edge_experts_protocol.md)
 
