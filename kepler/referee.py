@@ -109,10 +109,13 @@ class Adapter(Strategy):
             self.cash += amt
             hit |= amt != 0
         self.fund_i[k] = i
-        if hit:  # bakiye değişti: açık pozisyonların likidasyon seviyesi (ortak cüzdan) güncellenir
+        if hit:  # bakiye değişti: funding'i alan sembolün koruyucu emri hemen yenilenir; diğer açık pozisyonlar yalnız likidasyon fiyatı > %0,2 kaydıysa (ortak cüzdan; aksi halde O(olay x pozisyon) emir fırtınası)
             for j in self.B:
-                if j not in self.dead and self.pos(j) != 0 and self.px.get(j):
-                    self.refresh(j, self.px[j])
+                q, px = self.pos(j), self.px.get(j)
+                if j in self.dead or q == 0 or not px:
+                    continue
+                if j == k or (lp := self._lp(j, q)) is None or (old := self.lvl.get(j, (None, None))[1]) is None or abs(lp - old) > 0.002 * px:
+                    self.refresh(j, px)
 
     def on_start(self):
         for b in self.B.values():
@@ -150,6 +153,12 @@ class Adapter(Strategy):
         if not sent and not (old == new or (math.isnan(old) and math.isnan(new))):  # emir gitmediyse yeni stop seviyesini bar açılışında kur
             self.refresh(k, c)
 
+    def _lp(self, k, q):
+        """k sembolünün likidasyon fiyatı: ortak cüzdan (bakiye + uygulanmış funding − diğer pozisyonların başlangıç marjı), tek sembol cross formülü."""
+        position = self.cache.positions_open(instrument_id=self.B[k]["iid"])[0]
+        wb = float(self.portfolio.account(VENUE).balance_total(USDT)) + self.cash - sum(abs(float(self.pos(j))) * float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open) / self.spec.leverage for j in self.B if j != k and self.pos(j) != 0)
+        return liq_price(q, float(position.avg_px_open), wb, self.spec.mmr) if self.spec.liq else None
+
     def refresh(self, k, px):
         """Sembol başına TEK koruyucu emir: stop ile likidasyon fiyatından fiyata YAKIN olanı (aynı tikte iki stop'un sırası belirsiz olmasın; yakın olan fiyat yolunda önce vurulur).
         Seviye px'in ötesindeyse (açılış gap'i) piyasa emriyle hemen kapanır (dolum açılış fiyatından)."""
@@ -157,9 +166,7 @@ class Adapter(Strategy):
         self.cancel_all_orders(b["iid"])
         if q == 0 or k in self.dead:
             return
-        position = self.cache.positions_open(instrument_id=b["iid"])[0]
-        wb = float(self.portfolio.account(VENUE).balance_total(USDT)) + self.cash - sum(abs(float(self.pos(j))) * float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open) / self.spec.leverage for j in self.B if j != k and self.pos(j) != 0)
-        lp = liq_price(q, float(position.avg_px_open), wb, self.spec.mmr) if self.spec.liq else None
+        lp = self._lp(k, q)
         q_ = lambda v: None if v is None or math.isnan(v) else float(Decimal(str(v)).quantize(b["tick"]))  # noqa: E731
         s, lp = q_(self.stop[k]), q_(lp)
         lvls = [v for v in (s, lp) if v is not None]
