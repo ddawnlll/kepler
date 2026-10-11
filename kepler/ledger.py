@@ -13,6 +13,7 @@ import duckdb
 import pandas as pd
 
 
+
 def sha(obj) -> str:
     return hashlib.sha256(json.dumps(obj, sort_keys=True, default=str).encode()).hexdigest()
 
@@ -24,6 +25,17 @@ def code_hash(*paths) -> str:
 def trial_count(path) -> int:
     p = Path(path)
     return sum(1 for _ in p.open()) if p.exists() else 0
+
+
+FAMILY_KEYS = ("hypothesis_id", "parent_hypothesis", "selection_family", "control_role", "run_id", "attempt")
+CONTROL_ROLES = ("primary", "secondary", "negative_control", "neutral_null", "exploratory")
+
+
+def check_family_meta(meta: dict) -> dict:
+    """Ledger/önkayıt sözleşmesi (run/attempt hipotezden ayrı): hypothesis_id, parent_hypothesis, selection_family, control_role, run_id, attempt."""
+    if any(k not in meta for k in FAMILY_KEYS) or meta["control_role"] not in CONTROL_ROLES or not isinstance(meta["attempt"], int) or meta["attempt"] < 1:
+        raise ValueError(f"aile meta'sı geçersiz: {FAMILY_KEYS}; control_role {CONTROL_ROLES}; attempt >= 1")
+    return {k: meta[k] for k in FAMILY_KEYS}
 
 
 STATUSES = ("planned", "running", "completed", "invalid", "failed", "incomplete")
@@ -39,7 +51,7 @@ def invalid_reason(result: dict) -> str | None:
     return f"geçersiz koşu: {bad}" if bad else None
 
 
-def _append(path, source, hypothesis, config, code, data, status, reason, kind, result, score, invalid_result, receipt) -> dict:
+def _append(path, source, hypothesis, config, code, data, status, reason, kind, result, score, invalid_result, receipt, family=None) -> dict:
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     json.dumps([config, result, score, receipt, invalid_result], default=str, allow_nan=False)  # satır sayacı artmadan önce doğrula
@@ -52,6 +64,8 @@ def _append(path, source, hypothesis, config, code, data, status, reason, kind, 
                    result=result, score=score, status=status, reason=reason, kind=kind, attempt=1 + sum(1 for r in prev if eid and r.get("economic_id") == eid))
         if invalid_result is not None:
             row["invalid_result"] = invalid_result  # performans alanı (result) boş; ham sonuç yalnız araştırma izi
+        if family is not None:
+            row["family"] = family  # stats.check_family_meta: hypothesis_id, parent_hypothesis, selection_family, control_role, run_id, attempt
         if receipt is not None:
             row.update(receipt=receipt, economic_id=eid)  # eski satırlarda yok: provenance_status 'legacy_partial_provenance'
         f.write(json.dumps(row, default=str, allow_nan=False) + "\n")  # NaN/inf sessizce yazılmaz (JSONL bozulmasın)
@@ -59,8 +73,8 @@ def _append(path, source, hypothesis, config, code, data, status, reason, kind, 
     return row
 
 
-def record(path, source: str, hypothesis: str, config: dict, code: str, data: str, result: dict | None = None, score: float | None = None, receipt: dict | None = None, kind: str = "run") -> dict:
-    """kind: run | retry | smoke (retry/smoke yeni bağımsız hipotez sayılmaz: `summary`)."""
+def record(path, source: str, hypothesis: str, config: dict, code: str, data: str, result: dict | None = None, score: float | None = None, receipt: dict | None = None, kind: str = "run", family: dict | None = None) -> dict:
+    """kind: run | retry | smoke (retry/smoke yeni bağımsız hipotez sayılmaz: `summary`). family: check_family_meta ile doğrulanan hipotez/aile/kontrol rolü/run/attempt sözleşmesi (opsiyonel; eski çağrılar bozulmaz)."""
     if source not in ("referee", "screen"):
         raise ValueError("source referee veya screen olmalı")
     if source == "screen" and result is not None:
@@ -71,7 +85,7 @@ def record(path, source: str, hypothesis: str, config: dict, code: str, data: st
         raise InvalidRun(why + "; deftere performans satırı olarak yazılmaz (record_attempt status=invalid)")
     if source == "referee" and config.get("audit_causal") is not True:  # korkuluk (güvenlik değil): bayrağı evaluate koyar; elle yazan bunu atlatabilir
         raise ValueError("hakem kaydı nedensellik denetiminden (evaluate) geçmemiş: config.audit_causal=True yok")
-    return _append(path, source, hypothesis, config, code, data, "completed", "", kind, result, score, None, receipt)
+    return _append(path, source, hypothesis, config, code, data, "completed", "", kind, result, score, None, receipt, family and check_family_meta(family))
 
 
 def record_attempt(path, status: str, hypothesis: str, config: dict, code: str, data: str, reason: str = "", result: dict | None = None, receipt: dict | None = None, kind: str = "run") -> dict:

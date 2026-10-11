@@ -1,5 +1,7 @@
 # `carry_xs` başarı kartı (K1–K9): edge var mı?
 
+> **Kapsam etiketi (#14):** bu sonuç YEREL/KEŞİF kapsamlıdır: yalnız bu kartın/ölçümün kendi ailesini kapsar, tüm seçim geçmişini (ledger dışı keşif, post-hoc seçimler) ve karşılaştırılabilir hipotez evrenini temsil etmez; ham satır sayısı bağımsız hipotez sayısı değildir. NO_EDGE ve negatif sonuçlar korunur, bu etiket onları değiştirmez. Politika: BACKTEST.md §9 'Deneme ailesi'.
+
 Ön kayıt: `reports/preregistration/carry_xs_card.md` (koşudan önceki commit `1873adb`). Üreten: `scripts/carryxs_card_report.py` (rakamlar `reports/signal_diagnostics_data/carry_xs_card/`). Dinamik evren (aylık top-20, delist dahil), mevcut hakem, fee 10 + slip 2, sermaye 10 000; **görülmüş veride örneklem içi**; mühür dokunulmadı.
 
 ## Karar: **NO_EDGE**

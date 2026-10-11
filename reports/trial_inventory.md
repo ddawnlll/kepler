@@ -1,5 +1,7 @@
 # İş C — Deneme envanteri ve Modal Volume flock
 
+> **Kapsam etiketi (#14):** bu sonuç YEREL/KEŞİF kapsamlıdır: yalnız bu kartın/ölçümün kendi ailesini kapsar, tüm seçim geçmişini (ledger dışı keşif, post-hoc seçimler) ve karşılaştırılabilir hipotez evrenini temsil etmez; ham satır sayısı bağımsız hipotez sayısı değildir. NO_EDGE ve negatif sonuçlar korunur, bu etiket onları değiştirmez. Politika: BACKTEST.md §9 'Deneme ailesi'.
+
 **KIRMIZI: Volume üzerinde konteynerler arası `flock` dışlaması iki turda da çalışmadı; repo defteri kümülatif envanteri eksik taşıyor.** A ve B'den sonra yürütüldü. Repo'da 44 defter dosyası / **4.117 satır**, Modal'de 73 / **5.434 satır** var. 44 dosyanın tamamı Modal'deki bir dosyayla SHA256 olarak eşleşti; iki konumdaki kopyalar yeni deneme diye toplanmadı. Defter, evaluate, hakem, risk, denetim ve mühür değiştirilmedi.
 
 ## Kapsam ve sayım

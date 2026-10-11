@@ -1,6 +1,4 @@
-"""#12: küçük deney kimliği (receipt). Ekonomik kimlik = f(kepler/ paketinin TÜM kaynak içeriği + ek dosyalar, kanonik config, kitap closure'ı, gerçekten kullanılan veri içeriği ve kesim);
-aynı girdi aynı kimlik, davranışı değiştiren kod/config/veri farklı kimlik verir. Köken (git SHA, kirli-diff, lockfile, çalışma ortamı) ve run/attempt/zaman AYRI tutulur, kimliğe girmez.
-Anahtar/ortam değişkeni alınmaz; yalnızca fonksiyona verilen (kullanılan) veri hash'lenir."""
+"""#12: deney kimliği (receipt). economic_id = f(kepler/ TÜM kaynağı + ek dosyalar, config, kitap closure'ı, kullanılan veri içeriği, kesim). Köken (git, lockfile, ortam) ve run/attempt kimliğe girmez; anahtar/ortam değişkeni alınmaz."""
 import dataclasses
 import hashlib
 import inspect
@@ -60,7 +58,7 @@ def code_hash(*extra_files) -> str:
 
 
 def data_manifest(data: dict[str, dict], cut=None) -> dict:
-    """Gerçekten kullanılan veri: sembol başına kline/funding/mark içerik hash'i, satır sayısı ve aralık; kesim (pencere) ve sembol kümesi. Yalnız sembol listesi kimlik sayılmaz."""
+    """Kullanılan veri: sembol başına kline/funding/mark içerik hash'i, satır sayısı, aralık; kesim ve sembol kümesi (yalnız sembol listesi kimlik sayılmaz)."""
     per = {}
     for s in sorted(data):
         d = data[s]
@@ -76,17 +74,18 @@ def _git(*a) -> str:
         return ""
 
 
+def _ver(pkg):
+    try:
+        return metadata.version(pkg)
+    except metadata.PackageNotFoundError:
+        return None
+
+
 def provenance() -> dict:
-    """Köken (kimliğe girmez): Git SHA, kirli-diff hash'i (izlenen dosyalar), uv.lock hash'i, çalışma ortamı."""
+    """Köken: Git SHA, kirli-diff hash'i (izlenen dosyalar), uv.lock hash'i, Python/paket sürümleri."""
     lock = ROOT / "uv.lock"
-    vers = {}
-    for pkg in ("numpy", "pandas", "nautilus_trader", "scipy", "duckdb"):
-        try:
-            vers[pkg] = metadata.version(pkg)
-        except metadata.PackageNotFoundError:
-            vers[pkg] = None
     return dict(git_sha=_git("rev-parse", "HEAD").strip() or None, dirty_diff_sha=_h(_git("diff", "HEAD").encode()), lock_sha=_h(lock.read_bytes()) if lock.exists() else None,
-                python=platform.python_version(), packages=vers)
+                python=platform.python_version(), packages={p: _ver(p) for p in ("numpy", "pandas", "nautilus_trader", "scipy", "duckdb")})
 
 
 def make(config: dict, data: dict[str, dict], cut=None, book=None, extra_files=(), run_id: str | None = None, attempt: int = 1) -> dict:

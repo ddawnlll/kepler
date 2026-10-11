@@ -278,6 +278,14 @@ yeni veridir.
 - **Alfa:** günlük r_strateji = a + b · r_al-tut + e; a'nın t istatistiği Newey–West (gecikme 5) ile. K2: t(a) ≥ 2 ve SR_strateji > SR_al-tut.
 - Ayrıca "nakit" (sıfır) referansı her tabloda.
 
+### Deneme ailesi ve çoklu test politikası (#14)
+- **Ayrım:** `hypothesis_id` (ne sınanıyor), `parent_hypothesis` (hangi aileden türedi; yeni önkayıt geçmiş veri kullanımını sıfırlamaz), `selection_family` (seçimin yapıldığı küme), `control_role` (primary/secondary/negative_control/neutral_null/exploratory), `run_id`, `attempt`. Defter bunları `ledger.record(family=...)` ile (`check_family_meta`) satırın `family` alanına yazar; eski çağrılar değişmez. Ledger dışı keşif ve post-hoc seçimler bilgi geçmişinde sayılır.
+- **N:** ham satır sayısı otomatik global N olmaz (5.091 betimsel kayıt kanıtlanmış bağımsız hipotez sayısı değildir; 9 uzman × 2 IC × 6 ufuk = 108 test keşif ailesidir, kart ailesi değildir). Karşılaştırılabilir ailede `scripts/trial_policy.family_report`: ortak takvimli getiriler, Sharpe dağılımı, deneme bağımlılığı. `n_eff_info` yalnız bilgidir; DSR eşiği N_eff/varyans ile ayarlanmaz.
+- **DSR/PSR varsayımları:** `stats.dsr` docstring'i (ortak takvim, yalnız denenen aile, seri bağımlılık/örtüşen etiket ihmali).
+- **p çözünürlüğü:** en küçük p = 1/(B+1). B=300 → 0,003322; 108 test Bonferroni eşiği 0,05/108 = 0,000463 bu tasarımda ulaşılamaz; sıfır exceedance için asgari B = 2.159 yalnız çözünürlük sınırıdır, güç/null geçerliliği kanıtı değildir. `trial_policy.check_resolution` koşudan ÖNCE yakalar; çözüm otomatik devasa fan-out değil, aileyi küçültmektir.
+- **Sonraki dar deney:** `trial_policy.check_prereg` ana hipotezi, azami varyant sayısını, birincil ölçütü, çoklu test yöntemini (bonferroni/holm/single), B/güç/maliyet notunu, durma kuralını ve planın kaydedildiği commit'i sonuç görülmeden ister; hash'i rapora yazılır. Bu politika kapanmadan yeni uzman/grid/factory araması genişletilmez.
+- Mevcut kartlar yerel/keşif kapsamıyla etiketlidir (carry_xs_card, signal_diagnostics, trial_inventory); carry NO_EDGE korunur.
+
 ## 10. Sağlamlık test kataloğu
 
 Her test: ne yapılır, ön kayıtta ne yazılır, hangi karta bağlı, N'ye girer mi, durum.
@@ -335,6 +343,7 @@ Tam Turtle S1/S2 (Motor v2: N-boyutlama, 2N stop, piramit, birim sınırları; `
 | `test_intents_reconcile.py` | 5 | #11: E04 blocked_minimum, lot no-op, niyet↔dolum izi, boşluk/boş saat funding mutabakatı, açık pozisyon çıkış değerlemesi, ayrışmanın yakalanması |
 | `test_receipt.py` | 8 | #12: aynı girdi aynı kimlik; closure/config/üyelik/fiyat/funding/mark/kesim/paket kodu değişince kimlik değişir; köken sırsız; legacy işareti |
 | `test_ledger_attempts.py` | 6 | #13: geçersiz/başarısız deneme kaydı, durumlar, retry/smoke, eşzamanlı job receipt + deterministik toplama, çelişkili duplicate, evaluate_book invalid/failed |
+| `test_trial_policy.py` | 4 | #14: p çözünürlüğü (B=300 vs 108 test), önkayıt alanları, aile meta'sı (ledger), ortak takvimli aile raporu |
 | `test_review_fixes.py` | 9 | funding aralıkları, NaN/ms sapması, fitil/NaN hacim, red/eksik funding deftere girmez, boşlukta likidasyon gap fiyatından |
 | `test_trust.py` | 7 | nedensellik (sızdıran ve uzunluğa bağlı sinyal yakalanır), belirlenimlilik hash'i, pencereli = tam tape, flat = 0, rastgele ≈ −maliyet |
 | `test_signals.py` | 11 | Turtle giriş/çıkış/flip, Donchian trend filtresi (350 gün EMA), aylık sinyal yerleşimi, dual momentum, carry ve nedensel funding birleşimi, tüm sinyaller nedensel ve |x| ≤ 1, kesitsel dolar-nötr, EMA trend |

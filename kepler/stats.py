@@ -31,7 +31,10 @@ def sr0_from_trials(trial_srs) -> float:
 
 
 def dsr(r, trial_srs) -> float:
-    """Deflated Sharpe Ratio = PSR(SR0 = sr0_from_trials). trial_srs: aynı testteki TÜM denemelerin günlük Sharpe'ları (N = uzunluğu)."""
+    """Deflated Sharpe Ratio = PSR(SR0 = sr0_from_trials). trial_srs: aynı KARŞILAŞTIRILABİLİR ailedeki denemelerin günlük Sharpe'ları (N = uzunluğu).
+    Varsayımlar (#14): (1) denemeler aynı takvimde ortak getiri serileriyle ölçülür (`family_report` bunu zorlar); (2) SR0 yalnız denenen ailenin Sharpe dağılımını bilir: ledger dışı keşif ve
+    post-hoc seçimleri KAPSAMAZ, yerel kart ailesi tüm seçim geçmişinin yerine geçmez; (3) ham satır sayısı otomatik N olmaz (5.091 betimsel kayıt kanıtlanmış bağımsız hipotez sayısı değildir);
+    (4) PSR momentleri seri bağımlılığı ve örtüşen etiketleri ihmal eder; (5) N_eff / varyans, eşik geçene kadar ayarlanmaz (aşağıdaki n_eff_info yalnız bilgi)."""
     return psr(r, sr0_from_trials(trial_srs))
 
 
