@@ -83,6 +83,10 @@ def evaluate_book(book, data: dict[str, dict], specs: list, ledger_path, hypothe
     rows = []
     for sp in specs:
         res, win, tripped = run_book(out, data, sp, lo, hi, kill_dd)
+        rc = report.reconcile(win, res, sp)  # saatlik yeniden kurulum toplamı = hakem net'i (önceden tanımlı tolerans); ayrışırsa sessiz geçmez
+        if not rc["ok"]:
+            raise ValueError(f"PnL mutabakatı tutmadı: fark {rc['diff']:.6f} > tolerans {rc['tol']:.6f} USDT")
+        res["summary"]["recon_diff"] = rc["diff"]
         cfg = dict(name=name, params=params or {}, spec=asdict(sp), window=[str(lo), str(hi)], audit_causal=True, book=True, symbols=sorted(win), kill_dd=kill_dd, kill_at=str(tripped))
         rows.append(dict(res=res, win=win, row=ledger.record(ledger_path, "referee", hypothesis, cfg, code, data_hash, result=res["summary"])))
     return rows

@@ -18,10 +18,20 @@ def hourly_pnl(kl: pd.DataFrame, mark: pd.DataFrame | None, funding: pd.DataFram
         rate = funding.last_funding_rate.copy()
         rate.index = rate.index.round("1min")
         mk = (mark.close if mark is not None else kl.close)
+        before = pos.shift(1, fill_value=0.0)  # bar başı (karar öncesi) pozisyon
         for T, r in rate.items():
             b = T - pd.Timedelta("1h")
+            c = mk.get(b, np.nan)
+            if np.isnan(c) and mark is not None:
+                c = kl.close.get(b, np.nan)  # hakemle aynı geri düşüş
+            if np.isnan(c) or not (kl.index[0] + pd.Timedelta("1h") <= T <= kl.index[-1] + pd.Timedelta("1h")):
+                continue
             if b in pos.index:
-                pnl[b] += -pos[b] * mk.get(b, kl.close[b]) * r  # T öncesi tutulan pozisyon x mark kapanışı (hakemle aynı kural)
+                pnl[b] += -pos[b] * c * r  # T öncesi tutulan pozisyon x mark kapanışı (hakemle aynı kural)
+            else:  # boşluk: T'de bar yok, funding sonraki mevcut barın karar öncesi pozisyonuna (hakem: settle açılış tikinde)
+                j = kl.index.searchsorted(T)
+                if j < len(kl.index):
+                    pnl.iloc[j] += -before.iloc[j] * c * r
     pnl.iloc[-1] -= abs(pos.iloc[-1]) * kl.close.iloc[-1] * side_fee
     return pnl
 
@@ -30,6 +40,16 @@ def book_pnl(data: dict, res: dict, spec) -> pd.Series:
     """Portföy saatlik net PnL: sembol başına hourly_pnl'nin toplamı (data[sym] = kl, funding, mark içeren dict'ler; res = run_portfolio çıktısı)."""
     parts = [hourly_pnl(d["kl"], d.get("mark"), d.get("funding"), res["fills"][res["fills"].sym == s], spec) for s, d in data.items()]
     return pd.concat(parts, axis=1).fillna(0.0).sum(axis=1).sort_index()
+
+
+def reconcile(data: dict, res: dict, spec, abs_tol: float = 0.01, rel_tol: float = 1e-7) -> dict:
+    """Günlük/saatlik yeniden kurulum toplamı ile hakem net_pnl'i arasında mutabakat (#11). Önceden tanımlı tolerans: abs_tol + rel_tol x işlem hacmi (USDT).
+    Dönüş: dict(recon_sum, net_pnl, diff, tol, ok). Muhasebe yolları ayrışırsa ok=False (sessiz geçmez)."""
+    total = float(book_pnl(data, res, spec).sum())
+    f = res["fills"]
+    tol = abs_tol + rel_tol * float((f.qty * f.px).sum())
+    diff = total - float(res["summary"]["net_pnl"])
+    return dict(recon_sum=total, net_pnl=float(res["summary"]["net_pnl"]), diff=diff, tol=tol, ok=abs(diff) <= tol)
 
 
 def trades(fills: pd.DataFrame, close_px: float | None = None, close_ts: int | None = None) -> pd.DataFrame:

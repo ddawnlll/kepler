@@ -12,7 +12,7 @@ PKG = ROOT / "kepler"
 # Alt katman üst katmanı import edemez (aynı katman serbest). Düşükten yükseğe.
 LAYERS = [
     ("veri", ["data", "qc", "tape", "universe"]),
-    ("temel", ["ledger", "report", "stats", "capacity", "stress", "nested", "signals"]),
+    ("temel", ["ledger", "report", "intents", "funding", "stats", "capacity", "stress", "nested", "signals"]),
     ("risk", ["risk", "portfolio"]),
     ("durum", ["market_state", "state", "indicators"]),
     ("uzman", ["experts", "turtle"]),  # experts = kepler/experts/* (tek grup)

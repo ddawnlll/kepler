@@ -6,7 +6,8 @@ Dolum (varsayılan fill="next_open"): karar t barının kapanışında bilinir, 
 (o,o,o,o) açılış tiki = karar anı, (o,h,l,c) = bar gövdesi; likidasyon stopu gövdede tetiklenir). fill="close" (eski, iyimser: karar barının
 kapanışından) yalnızca testler içindir; `evaluate` reddeder. Son barın hedefi dolmaz. Likidasyondan sonra hesap ölü: yeni işlem yok (kalan marj likidasyon ücretiyle kaybedilir). Açık pozisyonun çıkış maliyeti (fee+slip) son kapanıştan
 düşülür (close_out). Maliyet: taker fee + slippage
-(bps, gidiş-dönüş; yan başına yarısı) Nautilus komisyonuna girer. Funding: T anındaki oran, T'den ÖNCE (T'de
+(bps, gidiş-dönüş; yan başına yarısı) Nautilus komisyonuna girer. Niyet izi (#11): `intents` tablosu her hedef değişimini niyet → yuvarlanmış hedef → emir → dolum/red/bloke durumuyla izler (sent/partial/rejected/blocked_minimum/noop_lot/blocked_halt/engine_unfilled);
+n_rejected=0 tüm niyetlerin yürütüldüğü anlamına GELMEZ. Funding: T anındaki oran, T'den ÖNCE (T'de
 yapılan dolumlardan önce) tutulan pozisyon x mark fiyat; işaret: oran>0 iken long öder. Funding SETTLEMENT ANINDA, tek kez uygulanır:
 Adapter.cash (funding nakit akışı) equity()'ye ve likidasyon fiyatının cüzdan bakiyesine girer; sıra: (1) önceki barın gövdesindeki stop/likidasyon, (2) T'deki
 funding (karardan önceki pozisyon), (3) koruyucu emirlerin yeni bakiyeyle yeniden kurulması (özsermaye bakım marjının altına inmişse reduce-only market ile
@@ -31,6 +32,8 @@ from nautilus_trader.model import (AccountType, AggregationSource, Bar, BarAggre
 from nautilus_trader.trading import Strategy
 
 from kepler import tape
+from kepler.funding import schedule
+from kepler.intents import finalize
 
 HOUR_NS = 3_600_000_000_000
 USDT = Currency("USDT", 8, 0, "Tether", CurrencyType.CRYPTO)
@@ -85,6 +88,7 @@ class Adapter(Strategy):
         self.stop, self.lvl, self.prot = dict.fromkeys(B, math.nan), {}, set()  # strateji stopu; (stop, LP) koruyucu seviyeler; koruyucu emir kimlikleri
         self.cash, self.fund_i = 0.0, dict.fromkeys(B, 0)  # settlement'ta uygulanmış funding toplamı (USDT); sembol başına bir sonraki işlenecek funding indeksi
         self.missed = self.fallback = 0
+        self.intents, self.by_order = [], {}  # niyet kaydı (#11): her hedef DEĞİŞİMİ bir satır; emir kimliği -> satır
         self.halt, self.dead = {}, set()  # halt[k]: stop sonrası yön, hedef yönü değişene kadar yeniden giriş yok; dead: likide olan sembol, işlem yok
 
     def pos(self, k) -> Decimal:
@@ -135,6 +139,8 @@ class Adapter(Strategy):
             d = (tgt > 0) - (tgt < 0)
             if self.halt.get(k) not in (None, d):
                 del self.halt[k]  # ters ya da flat sinyal: stop kilidi açılır
+            if k in self.halt and tgt != self.last[k]:
+                self.intent(k, t, tgt, px, pos, pos, "blocked_halt")  # stop sonrası kilit: niyet gönderilmez
             if k not in self.halt and tgt != self.last[k]:  # hedef değişmedikçe yeniden boyutlama yok (fiyat gürültüsü churn yapmasın)
                 self.last[k] = tgt
                 f = max(self.equity() / self.spec.capital, 0.0) if self.spec.equity_scale else 1.0
@@ -145,10 +151,20 @@ class Adapter(Strategy):
                 delta = want - pos
                 reducing = want == 0 or (want * pos > 0 and abs(want) < abs(pos))
                 if delta != 0 and (reducing or abs(delta) * px >= Decimal(str(self.spec.min_notional))):
-                    self.submit_order(self.order_factory.market(b["iid"], OrderSide.BUY if delta > 0 else OrderSide.SELL, Quantity.from_str(format(abs(delta), "f"))))
+                    o = self.order_factory.market(b["iid"], OrderSide.BUY if delta > 0 else OrderSide.SELL, Quantity.from_str(format(abs(delta), "f")))
+                    self.by_order[str(o.client_order_id)] = self.intent(k, t, tgt * f, px, pos, want, "sent")
+                    self.submit_order(o)
                     sent = True
+                else:  # gönderilmedi: lot/minimum no-op'u tutar ve risk sapmasıyla görünür (motor kaynaklı sessiz dolumsuzluktan ayrı)
+                    self.intent(k, t, tgt * f, px, pos, want, "noop_lot" if delta == 0 else "blocked_minimum")
         if not sent and not (old == new or (math.isnan(old) and math.isnan(new))):  # emir gitmediyse yeni stop seviyesini bar açılışında kur
             self.refresh(k, c)
+
+    def intent(self, k, t, tgt, px, pos, want, status) -> int:
+        """Niyet satırı. tgt = istenen işaretli notional (equity ölçekli), want = lot/tavan sonrası hedef miktar, gap = istenen − (gönderildiyse yuvarlanmış hedef, değilse fiilen tutulan pozisyon) notional; filled/reason dolum ve red sırasında güncellenir."""
+        self.intents.append(dict(sym=k.removesuffix("-PERP"), ts=t, target_notional=float(tgt), px=float(px), pos_qty=float(pos), want_qty=float(want), delta_qty=float(want - pos),
+                                 gap_notional=float(tgt) - float(want if status == "sent" else pos) * float(px), status=status, filled_qty=0.0, reason=""))
+        return len(self.intents) - 1
 
     def refresh(self, k, px):
         """Sembol başına TEK koruyucu emir: stop ile likidasyon fiyatından fiyata YAKIN olanı (aynı tikte iki stop'un sırası belirsiz olmasın; yakın olan fiyat yolunda önce vurulur).
@@ -182,16 +198,25 @@ class Adapter(Strategy):
             self.dead.add(k)
         elif prot:
             self.halt[k] = 1 if sell else -1
+        i = self.by_order.get(str(e.client_order_id))
+        if i is not None:
+            self.intents[i]["filled_qty"] += float(e.last_qty)
         self.fills.append(dict(sym=k, ts=e.ts_event, side=str(e.order_side), qty=float(e.last_qty), px=p, commission=float(e.commission), liq=liq, stop=prot and not liq))
         o = self.cache.order(e.client_order_id)
         if o is None or o.is_closed:  # kısmi dolumda (hacim sınırı) emir hâlâ açıksa yeni emir kurma: kalan miktar aynı emirle dolar
             self.refresh(k, p)
 
-    def on_order_rejected(self, e):
+    def _rej(self, e):
         self.rejected.append(str(e))
+        i = self.by_order.get(str(e.client_order_id))
+        if i is not None:
+            self.intents[i].update(status="rejected", reason=str(getattr(e, "reason", ""))[:200])
+
+    def on_order_rejected(self, e):
+        self._rej(e)
 
     def on_order_denied(self, e):
-        self.rejected.append(str(e))
+        self._rej(e)
 
 
 def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.DataFrame | None = None, mark: pd.DataFrame | None = None, stop: pd.Series | None = None) -> dict:
@@ -235,20 +260,7 @@ def run_portfolio(data: dict[str, dict], spec: Spec = Spec()) -> dict:
                     tg[slots[i]] = v
         bt = BarType(iid, BarSpecification(1, BarAggregation.HOUR, PriceType.LAST), AggregationSource.EXTERNAL)
         mark = d.get("mark")
-        fund = []
-        if funding is not None and len(funding):
-            mk = (mark if mark is not None else kl).close.astype(float)
-            by_close = dict(zip([t + HOUR_NS for t in ns(mk.index)], mk))  # T'de biten barın mark kapanışı
-            for ts, rate in zip(ns(pd.DatetimeIndex(funding.index).round("1min")), funding["last_funding_rate"].astype(float)):
-                if not close_ns[0] <= ts <= close_ns[-1]:
-                    continue
-                c, fb = by_close.get(ts, math.nan), 0
-                if math.isnan(c) and mark is not None:  # mark barı eksik (gerçek veri: BTC'de 3 boşluk): kline kapanışına düş, özette say
-                    c = float(kl.close.get(pd.Timestamp(ts, unit="ns", tz="UTC") - pd.Timedelta("1h"), math.nan))
-                    fb = int(not math.isnan(c))
-                fund.append((ts, rate, c, fb))
-            fund.sort(key=lambda e: e[0])
-        B[sym + "-PERP"] = dict(iid=iid, bt=bt, step=Decimal(step), tick=Decimal(tick), dp=pp, tg=tg, st=st, fund=fund)
+        B[sym + "-PERP"] = dict(iid=iid, bt=bt, step=Decimal(step), tick=Decimal(tick), dp=pp, tg=tg, st=st, fund=schedule(kl, mark, funding))
         hi, lo = kl.high, kl.low
         if mark is not None and {"high", "low"} <= set(mark.columns):  # likidasyon stopu MARK fiyatının H/L'siyle tetiklenir (Binance); eksik mark barında kline H/L
             hi, lo = mark.high.reindex(kl.index).fillna(kl.high), mark.low.reindex(kl.index).fillna(kl.low)
@@ -277,7 +289,8 @@ def run_portfolio(data: dict[str, dict], spec: Spec = Spec()) -> dict:
     exit_cost = sum(abs(end_pos[s]) * float(d["kl"].close.iloc[-1]) * side_fee for s, d in data.items()) if spec.close_out else 0.0
     fund, missed, fallback = strat.cash, strat.missed + sum(len(B[k]['fund']) - strat.fund_i[k] for k in B), strat.fallback  # funding settlement anında uygulandı (Adapter.settle); bakiye Nautilus'ta değil, burada eklenir
     net = bal + unreal - spec.capital + fund - liq_fee - exit_cost
+    intents, isum = finalize(strat.intents)
     return dict(summary=dict(net_pnl=net, gross_pnl=net + fee + slip + exit_cost - fund + liq_fee, fee=fee, slippage=slip, funding=fund, liq_fee=liq_fee, exit_cost=exit_cost,
                              n_fills=len(fills), n_liq=int(fills.liq.sum()), n_stop=int(fills.stop.sum()), end_position=next(iter(end_pos.values())) if len(end_pos) == 1 else sum(abs(v) for v in end_pos.values()),
-                             engine_commission=float(fills.commission.sum()), n_rejected=len(strat.rejected), funding_missed=missed, funding_mark_fallback=fallback),
-                fills=fills, positions=positions, rejected=strat.rejected)
+                             engine_commission=float(fills.commission.sum()), n_rejected=len(strat.rejected), funding_missed=missed, funding_mark_fallback=fallback, **isum),
+                fills=fills, positions=positions, rejected=strat.rejected, intents=intents)
