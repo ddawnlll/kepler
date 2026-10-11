@@ -1,6 +1,6 @@
 """#16: EV1 ve carry_xs için $500 hesap uygulanabilirliği: YALNIZ offline dry replay (canlı API emri/anahtar yok, mühürlü dönem yok; pencere E.MAIN = 2020-04 -> 2026-04).
   python scripts/account500.py --stage rules                       # MEXC contract/detail halka açık GET -> reports/account500_data/mexc_rules.json (fetched_utc kayıtlı)
-  modal run modal_app.py --cmd "python scripts/account500.py --stage replay --out /data/account500"
+  modal run --detach modal_app.py --cmd "python scripts/account500.py --stage replay --system EV1 --scenario model_10+2 --out /data/account500"   # 2 sistem x 3 senaryo = 6 ayrı konteyner
 ÖNCEDEN YAZILI ÖLÇÜTLER (koşudan önce; sonuca bakılarak değiştirilmez). Her sistem x ücret senaryosu için:
   C1 niyet: bloke (blocked_minimum + noop_lot) niyet oranı <= %5            C2 sonuç: |net(500, kurallı) - net(500, ince adım)| <= %5 x |net(ince adım)| ve |ΔSharpe| <= 0,10
   C3 bütünlük: n_rejected = n_engine_unfilled = n_liq = 0 ve PnL mutabakatı (`report.reconcile`) tutuyor
@@ -88,21 +88,9 @@ def run_one(name, out, data, rules, fee, slip, E, AF, ev, report, cap=CAP):
     return dict(system=name, fee_rt=fee, slip_rt=slip, symbols_traded=syms, symbols_unmapped=sorted(set(out) - set(rules)), metrics=m, verdict=verdict(m), per_symbol=sym_tab.reset_index().to_dict("records")), res
 
 
-_G: dict = {}
-
-
-def _job(a):
-    sysname, scen = a
-    out, data = _G[sysname]
-    fee, slip = SCENARIOS[scen]
-    r, _ = run_one(sysname, out, data, _G["rules"], fee, slip, *_G["mods"])
-    return dict(r, scenario=scen)
-
-
-def stage_replay(out_dir: str, procs: int = 3):
+def stage_replay(out_dir: str, system: str, scen: str):
+    """Tek (sistem, ücret senaryosu) koşusu; her biri ayrı konteynerde (modal run --detach), çıktı <out>/<system>__<scen>.json."""
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from concurrent.futures import ProcessPoolExecutor
-
     import audit_fix as AF  # noqa: E402
     import ensemble as E  # noqa: E402
     import signal_diag as sd  # noqa: E402
@@ -113,34 +101,34 @@ def stage_replay(out_dir: str, procs: int = 3):
     from kepler import report  # noqa: E402
     t0 = time.time()
     doc = json.loads(RULES.read_text())
-    kls = AF.load_all(CAP)  # EV1 evreni: 9 sembol, pencere E.MAIN (mühürlü dönem yüklenmez)
-    _G["EV1"] = (en.make_book(CAP, AF.params())(kls), E.data_of(E.EXT))
-    E.D.clear()
-    mem = sd.members(20)
-    syms = sorted(mem.sym.unique())
-    AF.load_dynamic(syms, cap=CAP)
-    syms = [s for s in syms if s in E.D]
-    kls2 = {s: E.D[s]["kl"] for s in syms}
-    _G["carry_xs"] = (P2.make_book(en.Params(names=("carry_xs",), weights=(1.0,)), mem, False, CAP)(kls2), E.data_of(syms))
-    _G.update(rules=doc["symbols"], mods=(E, AF, ev, report))
-    jobs = [(n, sc) for n in ("EV1", "carry_xs") for sc in SCENARIOS]
-    with ProcessPoolExecutor(procs) as ex:
-        res = list(ex.map(_job, jobs))
+    if system == "EV1":
+        kls = AF.load_all(CAP)  # EV1 evreni: 9 sembol, pencere E.MAIN (mühürlü dönem yüklenmez)
+        out, data = en.make_book(CAP, AF.params())(kls), E.data_of(E.EXT)
+    else:
+        mem = sd.members(20)
+        syms = sorted(mem.sym.unique())
+        AF.load_dynamic(syms, cap=CAP)
+        syms = [s for s in syms if s in E.D]
+        kls = {s: E.D[s]["kl"] for s in syms}
+        out, data = P2.make_book(en.Params(names=("carry_xs",), weights=(1.0,)), mem, False, CAP)(kls), E.data_of(syms)
+    fee, slip = SCENARIOS[scen]
+    r, _ = run_one(system, out, data, doc["symbols"], fee, slip, E, AF, ev, report)
+    r = dict(r, scenario=scen, rules_fetched_utc=doc["fetched_utc"], rules_source=doc["source"], window=E.MAIN, capital=CAP, seconds=time.time() - t0)
     o = Path(out_dir)
     o.mkdir(parents=True, exist_ok=True)
-    (o / "account500.json").write_text(json.dumps(dict(rules_fetched_utc=doc["fetched_utc"], rules_source=doc["source"], window=E.MAIN, capital=CAP, scenarios=SCENARIOS, results=res, seconds=time.time() - t0), indent=1, default=str, allow_nan=False))
-    for r in res:
-        print(r["system"], r["scenario"], r["verdict"]["overall"], r["verdict"]["failed"], {k: round(v, 4) if isinstance(v, float) else v for k, v in r["metrics"].items() if k in ("blocked_share", "net", "net_ref", "sharpe", "sharpe_ref", "unmapped_target_share", "dev_median")})
+    (o / f"{system}__{scen}.json").write_text(json.dumps(r, indent=1, default=str, allow_nan=False))
+    print(system, scen, r["verdict"]["overall"], r["verdict"]["failed"], f"{r['seconds']:.0f}s", json.dumps({k: round(v, 4) if isinstance(v, float) else v for k, v in r["metrics"].items() if k in ("blocked_share", "net", "net_ref", "sharpe", "sharpe_ref", "unmapped_target_share", "dev_median")}))
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", required=True, choices=["rules", "replay"])
     ap.add_argument("--out", default="/data/account500")
-    ap.add_argument("--procs", type=int, default=3)
+    ap.add_argument("--system", choices=["EV1", "carry_xs"])
+    ap.add_argument("--scenario", choices=list(SCENARIOS))
     a = ap.parse_args()
     if a.stage == "rules":
         d = fetch_rules()
         print(d["fetched_utc"], d["n_usdt"], "USDT sözleşmesi")
     else:
-        stage_replay(a.out, a.procs)
+        stage_replay(a.out, a.system, a.scenario)

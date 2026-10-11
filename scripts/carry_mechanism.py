@@ -1,5 +1,5 @@
 """#17: carry_xs'in fiyat/funding mekanizması ve nötrlük iddiası. Teşhis; strateji, uzman ve boyutlama DEĞİŞMEZ (geliştirme verisi; mühürlü dönem yok; yeni grid/uzman yok).
-  modal run modal_app.py --cmd "python scripts/carry_mechanism.py --stage all --out /data/carry_mech"
+  modal run --detach modal_app.py --cmd "python scripts/carry_mechanism.py --part real|perm --seeds 0,1,2 --out /data/carry_mech"; sonra --part merge
 FALSİFİYE EDİLEBİLİR HİPOTEZ (koşudan önce): H_f: carry_xs funding'i kesitte 'kalabalık long'lara (en yüksek 7g funding) short, en düşüğe long olarak toplar; funding gelirini, o bacaklar taşınan fiyat
 riskinin karşılığı olarak alır. Tahminler: (a) funding bileşeni yıl/rejim kırılımlarının çoğunluğunda pozitiftir; (b) funding bileşeni, aynı günlük kesit dağılımı + aynı boyutlama/maliyetle ama sembollere RASTGELE atanmış
 tahminlerde (benchmark 'perm', 10 tohum) görülen dağılımın üstündedir; (c) fiyat bileşeni sistematik pozitif DEĞİLDİR (aksi halde funding dışı yön/beta kaynağı var). (a)-(c)'den biri tutmazsa mekanizma desteklenmez.
@@ -9,6 +9,7 @@ Mekanizma testi ≠ tradeable edge kararı: karar kartı (K1-K9, NO_EDGE) deği�
 import argparse
 import json
 import sys
+import time
 from dataclasses import replace
 from pathlib import Path
 
@@ -79,7 +80,7 @@ def beta(daily_net: pd.Series, btc_ret: pd.Series, cap: float) -> dict:
     return dict(beta=float(cov[0, 1] / cov[1, 1]), corr=float(np.corrcoef(r, b)[0, 1]), n=int(len(r)))
 
 
-def stage_all(out_dir: str, n_perm: int = 10):
+def stage_all(out_dir: str, part: str = "real", seeds: str = "0"):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import audit_fix as AF  # noqa: E402
     import ensemble as E  # noqa: E402
@@ -110,33 +111,45 @@ def stage_all(out_dir: str, n_perm: int = 10):
         res, win, _ = ev.run_book(out, data, sp, *E.utc(E.MAIN))
         return res, win, n
 
-    res, win, _ = run(f)
-    stg = stages(f, st, cap, p)
-    day_close = close.reindex(close.index)
-    rz = realized(res["fills"], day_close)
-    btc = kls["BTCUSDT"].close.resample("1D").last()
-    reg = robust.regime(btc)
-    pnl = report.book_pnl(win, res, sp).resample("1D").sum()
-    perm = []
-    for i in range(n_perm):
-        r_i, w_i, _ = run(permute_forecast(f, st["active"], i))
-        d_i = decompose(w_i, r_i, sp, reg)
-        perm.append(dict(seed=i, totals=d_i["totals"], net=float(r_i["summary"]["net_pnl"])))
-    real = decompose(win, res, sp, reg)
-    fund_perm = np.array([x["totals"]["funding"] for x in perm])
-    result = dict(capital=cap, window=E.MAIN, exposure={k: exposure(v) for k, v in stg.items()} | {"realized_lot": exposure(rz)}, forecast_sum_abs_mean=float(f.sum(1).abs().mean()),
-                  decomposition=real, perm=perm, funding_real=real["totals"]["funding"], funding_perm_rank_p=float((1 + (fund_perm >= real["totals"]["funding"]).sum()) / (len(fund_perm) + 1)),
-                  beta_btc=beta(pnl, btc.pct_change(), cap), net=float(res["summary"]["net_pnl"]), neutral_limit=NEUTRAL_LIMIT)
+    t0 = time.time()
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    (Path(out_dir) / "carry_mechanism.json").write_text(json.dumps(result, indent=1, default=str, allow_nan=False))
-    print(json.dumps({k: result[k] for k in ("exposure", "forecast_sum_abs_mean", "funding_real", "funding_perm_rank_p", "beta_btc", "net")}, indent=1)[:3000])
-    print("decomp totals", real["totals"], "residual", real["residual"])
+    if part == "real":
+        res, win, _ = run(f)
+        stg = stages(f, st, cap, p)
+        rz = realized(res["fills"], close)
+        btc = kls["BTCUSDT"].close.resample("1D").last()
+        pnl = report.book_pnl(win, res, sp).resample("1D").sum()
+        real = decompose(win, res, sp, robust.regime(btc))
+        out = dict(capital=cap, window=E.MAIN, exposure={k: exposure(v) for k, v in stg.items()} | {"realized_lot": exposure(rz)}, forecast_sum_abs_mean=float(f.sum(1).abs().mean()), decomposition=real,
+                   beta_btc=beta(pnl, btc.pct_change(), cap), net=float(res["summary"]["net_pnl"]), neutral_limit=NEUTRAL_LIMIT, seconds=time.time() - t0)
+        (Path(out_dir) / "real.json").write_text(json.dumps(out, indent=1, default=str, allow_nan=False))
+        print("real tamam", f"{time.time() - t0:.0f}s", json.dumps(dict(exposure=out["exposure"], totals=real["totals"], residual=real["residual"], beta=out["beta_btc"]))[:2500])
+    else:  # perm: --seeds "0,1,2" (her tohum bir 'perm' benchmark koşusu)
+        reg = robust.regime(kls["BTCUSDT"].close.resample("1D").last())
+        for i in [int(x) for x in seeds.split(",")]:
+            r_i, w_i, _ = run(permute_forecast(f, st["active"], i))
+            d_i = decompose(w_i, r_i, sp, reg)
+            (Path(out_dir) / f"perm_{i}.json").write_text(json.dumps(dict(seed=i, totals=d_i["totals"], by_year=d_i["by_year"], net=float(r_i["summary"]["net_pnl"]), seconds=time.time() - t0), default=str, allow_nan=False))
+            print("perm", i, f"{time.time() - t0:.0f}s", d_i["totals"])
+
+
+def merge(out_dir: str) -> dict:
+    """Parça çıktılarını birleştirir: funding gerçek değerinin perm dağılımına göre sıra-p'si (1 + #{perm >= gerçek}) / (n + 1) (n küçük: çözünürlük 1/(n+1), sertifika değil)."""
+    d = Path(out_dir)
+    real = json.loads((d / "real.json").read_text())
+    perm = [json.loads(f.read_text()) for f in sorted(d.glob("perm_*.json"))]
+    fp = np.array([x["totals"]["funding"] for x in perm])
+    f_real = real["decomposition"]["totals"]["funding"]
+    return dict(real=real, n_perm=len(perm), perm_funding=fp.tolist(), perm_net=[x["net"] for x in perm], funding_rank_p=float((1 + (fp >= f_real).sum()) / (len(fp) + 1)) if len(fp) else None, min_p_resolution=1 / (len(fp) + 1))
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", default="all", choices=["all"])
+    ap.add_argument("--part", required=True, choices=["real", "perm", "merge"])
     ap.add_argument("--out", default="/data/carry_mech")
-    ap.add_argument("--n-perm", type=int, default=10)
+    ap.add_argument("--seeds", default="0")
     a = ap.parse_args()
-    stage_all(a.out, a.n_perm)
+    if a.part == "merge":
+        print(json.dumps(merge(a.out)))
+    else:
+        stage_all(a.out, a.part, a.seeds)
