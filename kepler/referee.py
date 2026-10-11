@@ -7,7 +7,10 @@ Dolum (varsayılan fill="next_open"): karar t barının kapanışında bilinir, 
 kapanışından) yalnızca testler içindir; `evaluate` reddeder. Son barın hedefi dolmaz. Likidasyondan sonra hesap ölü: yeni işlem yok (kalan marj likidasyon ücretiyle kaybedilir). Açık pozisyonun çıkış maliyeti (fee+slip) son kapanıştan
 düşülür (close_out). Maliyet: taker fee + slippage
 (bps, gidiş-dönüş; yan başına yarısı) Nautilus komisyonuna girer. Funding: T anındaki oran, T'den ÖNCE (T'de
-yapılan dolumlardan önce) tutulan pozisyon x mark fiyat; işaret: oran>0 iken long öder. Likidasyon: Nautilus bar
+yapılan dolumlardan önce) tutulan pozisyon x mark fiyat; işaret: oran>0 iken long öder. Funding SETTLEMENT ANINDA, tek kez uygulanır:
+Adapter.cash (funding nakit akışı) equity()'ye ve likidasyon fiyatının cüzdan bakiyesine girer; sıra: (1) önceki barın gövdesindeki stop/likidasyon, (2) T'deki
+funding (karardan önceki pozisyon), (3) koruyucu emirlerin yeni bakiyeyle yeniden kurulması (özsermaye bakım marjının altına inmişse reduce-only market ile
+kapanır, likidasyon sayılır), (4) T'deki kararlar/dolumlar. Net PnL'de funding bir kez sayılır (Nautilus bakiyesi funding'i görmez; koşu sonunda cash eklenir). Likidasyon: Nautilus bar
 verisinde likide etmiyor (tests/test_referee.py::test_nautilus_alone_does_not_liquidate); bu yüzden her pozisyon
 değişiminde likidasyon fiyatında reduce-only STOP_MARKET konur (Nautilus bar içi H/L'de tetikler, tetik fiyatından doldurur).
 Tetik MARK fiyatıyla: `mark` verilirse motora giden barların H/L'si mark H/L'sidir (O/C kline'dan; piyasa emirleri kapanıştan
@@ -78,17 +81,38 @@ class Adapter(Strategy):
     def __init__(self, B: dict, spec: Spec):
         super().__init__(None)
         self.B, self.spec, self.fills, self.rejected, self.split = B, spec, [], [], spec.fill == "next_open"
-        self.before, self.last, self.px = {k: {} for k in B}, dict.fromkeys(B, 0.0), {}
+        self.last, self.px = dict.fromkeys(B, 0.0), {}
         self.stop, self.lvl, self.prot = dict.fromkeys(B, math.nan), {}, set()  # strateji stopu; (stop, LP) koruyucu seviyeler; koruyucu emir kimlikleri
+        self.cash, self.fund_i = 0.0, dict.fromkeys(B, 0)  # settlement'ta uygulanmış funding toplamı (USDT); sembol başına bir sonraki işlenecek funding indeksi
+        self.missed = self.fallback = 0
         self.halt, self.dead = {}, set()  # halt[k]: stop sonrası yön, hedef yönü değişene kadar yeniden giriş yok; dead: likide olan sembol, işlem yok
 
     def pos(self, k) -> Decimal:
         return sum((Decimal(str(p.signed_qty)).quantize(self.B[k]["step"]) for p in self.cache.positions_open(instrument_id=self.B[k]["iid"])), Decimal(0))  # float gürültüsünü at
 
     def equity(self) -> float:
-        """Bakiye + gerçekleşmemiş PnL (son görülen fiyatla). Funding, likidasyon ücreti farkı ve çıkış maliyeti koşu sonunda eklenir, bu yüzden equity - capital hakem net'inden bu kalemler kadar farklıdır (UNKNOWN: boyutlama equity'si funding'i görmez)."""
-        return float(self.portfolio.account(VENUE).balance_total(USDT)) + sum(float(self.pos(j)) * (self.px[j] - float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open))
+        """Bakiye + uygulanmış funding + gerçekleşmemiş PnL (son görülen fiyatla). Likidasyon ücreti farkı ve çıkış maliyeti koşu sonunda eklenir, bu yüzden equity - capital hakem net'inden bu kalemler kadar farklıdır."""
+        return float(self.portfolio.account(VENUE).balance_total(USDT)) + self.cash + sum(float(self.pos(j)) * (self.px[j] - float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open))
                                                                                   for j in self.B if self.pos(j) != 0 and self.px.get(j))
+
+    def settle(self, k, te, pos):
+        """k sembolünün zamanı <= te olan bekleyen funding olaylarını `pos` pozisyonu (karar öncesi) ve mark kapanışıyla BİR KEZ uygular. Sıfır olmayan tutar varsa koruyucu emirler yeni bakiyeyle yeniden kurulur."""
+        ev, i, hit = self.B[k]["fund"], self.fund_i[k], False
+        while i < len(ev) and ev[i][0] <= te:
+            _, rate, c, fb = ev[i]
+            i += 1
+            if math.isnan(c):
+                self.missed += 1  # mark da kline da yok: sessizce atlanmaz, özette sayılır
+                continue
+            self.fallback += fb
+            amt = -float(pos) * c * rate
+            self.cash += amt
+            hit |= amt != 0
+        self.fund_i[k] = i
+        if hit:  # bakiye değişti: açık pozisyonların likidasyon seviyesi (ortak cüzdan) güncellenir
+            for j in self.B:
+                if j not in self.dead and self.pos(j) != 0 and self.px.get(j):
+                    self.refresh(j, self.px[j])
 
     def on_start(self):
         for b in self.B.values():
@@ -99,9 +123,9 @@ class Adapter(Strategy):
         b, pos, px = self.B[k], self.pos(k), Decimal(str(bar.close))
         self.px[k] = c
         if self.split and t % HOUR_NS:  # bar gövdesi (ts = kapanış-1ns): karar yok; funding anı T = kapanış
-            self.before[k][t + 1] = pos  # funding için: bu barın içindeki likidasyonlar düşülmüş, T'deki kararlardan önceki pozisyon
+            self.settle(k, t + 1, pos)  # funding anı T = t+1: bu barın içindeki stop/likidasyonlar düşülmüş, T'deki kararlardan önceki pozisyon
             return
-        self.before[k].setdefault(t, pos)  # (karar öncesi; gövdeden gelen değer korunur: açılış tikinde dolan gap stopu/likidasyon T'deki funding'i silmesin; açılış tikinde de tutulur: boşluktan sonraki ilk bar için funding anı doğru pozisyonu görür)
+        self.settle(k, t, pos)  # açılış tiki (karar öncesi): gövdede uygulanmamış funding (boşluk) bu pozisyonla; gövdede işlenenler tekrar uygulanmaz
         if k in self.dead:
             return
         old, new = self.stop[k], b["st"].get(t, self.stop[k])
@@ -134,7 +158,7 @@ class Adapter(Strategy):
         if q == 0 or k in self.dead:
             return
         position = self.cache.positions_open(instrument_id=b["iid"])[0]
-        wb = float(self.portfolio.account(VENUE).balance_total(USDT)) - sum(abs(float(self.pos(j))) * float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open) / self.spec.leverage for j in self.B if j != k and self.pos(j) != 0)
+        wb = float(self.portfolio.account(VENUE).balance_total(USDT)) + self.cash - sum(abs(float(self.pos(j))) * float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open) / self.spec.leverage for j in self.B if j != k and self.pos(j) != 0)
         lp = liq_price(q, float(position.avg_px_open), wb, self.spec.mmr) if self.spec.liq else None
         q_ = lambda v: None if v is None or math.isnan(v) else float(Decimal(str(v)).quantize(b["tick"]))  # noqa: E731
         s, lp = q_(self.stop[k]), q_(lp)
@@ -210,8 +234,21 @@ def run_portfolio(data: dict[str, dict], spec: Spec = Spec()) -> dict:
                 if not math.isnan(v):
                     tg[slots[i]] = v
         bt = BarType(iid, BarSpecification(1, BarAggregation.HOUR, PriceType.LAST), AggregationSource.EXTERNAL)
-        B[sym + "-PERP"] = dict(iid=iid, bt=bt, step=Decimal(step), tick=Decimal(tick), dp=pp, tg=tg, st=st)
         mark = d.get("mark")
+        fund = []
+        if funding is not None and len(funding):
+            mk = (mark if mark is not None else kl).close.astype(float)
+            by_close = dict(zip([t + HOUR_NS for t in ns(mk.index)], mk))  # T'de biten barın mark kapanışı
+            for ts, rate in zip(ns(pd.DatetimeIndex(funding.index).round("1min")), funding["last_funding_rate"].astype(float)):
+                if not close_ns[0] <= ts <= close_ns[-1]:
+                    continue
+                c, fb = by_close.get(ts, math.nan), 0
+                if math.isnan(c) and mark is not None:  # mark barı eksik (gerçek veri: BTC'de 3 boşluk): kline kapanışına düş, özette say
+                    c = float(kl.close.get(pd.Timestamp(ts, unit="ns", tz="UTC") - pd.Timedelta("1h"), math.nan))
+                    fb = int(not math.isnan(c))
+                fund.append((ts, rate, c, fb))
+            fund.sort(key=lambda e: e[0])
+        B[sym + "-PERP"] = dict(iid=iid, bt=bt, step=Decimal(step), tick=Decimal(tick), dp=pp, tg=tg, st=st, fund=fund)
         hi, lo = kl.high, kl.low
         if mark is not None and {"high", "low"} <= set(mark.columns):  # likidasyon stopu MARK fiyatının H/L'siyle tetiklenir (Binance); eksik mark barında kline H/L
             hi, lo = mark.high.reindex(kl.index).fillna(kl.high), mark.low.reindex(kl.index).fillna(kl.low)
@@ -238,28 +275,7 @@ def run_portfolio(data: dict[str, dict], spec: Spec = Spec()) -> dict:
     lq = fills[fills.liq]
     liq_fee = float((lq.qty * lq.px).sum()) * max(0.0, (spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate) - side_fee)  # motor taker fee'yi zaten kesti
     exit_cost = sum(abs(end_pos[s]) * float(d["kl"].close.iloc[-1]) * side_fee for s, d in data.items()) if spec.close_out else 0.0
-    fund, missed, fallback = 0.0, 0, 0
-    for sym, d in data.items():
-        funding, mark, kl = d.get("funding"), d.get("mark"), d["kl"]
-        if funding is None or not len(funding):
-            continue
-        close_ns = [t + HOUR_NS for t in ns(kl.index)]
-        mk = (mark if mark is not None else kl).close.astype(float)
-        by_close = dict(zip([t + HOUR_NS for t in ns(mk.index)], mk))  # T'de biten barın mark kapanışı
-        before = strat.before[sym + "-PERP"]
-        keys = sorted(before)
-        for ts, rate in zip(ns(pd.DatetimeIndex(funding.index).round("1min")), funding["last_funding_rate"].astype(float)):
-            if not close_ns[0] <= ts <= close_ns[-1]:
-                continue
-            j = bisect_left(keys, ts)  # T'de bar yoksa (boşluk) pozisyon bir sonraki barın öncesidir: boşlukta dolum olmaz
-            c = by_close.get(ts, math.nan)
-            if math.isnan(c) and mark is not None:  # mark barı eksik (gerçek veri: BTC'de 3 boşluk): kline kapanışına düş, özette say
-                c = float(kl.close.get(pd.Timestamp(ts, unit="ns", tz="UTC") - pd.Timedelta("1h"), math.nan))
-                fallback += not math.isnan(c)
-            if math.isnan(c) or j == len(keys):
-                missed += 1  # mark da kline da yok: sessizce atlanmaz, özette sayılır
-                continue
-            fund += -float(before[keys[j]]) * c * rate
+    fund, missed, fallback = strat.cash, strat.missed + sum(len(B[k]['fund']) - strat.fund_i[k] for k in B), strat.fallback  # funding settlement anında uygulandı (Adapter.settle); bakiye Nautilus'ta değil, burada eklenir
     net = bal + unreal - spec.capital + fund - liq_fee - exit_cost
     return dict(summary=dict(net_pnl=net, gross_pnl=net + fee + slip + exit_cost - fund + liq_fee, fee=fee, slippage=slip, funding=fund, liq_fee=liq_fee, exit_cost=exit_cost,
                              n_fills=len(fills), n_liq=int(fills.liq.sum()), n_stop=int(fills.stop.sum()), end_position=next(iter(end_pos.values())) if len(end_pos) == 1 else sum(abs(v) for v in end_pos.values()),
