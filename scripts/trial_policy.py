@@ -2,8 +2,17 @@
 import numpy as np
 import pandas as pd
 
+FAMILY_KEYS = ("hypothesis_id", "parent_hypothesis", "selection_family", "control_role", "run_id", "attempt")
+CONTROL_ROLES = ("primary", "secondary", "negative_control", "neutral_null", "exploratory")
 MT_METHODS = ("bonferroni", "holm", "single")
 PREREG_KEYS = ("main_hypothesis", "max_variants", "primary_metric", "multiple_testing", "alpha", "B", "power_note", "cost_note", "stopping_rule", "registered_commit")
+
+
+def check_family_meta(meta: dict) -> dict:
+    """Ledger/önkayıt sözleşmesi (run/attempt hipotezden ayrı): FAMILY_KEYS; `ledger.record(family=check_family_meta(...))`."""
+    if any(k not in meta for k in FAMILY_KEYS) or meta["control_role"] not in CONTROL_ROLES or not isinstance(meta["attempt"], int) or meta["attempt"] < 1:
+        raise ValueError(f"aile meta'sı geçersiz: {FAMILY_KEYS}; control_role {CONTROL_ROLES}; attempt >= 1")
+    return {k: meta[k] for k in FAMILY_KEYS}
 
 
 def min_B(alpha: float, m: int = 1) -> int:

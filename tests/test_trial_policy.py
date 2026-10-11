@@ -41,10 +41,10 @@ def test_family_meta_in_ledger_old_calls_unchanged(tmp_path):
     old = ledger.record(p, "referee", "h", cfg, "c", "d", result=dict(net_pnl=1.0))
     assert "family" not in old  # eski çağrı biçimi bozulmadı
     meta = dict(hypothesis_id="H1", parent_hypothesis="carry_xs", selection_family="carry_v2", control_role="primary", run_id="r1", attempt=1)
-    assert ledger.record(p, "referee", "h", cfg, "c", "d", result=dict(net_pnl=1.0), family=meta)["family"]["parent_hypothesis"] == "carry_xs"
+    assert ledger.record(p, "referee", "h", cfg, "c", "d", result=dict(net_pnl=1.0), family=tp.check_family_meta(meta))["family"]["parent_hypothesis"] == "carry_xs"
     for bad in (dict(meta, control_role="x"), {k: v for k, v in meta.items() if k != "run_id"}, dict(meta, attempt=0)):
         with pytest.raises(ValueError):
-            ledger.record(p, "referee", "h", cfg, "c", "d", result=dict(net_pnl=1.0), family=bad)
+            tp.check_family_meta(bad)
 
 
 def test_family_report_common_calendar_and_info_only():
