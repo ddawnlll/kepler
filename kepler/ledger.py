@@ -27,17 +27,6 @@ def trial_count(path) -> int:
     return sum(1 for _ in p.open()) if p.exists() else 0
 
 
-FAMILY_KEYS = ("hypothesis_id", "parent_hypothesis", "selection_family", "control_role", "run_id", "attempt")
-CONTROL_ROLES = ("primary", "secondary", "negative_control", "neutral_null", "exploratory")
-
-
-def check_family_meta(meta: dict) -> dict:
-    """Ledger/önkayıt sözleşmesi (run/attempt hipotezden ayrı): hypothesis_id, parent_hypothesis, selection_family, control_role, run_id, attempt."""
-    if any(k not in meta for k in FAMILY_KEYS) or meta["control_role"] not in CONTROL_ROLES or not isinstance(meta["attempt"], int) or meta["attempt"] < 1:
-        raise ValueError(f"aile meta'sı geçersiz: {FAMILY_KEYS}; control_role {CONTROL_ROLES}; attempt >= 1")
-    return {k: meta[k] for k in FAMILY_KEYS}
-
-
 STATUSES = ("planned", "running", "completed", "invalid", "failed", "incomplete")
 INVALID_KEYS = ("n_rejected", "funding_missed", "n_engine_unfilled")
 
@@ -65,7 +54,7 @@ def _append(path, source, hypothesis, config, code, data, status, reason, kind, 
         if invalid_result is not None:
             row["invalid_result"] = invalid_result  # performans alanı (result) boş; ham sonuç yalnız araştırma izi
         if family is not None:
-            row["family"] = family  # stats.check_family_meta: hypothesis_id, parent_hypothesis, selection_family, control_role, run_id, attempt
+            row["family"] = family  # scripts/trial_policy.check_family_meta sözleşmesi
         if receipt is not None:
             row.update(receipt=receipt, economic_id=eid)  # eski satırlarda yok: provenance_status 'legacy_partial_provenance'
         f.write(json.dumps(row, default=str, allow_nan=False) + "\n")  # NaN/inf sessizce yazılmaz (JSONL bozulmasın)
@@ -74,7 +63,7 @@ def _append(path, source, hypothesis, config, code, data, status, reason, kind, 
 
 
 def record(path, source: str, hypothesis: str, config: dict, code: str, data: str, result: dict | None = None, score: float | None = None, receipt: dict | None = None, kind: str = "run", family: dict | None = None) -> dict:
-    """kind: run | retry | smoke (retry/smoke yeni bağımsız hipotez sayılmaz: `summary`). family: check_family_meta ile doğrulanan hipotez/aile/kontrol rolü/run/attempt sözleşmesi (opsiyonel; eski çağrılar bozulmaz)."""
+    """kind: run | retry | smoke (retry/smoke yeni bağımsız hipotez sayılmaz: `summary`). family: hipotez/aile/kontrol rolü/run/attempt sözleşmesi (scripts/trial_policy.check_family_meta ile doğrulanır; opsiyonel, eski çağrılar bozulmaz)."""
     if source not in ("referee", "screen"):
         raise ValueError("source referee veya screen olmalı")
     if source == "screen" and result is not None:
@@ -85,7 +74,7 @@ def record(path, source: str, hypothesis: str, config: dict, code: str, data: st
         raise InvalidRun(why + "; deftere performans satırı olarak yazılmaz (record_attempt status=invalid)")
     if source == "referee" and config.get("audit_causal") is not True:  # korkuluk (güvenlik değil): bayrağı evaluate koyar; elle yazan bunu atlatabilir
         raise ValueError("hakem kaydı nedensellik denetiminden (evaluate) geçmemiş: config.audit_causal=True yok")
-    return _append(path, source, hypothesis, config, code, data, "completed", "", kind, result, score, None, receipt, family and check_family_meta(family))
+    return _append(path, source, hypothesis, config, code, data, "completed", "", kind, result, score, None, receipt, family)
 
 
 def record_attempt(path, status: str, hypothesis: str, config: dict, code: str, data: str, reason: str = "", result: dict | None = None, receipt: dict | None = None, kind: str = "run") -> dict:
