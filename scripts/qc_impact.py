@@ -13,6 +13,7 @@ qc.divergence_cutoff (24 ardışık bar, gelecekten bakar) sembol dışlaması o
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -153,7 +154,7 @@ def apply_policy(data: dict, res0: dict, policy: str) -> dict:
     return out
 
 
-def stage_all(out_dir: str):
+def stage_all(out_dir: str, part: str):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import audit_fix as AF  # noqa: E402
     import ensemble as E  # noqa: E402
@@ -175,24 +176,31 @@ def stage_all(out_dir: str):
     rcp = receipt.make(dict(policy="qc_impact", window=E.MAIN, spec=sp.__dict__), data, cut=cut, extra_files=[__file__])
     files = {f"{r}:{s}": {k: (qc.sha256_file(p_) if (p_ := Path(r) / "tape" / kk / f"{s}.parquet").exists() else None) for k, kk in (("klines", "klines"), ("mark", "markPriceKlines"), ("funding", "fundingRate"))}
              for s in syms for r, _, _ in AF.ROOTS if (Path(r) / "tape" / "klines" / f"{s}.parquet").exists()}  # eksik tür = None (kök başına)
-    res0, win0, _ = ev.run_book(out, data, sp, *cut)
-    imp = impact(win0, res0, sp)
-    reps = {}
-    for pol in POLICIES:
-        d = apply_policy(win0 if pol != "P0_original" else data, res0, pol) if pol != "P0_original" else data
+    t0 = time.time()
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    base = dict(receipt=dict(economic_id=rcp["economic_id"], data_manifest_id=rcp["data"]["id"], provenance=rcp["provenance"], cut=rcp["data"]["cut"], symbols=rcp["data"]["symbols"]), tape_file_sha256=files, window=E.MAIN)
+
+    def replay(pol, res0=None):
+        d = data if pol == "P0_original" else apply_policy(data, res0, pol)
         r, w, _ = ev.run_book(out, d, sp, *cut)
         rc = report.reconcile(w, r, sp)
         dn = report.book_pnl(w, r, sp).resample("1D").sum()
-        reps[pol] = dict(net=float(r["summary"]["net_pnl"]), funding=float(r["summary"]["funding"]), sharpe=float((dn / cap).mean() / (dn / cap).std(ddof=1) * np.sqrt(365)), n_liq=int(r["summary"]["n_liq"]),
-                         recon_ok=bool(rc["ok"]), recon_diff=float(rc["diff"]), funding_mark_fallback=int(r["summary"]["funding_mark_fallback"]), funding_missed=int(r["summary"]["funding_missed"]), n_rejected=int(r["summary"]["n_rejected"]))
-    Path(out_dir).mkdir(parents=True, exist_ok=True)
-    doc = dict(receipt=dict(economic_id=rcp["economic_id"], data_manifest_id=rcp["data"]["id"], provenance=rcp["provenance"], cut=rcp["data"]["cut"], symbols=rcp["data"]["symbols"]), tape_file_sha256=files, impact=imp, replays=reps,
-               original_net=float(res0["summary"]["net_pnl"]), window=E.MAIN)
-    (Path(out_dir) / "qc_impact.json").write_text(json.dumps(doc, indent=1, default=str, allow_nan=False))
-    print(json.dumps(dict(replays=reps, kinds={k: {a: round(b, 4) if isinstance(b, float) else b for a, b in v.items()} for k, v in imp["kinds"].items()}, totals=imp["totals"], unknown=imp["unknown_interval_events"]), indent=1))
+        return r, w, dict(net=float(r["summary"]["net_pnl"]), funding=float(r["summary"]["funding"]), sharpe=float((dn / cap).mean() / (dn / cap).std(ddof=1) * np.sqrt(365)), n_liq=int(r["summary"]["n_liq"]), recon_ok=bool(rc["ok"]),
+                          recon_diff=float(rc["diff"]), funding_mark_fallback=int(r["summary"]["funding_mark_fallback"]), funding_missed=int(r["summary"]["funding_missed"]), n_rejected=int(r["summary"]["n_rejected"]), seconds=time.time() - t0)
+    if part == "P0_original":  # etki tablosu + orijinal replay (yalnız bu parça bayrak x pozisyon kesişimini üretir)
+        r0, w0, rep = replay(part)
+        doc = dict(base, part=part, replay=rep, impact=impact(w0, r0, sp), original_net=float(r0["summary"]["net_pnl"]))
+    else:
+        res0 = replay("P0_original")[0] if part == "P2_funding_adverse_flagged" else None  # P2 pozisyon yönünü orijinal fill'lerden alır
+        doc = dict(base, part=part, replay=replay(part, res0)[2])
+    doc["seconds"] = time.time() - t0
+    (Path(out_dir) / f"{part}.json").write_text(json.dumps(doc, indent=1, default=str, allow_nan=False))
+    print(part, "tamam", f"{doc['seconds']:.0f}s", json.dumps(doc["replay"]))
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="/data/qc_impact")
-    stage_all(ap.parse_args().out)
+    ap.add_argument("--part", required=True, choices=POLICIES)  # her politika ayrı konteynerde (modal run --detach); çıktı <out>/<part>.json
+    a = ap.parse_args()
+    stage_all(a.out, a.part)
