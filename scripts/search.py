@@ -53,7 +53,7 @@ def one(a):
     family, name, p, sym, window, specs, out, dh, tag = a
     kl, mark, funding = g2.D[sym]
     led = Path(out) / f"ledger_{tag}_{family}.jsonl"
-    res = ev.evaluate(make(family, p, sym), kl, specs, led, f"{tag} {family}: {name}", dh, funding, mark, g2.NOTIONAL, name, dict(p, family=family), window)
+    res = ev.evaluate(make(family, p, sym), kl, specs, led, f"{tag} {family}: {name}", dh, funding, mark, g2.NOTIONAL, name, dict(p, family=family), window, symbol=sym)
     k, mk = kl[(kl.index >= window[0]) & (kl.index < window[1])], mark
     rows = []
     for sp, r in zip(specs, res):

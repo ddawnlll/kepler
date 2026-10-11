@@ -44,7 +44,7 @@ nasıl çalıştırılır `AGENTS.md`'de.
  [4] HAKEM (yürütme)       referee.run(kl, target, Spec, funding, mark) -> fills, özet
         │  Nautilus 2.0.0rc5 + yapıştırma: sonraki-bar dolum, fee+slip, funding, mark-tetikli likidasyon
         ▼
- [5] DENETİM + DEFTER      evaluate(): nedensellik denetimi -> hakem -> ledger.record (append-only, flock)
+ [5] DENETİM + DEFTER      evaluate(): nedensellik denetimi -> hakem -> ledger.record (append-only; flock yalnız yerel, dağıtık: job-receipt + toplayıcı)
         │
         ▼
  [6] DEĞERLENDİRME         bölme (walk-forward / nested) + null + istatistik (Bonferroni, DSR, ...)
@@ -201,7 +201,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
   belirlenimlilik (sinyal iki kez aynı) → |unit| ≤ 1 → hakem → `ledger.record`.
 - `window=(başlangıç, bitiş)`: sinyal tam seride hesaplanır (ısınma), hakem yalnızca pencerede koşar; pencere başında tutulan pozisyon açık hedef olur.
 - **Defter satırı:** `trial, time, source (referee|screen), hypothesis, config, config_hash, code_hash, data_hash, result, score`.
-  Append-only, `fcntl.flock` ile eşzamanlı yazarlar güvenli; NaN/inf reddedilir; hakem satırı `config.audit_causal=True` ister (korkuluk, güvenlik değil).
+  Append-only; `fcntl.flock` yalnız AYNI makine/konteyner içindeki yazarlar için güvence verir (yerel flock testi dağıtık güvence değildir; Modal Volume'da konteynerler arası kilit bu depoda doğrulanmadı ve güvenilmez). Dağıtık işler için tek yazar modeli: her job `ledger.write_job_receipt` ile değişmez (O_EXCL) receipt dosyası yazar, `ledger.aggregate` tek toplayıcı olarak deterministik sırayla (ad sıralı) ve atomik olarak deftere toplar; tekrar toplama idempotent, aynı adda farklı içerik veya bozuk receipt açık hata. Her satır `status` (completed/invalid/failed/incomplete/planned/running), `reason`, `kind` (run/retry/smoke), `attempt` taşır: geçersiz koşu (`n_rejected`, `funding_missed`, `n_engine_unfilled`, PnL mutabakatı) `record_attempt(status=invalid)` ile araştırma izinde `result=None` olarak (ham sonuç `invalid_result`) korunur ve `evaluate*` ardından `InvalidRun` fırlatır; çöken koşu `failed` yazılır. Deneme sayacı tüm satırları sayar (muhafazakâr). `ledger.summary`: retry/smoke ve aynı ekonomik kimliğin tekrarları bağımsız hipotez sayılmaz; NaN/inf reddedilir; hakem satırı `config.audit_causal=True` ister (korkuluk, güvenlik değil).
 - **Deneme sayımı:** her hakem ve eleme satırı +1. Null çekilişleri ve sağlamlık koşuları kontrol sayılır, **N'ye girmez**,
   ancak sonuçlarına göre seçim yapılırsa girer. Projenin kümülatif deneme sayısı her raporda ayrıca yazılır (DuckDB: `ledger.query`).
 - Hash'ler: `code_hash` = hakem, evaluate, audit, ledger, tape ve sinyal kaynak dosyaları; `data_hash` = manifest sha256.
@@ -334,6 +334,7 @@ Tam Turtle S1/S2 (Motor v2: N-boyutlama, 2N stop, piramit, birim sınırları; `
 | `test_funding_settlement.py` | 6 | #10: E03 (funding sonrası marj ihlali likidasyon), hayatta kalan sınır (5 ödeme), sıfır-funding parity ve çift sayım yok, short alır, equity_scale funding'i görür, iki sembol ortak nakit akışı |
 | `test_intents_reconcile.py` | 5 | #11: E04 blocked_minimum, lot no-op, niyet↔dolum izi, boşluk/boş saat funding mutabakatı, açık pozisyon çıkış değerlemesi, ayrışmanın yakalanması |
 | `test_receipt.py` | 8 | #12: aynı girdi aynı kimlik; closure/config/üyelik/fiyat/funding/mark/kesim/paket kodu değişince kimlik değişir; köken sırsız; legacy işareti |
+| `test_ledger_attempts.py` | 6 | #13: geçersiz/başarısız deneme kaydı, durumlar, retry/smoke, eşzamanlı job receipt + deterministik toplama, çelişkili duplicate, evaluate_book invalid/failed |
 | `test_review_fixes.py` | 9 | funding aralıkları, NaN/ms sapması, fitil/NaN hacim, red/eksik funding deftere girmez, boşlukta likidasyon gap fiyatından |
 | `test_trust.py` | 7 | nedensellik (sızdıran ve uzunluğa bağlı sinyal yakalanır), belirlenimlilik hash'i, pencereli = tam tape, flat = 0, rastgele ≈ −maliyet |
 | `test_signals.py` | 11 | Turtle giriş/çıkış/flip, Donchian trend filtresi (350 gün EMA), aylık sinyal yerleşimi, dual momentum, carry ve nedensel funding birleşimi, tüm sinyaller nedensel ve |x| ≤ 1, kesitsel dolar-nötr, EMA trend |

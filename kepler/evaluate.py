@@ -19,7 +19,7 @@ def _realistic(specs):
 
 
 def evaluate(signal, kl: pd.DataFrame, specs: list, ledger_path, hypothesis: str, data: str, funding=None, mark=None,
-             notional: float = 1000.0, name: str = "", params: dict | None = None, window: tuple | None = None, size=None, kill_dd: float | None = None) -> list[dict]:
+             notional: float = 1000.0, name: str = "", params: dict | None = None, window: tuple | None = None, size=None, kill_dd: float | None = None, symbol: str | None = None) -> list[dict]:
     """Her spec için {'res': hakem sonucu, 'row': defter satırı}. Denetim (nedensellik) sinyal başına bir kez koşar.
     size(kl, unit, capital) -> hedef notional serisi (risk motoru, örn. risk.vol_target); verilmezse sabit `notional`. kill_dd: equity düşüşü eşiği (risk.kill_switch)."""
     _realistic(specs)
@@ -45,8 +45,11 @@ def evaluate(signal, kl: pd.DataFrame, specs: list, ledger_path, hypothesis: str
         if kill_dd is not None:
             tgt, tripped = risk.kill_switch(tgt, risk.equity_curve(k, mk, funding, res, sp), kill_dd)
             res = referee.run(k, tgt, sp, funding, mk) if tripped is not None else res
-        cfg = dict(name=name, params=params or {}, notional=notional, spec=asdict(sp), window=[str(lo), str(hi)], audit_causal=True, sized=size is not None, kill_dd=kill_dd, kill_at=str(tripped))
-        rc = receipt.make(cfg, {"SYM": dict(kl=kl, funding=funding, mark=mark)}, cut=(lo, hi), book=signal, extra_files=[sig_src] if sig_src else [])  # #12: tüm kod + config + kullanılan veri içeriği
+        cfg = dict(name=name, params=params or {}, notional=notional, spec=asdict(sp), window=[str(lo), str(hi)], audit_causal=True, sized=size is not None, kill_dd=kill_dd, kill_at=str(tripped), **({"symbol": symbol} if symbol else {}))
+        rc = receipt.make(cfg, {symbol or "SYM": dict(kl=kl, funding=funding, mark=mark)}, cut=(lo, hi), book=signal, extra_files=[sig_src] if sig_src else [])  # #12: tüm kod + config + kullanılan veri içeriği
+        if why := ledger.invalid_reason(res["summary"]):
+            ledger.record_attempt(ledger_path, "invalid", hypothesis, cfg, rc["code_hash"], data, reason=why, result=res["summary"], receipt=rc)
+            raise ledger.InvalidRun(why)
         out.append(dict(res=res, row=ledger.record(ledger_path, "referee", hypothesis, cfg, rc["code_hash"], data, result=res["summary"], receipt=rc)))
     return out
 
@@ -80,15 +83,22 @@ def evaluate_book(book, data: dict[str, dict], specs: list, ledger_path, hypothe
         raise ValueError("kitap belirlenimsiz")
     utc = lambda x: pd.Timestamp(x).tz_localize("UTC") if pd.Timestamp(x).tzinfo is None else pd.Timestamp(x).tz_convert("UTC")  # noqa: E731
     lo, hi = (utc(window[0]), utc(window[1])) if window else (min(k.index[0] for k in kls.values()), max(k.index[-1] for k in kls.values()) + pd.Timedelta("1h"))
-    book_src = inspect.getsourcefile(book)
+    extra = [x for x in [inspect.getsourcefile(book)] if x]
     rows = []
     for sp in specs:
-        res, win, tripped = run_book(out, data, sp, lo, hi, kill_dd)
-        rc = report.reconcile(win, res, sp)  # saatlik yeniden kurulum toplamı = hakem net'i (önceden tanımlı tolerans); ayrışırsa sessiz geçmez
-        if not rc["ok"]:
-            raise ValueError(f"PnL mutabakatı tutmadı: fark {rc['diff']:.6f} > tolerans {rc['tol']:.6f} USDT")
-        res["summary"]["recon_diff"] = rc["diff"]
-        cfg = dict(name=name, params=params or {}, spec=asdict(sp), window=[str(lo), str(hi)], audit_causal=True, book=True, symbols=sorted(win), kill_dd=kill_dd, kill_at=str(tripped))
-        rc = receipt.make(cfg, win, cut=(lo, hi), book=book, extra_files=[book_src] if book_src else [])  # win = hakemin gerçekten tükettiği pencere verisi
+        cfg0 = dict(name=name, params=params or {}, spec=asdict(sp), window=[str(lo), str(hi)], audit_causal=True, book=True, kill_dd=kill_dd)
+        try:
+            res, win, tripped = run_book(out, data, sp, lo, hi, kill_dd)
+        except Exception as e:  # çöken koşu araştırma izinden kaybolmasın (receipt tam girdiyi kapsar; pencere dilimi yok)
+            ledger.record_attempt(ledger_path, "failed", hypothesis, cfg0, "", data_hash, reason=f"{type(e).__name__}: {e}"[:300], receipt=receipt.make(cfg0, data, cut=(lo, hi), book=book, extra_files=extra))
+            raise
+        mut = report.reconcile(win, res, sp)  # saatlik yeniden kurulum toplamı = hakem net'i (önceden tanımlı tolerans); ayrışırsa sessiz geçmez
+        res["summary"]["recon_diff"] = mut["diff"]
+        cfg = dict(cfg0, symbols=sorted(win), kill_at=str(tripped))
+        rc = receipt.make(cfg, win, cut=(lo, hi), book=book, extra_files=extra)  # win = hakemin gerçekten tükettiği pencere verisi
+        why = ledger.invalid_reason(res["summary"]) or (None if mut["ok"] else f"PnL mutabakatı tutmadı: fark {mut['diff']:.6f} > tolerans {mut['tol']:.6f} USDT")
+        if why:  # geçersiz: performans istatistiğine girmez, araştırma geçmişinde `invalid` olarak korunur
+            ledger.record_attempt(ledger_path, "invalid", hypothesis, cfg, rc["code_hash"], data_hash, reason=why, result=res["summary"], receipt=rc)
+            raise ledger.InvalidRun(why)
         rows.append(dict(res=res, win=win, row=ledger.record(ledger_path, "referee", hypothesis, cfg, rc["code_hash"], data_hash, result=res["summary"], receipt=rc)))
     return rows
