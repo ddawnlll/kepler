@@ -6,6 +6,7 @@ import platform
 import subprocess
 import time
 import uuid
+from contextlib import suppress
 from importlib import metadata
 from pathlib import Path
 
@@ -75,10 +76,8 @@ def _git(*a) -> str:
 
 
 def _ver(pkg):
-    try:
+    with suppress(metadata.PackageNotFoundError):
         return metadata.version(pkg)
-    except metadata.PackageNotFoundError:
-        return None
 
 
 def provenance() -> dict:
