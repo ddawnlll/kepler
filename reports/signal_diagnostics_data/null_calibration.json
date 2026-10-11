@@ -1,0 +1,156 @@
+{
+ "negative_controls": [
+  "rotation_common_offset: t\u00fcm semboller ayn\u0131 k ile dairesel kayd\u0131r\u0131l\u0131r (mevcut K1, birincil)",
+  "rotation_independent_offset: her sembol kendi k'siyle (kesit yap\u0131s\u0131 bozulur; maruziyeti e\u015fleyen alternatif)",
+  "time_shuffle_blocks: sinyal bloklar\u0131 (ort. 20 g\u00fcn) kar\u0131\u015ft\u0131r\u0131l\u0131r (tutma s\u00fcresi korunur, zaman yap\u0131s\u0131 bozulur)"
+ ],
+ "estimator_check": [
+  {
+   "point": 0.026381774612310515,
+   "se_fixed": 0.05315934711281531,
+   "se_rerank": 0.05527731830346098,
+   "corr_replicas": 0.9923720211542164,
+   "max_abs_diff": 0.022938953958374406,
+   "mean_diff": 0.00182967171697795
+  },
+  {
+   "point": 0.010567154449864252,
+   "se_fixed": 0.05068143748391833,
+   "se_rerank": 0.05358788689089987,
+   "corr_replicas": 0.9864474478442616,
+   "max_abs_diff": 0.026647122208236694,
+   "mean_diff": -0.0003249970224909997
+  },
+  {
+   "point": 0.023104330788860615,
+   "se_fixed": 0.05576425691212918,
+   "se_rerank": 0.05579395278116886,
+   "corr_replicas": 0.9928530815835013,
+   "max_abs_diff": 0.021326413578943142,
+   "mean_diff": 0.0013612000426490446
+  }
+ ],
+ "fp_fixed": [
+  {
+   "T": 300,
+   "S": 6,
+   "h": 1,
+   "phi": 0.9,
+   "mean_block": 20,
+   "reps": 300,
+   "B": 200,
+   "estimator": "fixed_rank",
+   "fp": 0.09333333333333334,
+   "lo": 0.06536379092760147,
+   "hi": 0.13158619880389022
+  },
+  {
+   "T": 300,
+   "S": 6,
+   "h": 10,
+   "phi": 0.9,
+   "mean_block": 5,
+   "reps": 300,
+   "B": 200,
+   "estimator": "fixed_rank",
+   "fp": 0.18666666666666668,
+   "lo": 0.14663682127589442,
+   "hi": 0.23461972818935325
+  },
+  {
+   "T": 300,
+   "S": 6,
+   "h": 10,
+   "phi": 0.9,
+   "mean_block": 20,
+   "reps": 300,
+   "B": 200,
+   "estimator": "fixed_rank",
+   "fp": 0.13333333333333333,
+   "lo": 0.09946587636064691,
+   "hi": 0.17647263897102589
+  },
+  {
+   "T": 300,
+   "S": 6,
+   "h": 40,
+   "phi": 0.9,
+   "mean_block": 20,
+   "reps": 300,
+   "B": 200,
+   "estimator": "fixed_rank",
+   "fp": 0.14666666666666667,
+   "lo": 0.11110461424509804,
+   "hi": 0.19116340961996847
+  },
+  {
+   "T": 300,
+   "S": 6,
+   "h": 40,
+   "phi": 0.9,
+   "mean_block": 5,
+   "reps": 300,
+   "B": 200,
+   "estimator": "fixed_rank",
+   "fp": 0.27,
+   "lo": 0.22290322460653214,
+   "hi": 0.32291275319242624
+  },
+  {
+   "T": 300,
+   "S": 6,
+   "h": 40,
+   "phi": 0.9,
+   "mean_block": 80,
+   "reps": 300,
+   "B": 200,
+   "estimator": "fixed_rank",
+   "fp": 0.21666666666666667,
+   "lo": 0.173787117091094,
+   "hi": 0.2667108265742896
+  }
+ ],
+ "fp_rerank": [
+  {
+   "T": 300,
+   "S": 6,
+   "h": 10,
+   "phi": 0.9,
+   "mean_block": 20,
+   "reps": 75,
+   "B": 100,
+   "estimator": "rerank",
+   "fp": 0.16,
+   "lo": 0.09396421323774289,
+   "hi": 0.25916915797745316
+  },
+  {
+   "T": 300,
+   "S": 6,
+   "h": 40,
+   "phi": 0.9,
+   "mean_block": 20,
+   "reps": 75,
+   "B": 100,
+   "estimator": "rerank",
+   "fp": 0.21333333333333335,
+   "lo": 0.13580086342007996,
+   "hi": 0.31880178289861477
+  }
+ ],
+ "selection_null": {
+  "reps": 100,
+  "K": 9,
+  "conditional_fp": 0.3,
+  "conditional_ci": [
+   0.21894753866228117,
+   0.39585038432811953
+  ],
+  "procedure_fp": 0.03,
+  "procedure_ci": [
+   0.010254338223414816,
+   0.08452078080402699
+  ],
+  "nominal": 0.05
+ }
+}
