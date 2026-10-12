@@ -1,0 +1,29 @@
+{
+ "files": 200,
+ "expected": 200,
+ "aggregated": 200,
+ "unique_pairs": 200,
+ "trials_unique": 200,
+ "trial_is_sequence": true,
+ "missing": [],
+ "sha": "466eec4e063fcf1888509f0fefddc35768b5019bde24b56b05e5c70abd257a21",
+ "again_same": true,
+ "flock": [
+  {
+   "id": 0,
+   "acquired": true,
+   "start": 1791837737.6534896,
+   "end": 1791837977.6547456,
+   "waited": 0.001149892807006836
+  },
+  {
+   "id": 1,
+   "acquired": true,
+   "start": 1791837739.5394325,
+   "end": 1791837979.5404983,
+   "waited": 0.001363992691040039
+  }
+ ],
+ "flock_both_acquired": true,
+ "flock_intervals_overlap": true
+}
