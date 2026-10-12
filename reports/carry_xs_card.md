@@ -36,3 +36,26 @@
 - K2 benchmark'ı gösterge: maliyetsiz, fonlamasız EW fiyat getirisi (hakem al-tut'u artefakt verir). K7 koşulamadı, K9 Faz 2'de görülmüştü: en iyi olası karar ZAYIF idi.
 - Kontrol koşuları (null, maliyet, komşu, ablasyon, pencere) deftere girmedi; K1 p-testi 1 satır (`trials_card.jsonl`): N + 1. Önceki toplam N 5 090 → **5 091** (muhafazakâr).
 - Funding Binance'ten; MEXC doğrulanmadı. Sermaye 10 000; küçük hesapta lot/min-notional etkisi ölçülmedi (önceki denetim: asgari uygulanabilir sermaye ensemble için $2 500).
+
+## Mekanizma ve dolar-nötrlük teşhisi (#17, 12 Ekim 2026)
+
+Kod: `scripts/carry_mechanism.py`; ham çıktı: `reports/signal_diagnostics_data/carry_mechanism/`. Strateji, uzman ve boyutlama DEĞİŞMEDİ; geliştirme verisi (2020-04 → 2026-04), mühür yok; **NO_EDGE kararı korunur** (K1 p=17/301≈0,0565 > yerel eşik 0,0167; bu bölüm onu kurtarmaz). Mekanizma testi, tradeable edge kararı değildir: $500 uygulanabilirliği ayrıca FAIL (`reports/account_reality.md`, #16).
+
+**Falsifiye edilebilir hipotez (koşudan önce yazıldı, script başlığında):** carry_xs, kesitte 7 günlük funding'i en yüksek (kalabalık long) sembollere short, en düşük olanlara long olarak toplar; funding gelirini o bacakların taşıdığı fiyat riskinin karşılığı olarak alır. Tahminler: (a) funding bileşeni yıl/rejim kırılımlarının çoğunda pozitif; (b) funding bileşeni aynı kesit dağılımı ve boyutlamayla rastgele atanmış tahminlerin dağılımının üstünde; (c) fiyat bileşeni sistematik pozitif değil.
+
+**Dolar maruziyeti (forecast → vol/risk/cap → tampon → lot → fiili, günlük, 2.164 gün):**
+
+| aşama | ort. net $ | ort. brüt $ | ort. net/brüt | ort. \|net\|/brüt | günler \|net\|/brüt > 0,20 |
+|---|---:|---:|---:|---:|---:|
+| tahmin (F) | 0,0 | 8,9 | 0 | 0 | %0 |
+| boyutlama (tampon yok) | 46,4 | 1.475 | 0,030 | 0,116 | %18,5 |
+| tampon sonrası hedef | 38,3 | 1.458 | 0,025 | 0,121 | %19,4 |
+| fiili (lot sonrası, fill'lerden) | 42,6 | 1.463 | 0,026 | 0,128 | %21,5 |
+
+Tahmin toplamı sıfır (|Σ F| ort. 2e-16) dolar nötrlüğünü GARANTİ ETMEZ: σ'ya bölme + tavanlar net dolar maruziyeti üretir (4 sentetik varlıkta net/brüt %70: `tests/test_carry_mechanism.py`; eşit σ'da nötr kalır). 20 sembollük gerçek evrende önceden seçilen ölçüt (ort. \|net\|/brüt ≤ 0,20) sağlanıyor (≈ %12–13), ama kısıt yok: günlerin ≈ %20'sinde aşılıyor. **İddia düzeltmesi:** carry_xs "rank-nötr tahmin; ortalamada yaklaşık dolar-nötr, kısıtsız" olarak anılır, "dolar-nötr" değil (`carry_xs.py` docstring güncellendi). Dolar nötrlüğü hipotez için gerekirse (beta/funding karışımını ayırmak), kısıt sizing/buffer/lot SONRASI uygulanmalı ve parent family'yi koruyan yeni önkayıt gerekir; bu iş strateji değiştirmedi. BTC günlük getirisine beta = 0,0007 (korelasyon 0,014): beta ≈ 0 dolar nötrlüğünü kanıtlamaz, ikisi ayrı raporlandı.
+
+**PnL ayrışması (saatlik yeniden kurulum; toplam hakem net'iyle mutabık, residual 5e-8 USDT):** fiyat +1.706,85, funding +1.021,94, maliyet −370,39, net **+2.358,40** (kartla aynı). Yıl: 2020 fiyat 218 / funding 144; 2021 825 / 125; 2022 −95 / 147; 2023 −117 / 277; 2024 934 / 86; 2025 275 / 137; 2026 (90 gün) −334 / 106. Rejim (nedensel BTC EMA etiketi): bull net +1.987 (1.230 gün), bear −32 (616), range +101 (206), etiketsiz ısınma +303 (139 gün). Funding her yıl ve her rejimde pozitif; fiyat bileşeni 2022, 2023, 2026'da ve bear rejiminde negatif. Net'in %84'ü bull rejim günlerinden gelir.
+
+**Benchmark (önceden seçildi: 'perm' = günlük kesitte tahminleri aktif semboller arasında permüte et; kesit dağılımı, aktiflik, boyutlama korunur):** referee ile permüte koşular 3 saatlik Modal sınırında bitmedi (rastgele atama devri patlatıyor), bu yüzden sürtünmesiz GÜNLÜK VEKİL muhasebe kullanıldı (fiyat = Σ n·R, funding = −Σ n·F, maliyet = 6 bps/yan × Σ|Δn|; lot/stop/gecikme yok). Vekil doğrulaması (gerçek kitap): fiyat 1.502 (referee 1.707, −%12), funding 980 (1.022, −%4), maliyet −369 (−370). 39 permütasyon: funding gerçek 980 vs perm ort. 0,7 (p95 31,8); fiyat gerçek 1.502 vs perm ort. −103 (p95 1.025). Sıra-p'si 1/40 = 0,025 (çözünürlük sınırı; null kalibre EDİLMEDİ, #15 uyarıları geçerli). Toplam karşılaştırma ADİL değil: permüte kitapların devir maliyeti çok yüksek (toplam perm ort. −2.715).
+
+**Hipotez sonucu:** (a) destekleniyor (funding her yıl/rejimde pozitif), (b) destekleniyor (funding perm dağılımının çok üstünde), **(c) desteklenmiyor**: fiyat bileşeni de perm dağılımının üstünde ve toplam brütün %63'ü, ama yıl ve rejime göre dağınık (bull'da yoğun, bear/2022/2023/2026 negatif). Yani gelir "yalnız funding" değildir; funding'i kimin neden ödediği (kalabalık long'ların pahalı taşıması) ve bunun karşılığında beklenen risk (taşıma/yön riski) bu veriyle ayrıştırılamaz. Fiyat bileşeni için ayrı bir açıklama (ör. bull rejimde yön/altcoin beta'sı) önerisi falsifiye edilmedi: UNKNOWN. Maliyet ve $500 uygulanabilirliği hesaba katıldığında karar yine yok (NO_EDGE, $500 FAIL).
