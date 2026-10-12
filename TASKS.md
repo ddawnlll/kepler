@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: Modal koşu süresi < 5 dk (issue #34: fan-out, kırpma, benchmark) | durum: devam (hakem #27/#28/#32 + run_book trim_flat #29 uygulandı; ölçüm tablosu bekliyor) | protokol: yok (araç/hız işi, ön kayıt gerekmez)
+Aktif iş: Modal koşu süresi < 5 dk (issue #34: fan-out, kırpma, benchmark) | durum: bitti (hakem #27/#28/#32 + trim_flat #29 uygulandı ve ölçüldü; primary aşaması ölçülmedi; kalıcı kilit kararı kullanıcıda) | protokol: yok (araç/hız işi, ön kayıt gerekmez)
 
 (Önceki aktif iş: sinyal teşhisi (9 uzmanın IC/kalibrasyon/sönme/kümelenme; nötr bölge + carry yeniden kurulumu; kullanıcı görevi 2026-10-06) | durum: bitti (push onayı bekliyor) | protokol: reports/preregistration/signal_diagnostics.md)
 
@@ -16,6 +16,7 @@ Aktif iş: Modal koşu süresi < 5 dk (issue #34: fan-out, kırpma, benchmark) |
 - **`scripts/carryxs_card.py` `trade_set` (#29, script katmanı):** pencerede hep düz sembol hakeme verilmez (196 → 155 sembol, tek koşu 322 → 262 sn, net/dolum hash'i birebir). Bar-dizisi kırpma artık `evaluate.run_book(trim_flat=True)` (`trade_set` kaldırıldı; test `tests/test_run_book_trim.py`).
 - **`scripts/ensemble.py` primary:** en uzun iş (`abl_no_buffer`) ilk başlar.
 - **`scripts/perf_bench.py` (#33):** tekrarlı, pariteli benchmark (ev1 / load / null).
+- **Ölçüm (2026-10-12, Modal; aynı konteynerde eski/yeni hakem sırayla, 3 tekrar; konteynerler arası makine farkı 21↔34 sn olduğundan yalnız bu kıyas geçerli; parite tüm koşularda birebir: net, dolum sayısı, hash, funding):** medyan sn eski→yeni: EV1 40→37, EV1 buffer=0 319→261, null u=0 41→35, null u=1 41→30, carry_xs ana 335→178, carry_xs delay=1 330→181 (ağır gürültü: aralıklar örtüşüyor, EV1/null kazancı kesin değil). carry_xs null B=300 fan-out (`--chunk 2`, 150 konteyner): **uçtan uca 267 sn**, 300/300 çekiliş eski sonuçla aynı (`funding_missed` hariç: kırpılan saatleri sayar). EV1 null B=300 110 sn (önceki ölçüm). **Primary aşaması ≤ 5 dk: ölçülmedi/doğrulanmadı** (carry_xs ana koşu tek başına 178 sn). Bar listesi önbelleği (#32) ölçüm kanıtı olmadığı için eklenmedi.
 - **Uygulandı (oturum kilidi açık, 2026-10-12):** #27 Nautilus günlüğünü kapat (`LoggerConfig(bypass_logging=True)`), #28 dolum başına `Portfolio.account()`, #32 bar başına Python yükü. #31 ölçümle düzeltildi: `load_dynamic` yalnız 11–17 sn; iş parçacıklı yükleme DuckDB varsayılan bağlantısında çöküyor (denendi, geri alındı).
 
 ## Sinyal teşhisi (2026-10-06, kullanıcı görevi): bitti, push onayı bekliyor

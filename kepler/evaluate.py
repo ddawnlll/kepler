@@ -67,7 +67,7 @@ def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | No
     trim_flat (opt-in, hız; sonuç değişmez): hedefi (ffill sonrası) 0 ve stop'u olmayan bar dizileri hakeme gitmez; her etkin bardan (hedef != 0 ya da stop var) sonra margin = 3 + spec.delay bar
     tutulur (kapatan dolum, stop iptali, funding o barlarda). Pencerede hiç etkin barı olmayan semboller tümden atılır. `kill_dd` ile birlikte kullanılmaz (tetikten sonra hedefler 0 olur, kırpma
     sıfırlanmış hedefe göre yeniden yapılmalı). Dolum tablosu, net ve günlük PnL aynıdır; `funding_missed` sayacının anlamı değişir: mark verilmediğinde hakem funding fiyatını kırpılmış kline'dan okur, bu yüzden kırpılan (pozisyonsuz, funding katkısı 0) saatlerdeki funding anları da
-    "eksik" sayılır (carry_xs null çekilişlerinde 44–120, tam koşuda 0); funding tutarı ve net etkilenmez. Sayaç yalnızca trim_flat=False koşularında veri eksikliği göstergesi olarak okunur. Dönen `win` kırpılmıştır (report.book_pnl yine hakem netiyle uzlaşır)."""
+    "eksik" sayılır (carry_xs null çekilişlerinde 44–120, ana koşuda 392); funding tutarı ve net etkilenmez. Sayaç yalnızca trim_flat=False koşularında veri eksikliği göstergesi olarak okunur. Dönen `win` kırpılmıştır (report.book_pnl yine hakem netiyle uzlaşır)."""
     if trim_flat and kill_dd is not None:
         raise ValueError("trim_flat kill_dd ile birlikte kullanılamaz")
     keep = {s: (d["kl"].index >= lo) & (d["kl"].index < hi) for s, d in data.items()}
