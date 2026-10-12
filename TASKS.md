@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: issue #10-#19 çözümü (yığılı PR'lar #21-#26, #35, #36, #38, #20) | durum: devam (inceleme bekliyor; P3 replay ve gerçek-veri doğrulamaları açık) | protokol: yok (araç/hakem düzeltmeleri; önkayıt kriterleri scripts docstring'lerinde)
+Aktif iş: issue #10-#19 çözümü (yığılı PR'lar #21-#26, #35, #36, #38, #20) | durum: engelli | sebep: yığılı PR'lar kullanıcı/bağımsız inceleme bekliyor; kalan P3 replay ve gerçek-veri doğrulamaları korumalı çekirdek (KEPLER_CORE_UNLOCK=1) ve kullanıcı kararı gerektiriyor, devam ettirici yapamaz; doğrulanmadı | protokol: yok (araç/hakem düzeltmeleri; önkayıt kriterleri scripts docstring'lerinde)
 
 (Önceki aktif iş: ev1_plus_new trade denetimi düzeltmeleri | durum: bitti (push onayı bekliyor) | protokol: reports/fix_progress.md)
 
