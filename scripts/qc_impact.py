@@ -116,7 +116,7 @@ def impact(data: dict, res: dict, spec) -> dict:
     return dict(kinds=rows, totals=tot, unknown_interval_events=unknown_interval)
 
 
-def apply_policy(data: dict, res0: dict, policy: str) -> dict:
+def apply_policy(data: dict, res0: dict | None, policy: str, targets: dict | None = None) -> dict:
     """Politikaya göre funding/mark verisini dönüştürür (aynı sembol/pencere; point-in-time: olay başına yalnız kendi verisi)."""
     if policy == "P0_original":
         return data
@@ -138,7 +138,8 @@ def apply_policy(data: dict, res0: dict, policy: str) -> dict:
             out[s] = dict(d, funding=f.set_axis(fund.index))
         elif policy == "P2_funding_adverse_flagged":
             bad_T |= {T for T in ev.index if (T - HOUR) in div}
-            pos = positions(res0["fills"], s, kl.index)
+            # pozisyon yönü: orijinal fill'ler varsa onlardan, yoksa tutulan hedefin işaretinden (lot no-op'u yönü değiştirmez; tek koşu bütçesi için)
+            pos = positions(res0["fills"], s, kl.index) if res0 is not None else np.sign(targets[s].target.ffill().fillna(0.0))
             for T in f.index[f.index.isin(bad_T)]:
                 p_ = float(pos.get(T - HOUR, 0.0))
                 if p_ != 0:  # pozisyon aleyhine: long öder (+oran), short öder (−oran)
@@ -181,7 +182,7 @@ def stage_all(out_dir: str, part: str):
     base = dict(receipt=dict(economic_id=rcp["economic_id"], data_manifest_id=rcp["data"]["id"], provenance=rcp["provenance"], cut=rcp["data"]["cut"], symbols=rcp["data"]["symbols"]), tape_file_sha256=files, window=E.MAIN)
 
     def replay(pol, res0=None):
-        d = data if pol == "P0_original" else apply_policy(data, res0, pol)
+        d = data if pol == "P0_original" else apply_policy(data, res0, pol, out)
         r, w, _ = ev.run_book(out, d, sp, *cut)
         rc = report.reconcile(w, r, sp)
         dn = report.book_pnl(w, r, sp).resample("1D").sum()
@@ -191,8 +192,7 @@ def stage_all(out_dir: str, part: str):
         r0, w0, rep = replay(part)
         doc = dict(base, part=part, replay=rep, impact=impact(w0, r0, sp), original_net=float(r0["summary"]["net_pnl"]))
     else:
-        res0 = replay("P0_original")[0] if part == "P2_funding_adverse_flagged" else None  # P2 pozisyon yönünü orijinal fill'lerden alır
-        doc = dict(base, part=part, replay=replay(part, res0)[2])
+        doc = dict(base, part=part, replay=replay(part, None)[2], direction_source="held target sign (book), not fills")
     doc["seconds"] = time.time() - t0
     (Path(out_dir) / f"{part}.json").write_text(json.dumps(doc, indent=1, default=str, allow_nan=False))
     print(part, "tamam", f"{doc['seconds']:.0f}s", json.dumps(doc["replay"]))

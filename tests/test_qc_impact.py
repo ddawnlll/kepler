@@ -67,3 +67,12 @@ def test_policies_same_accounting_path_and_point_in_time():
     with pytest.raises(ValueError):
         qi.apply_policy(data, res, "P9_best_sharpe")  # politika kümesi önceden kapalı
     assert qi.POLICIES[0] == "P0_original"
+
+
+def test_p2_direction_from_held_target_matches_fills_when_no_lot_noop():
+    data, sp = setup()
+    res = run_portfolio(data, sp)
+    tg = {"X": pd.DataFrame(dict(target=data["X"]["target"]))}
+    a = qi.apply_policy(data, res, "P2_funding_adverse_flagged")["X"]["funding"]
+    b = qi.apply_policy(data, None, "P2_funding_adverse_flagged", tg)["X"]["funding"]
+    assert a.equals(b)  # tek uzun pozisyon: fill'den ve hedef işaretinden aynı yön
