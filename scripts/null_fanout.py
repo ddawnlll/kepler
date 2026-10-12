@@ -3,7 +3,9 @@
 Her konteyner `scripts/ensemble.py --stage null --null-from lo --null-to hi` koşar; çıktı `--out/null_<lo>_<hi>.json`, tek koşuyla aynı biçim ve aynı tohumlar
 (sonuçlar sıralı koşuyla birebir aynı: Modal'de DOĞRULANMADI; bkz. TASKS.md).
 Başarısızlık: worker returncode'u doğrudan aktarılır (shell/pipe yok); herhangi bir shard ≠ 0 ise iş exit 1 verir ve birleşim yazılmaz. Tüm shard'lar bitince `null_merge.merge`
-tohum aralığı, eksik/yarım shard, şema ve u'yu doğrular, içerik hash'li `null_merged.json` yazar. Retry aynı shard dosyasının üzerine yazar (aynı çıktı = aynı hash). modal_app.py'nin imajı/volume'u yeniden kullanılır (korumalı dosyaya dokunulmaz)."""
+tohum aralığı, eksik/yarım shard, şema ve u'yu doğrular, içerik hash'li `null_merged.json` yazar. Retry aynı shard dosyasının üzerine yazar (aynı çıktı = aynı hash).
+FAILURE/RETRY (gerçek davranış): bir shard ≠ 0 dönerse iş exit 1 ile biter, birleşim ve başarı kartı üretilmez; düzeltmeden sonra AYNI komut yeniden koşulur (tüm shard'lar yeniden çalışır, aynı adlı dosyaların üstüne yazılır; yalnız-eksik-shard kipi yok).
+Seri referansla parity: tests/test_null_parity.py (küçük offline fixture; EV1 gerçek null'unda Modal'de DOĞRULANMADI). Hız ölçümü: fixture ölçeğinde süreç başlatma baskın, anlamlı hızlanma ölçülmedi; B=300 EV1 hız iddiası (≈65 dk → 97 sn) bağımsız doğrulanmadı. modal_app.py'nin imajı/volume'u yeniden kullanılır (korumalı dosyaya dokunulmaz)."""
 import json
 import pathlib
 import sys
