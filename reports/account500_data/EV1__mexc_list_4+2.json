@@ -1,0 +1,163 @@
+{
+ "system": "EV1",
+ "fee_rt": 4.0,
+ "slip_rt": 2.0,
+ "symbols_traded": [
+  "BTCUSDT",
+  "ETHUSDT",
+  "SOLUSDT",
+  "XRPUSDT",
+  "BNBUSDT",
+  "DOGEUSDT",
+  "ADAUSDT",
+  "LINKUSDT",
+  "AVAXUSDT"
+ ],
+ "symbols_unmapped": [],
+ "metrics": {
+  "n_intents": 5297,
+  "by_status": {
+   "sent": 3788,
+   "noop_lot": 1509
+  },
+  "blocked_share": 0.284878232962054,
+  "blocked_notional": 0.0,
+  "dev_median": 0.20755753192254756,
+  "dev_p90": 1.0,
+  "risk_dev_share": 0.28262823844981794,
+  "net": 370.92525033903064,
+  "net_ref": 415.19309068918005,
+  "net_rel_diff": 0.10661988684992112,
+  "abs_dsharpe": 0.18446246184942972,
+  "sharpe": 2.1178337287234754,
+  "sharpe_ref": 1.9333712668740457,
+  "fee": 5.024369461999999,
+  "slippage": 2.5121847309999996,
+  "funding": -0.34857101734987794,
+  "gross_pnl": 378.82587995438047,
+  "turnover_x_cap": 50.24369461999999,
+  "n_fills": 3788,
+  "n_rejected": 0,
+  "n_engine_unfilled": 0,
+  "n_liq": 0,
+  "funding_missed": 0,
+  "recon_ok": true,
+  "recon_diff": -1.3804992704535834e-09,
+  "unmapped_target_share": 0.0,
+  "ideal_gross_mean": 8.376604039704503,
+  "achieved_gross_mean": 6.0091391957711915
+ },
+ "verdict": {
+  "criteria": {
+   "C1_blocked_share": [
+    "FAIL",
+    0.284878232962054
+   ],
+   "C2_outcome": [
+    "FAIL",
+    {
+     "net_rel_diff": 0.10661988684992112,
+     "abs_dsharpe": 0.18446246184942972
+    }
+   ],
+   "C3_integrity": [
+    "PASS",
+    {
+     "n_rejected": 0,
+     "n_engine_unfilled": 0,
+     "n_liq": 0,
+     "recon_ok": true
+    }
+   ],
+   "C4_rules_coverage": [
+    "PASS",
+    0.0
+   ]
+  },
+  "overall": "FAIL",
+  "failed": [
+   "C1_blocked_share",
+   "C2_outcome"
+  ],
+  "permanent_unknown": [
+   "hesap \u00fccreti/VIP/indirim",
+   "likidite/slippage",
+   "MEXC funding/marj/mmr kademesi",
+   "ge\u00e7mi\u015fte g\u00fcncel kurallar\u0131n ge\u00e7erlili\u011fi"
+  ]
+ },
+ "per_symbol": [
+  {
+   "sym": "ADAUSDT",
+   "n": 629,
+   "mean_abs_target": 7.882026929692463,
+   "mean_abs_gap": 0.32670705687847235,
+   "blocked": 10
+  },
+  {
+   "sym": "AVAXUSDT",
+   "n": 585,
+   "mean_abs_target": 7.0965960062020335,
+   "mean_abs_gap": 1.4314110489370755,
+   "blocked": 97
+  },
+  {
+   "sym": "BNBUSDT",
+   "n": 522,
+   "mean_abs_target": 12.716913467673214,
+   "mean_abs_gap": 1.992840670738347,
+   "blocked": 72
+  },
+  {
+   "sym": "BTCUSDT",
+   "n": 472,
+   "mean_abs_target": 13.475647752881645,
+   "mean_abs_gap": 2.149504702034186,
+   "blocked": 56
+  },
+  {
+   "sym": "DOGEUSDT",
+   "n": 587,
+   "mean_abs_target": 6.970087815920742,
+   "mean_abs_gap": 4.222740286108135,
+   "blocked": 419
+  },
+  {
+   "sym": "ETHUSDT",
+   "n": 606,
+   "mean_abs_target": 8.649077684886413,
+   "mean_abs_gap": 6.4836563977576995,
+   "blocked": 476
+  },
+  {
+   "sym": "LINKUSDT",
+   "n": 684,
+   "mean_abs_target": 6.5500258082012,
+   "mean_abs_gap": 0.7484471532304402,
+   "blocked": 24
+  },
+  {
+   "sym": "SOLUSDT",
+   "n": 623,
+   "mean_abs_target": 6.517717336228343,
+   "mean_abs_gap": 3.637234190160927,
+   "blocked": 350
+  },
+  {
+   "sym": "XRPUSDT",
+   "n": 589,
+   "mean_abs_target": 7.452114173443014,
+   "mean_abs_gap": 0.4362970257350335,
+   "blocked": 5
+  }
+ ],
+ "scenario": "mexc_list_4+2",
+ "rules_fetched_utc": "2026-10-11T20:05:05Z",
+ "rules_source": "https://contract.mexc.com/api/v1/contract/detail",
+ "window": [
+  "2020-04-01",
+  "2026-04-01"
+ ],
+ "capital": 500.0,
+ "seconds": 865.9631850719452
+}
