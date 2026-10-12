@@ -45,3 +45,30 @@ def family_report(R: pd.DataFrame) -> dict:
     sr, C = R.mean() / R.std(ddof=1), R.corr().to_numpy()
     lam = np.clip(np.linalg.eigvalsh(C), 0, None)
     return dict(n_raw=R.shape[1], n_days=len(R), sr_mean=float(sr.mean()), sr_var=float(sr.var(ddof=1)), mean_pair_corr=float(C[np.triu_indices(len(C), 1)].mean()), n_eff_info=float(lam.sum() ** 2 / (lam**2).sum()))
+
+
+def inventory(root: str = "ledger") -> dict:
+    """Repodaki defter dosyalarının envanteri (yalnız repo; Modal-yalnız satırlar ve ledger dışı keşif SAYILMAZ). Ham satır sayısı bağımsız hipotez sayısı DEĞİLDİR:
+    benzersiz config_hash, açık sembol kimliği taşımayan config'ler (kısmi kimlik), receipt'siz (legacy_partial_provenance) satırlar ve aynı config_hash'i paylaşan fazla satırlar ayrı verilir."""
+    import json
+    from collections import Counter
+    from pathlib import Path
+    files = sorted(Path(root).rglob("*.jsonl"))
+    rows = []
+    for f in files:
+        for ln in f.read_text().splitlines():
+            if ln.strip():
+                rows.append(json.loads(ln))
+    cfg_hash = Counter(r.get("config_hash") for r in rows)
+    has_sym = lambda r: isinstance(r.get("config"), dict) and any(k in r["config"] for k in ("symbol", "sym", "symbols", "job", "name"))  # noqa: E731
+    sym_id = lambda r: isinstance(r.get("config"), dict) and any(k in r["config"] for k in ("symbol", "sym", "symbols"))  # noqa: E731
+    return dict(files=len(files), rows=len(rows), by_source=dict(Counter(r.get("source") for r in rows)), by_status=dict(Counter(r.get("status", "completed") for r in rows)),
+                unique_config_hash=len(cfg_hash), extra_rows_sharing_config_hash=len(rows) - len(cfg_hash), rows_without_explicit_symbol_id=sum(not sym_id(r) for r in rows),
+                rows_without_name_or_symbol=sum(not has_sym(r) for r in rows), legacy_partial_provenance=sum(not r.get("receipt") for r in rows), with_receipt=sum(bool(r.get("receipt")) for r in rows),
+                note="repo defterleri; Modal-yalnız satırlar (reports/trial_inventory.md), smoke ve ledger dışı keşif dahil değil; satır sayısı bağımsız hipotez sayısı değildir")
+
+
+if __name__ == "__main__":
+    import json
+    import sys
+    print(json.dumps(inventory(*sys.argv[1:2]), indent=1))

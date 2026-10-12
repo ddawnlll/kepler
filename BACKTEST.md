@@ -284,6 +284,7 @@ yeni veridir.
 - **DSR/PSR varsayımları:** `stats.dsr` docstring'i (ortak takvim, yalnız denenen aile, seri bağımlılık/örtüşen etiket ihmali).
 - **p çözünürlüğü:** en küçük p = 1/(B+1). B=300 → 0,003322; 108 test Bonferroni eşiği 0,05/108 = 0,000463 bu tasarımda ulaşılamaz; sıfır exceedance için asgari B = 2.159 yalnız çözünürlük sınırıdır, güç/null geçerliliği kanıtı değildir. `trial_policy.check_resolution` koşudan ÖNCE yakalar; çözüm otomatik devasa fan-out değil, aileyi küçültmektir.
 - **Sonraki dar deney:** `trial_policy.check_prereg` ana hipotezi, azami varyant sayısını, birincil ölçütü, çoklu test yöntemini (bonferroni/holm/single), B/güç/maliyet notunu, durma kuralını ve planın kaydedildiği commit'i sonuç görülmeden ister; hash'i rapora yazılır. Bu politika kapanmadan yeni uzman/grid/factory araması genişletilmez.
+- **Repo defter envanteri** (`python scripts/trial_policy.py ledger` → `reports/trial_inventory_data/policy_inventory.json`; yalnız repo, Modal-yalnız satırlar ve ledger dışı keşif dahil değil): 46 dosya, 4.119 satır (3.247 hakem, 872 eleme), 2.964 benzersiz `config_hash` (1.155 fazla satır aynı config_hash'i paylaşıyor), 4.086 satırda config'te açık sembol kimliği yok, 4.119 satırın hepsi receipt'siz (`legacy_partial_provenance`), hiçbiri `invalid/failed` durumlu değil (eski kayıt biçimi). Bu sayımlar bağımsız hipotez sayısı değildir.
 - Mevcut kartlar yerel/keşif kapsamıyla etiketlidir (carry_xs_card, signal_diagnostics, trial_inventory); carry NO_EDGE korunur.
 
 ### Rotasyon null'u ve IC bootstrap kalibrasyonu (#15)
