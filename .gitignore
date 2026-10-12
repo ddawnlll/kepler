@@ -55,3 +55,23 @@ reports/full_systems_data/*.json
 
 # Rapor üretici ara görselleri (scripts/trade_audit_report.py): yeniden üretilebilir, repoya girmez
 reports/*_figs/
+
+# Test / araç önbellekleri ve yerel kalıntılar
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.ipynb_checkpoints/
+*.tmp
+
+# Yerel ortam dosyaları (örnek hariç) ve ajan yerel ayarları
+.env.*
+!.env.example
+.claude/settings.local.json
+
+# Yerel git worktree'leri ve Modal'den indirilen geçici sonuç dizinleri (kalıcı çıktı reports/*_data altına bilinçli kopyalanır)
+.worktrees/
+wt_*/
+modal_pull/
