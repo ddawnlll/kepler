@@ -60,3 +60,13 @@ def test_family_report_common_calendar_and_info_only():
     R2.iloc[3, 0] = np.nan
     with pytest.raises(ValueError):
         tp.family_report(R2)
+
+
+def test_inventory_counts_distinguish_rows_from_independent_hypotheses(tmp_path):
+    import json
+    rows = [dict(source="referee", config=dict(name="a", symbol="BTC"), config_hash="h1"), dict(source="referee", config=dict(name="a", symbol="BTC"), config_hash="h1"),
+            dict(source="screen", config=dict(name="b"), config_hash="h2", receipt=dict(economic_id="e"))]
+    (tmp_path / "x.jsonl").write_text("\n".join(json.dumps(r) for r in rows))
+    inv = tp.inventory(str(tmp_path))
+    assert inv["rows"] == 3 and inv["unique_config_hash"] == 2 and inv["extra_rows_sharing_config_hash"] == 1  # tekrar satır bağımsız hipotez değil
+    assert inv["rows_without_explicit_symbol_id"] == 1 and inv["legacy_partial_provenance"] == 2 and inv["with_receipt"] == 1

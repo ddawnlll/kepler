@@ -1,0 +1,78 @@
+{
+ "full_panel": {
+  "real": {
+   "active_cells": 18922,
+   "active_nonzero_cells": 18827,
+   "gross_mean": 3.971705795455502,
+   "net_mean": 0.4599708405480673,
+   "n_changes": 17418,
+   "mean_hold_days": 1448.2307692307693
+  },
+  "rotated": {
+   "active_nonzero_cells": {
+    "mean": 17288.41,
+    "min": 17211.0,
+    "max": 17868.0
+   },
+   "gross_mean": {
+    "mean": 3.6420834338329917,
+    "min": 3.601537343371857,
+    "max": 3.7844413064090503
+   },
+   "net_mean": {
+    "mean": 0.47841179649530813,
+    "min": 0.3789701661641673,
+    "max": 0.6176482770025808
+   },
+   "n_changes": {
+    "mean": 16005.95,
+    "min": 15869.0,
+    "max": 16617.0
+   },
+   "mean_hold_days": {
+    "mean": 705.6966841661747,
+    "min": 661.9615384615385,
+    "max": 1051.0588235294117
+   }
+  },
+  "cells": 20538
+ },
+ "last40d_4assets": {
+  "real": {
+   "active_cells": 160,
+   "active_nonzero_cells": 160,
+   "gross_mean": 1.2063533174837937,
+   "net_mean": 0.05727154152262683,
+   "n_changes": 159,
+   "mean_hold_days": 40.0
+  },
+  "rotated": {
+   "active_nonzero_cells": {
+    "mean": 160.0,
+    "min": 160.0,
+    "max": 160.0
+   },
+   "gross_mean": {
+    "mean": 1.2063533174837937,
+    "min": 1.2063533174837937,
+    "max": 1.206353317483794
+   },
+   "net_mean": {
+    "mean": 0.05727154152262683,
+    "min": 0.05727154152262683,
+    "max": 0.057271541522626854
+   },
+   "n_changes": {
+    "mean": 159.03,
+    "min": 159.0,
+    "max": 160.0
+   },
+   "mean_hold_days": {
+    "mean": 40.0,
+    "min": 40.0,
+    "max": 40.0
+   }
+  },
+  "cells": 160
+ }
+}
