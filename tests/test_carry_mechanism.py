@@ -66,3 +66,17 @@ def test_permute_preserves_cross_section_and_beta():
     btc = pd.Series(np.random.default_rng(3).normal(size=100) * 0.02, index=pd.date_range("2024", periods=100, tz="UTC"))
     pnl = btc * 10_000 * 0.5 + np.random.default_rng(4).normal(size=100) * 5
     assert cm.beta(pnl, btc, 10_000.0)["beta"] == pytest.approx(0.5, abs=0.15)
+
+
+def test_daily_proxy_hand_values():
+    days = pd.date_range("2024-01-01", periods=10, freq="D", tz="UTC")
+    idx = pd.date_range("2024-01-01", periods=240, freq="1h", tz="UTC")
+    o = np.repeat(100 * 1.01 ** np.arange(10), 24)  # günlük açılış %1 artar
+    kl = pd.DataFrame(dict(open=o, high=o, low=o, close=o, volume=1.0), index=idx)
+    fund = pd.DataFrame({"last_funding_rate": [0.001] * 3}, index=[pd.Timestamp("2024-01-03 08:00", tz="UTC"), pd.Timestamp("2024-01-03 16:00", tz="UTC"), pd.Timestamp("2024-01-04 00:00", tz="UTC")])
+    R, F = cm.daily_proxy_inputs({"X": kl}, {"X": dict(funding=fund)}, days)
+    assert R["X"].iloc[0] == pytest.approx(0.01) and np.isnan(R["X"].iloc[-1])  # son iki günün getirisi yok
+    assert F["X"].iloc[1] == pytest.approx(0.003) and F["X"].iloc[0] == 0 and F["X"].iloc[2] == 0  # 3 Oca 08:00, 16:00 ve 4 Oca 00:00 (3 Oca günü: kararı 2 Oca verilir)
+    n = pd.DataFrame({"X": [0.0, 100.0, 100.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, index=days)
+    r = cm.proxy_pnl(n, R, F)
+    assert r["price"] == pytest.approx(3 * 100 * 0.01) and r["funding"] == pytest.approx(-100 * 0.003) and r["cost"] == pytest.approx(-6e-4 * 200)  # 3 gün %1; 1 gün 3 olay; giriş+çıkış 200 notional

@@ -80,6 +80,33 @@ def beta(daily_net: pd.Series, btc_ret: pd.Series, cap: float) -> dict:
     return dict(beta=float(cov[0, 1] / cov[1, 1]), corr=float(np.corrcoef(r, b)[0, 1]), n=int(len(r)))
 
 
+def daily_proxy_inputs(kls: dict, data: dict, days: pd.DatetimeIndex) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Günlük VEKİL muhasebe girdileri. Karar günü d'nin hedefi d+1 açılışında dolar ve d+1 boyunca tutulur: R[d] = open[d+2]/open[d+1]-1 (fiyat), F[d] = (d+1 açılışı, d+2 açılışı] aralığındaki funding oranları toplamı."""
+    R, F = {}, {}
+    for s, kl in kls.items():
+        o = kl.open.resample("1D").first().reindex(days)
+        R[s] = (o.shift(-2) / o.shift(-1) - 1.0)
+        f = data[s].get("funding")
+        fs = pd.Series(0.0, index=days)
+        if f is not None and len(f):
+            r = f["last_funding_rate"].copy()
+            r.index = r.index.round("1min")
+            day = (r.index - pd.Timedelta("1ns")).floor("1D")  # (gün başı, ertesi gün başı] -> o günün bar günü
+            g = r.groupby(day).sum().reindex(days, fill_value=0.0)
+            fs = g.shift(-1).fillna(0.0)  # d günü kararı d+1 boyunca tutulur
+        F[s] = fs
+    return pd.DataFrame(R).reindex(columns=list(kls)), pd.DataFrame(F).reindex(columns=list(kls))
+
+
+def proxy_pnl(n: pd.DataFrame, R: pd.DataFrame, F: pd.DataFrame, side_bps: float = 6.0) -> dict:
+    """Sürtünmesiz günlük vekil: fiyat = Σ n·R, funding = −Σ n·F, maliyet = −yan bps × Σ|Δn| (lot/stop/gecikme/mark farkı YOK; referee'nin yerine geçmez, yalnız karşılaştırma içindir)."""
+    n = n.reindex(columns=R.columns).fillna(0.0)
+    price = float((n * R.reindex(n.index)).sum().sum())
+    fund = float(-(n * F.reindex(n.index)).sum().sum())
+    cost = float(-side_bps / 1e4 * n.diff().abs().fillna(n.abs()).sum().sum())
+    return dict(price=price, funding=fund, cost=cost, total=price + fund + cost)
+
+
 def stage_all(out_dir: str, part: str = "real", seeds: str = "0"):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import audit_fix as AF  # noqa: E402
@@ -124,13 +151,36 @@ def stage_all(out_dir: str, part: str = "real", seeds: str = "0"):
                    beta_btc=beta(pnl, btc.pct_change(), cap), net=float(res["summary"]["net_pnl"]), neutral_limit=NEUTRAL_LIMIT, seconds=time.time() - t0)
         (Path(out_dir) / "real.json").write_text(json.dumps(out, indent=1, default=str, allow_nan=False))
         print("real tamam", f"{time.time() - t0:.0f}s", json.dumps(dict(exposure=out["exposure"], totals=real["totals"], residual=real["residual"], beta=out["beta_btc"]))[:2500])
-    else:  # perm: --seeds "0,1,2" (her tohum bir 'perm' benchmark koşusu)
+    elif part == "proxy":  # VEKİL benchmark: referee'siz günlük muhasebe; --seeds "-1" = gerçek kitap (doğrulama), diğerleri perm tohumları
+        R, F = daily_proxy_inputs(kls, data, close.index)
+        for i in [int(x) for x in seeds.split(",")]:
+            n = portfolio.size(f if i < 0 else permute_forecast(f, st["active"], i), st, cap, p)
+            r_i = proxy_pnl(n, R, F)
+            (Path(out_dir) / f"proxy_{i}.json").write_text(json.dumps(dict(seed=i, **r_i, seconds=time.time() - t0), allow_nan=False))
+            print("proxy", i, f"{time.time() - t0:.0f}s", r_i)
+    else:  # perm: --seeds "0,1,2" (her tohum bir 'perm' benchmark koşusu; referee ile ÇOK YAVAŞ: permüte hedefler devri patlatır, 3 saatte bitmedi)
         reg = robust.regime(kls["BTCUSDT"].close.resample("1D").last())
         for i in [int(x) for x in seeds.split(",")]:
             r_i, w_i, _ = run(permute_forecast(f, st["active"], i))
             d_i = decompose(w_i, r_i, sp, reg)
             (Path(out_dir) / f"perm_{i}.json").write_text(json.dumps(dict(seed=i, totals=d_i["totals"], by_year=d_i["by_year"], net=float(r_i["summary"]["net_pnl"]), seconds=time.time() - t0), default=str, allow_nan=False))
             print("perm", i, f"{time.time() - t0:.0f}s", d_i["totals"])
+
+
+def merge_proxy(out_dir: str) -> dict:
+    """Vekil: gerçek (seed -1) ve perm dağılımı; funding ve fiyat için sıra-p'si (1 + #{perm >= gerçek}) / (n + 1). Vekil doğrulaması: gerçek vekil, referee ayrıştırmasıyla (real.json) karşılaştırılır."""
+    d = Path(out_dir)
+    pr = {int(json.loads(f.read_text())["seed"]): json.loads(f.read_text()) for f in d.glob("proxy_*.json")}
+    real, perm = pr.pop(-1), list(pr.values())
+    out = dict(real_proxy=real, n_perm=len(perm), min_p_resolution=1 / (len(perm) + 1))
+    for k in ("price", "funding", "total"):
+        v = np.array([x[k] for x in perm])
+        out[f"{k}_rank_p"] = float((1 + (v >= real[k]).sum()) / (len(v) + 1))
+        out[f"{k}_perm_mean"], out[f"{k}_perm_p95"] = float(v.mean()), float(np.quantile(v, 0.95))
+    if (d / "real.json").exists():
+        t = json.loads((d / "real.json").read_text())["decomposition"]["totals"]
+        out["referee_real"] = {k: t[k] for k in ("price", "funding", "cost", "total")}
+    return out
 
 
 def merge(out_dir: str) -> dict:
@@ -145,11 +195,13 @@ def merge(out_dir: str) -> dict:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--part", required=True, choices=["real", "perm", "merge"])
+    ap.add_argument("--part", required=True, choices=["real", "perm", "proxy", "merge", "merge_proxy"])
     ap.add_argument("--out", default="/data/carry_mech")
     ap.add_argument("--seeds", default="0")
     a = ap.parse_args()
     if a.part == "merge":
         print(json.dumps(merge(a.out)))
+    elif a.part == "merge_proxy":
+        print(json.dumps(merge_proxy(a.out)))
     else:
         stage_all(a.out, a.part, a.seeds)
