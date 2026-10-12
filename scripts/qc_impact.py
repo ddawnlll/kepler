@@ -89,28 +89,32 @@ def impact(data: dict, res: dict, spec) -> dict:
             r["cost"] += float(cost.reindex(ix).sum())
             r["n_risk_fills"] += int(risk.reindex(ix).sum())
         ev = fl["fund_events"]
-        for T_, row in ev.iterrows():
-            b = T_ - HOUR
-            p_ = float(pos.get(b, np.nan)) if b in pos.index else float(pos.shift(1).iloc[min(kl.index.searchsorted(T_), len(pos) - 1)])
-            c = float(mark.close.get(b, np.nan)) if mark is not None else float(kl.close.get(b, np.nan))
-            c = float(kl.close.get(b, np.nan)) if np.isnan(c) else c
-            amt = 0.0 if np.isnan(c) else -p_ * c * row.rate
-            tot["funding"] += amt
-            kinds = [k for k in ("fund_extreme", "mark_fallback") if row[k]]
-            if not row.interval_consistent:
-                kinds.append("fund_interval_inconsistent")
-                unknown_interval += 1
-            elif not np.isnan(row.interval) and row.interval != 8:
-                kinds.append("fund_interval_legit_nonstd")
-            for k in kinds:
+        if len(ev):  # vektörel: T anında pozisyon (boşlukta sonraki barın karar öncesi pozisyonu), mark kapanışı (yoksa kline), tutar = -pos x mark x oran
+            T = ev.index
+            b = T - HOUR
+            inb = b.isin(pos.index)
+            j = np.minimum(kl.index.searchsorted(T), len(pos) - 1)
+            p_ = np.where(inb, pos.reindex(b).to_numpy(), pos.shift(1).fillna(0.0).to_numpy()[j])
+            c = (mark.close if mark is not None else kl.close).reindex(b).to_numpy()
+            c = np.where(np.isnan(c), kl.close.reindex(b).to_numpy(), c)
+            amt = np.where(np.isnan(c), 0.0, -p_ * np.nan_to_num(c) * ev.rate.to_numpy())
+            tot["funding"] += float(amt.sum())
+            ic = ev.interval_consistent.to_numpy().astype(bool)
+            iv = ev.interval.to_numpy()
+            masks = dict(fund_extreme=ev.fund_extreme.to_numpy().astype(bool), mark_fallback=ev.mark_fallback.to_numpy().astype(bool), fund_interval_inconsistent=~ic,
+                         fund_interval_legit_nonstd=ic & ~np.isnan(iv) & (iv != 8))
+            unknown_interval += int((~ic).sum())
+            for k, m in masks.items():
+                if not m.any():
+                    continue
                 r = rows.setdefault(k, dict(n_flags=0, n_with_position=0, notional_sum=0.0, notional_max=0.0, price=0.0, funding=0.0, cost=0.0, n_risk_fills=0))
-                r["n_flags"] += 1
-                if abs(p_) > 0:
-                    r["n_with_position"] += 1
-                    nt = abs(p_) * (0.0 if np.isnan(c) else c)
-                    r["notional_sum"] += nt
-                    r["notional_max"] = max(r["notional_max"], nt)
-                r["funding"] += amt
+                held = m & (np.abs(p_) > 0)
+                nt = np.abs(p_[held]) * np.nan_to_num(c[held])
+                r["n_flags"] += int(m.sum())
+                r["n_with_position"] += int(held.sum())
+                r["notional_sum"] += float(nt.sum())
+                r["notional_max"] = max(r["notional_max"], float(nt.max()) if len(nt) else 0.0)
+                r["funding"] += float(amt[m].sum())
     for r in rows.values():
         r["net"] = r["price"] + r["funding"] - r["cost"]  # cost = o bardaki fill komisyonu (pozitif tutar)
     return dict(kinds=rows, totals=tot, unknown_interval_events=unknown_interval)
