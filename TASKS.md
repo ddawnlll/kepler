@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: null fan-out exit-code/birleşim bütünlüğü (issue #19; #10–#14 korumalı çekirdek, kullanıcı kilidi bekleniyor) | durum: devam | protokol: yok (araç düzeltmesi, ön kayıt gerekmez)
+Aktif iş: null fan-out exit-code/birleşim bütünlüğü (issue #19) | durum: engelli | sebep: #19 kodu yazıldı, tests/test_null_merge.py 7 geçti, mimari testi yeşil; Modal'de uçtan uca fan-out koşusu DOĞRULANMADI; #10–#14 korumalı çekirdek, kullanıcı kilidi (KEPLER_CORE_UNLOCK=1) bekleniyor | protokol: yok (araç düzeltmesi, ön kayıt gerekmez)
 
 (Önceki aktif iş: 10 edge türü → uzmanlar (aile testi, kullanıcı görevi 2026-10-04) | durum: bitti | protokol: reports/edge_experts_protocol.md)
 
