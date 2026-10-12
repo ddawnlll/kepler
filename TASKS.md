@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: Modal koşu süresi < 5 dk (issue #34: fan-out, kırpma, benchmark) | durum: devam (korumalı hakem işleri #27/#28/#32 kullanıcı kilidi bekliyor) | protokol: yok (araç/hız işi, ön kayıt gerekmez)
+Aktif iş: Modal koşu süresi < 5 dk (issue #34: fan-out, kırpma, benchmark) | durum: devam (hakem #27/#28/#32 + run_book trim_flat #29 uygulandı; ölçüm tablosu bekliyor) | protokol: yok (araç/hız işi, ön kayıt gerekmez)
 
 (Önceki aktif iş: sinyal teşhisi (9 uzmanın IC/kalibrasyon/sönme/kümelenme; nötr bölge + carry yeniden kurulumu; kullanıcı görevi 2026-10-06) | durum: bitti (push onayı bekliyor) | protokol: reports/preregistration/signal_diagnostics.md)
 
@@ -13,10 +13,10 @@ Aktif iş: Modal koşu süresi < 5 dk (issue #34: fan-out, kırpma, benchmark) |
 ## Modal koşu süresi (2026-10-12, kullanıcı görevi "5 dakikanın altına"): devam
 Ölçümler ve gerekçeler issue #27–#34 (`#34` izleme). Sonuç değişmeden hız: tüm değişiklikler `scripts/` katmanında; hakem/`evaluate`/`modal_app.py` değişmedi.
 - **Fan-out (`scripts/null_fanout.py`, `scripts/null_merge.py`, PR #20'nin doğrulanmış birleşimi + genişletme):** `--script ensemble|carryxs_card`, shard başına süre kaydı (`timing_<lo>_<hi>.json`), gerçek returncode, tohum/şema/u doğrulamalı hash'li birleşim. Modal'de bulunan hata: konteynerde `null_merge` yoktu (imaja eklendi). **EV1 K1 null B = 300: 75 konteyner, 110 sn uçtan uca (bugün ≈ 64–72 dk)**; 300/300 çekilişin tüm alanları `/data/ensemble/null_*.json` (eski sıralı koşu) ile birebir aynı.
-- **`scripts/carryxs_card.py` `trade_set` (#29, script katmanı):** pencerede hep düz sembol hakeme verilmez (196 → 155 sembol, tek koşu 322 → 262 sn, net/dolum hash'i birebir). Bar-dizisi kırpma (159 sn) `evaluate.run_book` değişikliği ister: kilit bekliyor.
+- **`scripts/carryxs_card.py` `trade_set` (#29, script katmanı):** pencerede hep düz sembol hakeme verilmez (196 → 155 sembol, tek koşu 322 → 262 sn, net/dolum hash'i birebir). Bar-dizisi kırpma artık `evaluate.run_book(trim_flat=True)` (`trade_set` kaldırıldı; test `tests/test_run_book_trim.py`).
 - **`scripts/ensemble.py` primary:** en uzun iş (`abl_no_buffer`) ilk başlar.
 - **`scripts/perf_bench.py` (#33):** tekrarlı, pariteli benchmark (ev1 / load / null).
-- **Bekleyen (kilit gerekir):** #27 Nautilus günlüğünü kapat (`LoggerConfig(bypass_logging=True)`), #28 dolum başına `Portfolio.account()`, #32 bar başına Python yükü. #31 ölçümle düzeltildi: `load_dynamic` yalnız 11–17 sn; iş parçacıklı yükleme DuckDB varsayılan bağlantısında çöküyor (denendi, geri alındı).
+- **Uygulandı (oturum kilidi açık, 2026-10-12):** #27 Nautilus günlüğünü kapat (`LoggerConfig(bypass_logging=True)`), #28 dolum başına `Portfolio.account()`, #32 bar başına Python yükü. #31 ölçümle düzeltildi: `load_dynamic` yalnız 11–17 sn; iş parçacıklı yükleme DuckDB varsayılan bağlantısında çöküyor (denendi, geri alındı).
 
 ## Sinyal teşhisi (2026-10-06, kullanıcı görevi): bitti, push onayı bekliyor
 Ön kayıtlar `reports/preregistration/{signal_diagnostics,neutral_zone_hysteresis,carry_rebuild}.md` (her biri ilgili koşudan önceki commit'te), rapor `reports/signal_diagnostics.md` (`scripts/signal_diag_report.py` üretir), ham çıktılar `reports/signal_diagnostics_data/`, ilerleme `reports/signal_progress.md`. Dinamik evren (aylık top-20, delist dahil), 9 uzman, 6 ufuk, IC-TS + IC-XS, Holm(108).

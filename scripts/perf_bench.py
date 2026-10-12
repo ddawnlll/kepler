@@ -3,6 +3,7 @@ her koşunun yanında pariteyi (net, dolum sayısı, dolum tablosu hash'i) yazar
   modal run modal_app.py --cmd "python scripts/perf_bench.py ev1 --reps 3 --out /data/perf/ev1.json"        # EV1 tek hakem koşusu (+ --buffer0: abl_no_buffer)
   modal run modal_app.py --cmd "python scripts/perf_bench.py load --reps 3 --out /data/perf/load.json"      # carry_xs kartı veri hazırlığı: üyelik tablosu + sembol yükleme
   modal run modal_app.py --cmd "python scripts/perf_bench.py null --procs 1,2,4,8 --out /data/perf/null.json"  # null çekiliş ölçekleme
+  modal run modal_app.py --cmd "python scripts/perf_bench.py suite --reps 3 --out /data/perf/suite.json"      # aynı konteynerde sırayla: EV1, EV1 buffer=0, 2 null çekilişi, carry_xs ana koşu, delay=1 maliyet koşusu (pariteli)
 Her kayıt: wall_s, cpu_s (süreç), parite alanları. Özet medyan/min/maks."""
 import argparse
 import json
@@ -77,15 +78,49 @@ def bench_null(a):
     return dict(kind="null", rows=rows)
 
 
+def bench_suite(a):
+    """Tek konteyner, sırayla: ev1, ev1_buffer0, null_0, null_1 (EV1 null u=rng([0,i])), carry_main, carry_delay1 (carry_xs; run_book trim_flat varsa onunla). Her koşunun paritesi yazılır."""
+    import inspect
+
+    import carryxs_card as CX
+
+    from kepler import evaluate as ev
+    E.load(E.EXT, ROOTS)
+    jobs = {"ev1": lambda: E.run(en.Params(), E.spec())[0], "ev1_buffer0": lambda: E.run(replace(en.Params(), buffer=0.0), E.spec())[0],
+            "null_0": lambda: E.run(E.P0, E.spec(), u=float(__import__("numpy").random.default_rng([0, 0]).uniform(0.05, 0.95)))[0],
+            "null_1": lambda: E.run(E.P0, E.spec(), u=float(__import__("numpy").random.default_rng([0, 1]).uniform(0.05, 0.95)))[0]}
+    rows = []
+    for rep in range(a.reps):
+        for name, f in jobs.items():
+            res, t = timed(f)
+            rows.append(dict(rep=rep, job=name, **t, **parity(res)))
+            print(rows[-1], flush=True)
+    _, t = timed(CX.setup)
+    print("carry setup", t, flush=True)
+    lo, hi = E.utc(E.MAIN)
+    out = CX.P2.make_book(CX.P0, CX.G["mem"], False, CX.CAPR)(CX.G["kls"])
+    trim = "trim_flat" in inspect.signature(ev.run_book).parameters
+    for rep in range(a.reps):
+        for name, sp in (("carry_main", E.spec(cap=CX.CAPR)), ("carry_delay1", E.spec(10.0, 2.0, 1, cap=CX.CAPR))):
+            (res, _, _), t = timed(lambda: ev.run_book(out, CX.G["data"], sp, lo, hi, trim_flat=True) if trim else ev.run_book(out, CX.trade_set(out, CX.G["data"], lo, hi), sp, lo, hi))
+            rows.append(dict(rep=rep, job=name, **t, **parity(res)))
+            print(rows[-1], flush=True)
+    summ = {}
+    for name in dict.fromkeys(r["job"] for r in rows):
+        rr = [r for r in rows if r["job"] == name]
+        summ[name] = summarize(rr)
+    return dict(kind="suite", trim_flat=trim, rows=rows, summary=summ)
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("kind", choices=["ev1", "load", "null"])
+    ap.add_argument("kind", choices=["ev1", "load", "null", "suite"])
     ap.add_argument("--reps", type=int, default=3)
     ap.add_argument("--buffer0", action="store_true")
     ap.add_argument("--procs", default="1,2,4,8")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
-    res = {"ev1": bench_ev1, "load": bench_load, "null": bench_null}[a.kind](a)
+    res = {"ev1": bench_ev1, "load": bench_load, "null": bench_null, "suite": bench_suite}[a.kind](a)
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(res, indent=1))
     print("BENCH", json.dumps(res.get("summary", {k: v for k, v in res.items() if k != "rows"})), flush=True)
