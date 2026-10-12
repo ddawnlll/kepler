@@ -90,7 +90,7 @@ Toplam: fiyat +1.706,85, funding +1.021,94. Okuma: (1) 8 saat dışı aralık TE
 | P0 orijinal | 2.358,40 | 0 | 1.021,94 | 1,237 | 0 | tuttu |
 | P1 bayraklı (aşırı ∪ mark-yok ∪ ayrışma) funding olayları 0 | 2.246,16 | −112,24 | 909,70 | 1,178 | 0 | tuttu |
 | P2 bayraklı olaylarda oran pozisyon aleyhine (muhafazakâr stres) | 2.129,71 | −228,69 | 793,25 | 1,116 | 0 | tuttu |
-| P3 ayrışan barlarda büyük mark | P3_RESULT | | | | | |
+| P3 ayrışan barlarda büyük mark | TAMAMLANMADI (Modal 3 saat sınırı) | | | | | |
 
 P1 yalnız duyarlılıktır (gelir de silinir), düzeltme değil. P2'de pozisyon yönü fill'lerden değil tutulan hedefin işaretinden alındı (tek koşu bütçesi; yön lot no-op'undan etkilenmez). Hiçbir politika sonuçlara bakılarak seçilmedi.
 

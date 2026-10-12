@@ -1,6 +1,6 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: sinyal teşhisi (9 uzmanın IC/kalibrasyon/sönme/kümelenme; nötr bölge + carry yeniden kurulumu; kullanıcı görevi 2026-10-06) | durum: bitti (push onayı bekliyor) | protokol: reports/preregistration/signal_diagnostics.md
+Aktif iş: issue #10-#19 çözümü (yığılı PR'lar #21-#26, #35, #36, #38, #20) | durum: devam (inceleme bekliyor; P3 replay ve gerçek-veri doğrulamaları açık) | protokol: yok (araç/hakem düzeltmeleri; önkayıt kriterleri scripts docstring'lerinde)
 
 (Önceki aktif iş: ev1_plus_new trade denetimi düzeltmeleri | durum: bitti (push onayı bekliyor) | protokol: reports/fix_progress.md)
 
