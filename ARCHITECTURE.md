@@ -56,7 +56,7 @@ Değişmez kurallar:
   ve risk koduna bakmaz.
 - `kepler/` dışarıdaki `scripts`, `factory`, `tools` koduna bağlanmaz (akış tek yönlü).
 - **Boyut bütçesi:** dosya başına 300, `kepler/` toplam 3000 satır. Aşılırsa önce var olan sadeleşir.
-- **Belge izin listesi:** yeni `.md` açılmaz; kalıcı belge türleri MISSION, ARCHITECTURE, BACKTEST, TASKS (+ `docs/factory.md` dondurulmuş, `reports/` deney çıktıları).
+- **Belge izin listesi:** yeni `.md` açılmaz; kalıcı belge türleri MISSION, ARCHITECTURE, BACKTEST, TASKS (+ `reports/` deney çıktıları).
 - Yeni modül = `LAYERS`a satır; test bunu zorlar. Kural değişince bu bölüm aynı commit'te güncellenir.
 
 Nereye ne konur: yeni tahmin fikri → `experts/<ad>.py` (+ ön kayıt `reports/<ad>_protocol.md`);
@@ -116,8 +116,8 @@ Bir parça platformda yoksa yazmadan önce kanıtlı engel gösterilir (`MISSION
 
 ## Operasyon katmanı (7/24, telefondan yönetim)
 
-Ayrıntı ve güncel tasarım **`docs/factory.md`** (roller, kapılar, değişmezler D1–D14); çelişkide o kazanır.
-v1 özeti: sekreter (Telegram, karar vermez), müdür (seyrek uyanır, brif yazar), işçiler (tek brif, taze
+**Dondurulmuş (2026-10-12):** fabrika spesifikasyonu silindi, yeni altyapı eklenmez (AGENTS.md). Aşağıdaki v1 özeti tarihsel;
+`factory/` kodu yalnızca mevcut haliyle durur. v1 özeti: sekreter (Telegram, karar vermez), müdür (seyrek uyanır, brif yazar), işçiler (tek brif, taze
 bağlam, ayrı worktree), güncelleme ajanı (deterministik durum mesajı). Kalıcı kurallar:
 - **Sayı hafızadan değil, sorgudan gelir** (ledger / `state/STATUS.md`); sorguda yoksa "bilmiyorum".
 - **İletişim ortak çalışma alanından:** `state/queue.jsonl` (tek giriş `factory/enqueue.py`), ledger, raporlar.

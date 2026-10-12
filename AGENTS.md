@@ -31,6 +31,11 @@ büyük bir adımdan önce yeniden oku.
 - Sonuç deftere yalnızca hakemden girer (`kepler/ledger.py`). Eleme sonucu sayılmaz.
 - Hakem, denetim, risk ve mühür koduna yalnızca kullanıcı + güçlü model + bağımsız inceleme dokunur.
 - Mühürlü dönem (son 6 ay) açılmaz, anahtar hiçbir yere girmez, `tools/seal_holdout.py` gerçek veriyle çalıştırılmaz.
-- Yeni bileşen için gözlenmiş engel gerekir. Yeni spec/anayasa belgesi yazılmaz (tek istisnalar `BACKTEST.md`, tasarım değişikliği oraya yazılır, ve fabrika spesifikasyonu `docs/factory.md`).
+- Yeni bileşen için gözlenmiş engel gerekir. Yeni spec/anayasa belgesi yazılmaz (tek istisna `BACKTEST.md`; tasarım değişikliği oraya yazılır).
+
+## EV1 ve altyapı (kullanıcı kararı 2026-10-12)
+- **EV1 sistemin varsayılanıdır.** `ensemble.Params()` ve `scripts/ensemble.py` bayraksız EV1 (`trend`, `xs_momentum`, `carry`; 0,6/0,2/0,2) koşar. Başka bileşim (`all9_equal`, `ev1_plus_new`) ve tek uzman yalnızca açık `--preset`/`--expert` ile; varsayılan, K kartı + ön kayıt + kullanıcı onayı olmadan değişmez.
+- **Altyapı eklemesi kapalı.** Yeni fabrika/ajan/orkestrasyon/VPS/bildirim/pano katmanı yazılmaz. `factory/` olduğu gibi durur, genişletilmez; tek yol kullanıcının açıkça istemesidir.
+- **Betikler:** `scripts/` yalnızca canlı yolu (EV1, hakem çapraz kontrolü, testlerin yüklediği betikler) taşır. Bitmiş deneyin rapor/özet/PDF betikleri `scripts/archive/` altındadır: salt-okunur geçmiş, kardeş betikleri import ettiği için çalıştırmadan önce `scripts/` içine geri kopyalanır.
 - Kendi kodumuz küçük kalır (MISSION kural 7 iki sayıyı da raporlar). Testleri elle koş; CI yok.
 - Doğrulanmamış rakam "doğrulanmadı" diye yazılır. Kuyruğa yazmak için `factory/enqueue.py`.

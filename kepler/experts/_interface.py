@@ -1,4 +1,4 @@
-"""Sürekli tahmin uzmanı sözleşmesi (`forecast` türü; docs/factory.md WP1). Aday yaşam döngüsü türü (Zone Fade) ayrı kalır, onu taşımak WP1'in devamıdır.
+"""Sürekli tahmin uzmanı sözleşmesi (`forecast` türü). Aday yaşam döngüsü türü (Zone Fade) ayrı kalır.
 
 Uzman yalnızca TAHMİN verir: [gün x sembol] DataFrame, değerler [-1, 1], aktif olmayan hücre NaN. Büyüklük, kaldıraç ve tavanlar uzmanda değil risk katmanındadır
 (ARCHITECTURE; tests/test_architecture.py bunu import kurallarıyla zorlar). Girdiler yalnızca `d` gününe kadar (dahil) bilinen veridir: nedensellik uzmanın değil arayüzün sorumluluğudur,
