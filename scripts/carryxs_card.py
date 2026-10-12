@@ -37,9 +37,22 @@ def setup():
     G.update(mem=mem, syms=syms, data=E.data_of(syms), kls={s: E.D[s]["kl"] for s in syms})
 
 
+def trade_set(out: dict, data: dict, lo, hi) -> dict:
+    """Pencerede hedefi (ffill sonrası) hiç sıfırdan farklı olmayan ve stop'u olmayan semboller hakeme verilmez (issue #29). Bu sembollerin pozisyonu, dolumu, funding'i ve marjı
+    sıfırdır; atmak özeti ve dolum tablosunu değiştirmez (Modal'de 196 → 155 sembol: net 2358.404267050124, 10 251 dolum, dolum hash'i birebir; hakem süresi 322 → 262 sn)."""
+    keep = {}
+    for s, d in data.items():
+        m = (d["kl"].index >= lo) & (d["kl"].index < hi)
+        t, st = out[s].target.ffill().fillna(0.0)[m], out[s].stop[m]
+        if (t != 0).any() or st.notna().any():
+            keep[s] = d
+    return keep
+
+
 def one(p: en.Params, sp, u=None, window=None, out=None):
     out = out if out is not None else P2.make_book(p, G["mem"], False, CAPR, u)(G["kls"])
-    res, win, _ = ev.run_book(out, G["data"], sp, *E.utc(window or E.MAIN))
+    lo, hi = E.utc(window or E.MAIN)
+    res, win, _ = ev.run_book(out, trade_set(out, G["data"], lo, hi), sp, lo, hi)
     pnl = report.book_pnl(win, res, sp)
     return dict(summary=E.keep(res), daily=E.daily(pnl))
 
