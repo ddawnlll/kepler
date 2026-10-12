@@ -118,6 +118,29 @@ def selection_null(reps=100, K=9, T=500, S=8, B=100, seed=0) -> dict:
     return dict(reps=reps, K=K, conditional_fp=ca / reps, conditional_ci=_wilson(int(ca), reps), procedure_fp=pr / reps, procedure_ci=_wilson(int(pr), reps), nominal=0.05)
 
 
+def real_exposure(out: str, n_draws: int = 100):
+    """GERÇEK geliştirme verisinde (EV1 paneli, mühürlü dönem yok; modal run) rotasyonun aktiflik/maruziyet etkisi: gerçek F ve aktiflik maskesiyle exposure_diag, K1 tohumlu offsetlerle kaydırılmış sürümlerle karşılaştırılır.
+    Ayrıca son 40 günlük dört-varlık alt paneli (E07 benzeri) ve tüm panel. Çıktı: <out>/real_exposure.json."""
+    import audit_fix as AF  # noqa: E402
+
+    from kepler import ensemble as en  # noqa: E402
+    kls = AF.load_all(1000.0)
+    f, st = en.forecasts(kls, en.Params(**en.PRESETS["ev1_plus_new"]))
+    act = st["active"].to_numpy()
+    F = f.fillna(0.0).to_numpy()
+    T = len(F)
+    res = {}
+    for name, sl, cols in (("full_panel", slice(0, T), slice(None)), ("last40d_4assets", slice(T - 40, T), slice(0, 4))):
+        Fa, Aa = F[sl][:, cols], act[sl][:, cols]
+        real = exposure_diag(Fa, Aa)
+        draws = [exposure_diag(Fa, Aa, k=int(np.random.default_rng([0, i]).uniform(0.05, 0.95) * len(Fa))) for i in range(n_draws)]
+        agg = {k: dict(mean=float(np.mean([d[k] for d in draws])), min=float(np.min([d[k] for d in draws])), max=float(np.max([d[k] for d in draws]))) for k in ("active_nonzero_cells", "gross_mean", "net_mean", "n_changes", "mean_hold_days")}
+        res[name] = dict(real={k: v for k, v in real.items() if k != "dow_gross"}, rotated=agg, cells=int(Aa.size))
+    Path(out).mkdir(parents=True, exist_ok=True)
+    (Path(out) / "real_exposure.json").write_text(json.dumps(res, indent=1))
+    print(json.dumps(res))
+
+
 def main(out: str, reps: int):
     res = dict(negative_controls=NEGATIVE_CONTROLS, estimator_check=[estimator_check(seed=s) for s in range(3)], fp_fixed=[], fp_rerank=[])
     for h, mb in [(1, 20), (10, 5), (10, 20), (40, 20), (40, 5), (40, 80)]:  # ufuk x blok uzunluğu duyarlılığı
@@ -134,5 +157,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="reports/signal_diagnostics_data/null_calibration.json")
     ap.add_argument("--reps", type=int, default=200)
+    ap.add_argument("--real", action="store_true", help="gerçek dev verisinde maruziyet teşhisi (Modal); --out bir dizin olmalı")
     a = ap.parse_args()
-    main(a.out, a.reps)
+    real_exposure(a.out) if a.real else main(a.out, a.reps)
