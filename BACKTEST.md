@@ -42,7 +42,7 @@ nasıl çalıştırılır `AGENTS.md`'de.
         │
         ▼
  [4] HAKEM (yürütme)       referee.run(kl, target, Spec, funding, mark) -> fills, özet
-        │  Nautilus 2.0.0rc5 + yapıştırma: sonraki-bar dolum, fee+slip, funding, mark-tetikli likidasyon
+        │  numba olay motoru (referee_core.py; Nautilus'un yerini aldı, 2026-10-13): sonraki-bar dolum, fee+slip, funding, mark-tetikli likidasyon
         ▼
  [5] DENETİM + DEFTER      evaluate(): nedensellik denetimi -> hakem -> ledger.record (append-only, flock)
         │
@@ -154,7 +154,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 3. Hedef değişmedikçe yeniden boyutlama yok; değişince miktar = hedef notional / dolum fiyatı, lot adımına aşağı yuvarlanır.
 4. Maliyet: (fee + slip)/2 bps her dolumun notional'ına; özet `fee`, `slippage`, `exit_cost` ayrı raporlar.
 5. **Funding:** T anındaki oran × T'den önce (T'deki dolumlardan önce; açılış tikinde dolan gap stopu/likidasyon dahil) tutulan pozisyon × mark kapanışı; oran > 0 iken long öder. Mark yoksa kline'a düşer (`funding_mark_fallback` sayılır); ikisi de yoksa `funding_missed` sayılır ve koşu deftere giremez.
-6. **Likidasyon:** Nautilus bar verisinde likide etmez; her pozisyon değişiminde likidasyon fiyatına reduce-only stop-market konur. Gövde barının H/L'si **mark** H/L'sidir (mark yoksa kline). Boşlukla geçilirse stop piyasa fiyatından dolar (iyimser LP dolumu yok). Likidasyondan sonra hesap ölüdür, yeni işlem yok.
+6. **Likidasyon:** (Eski Nautilus hakemi bar verisinde likide etmiyordu; bu yüzden yapıştırma konmuştu, yeni motorda da aynı kural korunur.) Her pozisyon değişiminde likidasyon fiyatına reduce-only stop-market konur. Gövde barının H/L'si **mark** H/L'sidir (mark yoksa kline). Boşlukla geçilirse stop piyasa fiyatından dolar (iyimser LP dolumu yok). Likidasyondan sonra hesap ölüdür, yeni işlem yok.
 7. Reddedilen emir (`n_rejected > 0`) veya eksik funding olan koşu geçersizdir; deftere yazılmaz.
 8. Çıktı: `summary` (net_pnl, gross_pnl, fee, slippage, funding, liq_fee, exit_cost, n_fills, n_liq, end_position, n_rejected, funding_missed, funding_mark_fallback), `fills`, `positions`, `rejected`.
 
@@ -162,7 +162,15 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 - Portföy [VAR] (§6.5): `run_portfolio` tek motor, tek hesap; `run` tek sembollü özel hali.
 - Yalnızca piyasa emri; limit/maker [YOK]: gerekçe — MISSION "önce taker; maker ayrı hipotez"; limit dolum olasılığı ve kuyruk önceliği emir defteri/L2 verisi ister (kapsam dışı), bar verisinden varsayımsal olur.
 - Bar çözünürlüğü: bar içi olay sırası bilinmez (§6.4 kuralı).
-- Slippage hakemde sabit bps. Hacme bağlı etki hakem **dışı maliyet bindirmesi** olarak [VAR] (`kepler/capacity.py`, §10 Kapasite): katılım = dolum notional'ı / aynı saatin quote hacmi; karekök etki = Y·σ_h·√katılım·notional (Y = 1 birincil, UNKNOWN), sabit slippage'a ek; yol bağımlılığı yok sayılır. Hakemin kendisi hacme bağlı dolum yapmaz.
+- Slippage hakemde sabit bps. Hacme bağlı etki hakem **dışı maliyet bindirmesi** olarak [VAR] (`kepler/capacity.py`, §10 Kapasite): katılım = dolum notional'ı / aynı saatin quote hacmi; karekök etki = Y·σ_h·√katılım·notional (Y = 1 birincil, UNKNOWN), sabit slippage'a ek; yol bağımlılığı yok sayılır. Hakem **hacim sınırlıdır** (§6.6): tik boyutundan büyük emrin kalanı 1 tick kötü dolar; bu fiyat etkisi modeli değil, L1 bar yürütmesinin kuralıdır.
+
+### 6.6 Motor değişikliği: Nautilus -> numba (2026-10-13) [VAR]
+Hakem `kepler/referee.py` (hazırlık, funding, özet) + `kepler/referee_core.py` (numba olay döngüsü). Nautilus artık çalıştırılmaz ve bağımlılık değildir (eski hakem: git `23ee215`). Anlamlar eski motorun **kaynak kodundan okunarak** taşındı (çalıştırılmadan):
+- Bar -> tikler O,H,L,C (yalnızca son tik fiyatından farklıysa işlenir; H > son, L < son); tik boyutu = bar hacmi/4 (lot adımının katına inip bölünür; küçük hacimde 0 olan tikler atlanır). L1 kitabı son işlenen tikin (fiyat, boyut) değeridir.
+- Piyasa/stop emri kitap boyutu kadar tek fiyattan dolar; **kalan miktar son dolum fiyatının 1 tick ötesinden** (alış +, satış -) dolar. Stop tetik fiyatından (gap'te, yani açılış tikinde, piyasadan) dolar.
+- Marj reddi (`n_rejected`): artıran/çeviren emrin başlangıç marjı (notional/kaldıraç^2, Nautilus LeveragedMarginModel) serbest bakiyeyi (bakiye - bakım marjı kilidi) aşarsa; kitap fiyatı stop seviyesindeyse stop reddedilir; kitap yoksa piyasa emri reddedilir.
+- Sınır (belgelenmiş, doğrulanmamış): bekleyen emirlerin kilitlediği başlangıç marjı serbest bakiyeden düşülmez (yalnızca bakiye ~notional/100 mertebesine inince fark eder).
+Doğrulama: `tests/test_portfolio.py` altın sayılar (28 dolum, net -2340,724875) ve tüm elle hesaplı testler birebir; gerçek veri: EV1/ev1_plus_new/all9_equal Nautilus dolumlarıyla satır satır eşleşti (`scripts/referee_validate.py`, `reports/vbt_referee/`).
 
 ### 6.4 Strateji stopu [VAR] (Motor v2; tests/test_stops.py)
 - `stop[t]` (t kapanışında bilinen), t+1 açılışından itibaren reduce-only stop-market olarak durur; seviye her açılış tikinde ve her dolumdan sonra yeniden kurulur.
@@ -176,7 +184,7 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 - Bar içi belirsizlikte (aynı barda hem kâr hedefi hem stop) kötümser: önce stop. (Kâr hedefi emri yok; stop ve LP tek emirde.)
 
 ### 6.5 Portföy hakemi [VAR] (Motor v2; tests/test_portfolio.py)
-- `referee.run_portfolio(data, spec)`: tek Nautilus motorunda N enstrüman, tek USDT hesap, ortak marj. `data[sym] = dict(kl, target, stop, funding, mark, tick, step)`.
+- `referee.run_portfolio(data, spec)`: tek numba motorunda N enstrüman, tek USDT hesap, ortak marj. `data[sym] = dict(kl, target, stop, funding, mark, tick, step)`.
 - **Brüt tavan hakemde (`Spec.gross_cap`):** artıran emir, diğer sembollerin son fiyatla brütünü düşen kalan alana (lot adımına aşağı) küçülür, ama sembolün mevcut aynı yönlü pozisyonunun altına inmez (artıran hedef satışa dönmez); azaltan emir tavandan etkilenmez. Hedefler yeniden ölçeklenmez
   (churn yok); küçülen emir için alan sonradan açılsa da hedef değişmedikçe tamamlanmaz. (Eski taslak: "orantılı küçültme"; yol bağımlı ama churn'süz ve test 10 bunu sabitler.)
 - **Denklik şartı:** tek sembolde sonuç yeniden yazımdan önceki hakemle birebir aynı (tests/test_portfolio.py: eski hakemden alınan sabit sayılar; 28 dolumlu funding'li koşu ve 10x likidasyon).
