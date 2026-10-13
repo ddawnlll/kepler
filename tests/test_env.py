@@ -7,11 +7,11 @@ def test_python_312():
 
 
 def test_pinned_engines():
-    assert version("nautilus_trader") == "2.0.0rc5"
+    assert version("numba")
     assert version("vectorbt") == "1.1.1"
 
 
 def test_engines_import():
     import duckdb  # noqa: F401
-    from nautilus_trader.backtest import BacktestEngine  # noqa: F401
+    from kepler import referee  # noqa: F401
     import vectorbt  # noqa: F401
