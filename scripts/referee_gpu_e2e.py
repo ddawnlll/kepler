@@ -1,4 +1,4 @@
-"""Üretim hattı GPU doğrulaması + kesişim ölçümü (Modal GPU): referee.run_many(device='gpu') ile 'cpu' AYNI gerçek veride (EV1, 462 bin bar), tam hat (funding + özet dâhil).
+"""Üretim hattı GPU doğrulaması + kesişim ölçümü (Modal GPU): referee.run_many(kernel=referee_gpu.simulate_many) ile CPU AYNI gerçek veride (EV1, 462 bin bar), tam hat (funding + özet dâhil).
   modal run modal_app.py --gpu --cmd "python scripts/referee_gpu_e2e.py --out /data/vbt_val/gpu_e2e.json"   (GPU: KEPLER_GPU ortam değişkeni, varsayılan T4)"""
 import argparse
 import json
@@ -13,7 +13,9 @@ import ensemble as E  # noqa: E402
 
 from kepler import ensemble as en  # noqa: E402
 from kepler import evaluate as ev  # noqa: E402
-from kepler import referee, referee_gpu  # noqa: E402
+import referee_gpu  # noqa: E402
+
+from kepler import referee  # noqa: E402
 
 
 def main():
@@ -28,15 +30,15 @@ def main():
     win = ev.book_window(book, data, *E.utc(E.MAIN))
     out = dict(cuda=referee_gpu.available(), cpus=os.cpu_count(), gpu=os.environ.get("KEPLER_GPU", "T4"), rows=[])
     t = time.perf_counter()
-    referee.run_many(win, [sp, replace(sp, fee_rt_bps=11.0)] * 2, device="gpu", full=False)  # derleme + ısınma
+    referee.run_many(win, [sp, replace(sp, fee_rt_bps=11.0)] * 2, kernel=referee_gpu.simulate_many, full=False)  # derleme + ısınma
     out["gpu_compile_warm_s"] = time.perf_counter() - t
     for n in map(int, a.ns.split(",")):
         grid = [replace(sp, fee_rt_bps=4.0 + 12.0 * i / n, slip_rt_bps=1.0 + (i % 5), delay=i % 3) for i in range(n)]
         t = time.perf_counter()
-        cpu = referee.run_many(win, grid, workers=8, device="cpu", full=False)
+        cpu = referee.run_many(win, grid, workers=8, full=False)
         tc = time.perf_counter() - t
         t = time.perf_counter()
-        gpu = referee.run_many(win, grid, workers=8, device="gpu", full=False)
+        gpu = referee.run_many(win, grid, workers=8, kernel=referee_gpu.simulate_many, full=False)
         tg = time.perf_counter() - t
         keys = ("n_fills", "n_liq", "n_stop", "n_rejected", "funding_missed", "funding_mark_fallback")
         row = dict(n=n, cpu_s=tc, gpu_s=tg, speedup=tc / tg, cpu_ms_per=1000 * tc / n, gpu_ms_per=1000 * tg / n,

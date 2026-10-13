@@ -226,19 +226,15 @@ def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> d
     return dict(summary=summary, fills=fills, rejected=rejected, positions=pd.DataFrame(dict(opened=pd.to_datetime(pi[:, 0], utc=True), closed=pd.to_datetime(np.where(pi[:, 1] > 0, pi[:, 1], np.iinfo(np.int64).min), utc=True), realized=PF[:npos])))
 
 
-def run_many(data: dict[str, dict], specs: list[Spec], workers: int = 4, device: str = "auto", full: bool = True) -> list[dict]:
-    """Aynı veri, çok senaryo. device: 'cpu' (nogil çekirdek, iş parçacıkları; 'auto' da budur), 'gpu' (CUDA, bkz. referee_gpu.py; açıkça istenir).
-    full=False: yalnızca özet + reddedilenler (fills/positions DataFrame'i üretilmez; tarama için çok daha hızlı). Sonuçlar iki yolda da aynı özet değerleri verir (bakiye farkı ~1e-7 USDT)."""
+def run_many(data: dict[str, dict], specs: list[Spec], workers: int = 4, full: bool = True, kernel=None) -> list[dict]:
+    """Aynı veri, çok senaryo; hazırlık bir kez, çekirdek nogil olduğundan iş parçacıklarıyla paralel. full=False: yalnızca özet + reddedilenler (fills/positions DataFrame'i yok; tarama için).
+    kernel: isteğe bağlı GPU çekirdeği `simulate_many(pr, inputs) -> ham çıktılar|None` (scripts/referee_gpu.py; tam hatta kazanç ~1,1x ve ~4x pahalı olduğundan varsayılan CPU)."""
     from concurrent.futures import ThreadPoolExecutor
     pr = prepare(data, specs[0])
     assert all((sp.fill, sp.tick, sp.step) == pr["key"] for sp in specs), "tüm senaryolar aynı fill/tick/step'i paylaşmalı"
-    if device == "gpu":
-        from kepler import referee_gpu as gpu
-        raws = gpu.simulate_many(pr, [_inputs(pr, sp) for sp in specs])
-        with ThreadPoolExecutor(workers) as ex:
-            return list(ex.map(lambda a: _finish(pr, data, a[0], a[1], full) if a[1] is not None else _run_cpu(pr, data, a[0], full), zip(specs, raws)))
+    raws = kernel(pr, [_inputs(pr, sp) for sp in specs]) if kernel else [None] * len(specs)
     with ThreadPoolExecutor(workers) as ex:
-        return list(ex.map(lambda sp: _run_cpu(pr, data, sp, full), specs))
+        return list(ex.map(lambda a: _finish(pr, data, a[0], a[1], full) if a[1] is not None else _run_cpu(pr, data, a[0], full), zip(specs, raws)))
 
 
 def _run_cpu(pr: dict, data: dict, sp: Spec, full: bool) -> dict:

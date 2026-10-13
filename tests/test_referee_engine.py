@@ -138,12 +138,19 @@ def test_run_many_cpu_matches_serial_and_summary_only_mode():
 
 def run_portfolio_many(data, specs, device, full):
     from kepler.referee import run_many
-    return run_many(data, specs, workers=2, device=device, full=full)
+    if device == "gpu":
+        import sys
+        sys.path.insert(0, "scripts")
+        import referee_gpu
+        return run_many(data, specs, workers=2, full=full, kernel=referee_gpu.simulate_many)
+    return run_many(data, specs, workers=2, full=full)
 
 
 def test_gpu_matches_cpu_when_cuda_available():
     """GPU yolu (referee_gpu): CUDA yoksa atlanır; varsa tüm özet kalemleri CPU ile aynı (bakiye ~1e-7 farkı: np.rint beraberlik kuralı)."""
-    from kepler import referee_gpu
+    import sys
+    sys.path.insert(0, "scripts")
+    import referee_gpu
     if not referee_gpu.available():
         pytest.skip("CUDA yok")
     kl, t, fund, mark = _rand_case(5)

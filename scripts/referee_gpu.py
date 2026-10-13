@@ -1,6 +1,6 @@
 """Hakem çekirdeğinin GPU yolu (numba.cuda): referee_core.py'nin AYNI kaynak metni cihaz fonksiyonlarına derlenir (kod kopyası yok), iş parçacığı başına bir senaryo.
-Yalnızca aynı veriyle çok senaryo (fee/slip/gecikme ızgarası) için; tek koşu CPU'da 0,6 sn. Çıktı CPU çekirdeğiyle aynı ham dizilerdir, funding/özet referee._finish'te hesaplanır.
-Ölçüm (Modal, EV1 462 bin bar): yalnız çekirdek T4 9 ms, A10G 5 ms / senaryo (8 iş parçacıklı CPU 63-87 ms); TAM HAT (funding+özet CPU'da, T4, 128 senaryo) 149 ms vs CPU 168 ms = 1,1x: darboğaz CPU'daki _finish, bu yüzden 'auto' CPU. Derleme ~11 sn (süreç başına bir kez). Taşma (fills/RJ kapasitesi) -> None: çağıran CPU'ya düşer."""
+Kullanım: referee.run_many(data, specs, kernel=simulate_many). Yalnızca aynı veriyle çok senaryo (fee/slip/gecikme ızgarası) için; tek koşu CPU'da 0,6 sn. Çıktı CPU çekirdeğiyle aynı ham dizilerdir, funding/özet referee._finish'te hesaplanır.
+Ölçüm (Modal, EV1 462 bin bar): yalnız çekirdek T4 9 ms, A10G 5 ms / senaryo (8 iş parçacıklı CPU 63-87 ms); TAM HAT (funding+özet CPU'da, T4, 128 senaryo) 149 ms vs CPU 168 ms = 1,1x: darboğaz CPU'daki _finish, bu yüzden varsayılan CPU. Derleme ~11 sn (süreç başına bir kez). Taşma (fills/RJ kapasitesi) -> None: çağıran CPU'ya düşer."""
 import math
 import pathlib
 

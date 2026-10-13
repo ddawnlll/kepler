@@ -56,10 +56,29 @@ def book_window(out: dict, data: dict[str, dict], lo, hi) -> dict:
                     mark=None if d.get("mark") is None else d["mark"].loc[(d["mark"].index >= lo) & (d["mark"].index < hi)]) for s, d in data.items() if keep[s].any()}
 
 
-def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | None = None, res0=None):
+def _trim_flat(win: dict[str, dict], delay: int) -> dict[str, dict]:
+    """run_book(trim_flat=True): hedefi 0 ve stop'u olmayan bar dizilerini at (etkin bardan sonra 3 + delay bar tutulur); hiç etkin barı olmayan sembolü at."""
+    out = {}
+    for s, d in win.items():
+        act = ((d["target"] != 0) | d["stop"].notna()).astype(int)
+        keep = act.rolling(3 + delay + 1, min_periods=1).max().astype(bool)
+        if keep.any():
+            out[s] = dict(d, kl=d["kl"][keep], target=d["target"][keep], stop=d["stop"][keep])
+    return out
+
+
+def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | None = None, trim_flat: bool = False, res0=None):
     """Hesaplanmış kitabı ({sym: DataFrame[target, stop]}) [lo, hi) penceresinde portföy hakemiyle koşar (denetimsiz, deftersiz; sağlamlık koşuları için). Pencere başında tutulan
-    pozisyon açık hedef olur. Kill switch: portföy equity'si kill_dd düşünce tüm hedefler 0. (hakem sonucu, pencere verisi, tetik zamanı)"""
+    pozisyon açık hedef olur. Kill switch: portföy equity'si kill_dd düşünce tüm hedefler 0. (hakem sonucu, pencere verisi, tetik zamanı)
+    trim_flat (opt-in, hız; sonuç değişmez): hedefi (ffill sonrası) 0 ve stop'u olmayan bar dizileri hakeme gitmez; her etkin bardan (hedef != 0 ya da stop var) sonra margin = 3 + spec.delay bar
+    tutulur (kapatan dolum, stop iptali, funding o barlarda). Pencerede hiç etkin barı olmayan semboller tümden atılır. `kill_dd` ile birlikte kullanılmaz (tetikten sonra hedefler 0 olur, kırpma
+    sıfırlanmış hedefe göre yeniden yapılmalı). Dolum tablosu, net ve günlük PnL aynıdır; `funding_missed` sayacının anlamı değişir: mark verilmediğinde hakem funding fiyatını kırpılmış kline'dan okur, bu yüzden kırpılan (pozisyonsuz, funding katkısı 0) saatlerdeki funding anları da
+    "eksik" sayılır (carry_xs null çekilişlerinde 44–120, ana koşuda 392); funding tutarı ve net etkilenmez. Sayaç yalnızca trim_flat=False koşularında veri eksikliği göstergesi olarak okunur. Dönen `win` kırpılmıştır (report.book_pnl yine hakem netiyle uzlaşır)."""
+    if trim_flat and kill_dd is not None:
+        raise ValueError("trim_flat kill_dd ile birlikte kullanılamaz")
     win = book_window(out, data, lo, hi)
+    if trim_flat:
+        win = _trim_flat(win, spec.delay)
     res, tripped = (res0 if res0 is not None else referee.run_portfolio(win, spec)), None
     if kill_dd is not None:
         eq = spec.capital + report.book_pnl(win, res, spec).cumsum()
@@ -85,9 +104,9 @@ def evaluate_book(book, data: dict[str, dict], specs: list, ledger_path, hypothe
     lo, hi = (utc(window[0]), utc(window[1])) if window else (min(k.index[0] for k in kls.values()), max(k.index[-1] for k in kls.values()) + pd.Timedelta("1h"))
     code = ledger.code_hash(referee.__file__, __file__, audit.__file__, ledger.__file__, tape.__file__, inspect.getsourcefile(book), risk.__file__, turtle.__file__, signals.__file__)
     rows = []
-    pre = referee.run_many(book_window(out, data, lo, hi), specs) if kill_dd is None and len(specs) > 1 and len({(x.fill, x.tick, x.step) for x in specs}) == 1 else [None] * len(specs)  # çok senaryo: GPU/iş parçacıkları (device='auto')
+    pre = referee.run_many(book_window(out, data, lo, hi), specs) if kill_dd is None and len(specs) > 1 and len({(x.fill, x.tick, x.step) for x in specs}) == 1 else [None] * len(specs)  # çok senaryo: iş parçacıkları
     for sp, r0 in zip(specs, pre):
-        res, win, tripped = run_book(out, data, sp, lo, hi, kill_dd, r0)
+        res, win, tripped = run_book(out, data, sp, lo, hi, kill_dd, res0=r0)
         cfg = dict(name=name, params=params or {}, spec=asdict(sp), window=[str(lo), str(hi)], audit_causal=True, book=True, symbols=sorted(win), kill_dd=kill_dd, kill_at=str(tripped))
         rows.append(dict(res=res, win=win, row=ledger.record(ledger_path, "referee", hypothesis, cfg, code, data_hash, result=res["summary"])))
     return rows
