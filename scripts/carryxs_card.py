@@ -39,7 +39,8 @@ def setup():
 
 def one(p: en.Params, sp, u=None, window=None, out=None):
     out = out if out is not None else P2.make_book(p, G["mem"], False, CAPR, u)(G["kls"])
-    res, win, _ = ev.run_book(out, G["data"], sp, *E.utc(window or E.MAIN))
+    lo, hi = E.utc(window or E.MAIN)
+    res, win, _ = ev.run_book(out, G["data"], sp, lo, hi, trim_flat=True)
     pnl = report.book_pnl(win, res, sp)
     return dict(summary=E.keep(res), daily=E.daily(pnl))
 
