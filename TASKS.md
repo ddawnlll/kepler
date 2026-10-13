@@ -1,6 +1,8 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: sinyal teşhisi (9 uzmanın IC/kalibrasyon/sönme/kümelenme; nötr bölge + carry yeniden kurulumu; kullanıcı görevi 2026-10-06) | durum: bitti (push onayı bekliyor) | protokol: reports/preregistration/signal_diagnostics.md
+Aktif iş: hakem motoru değişimi Nautilus -> numba (kullanıcı görevi 2026-10-13) | durum: bitti (push edildi) | protokol: BACKTEST.md §6.6
+
+(Önceki aktif iş: sinyal teşhisi | durum: bitti (push onayı bekliyor) | protokol: reports/preregistration/signal_diagnostics.md)
 
 (Önceki aktif iş: ev1_plus_new trade denetimi düzeltmeleri | durum: bitti (push onayı bekliyor) | protokol: reports/fix_progress.md)
 
@@ -413,3 +415,6 @@ Bütçe: yaklaşık 3 saat ve 150 araç çağrısı (öneri; aşılırsa dur ve 
 
 Raporun sonunda: değişen dosyalar, koşulan komutlar ve sonuçları (geçti/kaldı/atlandı), bilinen sınırlar, yapılmayanlar. Doğrulanmamış rakamı "doğrulanmadı" diye yaz. TASKS.md'yi güncelle, commit + push et.
 ```
+
+## Hakem motoru: Nautilus -> numba (2026-10-13, kullanıcı görevi): bitti
+`kepler/referee.py` + `kepler/referee_core.py`; Nautilus bağımlılığı kalktı. Gerçek veri: EV1/ev1_plus_new/all9_equal Nautilus dolumlarıyla satır satır eşleşti (net farkı <= 2,7e-7 USDT). Uçtan uca soğuk ~13 sn, sıcak ~3,4 sn; GPU (A10G) yalnızca tarama deneyi: 5 ms/senaryo (çekirdek). Ayrıntı ve açık boşluklar: `reports/vbt_referee/gunaydin_raporu.pdf`, BACKTEST §6.6.
