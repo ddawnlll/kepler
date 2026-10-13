@@ -80,7 +80,8 @@ def simulate_many(pr: dict, inputs: list) -> list:
     sim_cap, rj_cap = int(min(max(4096, nb // 8), 60000)), 4096
     per = 16 * nb + sim_cap * 88 + rj_cap * 24 + K * 100
     B = int(max(1, min(512, cuda.current_context().get_memory_info()[0] * 0.55 // per)))
-    shared = [cuda.to_device(pr[k]) for k in ("ev_k", "ev_b", "ev_kind", "T0", "O", "H", "L", "C", "SZ")] + [cuda.to_device(pr["U"])]
+    shared = [cuda.to_device(pr[k]) for k in ("ev_k", "ev_b", "ev_kind", "T0", "O", "H", "L", "C", "SZ")]
+    dU = cuda.to_device(pr["U"])
     groups: dict[int, list[int]] = {}
     for i, (TG, ST, _) in enumerate(inputs):
         groups.setdefault(hash((TG.tobytes(), ST.tobytes())), []).append(i)
@@ -94,7 +95,7 @@ def simulate_many(pr: dict, inputs: list) -> list:
             bufs = dict(F=np.zeros((m, K, 9)), I=np.zeros((m, K, 5), np.int64), G=np.zeros((m, 1)), N=np.zeros((m, 3), np.int64), FI=np.zeros((m, sim_cap, 4), np.int64), FF=np.zeros((m, sim_cap, 3)),
                         PI=np.zeros((m, sim_cap, 3), np.int64), PF=np.zeros((m, sim_cap)), RJ=np.zeros((m, rj_cap, 3), np.int64), PRE=np.zeros((m, nb), np.int64), END=np.zeros((m, nb), np.int64))
             dv = {k: cuda.to_device(v) for k, v in bufs.items()}
-            _kern[(m + 31) // 32, 32](*shared, tg, st, cuda.to_device(np.stack([inputs[i][2] for i in sel])), *(dv[k] for k in ("F", "I", "G", "N", "FI", "FF", "PI", "PF", "RJ", "PRE", "END")))
+            _kern[(m + 31) // 32, 32](*shared, tg, st, dU, cuda.to_device(np.stack([inputs[i][2] for i in sel])), *(dv[k] for k in ("F", "I", "G", "N", "FI", "FF", "PI", "PF", "RJ", "PRE", "END")))
             cuda.synchronize()
             host = {k: v.copy_to_host() for k, v in dv.items()}
             for j, i in enumerate(sel):
