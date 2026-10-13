@@ -142,7 +142,7 @@ class Adapter(Strategy):
             if self.halt.get(k) not in (None, d):
                 del self.halt[k]  # ters ya da flat sinyal: stop kilidi açılır
             if k in self.halt and tgt != self.last[k]:
-                self.intent(k, t, tgt, px, pos, pos, "blocked_halt")  # stop sonrası kilit: niyet gönderilmez
+                self.intents.append(intent_row(k, t, tgt, px, pos, pos, "blocked_halt"))  # stop sonrası kilit: niyet gönderilmez
             if k not in self.halt and tgt != self.last[k]:  # hedef değişmedikçe yeniden boyutlama yok (fiyat gürültüsü churn yapmasın)
                 self.last[k] = tgt
                 f = max(self.equity() / self.spec.capital, 0.0) if self.spec.equity_scale else 1.0
@@ -154,17 +154,14 @@ class Adapter(Strategy):
                 reducing = want == 0 or (want * pos > 0 and abs(want) < abs(pos))
                 if delta != 0 and (reducing or abs(delta) * px >= Decimal(str(self.spec.min_notional))):
                     o = self.order_factory.market(b["iid"], OrderSide.BUY if delta > 0 else OrderSide.SELL, Quantity.from_str(format(abs(delta), "f")))
-                    self.by_order[str(o.client_order_id)] = self.intent(k, t, tgt * f, px, pos, want, "sent")
+                    self.intents.append(intent_row(k, t, tgt * f, px, pos, want, "sent"))
+                    self.by_order[str(o.client_order_id)] = len(self.intents) - 1
                     self.submit_order(o)
                     sent = True
                 else:  # gönderilmedi: lot/minimum no-op'u tutar ve risk sapmasıyla görünür (motor kaynaklı sessiz dolumsuzluktan ayrı)
-                    self.intent(k, t, tgt * f, px, pos, want, "noop_lot" if delta == 0 else "blocked_minimum")
+                    self.intents.append(intent_row(k, t, tgt * f, px, pos, want, "noop_lot" if delta == 0 else "blocked_minimum"))
         if not sent and not (old == new or (math.isnan(old) and math.isnan(new))):  # emir gitmediyse yeni stop seviyesini bar açılışında kur
             self.refresh(k, c)
-
-    def intent(self, k, t, tgt, px, pos, want, status) -> int:
-        self.intents.append(intent_row(k, t, tgt, px, pos, want, status))
-        return len(self.intents) - 1
 
     def _lp(self, k, q):
         """k sembolünün likidasyon fiyatı: ortak cüzdan (bakiye + uygulanmış funding − DİĞER pozisyonların başlangıç marjı; self.mc), tek sembol cross formülü."""
