@@ -30,7 +30,7 @@ else:
 GPU = os.environ.get("KEPLER_GPU", "T4")  # hakem taramaları için varsayılan GPU (referee.run_many device='auto'); değiştirmek için ortam değişkeni
 # Numba önbelleği imaja pişirilir: çekirdek dosyası copy=True katmanında (zaman damgası sabit), çalışma zamanı mount'undan hariç; kod değişmedikçe soğuk başlangıçta derleme yok.
 CORE = ["kepler/__init__.py", "kepler/referee_core.py"]
-img = img.env({"NUMBA_CACHE_DIR": "/opt/numba_cache"})
+img = img.env({"NUMBA_CACHE_DIR": "/opt/numba_cache", "NUMBA_CPU_NAME": "generic"})  # generic: önbellek build ve çalışma makinesi CPU modeli farklı olsa da geçerli kalır
 for f_ in CORE + ["scripts/numba_warm.py"]:
     img = img.add_local_file(ROOT / f_, f"/repo/{f_}", copy=True)
 img = img.run_commands("mkdir -p /opt/numba_cache && cd /repo && python scripts/numba_warm.py")

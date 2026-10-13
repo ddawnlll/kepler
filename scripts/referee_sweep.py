@@ -34,6 +34,9 @@ def main():
     st["load_book_s"] = time.perf_counter() - t
     grid = [replace(sp, fee_rt_bps=4.0 + 12.0 * k / a.n, slip_rt_bps=1.0 + (k % 5), delay=k % 3) for k in range(a.n)][i::n_sh]
     t = time.perf_counter()
+    referee.run_many(win, grid[:1], workers=1, device="cpu", full=False)  # ilk çağrı: numba önbellekten yükleme (ya da derleme) süresi
+    st["first_call_s"] = time.perf_counter() - t
+    t = time.perf_counter()
     res = referee.run_many(win, grid, workers=a.workers, device="cpu", full=False)
     st["sweep_s"], st["scenarios"], st["shard"] = time.perf_counter() - t, len(grid), f"{i}/{n_sh}"
     st["total_in_process_s"] = time.perf_counter() - T_START
