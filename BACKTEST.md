@@ -113,6 +113,7 @@ signal(kl: DataFrame[open, high, low, close, volume (+ fund_hr)]) -> Series
 
 Kill switch tetiklenince **hakem baştan, kırpılmış hedefle yeniden koşar**; tetik zamanı deftere `kill_at` olarak yazılır. Tetikten sonra hesap flat kalır (insan onayına kadar; yeniden devreye alma yok).
 - **Portföy kill switch:** `evaluate.run_book/evaluate_book(kill_dd=)`: portföy saatlik equity'si (`report.book_pnl`) tepeden `kill_dd` düşünce tüm hedefler 0 (tests/test_turtle.py).
+- **Hız seçenekleri (sonuç değişmez; tests/test_run_book_trim.py):** `run_book(trim_flat=True)` hedefi 0 ve stop'u olmayan bar dizilerini/sembolleri hakeme vermez (etkin bardan sonra 3 + delay bar tutulur; `kill_dd` ile birlikte kullanılmaz; `funding_missed` sayacı kırpılan saatleri de sayar, funding tutarı etkilenmez). Hakem Nautilus günlüğünü kapatır (`LoggerConfig(bypass_logging=True)`), pozisyon miktarını dolum olaylarından besler ve dolum başına `Portfolio.account()` çağırmaz; bar gövdesi O(1).
 - **Equity'ye göre ölçekleme:** `Spec.equity_scale` (§6.1): hakem emir anında hedef notional'ı equity/capital ile çarpar (tests/test_portfolio.py).
 - **Gerçek veride kullanım:** `equity_scale` + portföy kill switch tam Turtle S1/S2'de (6 deneme), `vol_target` + kill BTC turtle duman testinde (3 deneme), `realized_vol` onun içinde: `reports/backtest_completion.md` madde 4/4b. Parametreler ayarlanmadı.
 
