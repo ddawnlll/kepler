@@ -54,12 +54,31 @@ def evaluate(signal, kl: pd.DataFrame, specs: list, ledger_path, hypothesis: str
     return out
 
 
-def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | None = None):
+def _trim_flat(win: dict[str, dict], delay: int) -> dict[str, dict]:
+    """run_book(trim_flat=True): hedefi 0 ve stop'u olmayan bar dizilerini at (etkin bardan sonra 3 + delay bar tutulur); hiç etkin barı olmayan sembolü at."""
+    out = {}
+    for s, d in win.items():
+        act = ((d["target"] != 0) | d["stop"].notna()).astype(int)
+        keep = act.rolling(3 + delay + 1, min_periods=1).max().astype(bool)
+        if keep.any():
+            out[s] = dict(d, kl=d["kl"][keep], target=d["target"][keep], stop=d["stop"][keep])
+    return out
+
+
+def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | None = None, trim_flat: bool = False):
     """Hesaplanmış kitabı ({sym: DataFrame[target, stop]}) [lo, hi) penceresinde portföy hakemiyle koşar (denetimsiz, deftersiz; sağlamlık koşuları için). Pencere başında tutulan
-    pozisyon açık hedef olur. Kill switch: portföy equity'si kill_dd düşünce tüm hedefler 0. (hakem sonucu, pencere verisi, tetik zamanı)"""
+    pozisyon açık hedef olur. Kill switch: portföy equity'si kill_dd düşünce tüm hedefler 0. (hakem sonucu, pencere verisi, tetik zamanı)
+    trim_flat (opt-in, hız; sonuç değişmez): hedefi (ffill sonrası) 0 ve stop'u olmayan bar dizileri hakeme gitmez; her etkin bardan (hedef != 0 ya da stop var) sonra margin = 3 + spec.delay bar
+    tutulur (kapatan dolum, stop iptali, funding o barlarda). Pencerede hiç etkin barı olmayan semboller tümden atılır. `kill_dd` ile birlikte kullanılmaz (tetikten sonra hedefler 0 olur, kırpma
+    sıfırlanmış hedefe göre yeniden yapılmalı). Dolum tablosu, net ve günlük PnL aynıdır; `funding_missed` sayacının anlamı değişir: mark verilmediğinde hakem funding fiyatını kırpılmış kline'dan okur, bu yüzden kırpılan (pozisyonsuz, funding katkısı 0) saatlerdeki funding anları da
+    "eksik" sayılır (carry_xs null çekilişlerinde 44–120, ana koşuda 392); funding tutarı ve net etkilenmez. Sayaç yalnızca trim_flat=False koşularında veri eksikliği göstergesi olarak okunur. Dönen `win` kırpılmıştır (report.book_pnl yine hakem netiyle uzlaşır)."""
+    if trim_flat and kill_dd is not None:
+        raise ValueError("trim_flat kill_dd ile birlikte kullanılamaz")
     keep = {s: (d["kl"].index >= lo) & (d["kl"].index < hi) for s, d in data.items()}
     win = {s: dict(d, kl=d["kl"][keep[s]], target=out[s].target.ffill().fillna(0.0)[keep[s]], stop=out[s].stop[keep[s]],
                    mark=None if d.get("mark") is None else d["mark"].loc[(d["mark"].index >= lo) & (d["mark"].index < hi)]) for s, d in data.items() if keep[s].any()}
+    if trim_flat:
+        win = _trim_flat(win, spec.delay)
     res, tripped = referee.run_portfolio(win, spec), None
     if kill_dd is not None:
         eq = spec.capital + report.book_pnl(win, res, spec).cumsum()
