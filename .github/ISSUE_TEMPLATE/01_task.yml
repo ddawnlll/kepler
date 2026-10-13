@@ -1,0 +1,77 @@
+name: "Görev / özellik"
+description: "Kapsamı ve kabul kriterleri belli bir özellik, iyileştirme veya bakım işi."
+title: "[task] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tek issue'da tek sonuç hedefle. Çalıştırma komutları ve repo kuralları için [AGENTS.md](https://github.com/ddawnlll/kepler/blob/main/AGENTS.md) kaynaktır.
+        Araştırma deneyi için araştırma formunu kullan. Token, mühür anahtarı veya özel veri paylaşma.
+  - type: textarea
+    id: goal
+    attributes:
+      label: "Hedef / problem"
+      description: "Hangi gözlenmiş sorun çözülüyor? Kullanıcı veya araştırma akışı için neden gerekli?"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: "Bağlam"
+      description: "Mevcut davranış; ilgili dosya/modül, örnek, belge ve issue bağlantıları. Uzun belgeleri kopyalamak yerine bağla."
+    validations:
+      required: true
+  - type: textarea
+    id: desired_behavior
+    attributes:
+      label: "Beklenen davranış"
+      description: "Somut girdi → çıktı örneği ve ilgili sınır durumları. Önerilen çözümü problemden ayrı belirt."
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: "Kapsam / kısıtlar"
+      description: "Kesin dosya sınırı gerekiyorsa açıkça belirt. Korumalı alanlarla ilgili mevcut yetkilendirmeyi bağla."
+      value: |
+        Kapsam içinde:
+        -
+
+        Kapsam dışında:
+        -
+
+        Korunacak davranış / uyumluluk / değişmezler:
+        -
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Kabul kriterleri"
+      description: "Bağımsız olarak doğrulanabilen bitiş koşulları; gerekiyorsa performans ölçütü ve karşılaştırma tabanı."
+      placeholder: |
+        - [ ] ... girdisi ... çıktısını verir.
+        - [ ] ... sınır durumu doğru işlenir.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: "Doğrulama"
+      description: "Bilinen komut/prosedür, çalışacağı ortam ve kanıtlaması gereken davranış. Ek ilgili kontroller için AGENTS.md'ye bak; testleri zayıflatma. CI yok."
+      placeholder: |
+        | Kontrol | Komut / prosedür | Ortam | Beklenen sonuç |
+        | --- | --- | --- | --- |
+        | | | | |
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: "Yaklaşım / alternatifler / açık sorular"
+      description: "İsteğe bağlı. Karmaşık işte kısa yaklaşım ve önemli belirsizlikler; küçük işte plan zorunlu değil. Öneri, uygulamanın doğru olduğunun kanıtı değildir."
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "Bağımlılıklar"
+      description: "Ön koşullar ve ilgili işler; yoksa 'Yok'."

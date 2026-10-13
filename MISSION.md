@@ -98,9 +98,9 @@ NO_EDGE) ve testlerin tam tanımı orada. Kart yalnızca ön kayıtla ve bir son
    her modül testli ve kullanılıyor olmalı; kullanılmayan dosya silinir. Boş/yorum satırı ve testler
    sayılmaz. (b) aşılırsa kullanıcıya sor; sessizce geçilmez. Bakım maliyeti V8'de projeyi bitirdi.
 8. **Geliştirme ajanları kilometre taşında onay bekler**, aralarda serbest çalışır.
-9. **Kritik kod** (değerlendirici, denetim) güçlü model + bağımsız inceleme ile yazılır
-   (G0–G1: Claude Code + Sonnet 5.5 high); veri çekme ve toplu koşum ucuz modelle yapılabilir.
-   G1'den sonraki 7/24 işleri ucuz modelle yürür ve değerlendirici/denetim koduna dokunamaz.
+9. **Kritik kod** (değerlendirici, denetim, risk, mühür) kullanıcı yetkilendirmesi + bağımsız
+   inceleme ile değiştirilir; korumalı dosya sınırları bütün ajanlar için aynıdır. Model/effort
+   çalışma ortamında seçilir; model adı yetki veya doğrulama kanıtı değildir.
 10. **Sonuçlar dürüst raporlanır:** test kırmızıysa söylenir, atlanan adım "atlandı" diye
     yazılır, doğrulanmamış rakam "doğrulanmadı" etiketiyle gelir
     (KNOWN / LIKELY / UNKNOWN).
