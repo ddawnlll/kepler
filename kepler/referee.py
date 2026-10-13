@@ -98,34 +98,35 @@ def _prep(sym: str, d: dict, spec: Spec):
     return dict(t0=t0, o=o, h=h, l=l, c=c, tg=tg, st=st, sz=sz * inc, u=(10.0**sp, 10.0**pp, float(tick)))
 
 
-def _funding(kl, mark, funding, keys, vals):
-    """Funding olayları: T'den ÖNCE tutulan pozisyon (keys[j] >= T ilk anahtar) x mark kapanışı (T'de biten bar; yoksa kline kapanışı) x oran. (toplam, kaçan, kline'a düşen)."""
+def _fund_inputs(kl, mark, funding):
+    """Funding olaylarının pozisyondan bağımsız kısmı (bir kez): T (1 dk yuvarlı), oran, mark kapanışı (yoksa kline kapanışı), kaçan/kline'a düşen sayıları. Aralık dışı olaylar atlanır."""
     if funding is None or not len(funding):
-        return 0.0, 0, 0
-    ts = ns(pd.DatetimeIndex(funding.index).round("1min"))
-    rate = funding["last_funding_rate"].to_numpy(float)
-    t0 = ns(kl.index)
+        return None
+    ts, rate, t0 = ns(pd.DatetimeIndex(funding.index).round("1min")), funding["last_funding_rate"].to_numpy(float), ns(kl.index)
     ok = (t0[0] + HOUR_NS <= ts) & (ts <= t0[-1] + HOUR_NS)
     ts, rate = ts[ok], rate[ok]
     src = mark if mark is not None else kl
-    mk_close = ns(src.index) + HOUR_NS
-    order = np.argsort(mk_close, kind="stable")
-    mk_close, mk_val = mk_close[order], src.close.to_numpy(float)[order]
+    order = np.argsort(ns(src.index), kind="stable")
+    mk_close, mk_val = (ns(src.index) + HOUR_NS)[order], src.close.to_numpy(float)[order]
     i = np.searchsorted(mk_close, ts, side="right") - 1  # yinelenen anahtarda sonuncusu (dict semantiği)
     hit = (i >= 0) & (mk_close[np.maximum(i, 0)] == ts)
-    c = np.where(hit, mk_val[np.maximum(i, 0)], np.nan)
-    fallback = 0
-    if mark is not None:
+    c, fallback = np.where(hit, mk_val[np.maximum(i, 0)], np.nan), 0
+    if mark is not None:  # mark barı yok: kline kapanışına düş (sayılır)
         miss = np.isnan(c)
         j = np.searchsorted(t0, ts - HOUR_NS)
         kh = (j < len(t0)) & (t0[np.minimum(j, len(t0) - 1)] == ts - HOUR_NS)
         c2 = np.where(kh, kl.close.to_numpy(float)[np.minimum(j, len(t0) - 1)], np.nan)
-        c = np.where(miss, c2, c)
-        fallback = int((miss & ~np.isnan(c2)).sum())
-    jk = np.searchsorted(keys, ts, side="left")
-    bad = np.isnan(c) | (jk == len(keys))
-    pos = vals[np.minimum(jk, len(keys) - 1)]
-    return float(np.sum(np.where(bad, 0.0, -pos * np.where(bad, 0.0, c) * rate))), int(bad.sum()), fallback
+        c, fallback = np.where(miss, c2, c), int((miss & ~np.isnan(c2)).sum())
+    return dict(ts=ts, rate=rate, c=c, fallback=fallback)
+
+
+def _funding(fx, keys, vals):
+    """T'den ÖNCE tutulan pozisyon (keys[j] >= T ilk anahtar) x mark kapanışı x oran. (toplam, kaçan, kline'a düşen)."""
+    if fx is None:
+        return 0.0, 0, 0
+    jk = np.searchsorted(keys, fx["ts"], side="left")
+    bad = np.isnan(fx["c"]) | (jk == len(keys))
+    return float(np.sum(np.where(bad, 0.0, -vals[np.minimum(jk, len(keys) - 1)] * np.where(bad, 0.0, fx["c"]) * fx["rate"]))), int(bad.sum()), fx["fallback"]
 
 
 def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.DataFrame | None = None, mark: pd.DataFrame | None = None, stop: pd.Series | None = None) -> dict:
@@ -151,7 +152,7 @@ def prepare(data: dict[str, dict], spec: Spec = Spec()) -> dict:
         ev_kind = np.r_[np.zeros(len(bar), np.int8), np.ones(len(bar), np.int8)]
     o_ = np.lexsort((ev_k, ev_t))  # zaman, sonra sembol sırası (eski motor: veri ekleme sırası)
     return dict(syms=syms, prep=prep, n=n, off=off, T0=T0, O=O, H=H, L=L, C=C, SZ=SZ, U=np.array([p["u"] for p in prep]), close_mode=close_mode, tg=cat("tg"), st=cat("st"),
-                ev_k=ev_k[o_].astype(np.int64), ev_b=ev_b[o_].astype(np.int64), ev_kind=ev_kind[o_], key=(spec.fill, spec.tick, spec.step))
+                ev_k=ev_k[o_].astype(np.int64), ev_b=ev_b[o_].astype(np.int64), ev_kind=ev_kind[o_], fx=[_fund_inputs(d["kl"], d.get("mark"), d.get("funding")) for d in data.values()], key=(spec.fill, spec.tick, spec.step))
 
 
 def _inputs(pr: dict, spec: Spec):
@@ -161,15 +162,15 @@ def _inputs(pr: dict, spec: Spec):
     for k in range(len(pr["syms"])):
         sl = slice(off[k], off[k + 1])
         TG[sl], ST[sl] = _shift(pr["tg"][sl], sh), _shift(pr["st"][sl], sh)
-    P = np.array([(spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4, spec.leverage, spec.mmr, float(spec.liq and not spec.native_liq), spec.min_notional, spec.capital, float(spec.equity_scale), spec.gross_cap or 0.0,
-                  float(pr["close_mode"])])
+    P = np.array([(spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4, spec.leverage, spec.mmr, float(spec.liq and not spec.native_liq), spec.min_notional, spec.capital, float(spec.equity_scale), spec.gross_cap or 0.0, float(pr["close_mode"])])
     return TG, ST, P
 
 
 def _kernel_cpu(pr: dict, TG, ST, P):
-    nb, cap = len(pr["T0"]), 2 * len(pr["T0"]) + 4096
+    nb = len(pr["T0"])
+    cap = max(4096, nb // 16)  # tipik dolum sayısı bar sayısının ~%1'i; taşarsa iki katına çıkarıp yeniden koş (senaryo başına ~110 MB yerine ~5 MB tampon)
     while True:
-        FI, FF, PI, PF, RJ = np.zeros((cap, 4), np.int64), np.zeros((cap, 3)), np.zeros((cap, 3), np.int64), np.zeros(cap), np.zeros((len(pr["ev_k"]) + 1, 3), np.int64)
+        FI, FF, PI, PF, RJ = np.zeros((cap, 4), np.int64), np.zeros((cap, 3)), np.zeros((cap, 3), np.int64), np.zeros(cap), np.zeros((cap, 3), np.int64)
         PRE, END = np.zeros(nb, np.int64), np.zeros(nb, np.int64)
         F, I, G, N = core.simulate(pr["ev_k"], pr["ev_b"], pr["ev_kind"], pr["T0"], pr["O"], pr["H"], pr["L"], pr["C"], pr["SZ"], TG, ST, pr["U"], P, cap, FI, FF, PI, PF, RJ, PRE, END)
         if N[0] >= 0:
@@ -188,9 +189,7 @@ def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> d
     """Çekirdek çıktısından özet + (full ise) fills/positions tabloları. Funding burada, T öncesi pozisyon dizilerinden (PRE/END) hesaplanır. full=False: DataFrame üretilmez (tarama)."""
     syms, prep, off, U, close_mode = pr["syms"], pr["prep"], pr["off"], pr["U"], pr["close_mode"]
     F, I, G, N, FI, FF, PI, PF, RJ, PRE, END = (raw[k] for k in ("F", "I", "G", "N", "FI", "FF", "PI", "PF", "RJ", "PRE", "END"))
-    side_fee = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
-    nf, npos, nrej = int(N[0]), int(N[1]), int(N[2])
-    PF = PF.copy()
+    side_fee, (nf, npos, nrej), PF = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4, (int(N[0]), int(N[1]), int(N[2])), PF.copy()
     for k in range(len(syms)):
         if I[k, core.LOT] != 0:
             PF[I[k, core.COPEN]] = F[k, core.CYC]  # açık döngü: o ana kadarki realize (komisyon dahil)
@@ -213,7 +212,7 @@ def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> d
             new = np.r_[True, t0[1:] != t0[:-1] + HOUR_NS]
             keys, vals = np.r_[t0 + HOUR_NS, t0[new]], np.r_[end, pre[new]]
         srt = np.argsort(keys, kind="stable")
-        f, m, fb = _funding(kl, d.get("mark"), d.get("funding"), keys[srt], vals[srt])
+        f, m, fb = _funding(pr["fx"][k], keys[srt], vals[srt])
         fund, missed, fallback = fund + f, missed + m, fallback + fb
     net = float(G[0]) + unreal - spec.capital + fund - liq_fee - exit_cost
     rejected = [f"OrderRejected(sym={syms[r[0]]} ts={r[1]} qty={r[2] / U[r[0], 0]}: {'stop kitap fiyatında' if r[2] == 0 else 'marj/piyasa yok'})" for r in RJ[:nrej]]
@@ -224,8 +223,7 @@ def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> d
         return dict(summary=summary, rejected=rejected)
     fills = pd.DataFrame(dict(sym=np.array(syms, dtype=object)[fi[:, 0]], ts=fi[:, 1], side=np.where(fi[:, 2] > 0, "BUY", "SELL"), qty=ff[:, 0], px=ff[:, 1], commission=ff[:, 2], liq=liq, stop=stp))
     pi = PI[:npos]
-    positions = pd.DataFrame(dict(opened=pd.to_datetime(pi[:, 0], utc=True), closed=pd.to_datetime(np.where(pi[:, 1] > 0, pi[:, 1], np.iinfo(np.int64).min), utc=True), realized=PF[:npos]))
-    return dict(summary=summary, fills=fills, positions=positions, rejected=rejected)
+    return dict(summary=summary, fills=fills, rejected=rejected, positions=pd.DataFrame(dict(opened=pd.to_datetime(pi[:, 0], utc=True), closed=pd.to_datetime(np.where(pi[:, 1] > 0, pi[:, 1], np.iinfo(np.int64).min), utc=True), realized=PF[:npos])))
 
 
 def run_many(data: dict[str, dict], specs: list[Spec], workers: int = 4, device: str = "auto", full: bool = True) -> list[dict]:
@@ -236,10 +234,9 @@ def run_many(data: dict[str, dict], specs: list[Spec], workers: int = 4, device:
     assert all((sp.fill, sp.tick, sp.step) == pr["key"] for sp in specs), "tüm senaryolar aynı fill/tick/step'i paylaşmalı"
     if device == "gpu":
         from kepler import referee_gpu as gpu
-        if device == "gpu":
-            raws = gpu.simulate_many(pr, [_inputs(pr, sp) for sp in specs])
-            with ThreadPoolExecutor(workers) as ex:
-                return list(ex.map(lambda a: _finish(pr, data, a[0], a[1], full) if a[1] is not None else _run_cpu(pr, data, a[0], full), zip(specs, raws)))
+        raws = gpu.simulate_many(pr, [_inputs(pr, sp) for sp in specs])
+        with ThreadPoolExecutor(workers) as ex:
+            return list(ex.map(lambda a: _finish(pr, data, a[0], a[1], full) if a[1] is not None else _run_cpu(pr, data, a[0], full), zip(specs, raws)))
     with ThreadPoolExecutor(workers) as ex:
         return list(ex.map(lambda sp: _run_cpu(pr, data, sp, full), specs))
 

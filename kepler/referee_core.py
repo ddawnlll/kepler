@@ -202,7 +202,7 @@ def simulate(ev_k, ev_b, ev_kind, T0, O, H, L, C, SZ, TG, ST, U, P, cap_fills, F
     F[:, STOP], F[:, ORD], F[:, LP], F[:, TLAST], F[:, BP] = np.nan, np.nan, np.nan, np.nan, np.nan
     G, N = np.array([P[CAP]]), np.zeros(3, np.int64)
     for e in range(ev_k.shape[0]):
-        if N[0] + 8 >= cap_fills:
+        if N[0] + 8 >= cap_fills or N[2] + 8 >= RJ.shape[0]:
             N[0] = -1
             return F, I, G, N
         k, b, kind = ev_k[e], ev_b[e], ev_kind[e]
