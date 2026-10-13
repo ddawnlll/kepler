@@ -21,6 +21,7 @@ from decimal import ROUND_DOWN, Decimal
 import numpy as np
 import pandas as pd
 from nautilus_trader.backtest import BacktestEngine, BacktestEngineConfig
+from nautilus_trader.common import LoggerConfig
 from nautilus_trader.execution import MakerTakerFeeModel
 from nautilus_trader.model import (AccountType, AggregationSource, Bar, BarAggregation, BarSpecification, BarType,
                                    CryptoPerpetual, Currency, CurrencyType, InstrumentId, Money, OmsType, OrderSide,
@@ -78,16 +79,17 @@ class Adapter(Strategy):
     def __init__(self, B: dict, spec: Spec):
         super().__init__(None)
         self.B, self.spec, self.fills, self.rejected, self.split = B, spec, [], [], spec.fill == "next_open"
+        self.q = {k: Decimal(0) for k in B}
         self.before, self.last, self.px = {k: {} for k in B}, dict.fromkeys(B, 0.0), {}
         self.stop, self.lvl, self.prot = dict.fromkeys(B, math.nan), {}, set()  # strateji stopu; (stop, LP) koruyucu seviyeler; koruyucu emir kimlikleri
         self.halt, self.dead = {}, set()  # halt[k]: stop sonrası yön, hedef yönü değişene kadar yeniden giriş yok; dead: likide olan sembol, işlem yok
 
     def pos(self, k) -> Decimal:
-        return sum((Decimal(str(p.signed_qty)).quantize(self.B[k]["step"]) for p in self.cache.positions_open(instrument_id=self.B[k]["iid"])), Decimal(0))  # float gürültüsünü at
+        return self.q[k]  # fill olaylarından beslenen imzalı miktar (cache sorgusu yok)
 
     def equity(self) -> float:
         """Bakiye + gerçekleşmemiş PnL (son görülen fiyatla). Funding, likidasyon ücreti farkı ve çıkış maliyeti koşu sonunda eklenir, bu yüzden equity - capital hakem net'inden bu kalemler kadar farklıdır (UNKNOWN: boyutlama equity'si funding'i görmez)."""
-        return float(self.portfolio.account(VENUE).balance_total(USDT)) + sum(float(self.pos(j)) * (self.px[j] - float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open))
+        return float(self.cache.account_for_venue(VENUE).balance_total(USDT)) + sum(float(self.pos(j)) * (self.px[j] - float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open))
                                                                                   for j in self.B if self.pos(j) != 0 and self.px.get(j))
 
     def on_start(self):
@@ -96,11 +98,12 @@ class Adapter(Strategy):
 
     def on_bar(self, bar):
         k, t, c = bar.bar_type.instrument_id.symbol.value, bar.ts_event, float(bar.close)
-        b, pos, px = self.B[k], self.pos(k), Decimal(str(bar.close))
         self.px[k] = c
-        if self.split and t % HOUR_NS:  # bar gövdesi (ts = kapanış-1ns): karar yok; funding anı T = kapanış
+        pos = self.q[k]
+        if self.split and t % HOUR_NS:  # bar gövdesi (ts = kapanış-1ns): karar yok; funding anı T = kapanış (O(1): yalnızca sözlük okuma/yazma)
             self.before[k][t + 1] = pos  # funding için: bu barın içindeki likidasyonlar düşülmüş, T'deki kararlardan önceki pozisyon
             return
+        b, px = self.B[k], Decimal(str(bar.close))
         self.before[k].setdefault(t, pos)  # (karar öncesi; gövdeden gelen değer korunur: açılış tikinde dolan gap stopu/likidasyon T'deki funding'i silmesin; açılış tikinde de tutulur: boşluktan sonraki ilk bar için funding anı doğru pozisyonu görür)
         if k in self.dead:
             return
@@ -134,7 +137,7 @@ class Adapter(Strategy):
         if q == 0 or k in self.dead:
             return
         position = self.cache.positions_open(instrument_id=b["iid"])[0]
-        wb = float(self.portfolio.account(VENUE).balance_total(USDT)) - sum(abs(float(self.pos(j))) * float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open) / self.spec.leverage for j in self.B if j != k and self.pos(j) != 0)
+        wb = float(self.cache.account_for_venue(VENUE).balance_total(USDT)) - sum(abs(float(self.pos(j))) * float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open) / self.spec.leverage for j in self.B if j != k and self.pos(j) != 0)
         lp = liq_price(q, float(position.avg_px_open), wb, self.spec.mmr) if self.spec.liq else None
         q_ = lambda v: None if v is None or math.isnan(v) else float(Decimal(str(v)).quantize(b["tick"]))  # noqa: E731
         s, lp = q_(self.stop[k]), q_(lp)
@@ -151,6 +154,7 @@ class Adapter(Strategy):
 
     def on_order_filled(self, e):
         k, p = e.instrument_id.symbol.value, float(e.last_px)
+        self.q[k] += Decimal(str(float(e.last_qty))).quantize(self.B[k]["step"]) * (1 if e.order_side == OrderSide.BUY else -1)
         prot, sell = str(e.client_order_id) in self.prot, e.order_side == OrderSide.SELL
         lp = self.lvl.get(k, (None, None))[1]
         liq = prot and lp is not None and (p <= lp if sell else p >= lp)  # koruyucu emir LP'de ya da ötesinde dolduysa likidasyon, değilse strateji stopu
@@ -181,7 +185,7 @@ def run_portfolio(data: dict[str, dict], spec: Spec = Spec()) -> dict:
     if spec.fill not in ("next_open", "close"):
         raise ValueError("fill next_open veya close olmalı")
     side_fee = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
-    eng = BacktestEngine(BacktestEngineConfig(bypass_logging=True))
+    eng = BacktestEngine(BacktestEngineConfig(bypass_logging=True, logging=LoggerConfig(bypass_logging=True)))
     eng.add_venue(VENUE, OmsType.NETTING, AccountType.MARGIN, [Money(spec.capital, USDT)], base_currency=USDT,
                   default_leverage=Decimal(spec.leverage), fee_model=MakerTakerFeeModel(), bar_execution=True, liquidation_enabled=spec.native_liq)
     B, bars_, f = {}, [], lambda v, d: Price.from_str(f"{v:.{d}f}")  # noqa: E731
