@@ -19,17 +19,10 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ensemble as E  # noqa: E402  (load, spec, utc, data_of, D, EXT, MAIN)
 
-from nautilus_trader.backtest import BacktestEngineConfig as _BEC  # noqa: E402
-from nautilus_trader.config import LoggerConfig  # noqa: E402
-
 from kepler import audit  # noqa: E402
 from kepler import ensemble as en  # noqa: E402
 from kepler import evaluate as ev  # noqa: E402
 from kepler import portfolio, referee, report, robust, tape  # noqa: E402
-
-# Nautilus rc5 `BacktestEngineConfig(bypass_logging=True)` bayrağını yok sayıyor (INFO günlükleri hakem koşusunu saatlerce yavaşlatır). referee.py'ye DOKUNMADAN, bu işlemde motor yapılandırmasını
-# günlüksüz kurarız; sonuç değişmez (taban koşu 790,5162 ile birebir doğrulanır, stage_base).
-referee.BacktestEngineConfig = lambda **kw: _BEC(**{**kw, "logging": LoggerConfig(bypass_logging=True)})
 
 CAP = 1000.0
 PRESET = "ev1_plus_new"
