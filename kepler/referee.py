@@ -229,14 +229,14 @@ def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> d
 
 
 def run_many(data: dict[str, dict], specs: list[Spec], workers: int = 4, device: str = "auto", full: bool = True) -> list[dict]:
-    """Aynı veri, çok senaryo. device: 'cpu' (nogil çekirdek, iş parçacıkları), 'gpu' (CUDA, bkz. referee_gpu.py) ya da 'auto' (GPU varsa ve senaryo sayısı >= referee_gpu.MIN_SCENARIOS ise GPU).
+    """Aynı veri, çok senaryo. device: 'cpu' (nogil çekirdek, iş parçacıkları; 'auto' da budur), 'gpu' (CUDA, bkz. referee_gpu.py; açıkça istenir).
     full=False: yalnızca özet + reddedilenler (fills/positions DataFrame'i üretilmez; tarama için çok daha hızlı). Sonuçlar iki yolda da aynı özet değerleri verir (bakiye farkı ~1e-7 USDT)."""
     from concurrent.futures import ThreadPoolExecutor
     pr = prepare(data, specs[0])
     assert all((sp.fill, sp.tick, sp.step) == pr["key"] for sp in specs), "tüm senaryolar aynı fill/tick/step'i paylaşmalı"
-    if device != "cpu":
+    if device == "gpu":
         from kepler import referee_gpu as gpu
-        if device == "gpu" or (device == "auto" and gpu.available() and len(specs) >= gpu.MIN_SCENARIOS):
+        if device == "gpu":
             raws = gpu.simulate_many(pr, [_inputs(pr, sp) for sp in specs])
             with ThreadPoolExecutor(workers) as ex:
                 return list(ex.map(lambda a: _finish(pr, data, a[0], a[1], full) if a[1] is not None else _run_cpu(pr, data, a[0], full), zip(specs, raws)))
