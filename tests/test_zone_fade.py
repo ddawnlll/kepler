@@ -151,7 +151,6 @@ def hakem(out, kl):
 
 
 def test_end_to_end_target_exit_fills_at_next_open(monkeypatch):
-    pytest.importorskip("nautilus_trader")
     kl = flat(40, {h: dict(open=90.0, high=90.0, low=90.0, close=90.0) for h in range(16, 40)} | {13: dict(low=83.0)})
     out, _ = make(monkeypatch, {"A": {**SHORT, 1: TRIG_S, 3: dict(l=83.0)}}, kl)
     r = hakem(out, kl)
@@ -163,7 +162,6 @@ def test_end_to_end_target_exit_fills_at_next_open(monkeypatch):
 
 
 def test_end_to_end_stop_fills_at_level_no_reentry(monkeypatch):
-    pytest.importorskip("nautilus_trader")
     kl = flat(40, {10: dict(high=108.0)})
     out, _ = make(monkeypatch, {"A": {**SHORT, 1: TRIG_S}}, kl)
     r = hakem(out, kl)

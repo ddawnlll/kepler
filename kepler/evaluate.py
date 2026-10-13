@@ -50,6 +50,12 @@ def evaluate(signal, kl: pd.DataFrame, specs: list, ledger_path, hypothesis: str
     return out
 
 
+def book_window(out: dict, data: dict[str, dict], lo, hi) -> dict:
+    keep = {s: (d["kl"].index >= lo) & (d["kl"].index < hi) for s, d in data.items()}
+    return {s: dict(d, kl=d["kl"][keep[s]], target=out[s].target.ffill().fillna(0.0)[keep[s]], stop=out[s].stop[keep[s]],
+                    mark=None if d.get("mark") is None else d["mark"].loc[(d["mark"].index >= lo) & (d["mark"].index < hi)]) for s, d in data.items() if keep[s].any()}
+
+
 def _trim_flat(win: dict[str, dict], delay: int) -> dict[str, dict]:
     """run_book(trim_flat=True): hedefi 0 ve stop'u olmayan bar dizilerini at (etkin bardan sonra 3 + delay bar tutulur); hiç etkin barı olmayan sembolü at."""
     out = {}
@@ -61,7 +67,7 @@ def _trim_flat(win: dict[str, dict], delay: int) -> dict[str, dict]:
     return out
 
 
-def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | None = None, trim_flat: bool = False):
+def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | None = None, trim_flat: bool = False, res0=None):
     """Hesaplanmış kitabı ({sym: DataFrame[target, stop]}) [lo, hi) penceresinde portföy hakemiyle koşar (denetimsiz, deftersiz; sağlamlık koşuları için). Pencere başında tutulan
     pozisyon açık hedef olur. Kill switch: portföy equity'si kill_dd düşünce tüm hedefler 0. (hakem sonucu, pencere verisi, tetik zamanı)
     trim_flat (opt-in, hız; sonuç değişmez): hedefi (ffill sonrası) 0 ve stop'u olmayan bar dizileri hakeme gitmez; her etkin bardan (hedef != 0 ya da stop var) sonra margin = 3 + spec.delay bar
@@ -70,12 +76,10 @@ def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | No
     "eksik" sayılır (carry_xs null çekilişlerinde 44–120, ana koşuda 392); funding tutarı ve net etkilenmez. Sayaç yalnızca trim_flat=False koşularında veri eksikliği göstergesi olarak okunur. Dönen `win` kırpılmıştır (report.book_pnl yine hakem netiyle uzlaşır)."""
     if trim_flat and kill_dd is not None:
         raise ValueError("trim_flat kill_dd ile birlikte kullanılamaz")
-    keep = {s: (d["kl"].index >= lo) & (d["kl"].index < hi) for s, d in data.items()}
-    win = {s: dict(d, kl=d["kl"][keep[s]], target=out[s].target.ffill().fillna(0.0)[keep[s]], stop=out[s].stop[keep[s]],
-                   mark=None if d.get("mark") is None else d["mark"].loc[(d["mark"].index >= lo) & (d["mark"].index < hi)]) for s, d in data.items() if keep[s].any()}
+    win = book_window(out, data, lo, hi)
     if trim_flat:
         win = _trim_flat(win, spec.delay)
-    res, tripped = referee.run_portfolio(win, spec), None
+    res, tripped = (res0 if res0 is not None else referee.run_portfolio(win, spec)), None
     if kill_dd is not None:
         eq = spec.capital + report.book_pnl(win, res, spec).cumsum()
         _, tripped = risk.kill_switch(pd.Series(0.0, index=eq.index), eq, kill_dd)
@@ -100,8 +104,9 @@ def evaluate_book(book, data: dict[str, dict], specs: list, ledger_path, hypothe
     lo, hi = (utc(window[0]), utc(window[1])) if window else (min(k.index[0] for k in kls.values()), max(k.index[-1] for k in kls.values()) + pd.Timedelta("1h"))
     code = ledger.code_hash(referee.__file__, __file__, audit.__file__, ledger.__file__, tape.__file__, inspect.getsourcefile(book), risk.__file__, turtle.__file__, signals.__file__)
     rows = []
-    for sp in specs:
-        res, win, tripped = run_book(out, data, sp, lo, hi, kill_dd)
+    pre = referee.run_many(book_window(out, data, lo, hi), specs) if kill_dd is None and len(specs) > 1 and len({(x.fill, x.tick, x.step) for x in specs}) == 1 else [None] * len(specs)  # çok senaryo: iş parçacıkları
+    for sp, r0 in zip(specs, pre):
+        res, win, tripped = run_book(out, data, sp, lo, hi, kill_dd, res0=r0)
         rc = report.reconcile(win, res, sp)  # saatlik yeniden kurulum toplamı = hakem net'i (önceden tanımlı tolerans); ayrışırsa sessiz geçmez
         if not rc["ok"]:
             raise ValueError(f"PnL mutabakatı tutmadı: fark {rc['diff']:.6f} > tolerans {rc['tol']:.6f} USDT")

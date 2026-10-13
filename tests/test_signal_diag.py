@@ -202,7 +202,6 @@ def test_funding_window_entry_event_excluded_exit_event_included():
 
 # ------------------------------------------------------------------ rejim nedenselliği ve φ yeniden hesabı
 def test_regime_label_is_causal_and_mutant_is_caught():
-    pytest.importorskip("nautilus_trader")  # robust → referee zinciri; Modal'de koşar
     from kepler import robust
     rng = np.random.default_rng(0)
     c = pd.Series(100 * np.exp(np.cumsum(rng.normal(0.001, 0.03, 700))), index=pd.date_range("2022-01-01", periods=700, freq="1D", tz="UTC"))
@@ -243,7 +242,6 @@ def test_phi_matches_independent_recomputation_from_raw_events():
 
 
 def test_panel_pipeline_end_to_end_on_synthetic_walk():
-    pytest.importorskip("nautilus_trader")  # build_panel rejim etiketi için robust kullanır
     """forecasts + fwd_panels + analyze uçtan uca (küçük B): gürültü evreninde hiçbir Holm keşfi yok, panel şekilleri tutarlı."""
     kls = walk_kls(n_days=520, syms=("BTCUSDT",) + tuple("BCDEFGHIJ"), seed=7)  # BTCUSDT: rejim etiketi
     funding = {s: empty_funding() for s in kls}
