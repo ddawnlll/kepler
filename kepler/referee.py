@@ -52,13 +52,6 @@ def _dp(s: str) -> int:
     return max(0, -Decimal(s).as_tuple().exponent)
 
 
-def liq_price(q: Decimal, entry: float, wb: float, mmr: float) -> float | None:
-    """Tek sembol, cross: özsermaye = WB + q(P-E) <= mmr*|q|*P. Likidasyon yok (None) ise kaldıraçsız/güvenli."""
-    qf = float(q)
-    p = (qf * entry - wb) / (qf * (1 - mmr)) if qf > 0 else (wb - qf * entry) / (-qf * (1 + mmr))
-    return p if p > 0 else None
-
-
 def _shift(a: np.ndarray, k: int) -> np.ndarray:
     out = np.full(len(a), np.nan)
     if k < len(a):
@@ -161,41 +154,51 @@ def prepare(data: dict[str, dict], spec: Spec = Spec()) -> dict:
                 ev_k=ev_k[o_].astype(np.int64), ev_b=ev_b[o_].astype(np.int64), ev_kind=ev_kind[o_], key=(spec.fill, spec.tick, spec.step))
 
 
+def _inputs(pr: dict, spec: Spec):
+    """Senaryoya özgü girdiler: kaydırılmış hedef/stop (karar j -> yuva j + 1 + delay; close modunda j + delay) ve parametre vektörü."""
+    off, sh = pr["off"], spec.delay if pr["close_mode"] else 1 + spec.delay
+    TG, ST = pr["tg"].copy(), pr["st"].copy()
+    for k in range(len(pr["syms"])):
+        sl = slice(off[k], off[k + 1])
+        TG[sl], ST[sl] = _shift(pr["tg"][sl], sh), _shift(pr["st"][sl], sh)
+    P = np.array([(spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4, spec.leverage, spec.mmr, float(spec.liq and not spec.native_liq), spec.min_notional, spec.capital, float(spec.equity_scale), spec.gross_cap or 0.0,
+                  float(pr["close_mode"])])
+    return TG, ST, P
+
+
+def _kernel_cpu(pr: dict, TG, ST, P):
+    nb, cap = len(pr["T0"]), 2 * len(pr["T0"]) + 4096
+    while True:
+        FI, FF, PI, PF, RJ = np.zeros((cap, 4), np.int64), np.zeros((cap, 3)), np.zeros((cap, 3), np.int64), np.zeros(cap), np.zeros((len(pr["ev_k"]) + 1, 3), np.int64)
+        PRE, END = np.zeros(nb, np.int64), np.zeros(nb, np.int64)
+        F, I, G, N = core.simulate(pr["ev_k"], pr["ev_b"], pr["ev_kind"], pr["T0"], pr["O"], pr["H"], pr["L"], pr["C"], pr["SZ"], TG, ST, pr["U"], P, cap, FI, FF, PI, PF, RJ, PRE, END)
+        if N[0] >= 0:
+            return dict(F=F, I=I, G=G, N=N, FI=FI, FF=FF, PI=PI, PF=PF, RJ=RJ, PRE=PRE, END=END)
+        cap *= 2
+
+
 def run_portfolio(data: dict[str, dict], spec: Spec = Spec(), prepared: dict | None = None) -> dict:
     """Tek USDT hesap, ortak marj. data[sym] = dict(kl, target, funding=None, mark=None, stop=None, tick=None, step=None).
     stop[t] = t kapanışında bilinen koruyucu stop fiyatı (NaN = stop yok), t+1 açılışından itibaren geçerli. Sembol başına likidasyon (cross-margin likidasyonu yok)."""
     pr = prepared if prepared is not None and prepared["key"] == (spec.fill, spec.tick, spec.step) else prepare(data, spec)
-    side_fee = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
+    return _finish(pr, data, spec, _kernel_cpu(pr, *_inputs(pr, spec)))
+
+
+def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> dict:
+    """Çekirdek çıktısından özet + (full ise) fills/positions tabloları. Funding burada, T öncesi pozisyon dizilerinden (PRE/END) hesaplanır. full=False: DataFrame üretilmez (tarama)."""
     syms, prep, off, U, close_mode = pr["syms"], pr["prep"], pr["off"], pr["U"], pr["close_mode"]
-    T0, O, H, L, C, SZ, ev_k, ev_b, ev_kind = (pr[k] for k in ("T0", "O", "H", "L", "C", "SZ", "ev_k", "ev_b", "ev_kind"))
-    sh = spec.delay if close_mode else 1 + spec.delay  # karar j -> yuva j + 1 + delay (next_open) / j + delay (close)
-    TG, ST = pr["tg"].copy(), pr["st"].copy()
-    for k in range(len(syms)):
-        sl = slice(off[k], off[k + 1])
-        TG[sl], ST[sl] = _shift(pr["tg"][sl], sh), _shift(pr["st"][sl], sh)
-    bar = np.arange(off[-1])
-    P = np.array([side_fee, spec.leverage, spec.mmr, float(spec.liq and not spec.native_liq), spec.min_notional, spec.capital, float(spec.equity_scale), spec.gross_cap or 0.0, float(close_mode)])
-    cap = 2 * len(bar) + 4096
-    while True:
-        FI, FF, PI, PF, RJ = np.zeros((cap, 4), np.int64), np.zeros((cap, 3)), np.zeros((cap, 3), np.int64), np.zeros(cap), np.zeros((len(ev_k) + 1, 3), np.int64)
-        PRE, END = np.zeros(len(bar), np.int64), np.zeros(len(bar), np.int64)
-        F, I, G, N = core.simulate(ev_k, ev_b, ev_kind, T0, O, H, L, C, SZ, TG, ST, U, P, cap, FI, FF, PI, PF, RJ, PRE, END)
-        if N[0] >= 0:
-            break
-        cap *= 2
+    F, I, G, N, FI, FF, PI, PF, RJ, PRE, END = (raw[k] for k in ("F", "I", "G", "N", "FI", "FF", "PI", "PF", "RJ", "PRE", "END"))
+    side_fee = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
     nf, npos, nrej = int(N[0]), int(N[1]), int(N[2])
+    PF = PF.copy()
     for k in range(len(syms)):
         if I[k, core.LOT] != 0:
             PF[I[k, core.COPEN]] = F[k, core.CYC]  # açık döngü: o ana kadarki realize (komisyon dahil)
     fi, ff = FI[:nf], FF[:nf]
-    fills = pd.DataFrame(dict(sym=np.array(syms, dtype=object)[fi[:, 0]], ts=fi[:, 1], side=np.where(fi[:, 2] > 0, "BUY", "SELL"), qty=ff[:, 0], px=ff[:, 1], commission=ff[:, 2],
-                              liq=(fi[:, 3] & 1) > 0, stop=(fi[:, 3] & 2) > 0))
-    pi = PI[:npos]
-    positions = pd.DataFrame(dict(opened=pd.to_datetime(pi[:, 0], utc=True), closed=pd.to_datetime(np.where(pi[:, 1] > 0, pi[:, 1], np.iinfo(np.int64).min), utc=True), realized=PF[:npos]))
-    notional = float((fills.qty * fills.px).sum())
+    liq, stp = (fi[:, 3] & 1) > 0, (fi[:, 3] & 2) > 0
+    notional = float((ff[:, 0] * ff[:, 1]).sum())
     fee, slip = notional * spec.fee_rt_bps / 2 / 1e4, notional * spec.slip_rt_bps / 2 / 1e4
-    lq = fills[fills.liq]
-    liq_fee = float((lq.qty * lq.px).sum()) * max(0.0, (spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate) - side_fee)  # motor taker fee'yi zaten kesti
+    liq_fee = float((ff[liq, 0] * ff[liq, 1]).sum()) * max(0.0, (spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate) - side_fee)  # motor taker fee'yi zaten kesti
     last = [float(d["kl"].close.iloc[-1]) for d in data.values()]
     end_pos = {s: I[k, core.LOT] / U[k, 0] for k, s in enumerate(syms)}
     unreal = sum(end_pos[s] * (last[k] - F[k, core.AVG]) for k, s in enumerate(syms) if I[k, core.LOT] != 0)
@@ -212,18 +215,34 @@ def run_portfolio(data: dict[str, dict], spec: Spec = Spec(), prepared: dict | N
         srt = np.argsort(keys, kind="stable")
         f, m, fb = _funding(kl, d.get("mark"), d.get("funding"), keys[srt], vals[srt])
         fund, missed, fallback = fund + f, missed + m, fallback + fb
-    bal = float(G[0])
-    net = bal + unreal - spec.capital + fund - liq_fee - exit_cost
+    net = float(G[0]) + unreal - spec.capital + fund - liq_fee - exit_cost
     rejected = [f"OrderRejected(sym={syms[r[0]]} ts={r[1]} qty={r[2] / U[r[0], 0]}: {'stop kitap fiyatında' if r[2] == 0 else 'marj/piyasa yok'})" for r in RJ[:nrej]]
-    return dict(summary=dict(net_pnl=net, gross_pnl=net + fee + slip + exit_cost - fund + liq_fee, fee=fee, slippage=slip, funding=fund, liq_fee=liq_fee, exit_cost=exit_cost,
-                             n_fills=nf, n_liq=int(fills.liq.sum()), n_stop=int(fills.stop.sum()), end_position=next(iter(end_pos.values())) if len(end_pos) == 1 else sum(abs(v) for v in end_pos.values()),
-                             engine_commission=float(fills.commission.sum()), n_rejected=len(rejected), funding_missed=missed, funding_mark_fallback=fallback),
-                fills=fills, positions=positions, rejected=rejected)
+    summary = dict(net_pnl=net, gross_pnl=net + fee + slip + exit_cost - fund + liq_fee, fee=fee, slippage=slip, funding=fund, liq_fee=liq_fee, exit_cost=exit_cost, n_fills=nf, n_liq=int(liq.sum()), n_stop=int(stp.sum()),
+                   end_position=next(iter(end_pos.values())) if len(end_pos) == 1 else sum(abs(v) for v in end_pos.values()), engine_commission=float(ff[:, 2].sum()), n_rejected=len(rejected),
+                   funding_missed=missed, funding_mark_fallback=fallback)
+    if not full:
+        return dict(summary=summary, rejected=rejected)
+    fills = pd.DataFrame(dict(sym=np.array(syms, dtype=object)[fi[:, 0]], ts=fi[:, 1], side=np.where(fi[:, 2] > 0, "BUY", "SELL"), qty=ff[:, 0], px=ff[:, 1], commission=ff[:, 2], liq=liq, stop=stp))
+    pi = PI[:npos]
+    positions = pd.DataFrame(dict(opened=pd.to_datetime(pi[:, 0], utc=True), closed=pd.to_datetime(np.where(pi[:, 1] > 0, pi[:, 1], np.iinfo(np.int64).min), utc=True), realized=PF[:npos]))
+    return dict(summary=summary, fills=fills, positions=positions, rejected=rejected)
 
 
-def run_many(data: dict[str, dict], specs: list[Spec], workers: int = 4) -> list[dict]:
-    """Aynı veri, çok senaryo: hazırlık bir kez, çekirdek nogil olduğundan iş parçacıklarıyla paralel."""
+def run_many(data: dict[str, dict], specs: list[Spec], workers: int = 4, device: str = "auto", full: bool = True) -> list[dict]:
+    """Aynı veri, çok senaryo. device: 'cpu' (nogil çekirdek, iş parçacıkları), 'gpu' (CUDA, bkz. referee_gpu.py) ya da 'auto' (GPU varsa ve senaryo sayısı >= referee_gpu.MIN_SCENARIOS ise GPU).
+    full=False: yalnızca özet + reddedilenler (fills/positions DataFrame'i üretilmez; tarama için çok daha hızlı). Sonuçlar iki yolda da aynı özet değerleri verir (bakiye farkı ~1e-7 USDT)."""
     from concurrent.futures import ThreadPoolExecutor
     pr = prepare(data, specs[0])
+    assert all((sp.fill, sp.tick, sp.step) == pr["key"] for sp in specs), "tüm senaryolar aynı fill/tick/step'i paylaşmalı"
+    if device != "cpu":
+        from kepler import referee_gpu as gpu
+        if device == "gpu" or (device == "auto" and gpu.available() and len(specs) >= gpu.MIN_SCENARIOS):
+            raws = gpu.simulate_many(pr, [_inputs(pr, sp) for sp in specs])
+            with ThreadPoolExecutor(workers) as ex:
+                return list(ex.map(lambda a: _finish(pr, data, a[0], a[1], full) if a[1] is not None else _run_cpu(pr, data, a[0], full), zip(specs, raws)))
     with ThreadPoolExecutor(workers) as ex:
-        return list(ex.map(lambda sp: run_portfolio(data, sp, pr), specs))
+        return list(ex.map(lambda sp: _run_cpu(pr, data, sp, full), specs))
+
+
+def _run_cpu(pr: dict, data: dict, sp: Spec, full: bool) -> dict:
+    return _finish(pr, data, sp, _kernel_cpu(pr, *_inputs(pr, sp)), full)

@@ -4,6 +4,7 @@
   modal run modal_app.py --cmd "pytest -q" # repo'yu /repo'ya bağla, komutu koş
 Kalıcı veri: Volume `kepler-data` -> /data (ham veri git'e girmez).
 """
+import os
 import pathlib
 import subprocess
 
@@ -26,6 +27,9 @@ if lockfile.exists():
            .run_commands("cd /repo && uv sync --frozen --no-install-project"))
 else:
     img = lock_img
+GPU = os.environ.get("KEPLER_GPU", "T4")  # hakem taramaları için varsayılan GPU (referee.run_many device='auto'); değiştirmek için ortam değişkeni
+gpu_img = (img.run_commands('uv pip install --python /opt/venv/bin/python "numba-cuda[cu12]" "numpy<2.3"')  # numba-cuda numpy>=2.4 ile uyumsuz (np.row_stack)
+           .add_local_dir(ROOT, "/repo", ignore=IGNORE))
 img = img.add_local_dir(ROOT, "/repo", ignore=IGNORE)
 
 
@@ -35,8 +39,7 @@ def make_lock() -> str:
     return pathlib.Path("/repo/uv.lock").read_text()
 
 
-@app.function(image=img, volumes={"/data": vol}, timeout=3 * 3600, cpu=4, memory=8192)
-def run(cmd: str) -> int:
+def _run(cmd: str) -> int:
     proc = subprocess.Popen(cmd, shell=True, cwd="/repo")
     while True:  # uzun indirmede ilerleme kaybolmasın: dakikada bir Volume'a commit
         try:
@@ -48,12 +51,22 @@ def run(cmd: str) -> int:
     return rc
 
 
+@app.function(image=img, volumes={"/data": vol}, timeout=3 * 3600, cpu=4, memory=8192)
+def run(cmd: str) -> int:
+    return _run(cmd)
+
+
+@app.function(image=gpu_img, volumes={"/data": vol}, timeout=3 * 3600, cpu=8, memory=16384, gpu=GPU)
+def run_gpu(cmd: str) -> int:
+    return _run(cmd)
+
+
 @app.local_entrypoint()
-def main(cmd: str = "", lock: bool = False):
+def main(cmd: str = "", lock: bool = False, gpu: bool = False):
     if lock:
         lockfile.write_text(make_lock.remote())
         print("uv.lock yazıldı")
     if cmd:
-        rc = run.remote(cmd)
+        rc = (run_gpu if gpu else run).remote(cmd)
         print(f"[exit {rc}]")
         raise SystemExit(rc)

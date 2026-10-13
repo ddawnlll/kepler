@@ -17,7 +17,7 @@ LAYERS = [
     ("durum", ["market_state", "state", "indicators"]),
     ("uzman", ["experts", "turtle"]),  # experts = kepler/experts/* (tek grup)
     ("kompozisyon", ["ensemble"]),
-    ("hakem", ["referee", "referee_core", "audit", "robust", "screen", "evaluate"]),
+    ("hakem", ["referee", "referee_core", "referee_gpu", "audit", "robust", "screen", "evaluate"]),
 ]
 RANK = {m: i for i, (_, mods) in enumerate(LAYERS) for m in mods}
 LAYER_OF = {m: name for name, mods in LAYERS for m in mods}

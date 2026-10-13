@@ -119,3 +119,39 @@ def test_batch_runs_are_deterministic_and_thread_safe():
     with ThreadPoolExecutor(4) as ex:
         res = list(ex.map(lambda _: run(kl, t, sp, fund, mark)["summary"]["net_pnl"], range(8)))
     assert all(x == base for x in res)
+
+
+def _grid_specs(n=6):
+    return [Spec(tick="0.01", step="0.001", capital=2000.0, leverage=10, liq=True, fee_rt_bps=4.0 + 2 * i, slip_rt_bps=1.0 + (i % 3), delay=i % 2, mmr=0.01) for i in range(n)]
+
+
+def test_run_many_cpu_matches_serial_and_summary_only_mode():
+    kl, t, fund, mark = _rand_case(5)
+    data = {"X": dict(kl=kl, target=t, funding=fund, mark=mark)}
+    specs = _grid_specs()
+    many = run_portfolio_many(data, specs, "cpu", True)
+    lite = run_portfolio_many(data, specs, "cpu", False)
+    for sp, m, l_ in zip(specs, many, lite):
+        s = run_portfolio(data, sp)["summary"]
+        assert m["summary"] == s and l_["summary"] == s and "fills" not in l_
+
+
+def run_portfolio_many(data, specs, device, full):
+    from kepler.referee import run_many
+    return run_many(data, specs, workers=2, device=device, full=full)
+
+
+def test_gpu_matches_cpu_when_cuda_available():
+    """GPU yolu (referee_gpu): CUDA yoksa atlanır; varsa tüm özet kalemleri CPU ile aynı (bakiye ~1e-7 farkı: np.rint beraberlik kuralı)."""
+    from kepler import referee_gpu
+    if not referee_gpu.available():
+        pytest.skip("CUDA yok")
+    kl, t, fund, mark = _rand_case(5)
+    data = {"X": dict(kl=kl, target=t, funding=fund, mark=mark)}
+    specs = _grid_specs(8)
+    cpu, gpu = run_portfolio_many(data, specs, "cpu", False), run_portfolio_many(data, specs, "gpu", False)
+    for c, g in zip(cpu, gpu):
+        for k in ("n_fills", "n_liq", "n_stop", "n_rejected", "funding_missed", "funding_mark_fallback"):
+            assert c["summary"][k] == g["summary"][k]
+        for k in ("net_pnl", "funding", "fee", "slippage", "exit_cost", "end_position"):
+            assert g["summary"][k] == A(c["summary"][k], abs=1e-5)
