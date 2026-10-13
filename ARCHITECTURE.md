@@ -55,8 +55,8 @@ Değişmez kurallar:
 - **Hakem hattı sinyalden habersizdir.** `referee audit ledger stats robust` uzman, ensemble, sinyal, durum
   ve risk koduna bakmaz.
 - `kepler/` dışarıdaki `scripts`, `factory`, `tools` koduna bağlanmaz (akış tek yönlü).
-- **Boyut bütçesi:** dosya başına 300, `kepler/` toplam 3000 satır. Aşılırsa önce var olan sadeleşir.
-- **Belge izin listesi:** yeni `.md` açılmaz; kalıcı belge türleri MISSION, ARCHITECTURE, BACKTEST, TASKS (+ `docs/factory.md` dondurulmuş, `reports/` deney çıktıları).
+- **Boyut bütçesi:** dosya başına 300, `kepler/` toplam 3500 fiziksel satır. 2026-10-13 tam entegrasyon görevi: Numba çekirdeği, zorunlu deney kökeni ve dallardaki pozisyonlanma verisi için eski 3000 sınırı açıkça güncellendi (#51). Dosya/import/katman korumaları korunur; aşılırsa önce var olan sadeleşir.
+- **Belge izin listesi:** yeni `.md` açılmaz; kalıcı belge türleri MISSION, ARCHITECTURE, BACKTEST, TASKS (+ `docs/factory.md` dondurulmuş, `reports/` deney çıktıları). GitHub katkı akışı için `.github/CONTRIBUTING.md`, `.github/SECURITY.md` ve `.github/pull_request_template.md` dosya bazında izinlidir; issue formları YAML'dir. İzin listesinin tek kaynağı `tests/test_architecture.py`'dir.
 - Yeni modül = `LAYERS`a satır; test bunu zorlar. Kural değişince bu bölüm aynı commit'te güncellenir.
 
 Nereye ne konur: yeni tahmin fikri → `experts/<ad>.py` (+ ön kayıt `reports/<ad>_protocol.md`);
@@ -146,8 +146,8 @@ bağlam, ayrı worktree), güncelleme ajanı (deterministik durum mesajı). Kal�
   Anahtar yalnızca kullanıcıdadır ve hiçbir ajanın ortam değişkenine/dosya sistemine girmez.
   Açma betiğini kullanıcı çalıştırır; tek seferde değerlendirir ve sonucu deftere "yakıldı"
   kaydıyla yazar. Şifreli dosya dışında bu veri ajanın ortamında bulunmaz.
-- **Ajan döngüsü (H4):** LiteLLM üzerinden ucuz modeller; kritik kod için güçlü model ayrıca
-  (`MISSION.md` kural 9).
+- **Ajan döngüsü (H4):** LiteLLM üzerinden yapılandırılan modeller; kritik kod değişiklikleri kullanıcı
+  yetkilendirmesi ve bağımsız incelemeyle yürür (`MISSION.md` kural 9).
 - **Kitaplar:** PDF'ler repoya eklenir, metne çevrilip repoda tutulur (repo özel kalmalı);
   hipotez kaynağı.
 - **Bildirim:** Telegram (canlı bot için; şimdi kurulmaz).

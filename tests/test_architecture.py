@@ -34,13 +34,14 @@ ALLOW = {
 }
 
 MAX_FILE_LINES = 300
-MAX_TOTAL_LINES = 3000
+MAX_TOTAL_LINES = 3500  # 2026-10-13 authorized full integration: Numba, provenance and positioning; per-file/import protections retained.
 
 # Git'te izlenen .md dosyaları için izin listesi (doc hell kapısı). Yeni belge türü açmak = bu listeyi bilerek değiştirmek.
 ALLOWED_MD = [
     "AGENTS.md", "CLAUDE.md", "MISSION.md", "ARCHITECTURE.md", "BACKTEST.md", "TASKS.md", "README.md", "docs/factory.md",
     "reports/*", "factory/*", "books_text/*", "data_manifest/*", "state/*", ".pi/*", "tests/*",
     ".claude/rules/*", ".claude/skills/*", ".claude/agents/*",
+    ".github/CONTRIBUTING.md", ".github/SECURITY.md", ".github/pull_request_template.md",
 ]
 
 
