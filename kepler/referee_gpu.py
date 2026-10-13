@@ -10,7 +10,6 @@ from kepler import referee_core as core
 
 MIN_SCENARIOS, _kern = 128, None  # MIN_SCENARIOS altında CPU (GPU derleme + aktarım yükü kazancı yer)
 
-
 def available() -> bool:
     try:
         from numba import cuda
