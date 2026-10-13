@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-pytest.importorskip("nautilus_trader")
 from kepler import evaluate as ev  # noqa: E402
 from kepler import referee, report  # noqa: E402
 

@@ -54,6 +54,12 @@ def evaluate(signal, kl: pd.DataFrame, specs: list, ledger_path, hypothesis: str
     return out
 
 
+def book_window(out: dict, data: dict[str, dict], lo, hi) -> dict:
+    keep = {s: (d["kl"].index >= lo) & (d["kl"].index < hi) for s, d in data.items()}
+    return {s: dict(d, kl=d["kl"][keep[s]], target=out[s].target.ffill().fillna(0.0)[keep[s]], stop=out[s].stop[keep[s]],
+                    mark=None if d.get("mark") is None else d["mark"].loc[(d["mark"].index >= lo) & (d["mark"].index < hi)]) for s, d in data.items() if keep[s].any()}
+
+
 def _trim_flat(win: dict[str, dict], delay: int) -> dict[str, dict]:
     """run_book(trim_flat=True): hedefi 0 ve stop'u olmayan bar dizilerini at (etkin bardan sonra 3 + delay bar tutulur); hiç etkin barı olmayan sembolü at."""
     out = {}
@@ -65,7 +71,7 @@ def _trim_flat(win: dict[str, dict], delay: int) -> dict[str, dict]:
     return out
 
 
-def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | None = None, trim_flat: bool = False):
+def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | None = None, trim_flat: bool = False, res0=None):
     """Hesaplanmış kitabı ({sym: DataFrame[target, stop]}) [lo, hi) penceresinde portföy hakemiyle koşar (denetimsiz, deftersiz; sağlamlık koşuları için). Pencere başında tutulan
     pozisyon açık hedef olur. Kill switch: portföy equity'si kill_dd düşünce tüm hedefler 0. (hakem sonucu, pencere verisi, tetik zamanı)
     trim_flat (opt-in, hız; sonuç değişmez): hedefi (ffill sonrası) 0 ve stop'u olmayan bar dizileri hakeme gitmez; her etkin bardan (hedef != 0 ya da stop var) sonra margin = 3 + spec.delay bar
@@ -74,12 +80,10 @@ def run_book(out: dict, data: dict[str, dict], spec, lo, hi, kill_dd: float | No
     "eksik" sayılır (carry_xs null çekilişlerinde 44–120, ana koşuda 392); funding tutarı ve net etkilenmez. Sayaç yalnızca trim_flat=False koşularında veri eksikliği göstergesi olarak okunur. Dönen `win` kırpılmıştır (report.book_pnl yine hakem netiyle uzlaşır)."""
     if trim_flat and kill_dd is not None:
         raise ValueError("trim_flat kill_dd ile birlikte kullanılamaz")
-    keep = {s: (d["kl"].index >= lo) & (d["kl"].index < hi) for s, d in data.items()}
-    win = {s: dict(d, kl=d["kl"][keep[s]], target=out[s].target.ffill().fillna(0.0)[keep[s]], stop=out[s].stop[keep[s]],
-                   mark=None if d.get("mark") is None else d["mark"].loc[(d["mark"].index >= lo) & (d["mark"].index < hi)]) for s, d in data.items() if keep[s].any()}
+    win = book_window(out, data, lo, hi)
     if trim_flat:
         win = _trim_flat(win, spec.delay)
-    res, tripped = referee.run_portfolio(win, spec), None
+    res, tripped = (res0 if res0 is not None else referee.run_portfolio(win, spec)), None
     if kill_dd is not None:
         eq = spec.capital + report.book_pnl(win, res, spec).cumsum()
         _, tripped = risk.kill_switch(pd.Series(0.0, index=eq.index), eq, kill_dd)
@@ -104,10 +108,11 @@ def evaluate_book(book, data: dict[str, dict], specs: list, ledger_path, hypothe
     lo, hi = (utc(window[0]), utc(window[1])) if window else (min(k.index[0] for k in kls.values()), max(k.index[-1] for k in kls.values()) + pd.Timedelta("1h"))
     extra = [x for x in [inspect.getsourcefile(book)] if x]
     rows = []
-    for sp in specs:
+    pre = referee.run_many(book_window(out, data, lo, hi), specs) if kill_dd is None and len(specs) > 1 and len({(x.fill, x.tick, x.step) for x in specs}) == 1 else [None] * len(specs)  # çok senaryo: iş parçacıkları
+    for sp, r0 in zip(specs, pre):
         cfg0 = dict(name=name, params=params or {}, spec=asdict(sp), window=[str(lo), str(hi)], audit_causal=True, book=True, kill_dd=kill_dd)
         try:
-            res, win, tripped = run_book(out, data, sp, lo, hi, kill_dd)
+            res, win, tripped = run_book(out, data, sp, lo, hi, kill_dd, res0=r0)
         except Exception as e:  # çöken koşu araştırma izinden kaybolmasın (receipt tam girdiyi kapsar; pencere dilimi yok)
             ledger.record_attempt(ledger_path, "failed", hypothesis, cfg0, "", data_hash, reason=f"{type(e).__name__}: {e}"[:300], receipt=receipt.make(cfg0, data, cut=(lo, hi), book=book, extra_files=extra))
             raise
