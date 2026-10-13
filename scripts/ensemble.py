@@ -207,7 +207,7 @@ if __name__ == "__main__":
         if a.stage == "primary":
             btc = D["BTCUSDT"]["kl"].close.resample("1D").last()
             Path(a.out, "btc_close.json").write_text(json.dumps({str(k.date()): float(v) for k, v in btc.items()}))
-            tasks = [("main", None), ("bh", None), ("cap500", None)] + [("abl", k) for k in ABL] + [("nb", k) for k in NB] + [("cost", c) for c in COSTS] + [("win", w) for w in HALVES + SHIFTS]
+            tasks = [("abl", "no_buffer"), ("main", None), ("bh", None), ("cap500", None)] + [("abl", k) for k in ABL if k != "no_buffer"] + [("nb", k) for k in NB] + [("cost", c) for c in COSTS] + [("win", w) for w in HALVES + SHIFTS]  # en uzun iş (≈200–280 sn, dolum başına bakiye sorgusu) ilk başlar: duvar süresi onunla belirlenir (issue #28/#34)
             if a.expert:  # indirgenmiş liste: bh/cap500 EV1 çıktısından, ablasyonlar yalnızca no_risk/no_buffer, 4 komşu (protokol "Denetimler"), yalnızca K3 maliyetleri, + yön testi
                 NB.clear()
                 NB.update({f"scale_{x}": x for x in XSCALES})

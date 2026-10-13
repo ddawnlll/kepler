@@ -25,6 +25,7 @@ from decimal import ROUND_DOWN, Decimal
 import numpy as np
 import pandas as pd
 from nautilus_trader.backtest import BacktestEngine, BacktestEngineConfig
+from nautilus_trader.common import LoggerConfig
 from nautilus_trader.execution import MakerTakerFeeModel
 from nautilus_trader.model import (AccountType, AggregationSource, Bar, BarAggregation, BarSpecification, BarType,
                                    CryptoPerpetual, Currency, CurrencyType, InstrumentId, Money, OmsType, OrderSide,
@@ -84,7 +85,7 @@ class Adapter(Strategy):
     def __init__(self, B: dict, spec: Spec):
         super().__init__(None)
         self.B, self.spec, self.fills, self.rejected, self.split = B, spec, [], [], spec.fill == "next_open"
-        self.last, self.px = dict.fromkeys(B, 0.0), {}
+        self.q, self.last, self.px = {k: Decimal(0) for k in B}, dict.fromkeys(B, 0.0), {}  # q: fill olaylarından beslenen imzalı miktar
         self.stop, self.lvl, self.prot = dict.fromkeys(B, math.nan), {}, set()  # strateji stopu; (stop, LP) koruyucu seviyeler; koruyucu emir kimlikleri
         self.cash, self.cash_ref, self.mc, self.fund_i = 0.0, 0.0, {}, dict.fromkeys(B, 0)  # settlement'ta uygulanmış funding toplamı (USDT); cash_ref: son tam likidasyon-fiyatı taramasındaki cash; mc: sembol başına açık pozisyon başlangıç marjı (yalnız dolumda değişir); sembol başına bir sonraki işlenecek funding indeksi
         self.missed = self.fallback = 0
@@ -92,11 +93,11 @@ class Adapter(Strategy):
         self.halt, self.dead = {}, set()  # halt[k]: stop sonrası yön, hedef yönü değişene kadar yeniden giriş yok; dead: likide olan sembol, işlem yok
 
     def pos(self, k) -> Decimal:
-        return sum((Decimal(str(p.signed_qty)).quantize(self.B[k]["step"]) for p in self.cache.positions_open(instrument_id=self.B[k]["iid"])), Decimal(0))  # float gürültüsünü at
+        return self.q[k]  # fill olaylarından beslenen imzalı miktar (cache sorgusu yok)
 
     def equity(self) -> float:
         """Bakiye + uygulanmış funding + gerçekleşmemiş PnL (son görülen fiyatla). Likidasyon ücreti farkı ve çıkış maliyeti koşu sonunda eklenir, bu yüzden equity - capital hakem net'inden bu kalemler kadar farklıdır."""
-        return float(self.portfolio.account(VENUE).balance_total(USDT)) + self.cash + sum(float(self.pos(j)) * (self.px[j] - float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open))
+        return float(self.cache.account_for_venue(VENUE).balance_total(USDT)) + self.cash + sum(float(self.pos(j)) * (self.px[j] - float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open))
                                                                                   for j in self.B if self.pos(j) != 0 and self.px.get(j))
 
     def settle(self, k, te, pos):
@@ -124,11 +125,12 @@ class Adapter(Strategy):
 
     def on_bar(self, bar):
         k, t, c = bar.bar_type.instrument_id.symbol.value, bar.ts_event, float(bar.close)
-        b, pos, px = self.B[k], self.pos(k), Decimal(str(bar.close))
         self.px[k] = c
-        if self.split and t % HOUR_NS:  # bar gövdesi (ts = kapanış-1ns): karar yok; funding anı T = kapanış
+        pos = self.q[k]
+        if self.split and t % HOUR_NS:  # bar gövdesi (ts = kapanış-1ns): karar yok; funding anı T = kapanış (O(1): yalnızca sözlük okuma/yazma)
             self.settle(k, t + 1, pos)  # funding anı T = t+1: bu barın içindeki stop/likidasyonlar düşülmüş, T'deki kararlardan önceki pozisyon
             return
+        b, px = self.B[k], Decimal(str(bar.close))
         self.settle(k, t, pos)  # açılış tiki (karar öncesi): gövdede uygulanmamış funding (boşluk) bu pozisyonla; gövdede işlenenler tekrar uygulanmaz
         if k in self.dead:
             return
@@ -140,7 +142,7 @@ class Adapter(Strategy):
             if self.halt.get(k) not in (None, d):
                 del self.halt[k]  # ters ya da flat sinyal: stop kilidi açılır
             if k in self.halt and tgt != self.last[k]:
-                self.intent(k, t, tgt, px, pos, pos, "blocked_halt")  # stop sonrası kilit: niyet gönderilmez
+                self.intents.append(intent_row(k, t, tgt, px, pos, pos, "blocked_halt"))  # stop sonrası kilit: niyet gönderilmez
             if k not in self.halt and tgt != self.last[k]:  # hedef değişmedikçe yeniden boyutlama yok (fiyat gürültüsü churn yapmasın)
                 self.last[k] = tgt
                 f = max(self.equity() / self.spec.capital, 0.0) if self.spec.equity_scale else 1.0
@@ -152,23 +154,20 @@ class Adapter(Strategy):
                 reducing = want == 0 or (want * pos > 0 and abs(want) < abs(pos))
                 if delta != 0 and (reducing or abs(delta) * px >= Decimal(str(self.spec.min_notional))):
                     o = self.order_factory.market(b["iid"], OrderSide.BUY if delta > 0 else OrderSide.SELL, Quantity.from_str(format(abs(delta), "f")))
-                    self.by_order[str(o.client_order_id)] = self.intent(k, t, tgt * f, px, pos, want, "sent")
+                    self.intents.append(intent_row(k, t, tgt * f, px, pos, want, "sent"))
+                    self.by_order[str(o.client_order_id)] = len(self.intents) - 1
                     self.submit_order(o)
                     sent = True
                 else:  # gönderilmedi: lot/minimum no-op'u tutar ve risk sapmasıyla görünür (motor kaynaklı sessiz dolumsuzluktan ayrı)
-                    self.intent(k, t, tgt * f, px, pos, want, "noop_lot" if delta == 0 else "blocked_minimum")
+                    self.intents.append(intent_row(k, t, tgt * f, px, pos, want, "noop_lot" if delta == 0 else "blocked_minimum"))
         if not sent and not (old == new or (math.isnan(old) and math.isnan(new))):  # emir gitmediyse yeni stop seviyesini bar açılışında kur
             self.refresh(k, c)
-
-    def intent(self, k, t, tgt, px, pos, want, status) -> int:
-        self.intents.append(intent_row(k, t, tgt, px, pos, want, status))
-        return len(self.intents) - 1
 
     def _lp(self, k, q):
         """k sembolünün likidasyon fiyatı: ortak cüzdan (bakiye + uygulanmış funding − DİĞER pozisyonların başlangıç marjı; self.mc), tek sembol cross formülü."""
         m = self.mc
         position = self.cache.positions_open(instrument_id=self.B[k]["iid"])[0]
-        wb = float(self.portfolio.account(VENUE).balance_total(USDT)) + self.cash - (sum(m.values()) - m.get(k, 0.0))
+        wb = float(self.cache.account_for_venue(VENUE).balance_total(USDT)) + self.cash - (sum(m.values()) - m.get(k, 0.0))
         return liq_price(q, float(position.avg_px_open), wb, self.spec.mmr) if self.spec.liq else None
 
     def refresh(self, k, px):
@@ -194,6 +193,7 @@ class Adapter(Strategy):
 
     def on_order_filled(self, e):
         k, p = e.instrument_id.symbol.value, float(e.last_px)
+        self.q[k] += Decimal(str(float(e.last_qty))).quantize(self.B[k]["step"]) * (1 if e.order_side == OrderSide.BUY else -1)
         prot, sell = str(e.client_order_id) in self.prot, e.order_side == OrderSide.SELL
         lp = self.lvl.get(k, (None, None))[1]
         liq = prot and lp is not None and (p <= lp if sell else p >= lp)  # koruyucu emir LP'de ya da ötesinde dolduysa likidasyon, değilse strateji stopu
@@ -233,7 +233,7 @@ def run_portfolio(data: dict[str, dict], spec: Spec = Spec()) -> dict:
     if spec.fill not in ("next_open", "close"):
         raise ValueError("fill next_open veya close olmalı")
     side_fee = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
-    eng = BacktestEngine(BacktestEngineConfig(bypass_logging=True))
+    eng = BacktestEngine(BacktestEngineConfig(bypass_logging=True, logging=LoggerConfig(bypass_logging=True)))
     eng.add_venue(VENUE, OmsType.NETTING, AccountType.MARGIN, [Money(spec.capital, USDT)], base_currency=USDT,
                   default_leverage=Decimal(spec.leverage), fee_model=MakerTakerFeeModel(), bar_execution=True, liquidation_enabled=spec.native_liq)
     B, bars_, f = {}, [], lambda v, d: Price.from_str(f"{v:.{d}f}")  # noqa: E731
