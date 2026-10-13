@@ -110,10 +110,10 @@ NO_EDGE) ve testlerin tam tanımı orada. Kart yalnızca ön kayıtla ve bir son
 
 ## Varsayılan stack (G1 sonunda testle doğrulanır)
 
-İki aşamalı değerlendirme: **vectorbt eleme** (hızlı filtre; sonuç sayılmaz) + **NautilusTrader
-hakem** (sonuç yalnızca buradan deftere girer). **G1 sonucu: hakem = Nautilus + likidasyon
-yapıştırması** (Nautilus bar verisinde likide etmiyor; mark H/L ile tetiklenen reduce-only
-stop-market eklendi, elle doğrulandı). Freqtrade yedekte kalır, devreye girmedi. Üstüne ince denetim katmanı (deney defteri, null kontroller,
+İki aşamalı değerlendirme: **vectorbt eleme** (hızlı filtre; sonuç sayılmaz) + **numba olay
+motoru hakem** (sonuç yalnızca buradan deftere girer; 2026-10-13'te Nautilus'un yerini aldı, BACKTEST §6.6). **G1 sonucu: hakem + likidasyon
+yapıştırması** (eski Nautilus bar verisinde likide etmiyordu; mark H/L ile tetiklenen reduce-only
+stop-market kuralı korunur, elle doğrulandı). Freqtrade yedekte kalır, devreye girmedi. Üstüne ince denetim katmanı (deney defteri, null kontroller,
 mühürlü dönem, `arch` SPA/StepM, `skfolio` CPCV, DSR). Veri: Parquet + DuckDB. Qlib ve RD-Agent
 bu projeden çıkarıldı (short, funding ve likidasyon desteği yok; ayrıntı Phase 2 raporunda,
 repoda değil).

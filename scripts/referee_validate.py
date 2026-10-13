@@ -25,6 +25,7 @@ def compare(name, res, t):
     ref_f = ref_f.sort_values("ts", kind="stable").reset_index(drop=True)
     out = dict(preset=name, n_new=len(f), n_ref=len(ref_f), seconds=t)
     key = ["sym", "ts", "side"]
+    f["qty"], ref_f["qty"] = f.qty.round(8), ref_f.qty.round(8)  # CSV gidiş-dönüşünde 1 ulp
     m = f.merge(ref_f, on=key + ["qty"], how="outer", suffixes=("_new", "_ref"), indicator=True)
     out["rows_matched"] = int((m._merge == "both").sum())
     out["rows_only_new"], out["rows_only_ref"] = int((m._merge == "left_only").sum()), int((m._merge == "right_only").sum())

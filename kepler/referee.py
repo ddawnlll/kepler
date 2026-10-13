@@ -44,8 +44,8 @@ class Spec:
     equity_scale: bool = False  # True: yeni/değişen hedef notional (ve gross_cap) x equity / capital, equity = bakiye + gerçekleşmemiş PnL, emir anında (BACKTEST §5.1)
 
 
-def ns(index) -> list[int]:
-    return [int(x) for x in pd.DatetimeIndex(index).as_unit("ns").asi8]
+def ns(index) -> np.ndarray:
+    return np.asarray(pd.DatetimeIndex(index).as_unit("ns").asi8, np.int64)
 
 
 def _dp(s: str) -> int:
@@ -71,7 +71,7 @@ def _prep(sym: str, d: dict, spec: Spec):
     kl, target, funding = d["kl"], d["target"], d.get("funding")
     if not (kl.index.is_monotonic_increasing and kl.index.is_unique):
         raise ValueError("kl indeksi artan ve tekil olmalı")
-    t0 = np.asarray(ns(kl.index), np.int64)
+    t0 = ns(kl.index)
     if len(kl) == 0 or (np.diff(t0) % HOUR_NS).any() or t0[0] % HOUR_NS:
         raise ValueError("kl boş ya da saatlik hizalı değil")
     tape.check_target(kl, target)  # yanlış hizalı/tz'siz hedef sessizce sıfır işleme dönüşmesin
@@ -99,10 +99,9 @@ def _prep(sym: str, d: dict, spec: Spec):
     big = incs >= 4
     sz[big] = np.c_[path, path, path, incs - 3 * path][big]
     sz[incs == 1, 3], sz[incs == 2, 1], sz[incs == 2, 2], sz[incs == 3, :3] = 1, 1, 1, 1
-    sh = 1 + spec.delay if spec.fill == "next_open" else spec.delay
     stop = d.get("stop")
-    tg = _shift(target.astype(float).to_numpy(), sh)
-    st = _shift(stop.astype(float).to_numpy() if stop is not None else np.full(len(kl), np.nan), sh)
+    tg = target.astype(float).to_numpy()
+    st = stop.astype(float).to_numpy() if stop is not None else np.full(len(kl), np.nan)
     return dict(t0=t0, o=o, h=h, l=l, c=c, tg=tg, st=st, sz=sz * inc, u=(10.0**sp, 10.0**pp, float(tick)))
 
 
@@ -110,13 +109,13 @@ def _funding(kl, mark, funding, keys, vals):
     """Funding olayları: T'den ÖNCE tutulan pozisyon (keys[j] >= T ilk anahtar) x mark kapanışı (T'de biten bar; yoksa kline kapanışı) x oran. (toplam, kaçan, kline'a düşen)."""
     if funding is None or not len(funding):
         return 0.0, 0, 0
-    ts = np.asarray(ns(pd.DatetimeIndex(funding.index).round("1min")), np.int64)
+    ts = ns(pd.DatetimeIndex(funding.index).round("1min"))
     rate = funding["last_funding_rate"].to_numpy(float)
-    t0 = np.asarray(ns(kl.index), np.int64)
+    t0 = ns(kl.index)
     ok = (t0[0] + HOUR_NS <= ts) & (ts <= t0[-1] + HOUR_NS)
     ts, rate = ts[ok], rate[ok]
     src = mark if mark is not None else kl
-    mk_close = np.asarray(ns(src.index), np.int64) + HOUR_NS
+    mk_close = ns(src.index) + HOUR_NS
     order = np.argsort(mk_close, kind="stable")
     mk_close, mk_val = mk_close[order], src.close.to_numpy(float)[order]
     i = np.searchsorted(mk_close, ts, side="right") - 1  # yinelenen anahtarda sonuncusu (dict semantiği)
@@ -141,18 +140,15 @@ def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.Da
     return run_portfolio({"SYM": dict(kl=kl, target=target, funding=funding, mark=mark, stop=stop)}, spec)
 
 
-def run_portfolio(data: dict[str, dict], spec: Spec = Spec()) -> dict:
-    """Tek USDT hesap, ortak marj. data[sym] = dict(kl, target, funding=None, mark=None, stop=None, tick=None, step=None).
-    stop[t] = t kapanışında bilinen koruyucu stop fiyatı (NaN = stop yok), t+1 açılışından itibaren geçerli. Sembol başına likidasyon (cross-margin likidasyonu yok)."""
+def prepare(data: dict[str, dict], spec: Spec = Spec()) -> dict:
+    """Koşudan bağımsız hazırlık (doğrulama, tick yuvarlama, hacim -> tik boyutu, olay sırası). Aynı veriyle çok senaryo (fee/slip/gecikme ızgarası) için bir kez hesaplanıp `prepared=` ile verilir."""
     if spec.fill not in ("next_open", "close"):
         raise ValueError("fill next_open veya close olmalı")
-    side_fee = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
     syms, prep = list(data), [_prep(s, d, spec) for s, d in data.items()]
     n = np.array([len(p["t0"]) for p in prep])
     off = np.r_[0, np.cumsum(n)]
     cat = lambda key: np.concatenate([p[key] for p in prep])  # noqa: E731
-    T0, O, H, L, C, TG, ST, SZ = (cat(k) for k in ("t0", "o", "h", "l", "c", "tg", "st", "sz"))
-    U = np.array([p["u"] for p in prep])
+    T0, O, H, L, C, SZ = (cat(k) for k in ("t0", "o", "h", "l", "c", "sz"))
     close_mode = spec.fill == "close"
     bar, sym = np.arange(off[-1]), np.repeat(np.arange(len(syms)), n)
     if close_mode:
@@ -161,7 +157,23 @@ def run_portfolio(data: dict[str, dict], spec: Spec = Spec()) -> dict:
         ev_t, ev_b, ev_k = np.r_[T0, T0 + HOUR_NS - 1], np.r_[bar, bar], np.r_[sym, sym]
         ev_kind = np.r_[np.zeros(len(bar), np.int8), np.ones(len(bar), np.int8)]
     o_ = np.lexsort((ev_k, ev_t))  # zaman, sonra sembol sırası (eski motor: veri ekleme sırası)
-    ev_k, ev_b, ev_kind = ev_k[o_].astype(np.int64), ev_b[o_].astype(np.int64), ev_kind[o_]
+    return dict(syms=syms, prep=prep, n=n, off=off, T0=T0, O=O, H=H, L=L, C=C, SZ=SZ, U=np.array([p["u"] for p in prep]), close_mode=close_mode, tg=cat("tg"), st=cat("st"),
+                ev_k=ev_k[o_].astype(np.int64), ev_b=ev_b[o_].astype(np.int64), ev_kind=ev_kind[o_], key=(spec.fill, spec.tick, spec.step))
+
+
+def run_portfolio(data: dict[str, dict], spec: Spec = Spec(), prepared: dict | None = None) -> dict:
+    """Tek USDT hesap, ortak marj. data[sym] = dict(kl, target, funding=None, mark=None, stop=None, tick=None, step=None).
+    stop[t] = t kapanışında bilinen koruyucu stop fiyatı (NaN = stop yok), t+1 açılışından itibaren geçerli. Sembol başına likidasyon (cross-margin likidasyonu yok)."""
+    pr = prepared if prepared is not None and prepared["key"] == (spec.fill, spec.tick, spec.step) else prepare(data, spec)
+    side_fee = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
+    syms, prep, off, U, close_mode = pr["syms"], pr["prep"], pr["off"], pr["U"], pr["close_mode"]
+    T0, O, H, L, C, SZ, ev_k, ev_b, ev_kind = (pr[k] for k in ("T0", "O", "H", "L", "C", "SZ", "ev_k", "ev_b", "ev_kind"))
+    sh = spec.delay if close_mode else 1 + spec.delay  # karar j -> yuva j + 1 + delay (next_open) / j + delay (close)
+    TG, ST = pr["tg"].copy(), pr["st"].copy()
+    for k in range(len(syms)):
+        sl = slice(off[k], off[k + 1])
+        TG[sl], ST[sl] = _shift(pr["tg"][sl], sh), _shift(pr["st"][sl], sh)
+    bar = np.arange(off[-1])
     P = np.array([side_fee, spec.leverage, spec.mmr, float(spec.liq and not spec.native_liq), spec.min_notional, spec.capital, float(spec.equity_scale), spec.gross_cap or 0.0, float(close_mode)])
     cap = 2 * len(bar) + 4096
     while True:
@@ -207,3 +219,11 @@ def run_portfolio(data: dict[str, dict], spec: Spec = Spec()) -> dict:
                              n_fills=nf, n_liq=int(fills.liq.sum()), n_stop=int(fills.stop.sum()), end_position=next(iter(end_pos.values())) if len(end_pos) == 1 else sum(abs(v) for v in end_pos.values()),
                              engine_commission=float(fills.commission.sum()), n_rejected=len(rejected), funding_missed=missed, funding_mark_fallback=fallback),
                 fills=fills, positions=positions, rejected=rejected)
+
+
+def run_many(data: dict[str, dict], specs: list[Spec], workers: int = 4) -> list[dict]:
+    """Aynı veri, çok senaryo: hazırlık bir kez, çekirdek nogil olduğundan iş parçacıklarıyla paralel."""
+    from concurrent.futures import ThreadPoolExecutor
+    pr = prepare(data, specs[0])
+    with ThreadPoolExecutor(workers) as ex:
+        return list(ex.map(lambda sp: run_portfolio(data, sp, pr), specs))
