@@ -1,45 +1,29 @@
-"""C2: hakem motor = NautilusTrader 2.0.0rc5 + ince yapıştırma (hedef→emir, likidasyon stopu, funding).
+"""C2: hakem motor = numba olay döngüsü (kepler/referee_core.py) + vektörel hazırlık/muhasebe. NautilusTrader'ın yerini aldı (eski hakem: git 23ee215).
 
 Sözleşme: target[t] = t barı (açılış zamanı t) KAPANDIĞINDA istenen işaretli notional (USDT); NaN = mevcut pozisyonu tut.
 Miktar yalnızca hedef DEĞİŞTİĞİNDE dolum fiyatından yeniden hesaplanır (lot adımına aşağı yuvarlanır); aynı hedef sürdükçe işlem yok.
-Dolum (varsayılan fill="next_open"): karar t barının kapanışında bilinir, SONRAKİ barın açılış fiyatından dolar (her bar motora iki parça gider:
-(o,o,o,o) açılış tiki = karar anı, (o,h,l,c) = bar gövdesi; likidasyon stopu gövdede tetiklenir). fill="close" (eski, iyimser: karar barının
-kapanışından) yalnızca testler içindir; `evaluate` reddeder. Son barın hedefi dolmaz. Likidasyondan sonra hesap ölü: yeni işlem yok (kalan marj likidasyon ücretiyle kaybedilir). Açık pozisyonun çıkış maliyeti (fee+slip) son kapanıştan
-düşülür (close_out). Maliyet: taker fee + slippage
-(bps, gidiş-dönüş; yan başına yarısı) Nautilus komisyonuna girer. Niyet izi (#11): `intents` tablosu her hedef değişimini niyet → yuvarlanmış hedef → emir → dolum/red/bloke durumuyla izler (sent/partial/rejected/blocked_minimum/noop_lot/blocked_halt/engine_unfilled);
-n_rejected=0 tüm niyetlerin yürütüldüğü anlamına GELMEZ. Funding: T anındaki oran, T'den ÖNCE (T'de
-yapılan dolumlardan önce) tutulan pozisyon x mark fiyat; işaret: oran>0 iken long öder. Funding SETTLEMENT ANINDA, tek kez uygulanır:
-Adapter.cash (funding nakit akışı) equity()'ye ve likidasyon fiyatının cüzdan bakiyesine girer; sıra: (1) önceki barın gövdesindeki stop/likidasyon, (2) T'deki
-funding (karardan önceki pozisyon), (3) koruyucu emirlerin yeni bakiyeyle yeniden kurulması (özsermaye bakım marjının altına inmişse reduce-only market ile
-kapanır, likidasyon sayılır), (4) T'deki kararlar/dolumlar. Net PnL'de funding bir kez sayılır (Nautilus bakiyesi funding'i görmez; koşu sonunda cash eklenir). Likidasyon: Nautilus bar
-verisinde likide etmiyor (tests/test_referee.py::test_nautilus_alone_does_not_liquidate); bu yüzden her pozisyon
-değişiminde likidasyon fiyatında reduce-only STOP_MARKET konur (Nautilus bar içi H/L'de tetikler, tetik fiyatından doldurur).
-Tetik MARK fiyatıyla: `mark` verilirse motora giden barların H/L'si mark H/L'sidir (O/C kline'dan; piyasa emirleri kapanıştan
-dolar, etkilenmez). Nautilus'un MARK_PRICE tetikleyicisi bar/MarkPriceUpdate ile çalışmadı, bu yüzden bu yol seçildi.
+Dolum (varsayılan fill="next_open"): karar t barının kapanışında bilinir, SONRAKİ barın açılış fiyatından dolar (her bar iki olay:
+açılış tiki = karar anı, gövde (o,h,l,c) = stop/likidasyon eşleşmesi). fill="close" (eski, iyimser: karar barının kapanışından) yalnızca testler içindir;
+`evaluate` reddeder. Son barın hedefi dolmaz. Likidasyondan sonra hesap ölü: yeni işlem yok (kalan marj likidasyon ücretiyle kaybedilir). Açık pozisyonun
+çıkış maliyeti (fee+slip) son kapanıştan düşülür (close_out). Maliyet: taker fee + slippage (bps, gidiş-dönüş; yan başına yarısı) komisyona girer.
+Funding: T anındaki oran, T'den ÖNCE (T'de yapılan dolumlardan önce) tutulan pozisyon x mark fiyat; işaret: oran>0 iken long öder. SETTLEMENT ANINDA, çekirdekte bakiyeye bir kez işlenir (#10):
+equity, equity_scale, marj kilidi ve likidasyon fiyatı aynı akışı görür; sıra: gövde eşleşmesi (stop/likidasyon) -> funding -> koruyucu emirlerin yeni bakiyeyle yeniden kurulması (özsermaye bakım marjının altındaysa reduce-only piyasa kapama = likidasyon) -> karar/dolum.
+Likidasyon: her pozisyon değişiminde likidasyon fiyatında reduce-only STOP; tetik MARK H/L'siyle (mark yoksa kline); gap'te açılıştan, bar içinde seviyeden dolar.
+Hacim sınırı (L1 bar yürütmesi): her tikin boyutu = bar hacmi/4 (lot adımına bölünmüş); piyasa/stop emri tik boyutu kadar tek fiyattan dolar, KALANI son dolum fiyatının 1 tick ötesinden
+(alış +, satış -) dolar. Marj: artıran/çeviren emir, başlangıç marjı (|notional|/kaldıraç^2: Nautilus LeveragedMarginModel, margin_init=1/kaldıraç) - bakım marjı kilidini bakiyeden
+aşıyorsa REDDEDİLİR (n_rejected; defter reddeden koşuyu kabul etmez); kitap fiyatı stop seviyesindeyse stop da reddedilir.
 """
-import math
-from bisect import bisect_left
 from dataclasses import dataclass
-from decimal import ROUND_DOWN, Decimal
+from decimal import Decimal
 
 import numpy as np
 import pandas as pd
-from nautilus_trader.backtest import BacktestEngine, BacktestEngineConfig
-from nautilus_trader.common import LoggerConfig
-from nautilus_trader.execution import MakerTakerFeeModel
-from nautilus_trader.model import (AccountType, AggregationSource, Bar, BarAggregation, BarSpecification, BarType,
-                                   CryptoPerpetual, Currency, CurrencyType, InstrumentId, Money, OmsType, OrderSide,
-                                   Price, PriceType, Quantity, Symbol, Venue)
-from nautilus_trader.trading import Strategy
 
+from kepler import referee_core as core
+from kepler.intents import finalize, from_kernel
 from kepler import tape
-from kepler.funding import consume, schedule
-from kepler.intents import finalize, intent_row
 
-HOUR_NS = 3_600_000_000_000
-USDT = Currency("USDT", 8, 0, "Tether", CurrencyType.CRYPTO)
-BTC = Currency("BASE", 8, 0, "Base", CurrencyType.CRYPTO)
-VENUE = Venue("BINANCE")
+HOUR_NS = core.HOUR
 
 
 @dataclass(frozen=True)
@@ -53,7 +37,7 @@ class Spec:
     mmr: float = 0.005  # bakım marjı oranı (sembole/kademeye göre değişir; UNKNOWN: gerçek kademe tablosu alınmadı)
     capital: float = 500.0
     liq: bool = True
-    native_liq: bool = False  # yalnızca test: Nautilus'un kendi liquidation_enabled'ı (bar verisinde işe yaramadığını belgeler)
+    native_liq: bool = False  # yalnızca test uyumu: eski motorun kendi likidasyonu bar verisinde işe yaramıyordu; burada liq=False ile aynı (likidasyon yok)
     liq_fee_rate: float | None = None  # None -> mmr (kalan bakım marjı kaybedilir; gerçek Binance ücreti UNKNOWN); motorun taker fee'si bunun İÇİNDE sayılır (çifte sayım yok)
     fill: str = "next_open"  # "next_open" | "close" (yalnızca test/eski)
     close_out: bool = True  # açık pozisyonu son kapanıştan çıkış fee+slip ile değerle
@@ -62,164 +46,86 @@ class Spec:
     equity_scale: bool = False  # True: yeni/değişen hedef notional (ve gross_cap) x equity / capital, equity = bakiye + gerçekleşmemiş PnL, emir anında (BACKTEST §5.1)
 
 
-def ns(index) -> list[int]:
-    return [int(x) for x in pd.DatetimeIndex(index).as_unit("ns").asi8]
+def ns(index) -> np.ndarray:
+    return np.asarray(pd.DatetimeIndex(index).as_unit("ns").asi8, np.int64)
 
 
 def _dp(s: str) -> int:
     return max(0, -Decimal(s).as_tuple().exponent)
 
 
-def liq_price(q: Decimal, entry: float, wb: float, mmr: float) -> float | None:
-    """Tek sembol, cross: özsermaye = WB + q(P-E) <= mmr*|q|*P. Likidasyon yok (None) ise kaldıraçsız/güvenli."""
-    qf = float(q)
-    p = (qf * entry - wb) / (qf * (1 - mmr)) if qf > 0 else (wb - qf * entry) / (-qf * (1 + mmr))
-    return p if p > 0 else None
+def _shift(a: np.ndarray, k: int) -> np.ndarray:
+    out = np.full(len(a), np.nan)
+    if k < len(a):
+        out[k:] = a[: len(a) - k]
+    return out
 
 
-class Adapter(Strategy):
-    """Çok sembollü hedef→emir adaptörü. B[k] = dict(iid, bt, step, tick, tg {slot_ns: hedef notional}, st {slot_ns: stop seviyesi}); k = sembol adı."""
-    def __new__(cls, *args):  # PyO3 Strategy.__new__ en çok 1 konumsal argüman kabul eder
-        return super().__new__(cls)
+def _prep(sym: str, d: dict, spec: Spec):
+    """Sembol verisini çekirdek dizilerine çevir: kline (+ mark H/L), tick yuvarlama, karar -> yuva kaydırma (bisect_left(yuvalar, kapanış) + delay = j + 1 + delay)."""
+    kl, target, funding = d["kl"], d["target"], d.get("funding")
+    if not (kl.index.is_monotonic_increasing and kl.index.is_unique):
+        raise ValueError("kl indeksi artan ve tekil olmalı")
+    t0 = ns(kl.index)
+    if len(kl) == 0 or (np.diff(t0) % HOUR_NS).any() or t0[0] % HOUR_NS:
+        raise ValueError("kl boş ya da saatlik hizalı değil")
+    tape.check_target(kl, target)  # yanlış hizalı/tz'siz hedef sessizce sıfır işleme dönüşmesin
+    if funding is not None and funding["last_funding_rate"].isna().any():
+        raise ValueError("funding oranında NaN var (QC'den geçmemiş veri)")
+    tick, step = d.get("tick") or spec.tick, d.get("step") or spec.step
+    pp, sp = _dp(tick), _dp(step)
+    mark = d.get("mark")
+    hi, lo = kl.high, kl.low
+    if mark is not None and {"high", "low"} <= set(mark.columns):  # likidasyon stopu MARK fiyatının H/L'siyle tetiklenir (Binance); eksik mark barında kline H/L
+        hi, lo = mark.high.reindex(kl.index).fillna(kl.high), mark.low.reindex(kl.index).fillna(kl.low)
+    o, c = kl.open.to_numpy(float), kl.close.to_numpy(float)
+    h, l = np.fmax.reduce([hi.to_numpy(float), o, c]), np.fmin.reduce([lo.to_numpy(float), o, c])  # noqa: E741  O/C [L,H] içinde kalsın
+    q = lambda a: np.rint(a * 10.0**pp) / 10.0**pp  # noqa: E731  tick ondalığına yuvarla (Price.from_str karşılığı)
+    o, h, l, c = q(o), q(h), q(l), q(c)  # noqa: E741
+    if not all(np.isfinite(a).all() and (a > 0).all() for a in (o, h, l, c)):
+        raise ValueError(f"{sym}: kline OHLC'de NaN/sonsuz/pozitif olmayan fiyat (QC'den geçmemiş veri)")
+    vol = kl.volume.to_numpy(float)
+    if not (np.isfinite(vol).all() and (vol >= 0).all()):
+        raise ValueError(f"{sym}: hacimde NaN/sonsuz/negatif değer (QC'den geçmemiş veri)")
+    inc, incs = max(int(round(float(step) * 10.0**sp)), 1), np.rint(vol * 10.0**sp).astype(np.int64)  # BarTickSizes: hacim lot adımının katına inip 4 tike bölünür
+    incs //= inc
+    path = incs // 4
+    sz = np.zeros((len(kl), 4), np.int64)
+    big = incs >= 4
+    sz[big] = np.c_[path, path, path, incs - 3 * path][big]
+    sz[incs == 1, 3], sz[incs == 2, 1], sz[incs == 2, 2], sz[incs == 3, :3] = 1, 1, 1, 1
+    stop = d.get("stop")
+    tg = target.astype(float).to_numpy()
+    st = stop.astype(float).to_numpy() if stop is not None else np.full(len(kl), np.nan)
+    return dict(t0=t0, o=o, h=h, l=l, c=c, tg=tg, st=st, sz=sz * inc, u=(10.0**sp, 10.0**pp, float(tick)))
 
-    def __init__(self, B: dict, spec: Spec):
-        super().__init__(None)
-        self.B, self.spec, self.fills, self.rejected, self.split = B, spec, [], [], spec.fill == "next_open"
-        self.q, self.last, self.px = {k: Decimal(0) for k in B}, dict.fromkeys(B, 0.0), {}  # q: fill olaylarından beslenen imzalı miktar
-        self.stop, self.lvl, self.prot = dict.fromkeys(B, math.nan), {}, set()  # strateji stopu; (stop, LP) koruyucu seviyeler; koruyucu emir kimlikleri
-        self.cash, self.cash_ref, self.mc, self.fund_i = 0.0, 0.0, {}, dict.fromkeys(B, 0)  # settlement'ta uygulanmış funding toplamı (USDT); cash_ref: son tam likidasyon-fiyatı taramasındaki cash; mc: sembol başına açık pozisyon başlangıç marjı (yalnız dolumda değişir); sembol başına bir sonraki işlenecek funding indeksi
-        self.missed = self.fallback = 0
-        self.intents, self.by_order = [], {}  # niyet kaydı (#11): her hedef DEĞİŞİMİ bir satır; emir kimliği -> satır
-        self.halt, self.dead = {}, set()  # halt[k]: stop sonrası yön, hedef yönü değişene kadar yeniden giriş yok; dead: likide olan sembol, işlem yok
 
-    def pos(self, k) -> Decimal:
-        return self.q[k]  # fill olaylarından beslenen imzalı miktar (cache sorgusu yok)
+def _fund_inputs(kl, mark, funding):
+    """Funding olaylarının pozisyondan bağımsız kısmı (bir kez): T (1 dk yuvarlı), oran, mark kapanışı (yoksa kline kapanışı), kaçan/kline'a düşen sayıları. Aralık dışı olaylar atlanır."""
+    if funding is None or not len(funding):
+        return None
+    ts, rate, t0 = ns(pd.DatetimeIndex(funding.index).round("1min")), funding["last_funding_rate"].to_numpy(float), ns(kl.index)
+    ok = (t0[0] + HOUR_NS <= ts) & (ts <= t0[-1] + HOUR_NS)
+    ts, rate = ts[ok], rate[ok]
+    src = mark if mark is not None else kl
+    order = np.argsort(ns(src.index), kind="stable")
+    mk_close, mk_val = (ns(src.index) + HOUR_NS)[order], src.close.to_numpy(float)[order]
+    i = np.searchsorted(mk_close, ts, side="right") - 1  # yinelenen anahtarda sonuncusu (dict semantiği)
+    hit = (i >= 0) & (mk_close[np.maximum(i, 0)] == ts)
+    c, fallback = np.where(hit, mk_val[np.maximum(i, 0)], np.nan), 0
+    if mark is not None:  # mark barı yok: kline kapanışına düş (sayılır)
+        miss = np.isnan(c)
+        j = np.searchsorted(t0, ts - HOUR_NS)
+        kh = (j < len(t0)) & (t0[np.minimum(j, len(t0) - 1)] == ts - HOUR_NS)
+        c2 = np.where(kh, kl.close.to_numpy(float)[np.minimum(j, len(t0) - 1)], np.nan)
+        c, fallback = np.where(miss, c2, c), int((miss & ~np.isnan(c2)).sum())
+    return dict(ts=ts, rate=rate, c=c, fallback=fallback)
 
-    def equity(self) -> float:
-        """Bakiye + uygulanmış funding + gerçekleşmemiş PnL (son görülen fiyatla). Likidasyon ücreti farkı ve çıkış maliyeti koşu sonunda eklenir, bu yüzden equity - capital hakem net'inden bu kalemler kadar farklıdır."""
-        return float(self.cache.account_for_venue(VENUE).balance_total(USDT)) + self.cash + sum(float(self.pos(j)) * (self.px[j] - float(self.cache.positions_open(instrument_id=self.B[j]["iid"])[0].avg_px_open))
-                                                                                  for j in self.B if self.pos(j) != 0 and self.px.get(j))
 
-    def settle(self, k, te, pos):
-        """k sembolünün zamanı <= te olan bekleyen funding olaylarını `pos` pozisyonu (karar öncesi) ve mark kapanışıyla BİR KEZ uygular. Sıfır olmayan tutar varsa koruyucu emirler yeni bakiyeyle yeniden kurulur."""
-        amt, miss, fb, self.fund_i[k] = consume(self.B[k]["fund"], self.fund_i[k], te, float(pos))
-        self.cash, self.missed, self.fallback, hit = self.cash + amt, self.missed + miss, self.fallback + fb, amt != 0
-        if hit:  # bakiye değişti: funding'i alan sembolün likidasyon seviyesi yeni bakiyeyle yeniden kurulur; seviye > %0,2 kaymadıysa dokunulmaz (O(olay x pozisyon) emir fırtınası olmasın)
-            self._relevel(k)
-            if abs(self.cash - self.cash_ref) > 0.002 * self.spec.capital:  # ortak cüzdan: diğer açık pozisyonlar yalnız cash belirgin kaydığında toplu taranır
-                self.cash_ref = self.cash
-                for j in [j for j, v in self.mc.items() if v and j != k]:
-                    self._relevel(j)
-
-    def _relevel(self, j):
-        q, px = self.pos(j), self.px.get(j)
-        if j in self.dead or q == 0 or not px:
-            return
-        lp, old = self._lp(j, q), self.lvl.get(j, (None, None))[1]
-        if lp is None or old is None or abs(lp - old) > 0.002 * px:
-            self.refresh(j, px)
-
-    def on_start(self):
-        for b in self.B.values():
-            self.subscribe_bars(b["bt"])
-
-    def on_bar(self, bar):
-        k, t, c = bar.bar_type.instrument_id.symbol.value, bar.ts_event, float(bar.close)
-        self.px[k] = c
-        pos = self.q[k]
-        if self.split and t % HOUR_NS:  # bar gövdesi (ts = kapanış-1ns): karar yok; funding anı T = kapanış (O(1): yalnızca sözlük okuma/yazma)
-            self.settle(k, t + 1, pos)  # funding anı T = t+1: bu barın içindeki stop/likidasyonlar düşülmüş, T'deki kararlardan önceki pozisyon
-            return
-        b, px = self.B[k], Decimal(str(bar.close))
-        self.settle(k, t, pos)  # açılış tiki (karar öncesi): gövdede uygulanmamış funding (boşluk) bu pozisyonla; gövdede işlenenler tekrar uygulanmaz
-        if k in self.dead:
-            return
-        old, new = self.stop[k], b["st"].get(t, self.stop[k])
-        self.stop[k] = new
-        tgt, sent = b["tg"].get(t), False
-        if tgt is not None and not math.isnan(tgt):
-            d = (tgt > 0) - (tgt < 0)
-            if self.halt.get(k) not in (None, d):
-                del self.halt[k]  # ters ya da flat sinyal: stop kilidi açılır
-            if k in self.halt and tgt != self.last[k]:
-                self.intents.append(intent_row(k, t, tgt, px, pos, pos, "blocked_halt"))  # stop sonrası kilit: niyet gönderilmez
-            if k not in self.halt and tgt != self.last[k]:  # hedef değişmedikçe yeniden boyutlama yok (fiyat gürültüsü churn yapmasın)
-                self.last[k] = tgt
-                f = max(self.equity() / self.spec.capital, 0.0) if self.spec.equity_scale else 1.0
-                want = (Decimal(str(abs(tgt) * f)) / px).quantize(b["step"], rounding=ROUND_DOWN) * d
-                if self.spec.gross_cap and abs(want) > abs(pos):  # toplam brüt tavan: artıran emir kalan alana küçülür
-                    room = self.spec.gross_cap * f - sum(abs(float(self.pos(j))) * self.px[j] for j in self.B if j != k and self.px.get(j))
-                    want = max(min(abs(want), (Decimal(str(max(room, 0.0))) / px).quantize(b["step"], rounding=ROUND_DOWN)), abs(pos) if pos * d > 0 else 0) * d  # mevcut pozisyon küçülmez
-                delta = want - pos
-                reducing = want == 0 or (want * pos > 0 and abs(want) < abs(pos))
-                if delta != 0 and (reducing or abs(delta) * px >= Decimal(str(self.spec.min_notional))):
-                    o = self.order_factory.market(b["iid"], OrderSide.BUY if delta > 0 else OrderSide.SELL, Quantity.from_str(format(abs(delta), "f")))
-                    self.intents.append(intent_row(k, t, tgt * f, px, pos, want, "sent"))
-                    self.by_order[str(o.client_order_id)] = len(self.intents) - 1
-                    self.submit_order(o)
-                    sent = True
-                else:  # gönderilmedi: lot/minimum no-op'u tutar ve risk sapmasıyla görünür (motor kaynaklı sessiz dolumsuzluktan ayrı)
-                    self.intents.append(intent_row(k, t, tgt * f, px, pos, want, "noop_lot" if delta == 0 else "blocked_minimum"))
-        if not sent and not (old == new or (math.isnan(old) and math.isnan(new))):  # emir gitmediyse yeni stop seviyesini bar açılışında kur
-            self.refresh(k, c)
-
-    def _lp(self, k, q):
-        """k sembolünün likidasyon fiyatı: ortak cüzdan (bakiye + uygulanmış funding − DİĞER pozisyonların başlangıç marjı; self.mc), tek sembol cross formülü."""
-        m = self.mc
-        position = self.cache.positions_open(instrument_id=self.B[k]["iid"])[0]
-        wb = float(self.cache.account_for_venue(VENUE).balance_total(USDT)) + self.cash - (sum(m.values()) - m.get(k, 0.0))
-        return liq_price(q, float(position.avg_px_open), wb, self.spec.mmr) if self.spec.liq else None
-
-    def refresh(self, k, px):
-        """Sembol başına TEK koruyucu emir: stop ile likidasyon fiyatından fiyata YAKIN olanı (aynı tikte iki stop'un sırası belirsiz olmasın; yakın olan fiyat yolunda önce vurulur).
-        Seviye px'in ötesindeyse (açılış gap'i) piyasa emriyle hemen kapanır (dolum açılış fiyatından)."""
-        b, q = self.B[k], self.pos(k)
-        self.cancel_all_orders(b["iid"])
-        if q == 0 or k in self.dead:
-            return
-        lp = self._lp(k, q)
-        q_ = lambda v: None if v is None or math.isnan(v) else float(Decimal(str(v)).quantize(b["tick"]))  # noqa: E731
-        s, lp = q_(self.stop[k]), q_(lp)
-        lvls = [v for v in (s, lp) if v is not None]
-        if not lvls:
-            return
-        lvl = max(lvls) if q > 0 else min(lvls)
-        self.lvl[k] = (s, lp)
-        side, qty = (OrderSide.SELL if q > 0 else OrderSide.BUY), Quantity.from_str(format(abs(q), "f"))
-        order = (self.order_factory.market(b["iid"], side, qty, reduce_only=True) if (px <= lvl if q > 0 else px >= lvl)
-                 else self.order_factory.stop_market(b["iid"], side, qty, Price.from_str(f"{lvl:.{b['dp']}f}"), reduce_only=True))
-        self.prot.add(str(order.client_order_id))
-        self.submit_order(order)
-
-    def on_order_filled(self, e):
-        k, p = e.instrument_id.symbol.value, float(e.last_px)
-        self.q[k] += Decimal(str(float(e.last_qty))).quantize(self.B[k]["step"]) * (1 if e.order_side == OrderSide.BUY else -1)
-        prot, sell = str(e.client_order_id) in self.prot, e.order_side == OrderSide.SELL
-        lp = self.lvl.get(k, (None, None))[1]
-        liq = prot and lp is not None and (p <= lp if sell else p >= lp)  # koruyucu emir LP'de ya da ötesinde dolduysa likidasyon, değilse strateji stopu
-        if liq:
-            self.dead.add(k)
-        elif prot:
-            self.halt[k] = 1 if sell else -1
-        i = self.by_order.get(str(e.client_order_id))
-        if i is not None:
-            self.intents[i]["filled_qty"] += float(e.last_qty)
-        self.fills.append(dict(sym=k, ts=e.ts_event, side=str(e.order_side), qty=float(e.last_qty), px=p, commission=float(e.commission), liq=liq, stop=prot and not liq))
-        o = self.cache.order(e.client_order_id)
-        if o is None or o.is_closed:  # kısmi dolumda (hacim sınırı) emir hâlâ açıksa yeni emir kurma: kalan miktar aynı emirle dolar
-            self.refresh(k, p)
-
-    def _rej(self, e):
-        self.rejected.append(str(e))
-        i = self.by_order.get(str(e.client_order_id))
-        if i is not None:
-            self.intents[i].update(status="rejected", reason=str(getattr(e, "reason", ""))[:200])
-
-    def on_order_rejected(self, e):
-        self._rej(e)
-
-    def on_order_denied(self, e):
-        self._rej(e)
+def _fund_arrays(fx):
+    """Sembol başına zaman sıralı funding olaylarını tek dizilere topla (çekirdek: FOFF sembol sınırları, FT zaman, FC mark kapanışı, FR oran)."""
+    parts = [(np.zeros(0, np.int64), np.zeros(0), np.zeros(0)) if f is None else (lambda o: (f["ts"][o], f["c"][o], f["rate"][o]))(np.argsort(f["ts"], kind="stable")) for f in fx]
+    return dict(FOFF=np.r_[0, np.cumsum([len(p[0]) for p in parts])].astype(np.int64), FT=np.concatenate([p[0] for p in parts]).astype(np.int64), FC=np.concatenate([p[1] for p in parts]), FR=np.concatenate([p[2] for p in parts]))
 
 
 def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.DataFrame | None = None, mark: pd.DataFrame | None = None, stop: pd.Series | None = None) -> dict:
@@ -227,73 +133,102 @@ def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.Da
     return run_portfolio({"SYM": dict(kl=kl, target=target, funding=funding, mark=mark, stop=stop)}, spec)
 
 
-def run_portfolio(data: dict[str, dict], spec: Spec = Spec()) -> dict:
-    """Tek Nautilus motoru, tek USDT hesap, ortak marj. data[sym] = dict(kl, target, funding=None, mark=None, stop=None, tick=None, step=None).
-    stop[t] = t kapanışında bilinen koruyucu stop fiyatı (NaN = stop yok), t+1 açılışından itibaren geçerli. Sembol başına likidasyon (cross-margin likidasyonu yok)."""
+def prepare(data: dict[str, dict], spec: Spec = Spec()) -> dict:
+    """Koşudan bağımsız hazırlık (doğrulama, tick yuvarlama, hacim -> tik boyutu, olay sırası). Aynı veriyle çok senaryo (fee/slip/gecikme ızgarası) için bir kez hesaplanıp `prepared=` ile verilir."""
     if spec.fill not in ("next_open", "close"):
         raise ValueError("fill next_open veya close olmalı")
-    side_fee = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
-    eng = BacktestEngine(BacktestEngineConfig(bypass_logging=True, logging=LoggerConfig(bypass_logging=True)))
-    eng.add_venue(VENUE, OmsType.NETTING, AccountType.MARGIN, [Money(spec.capital, USDT)], base_currency=USDT,
-                  default_leverage=Decimal(spec.leverage), fee_model=MakerTakerFeeModel(), bar_execution=True, liquidation_enabled=spec.native_liq)
-    B, bars_, f = {}, [], lambda v, d: Price.from_str(f"{v:.{d}f}")  # noqa: E731
-    for sym, d in data.items():
-        kl, target, funding = d["kl"], d["target"], d.get("funding")
-        if not (kl.index.is_monotonic_increasing and kl.index.is_unique):
-            raise ValueError("kl indeksi artan ve tekil olmalı")
-        if len(kl) == 0 or any(x % HOUR_NS for x in np.diff(ns(kl.index))) or ns(kl.index)[0] % HOUR_NS:
-            raise ValueError("kl boş ya da saatlik hizalı değil")
-        tape.check_target(kl, target)  # yanlış hizalı/tz'siz hedef sessizce sıfır işleme dönüşmesin
-        if funding is not None and funding["last_funding_rate"].isna().any():
-            raise ValueError("funding oranında NaN var (QC'den geçmemiş veri)")
-        tick, step = d.get("tick") or spec.tick, d.get("step") or spec.step
-        pp, sp = _dp(tick), _dp(step)
-        iid = InstrumentId(Symbol(f"{sym}-PERP"), VENUE)
-        eng.add_instrument(CryptoPerpetual(iid, Symbol(sym), BTC, USDT, USDT, False, pp, sp, Price.from_str(tick), Quantity.from_str(step), 0, 0, margin_init=Decimal(1) / spec.leverage,
-                                           margin_maint=Decimal(str(spec.mmr)), maker_fee=Decimal(str(side_fee)), taker_fee=Decimal(str(side_fee))))
-        open_ns = ns(kl.index)
-        close_ns = [t + HOUR_NS for t in open_ns]
-        slots = open_ns if spec.fill == "next_open" else close_ns
-        tg, st = {}, {}
-        for k_, v, sv in zip(close_ns, target.astype(float), (d.get("stop") if d.get("stop") is not None else pd.Series(math.nan, index=kl.index)).astype(float)):  # karar anı k_ -> ilk dolum anı (sonraki barın açılışı; boşlukta sonraki mevcut bar)
-            i = bisect_left(slots, k_) + spec.delay
-            if i < len(slots):
-                st[slots[i]] = sv
-                if not math.isnan(v):
-                    tg[slots[i]] = v
-        bt = BarType(iid, BarSpecification(1, BarAggregation.HOUR, PriceType.LAST), AggregationSource.EXTERNAL)
-        mark = d.get("mark")
-        B[sym + "-PERP"] = dict(iid=iid, bt=bt, step=Decimal(step), tick=Decimal(tick), dp=pp, tg=tg, st=st, fund=schedule(kl, mark, funding))
-        hi, lo = kl.high, kl.low
-        if mark is not None and {"high", "low"} <= set(mark.columns):  # likidasyon stopu MARK fiyatının H/L'siyle tetiklenir (Binance); eksik mark barında kline H/L
-            hi, lo = mark.high.reindex(kl.index).fillna(kl.high), mark.low.reindex(kl.index).fillna(kl.low)
-        hi, lo = pd.concat([hi, kl.open, kl.close], axis=1).max(axis=1), pd.concat([lo, kl.open, kl.close], axis=1).min(axis=1)  # O/C [L,H] içinde kalsın
-        bs = lambda o, h, l, c, v, t: Bar(bt, f(o, pp), f(h, pp), f(l, pp), f(c, pp), Quantity.from_str(f"{v:.{sp}f}"), t, t)  # noqa: E731,E741
-        eng.add_data([b for o, h, l, c, v, t0, t1 in zip(kl.open, hi, lo, kl.close, kl.volume, open_ns, close_ns)
-                      for b in ((bs(o, o, o, o, v, t0), bs(o, h, l, c, v, t1 - 1)) if spec.fill == "next_open" else (bs(o, h, l, c, v, t1),))])
-    strat = Adapter(B, spec)
-    eng.add_strategy(strat)
-    eng.run()
-    bal = float(eng.portfolio.account(VENUE).balance_total(USDT))
-    unreal, end_pos = 0.0, {}
-    for sym, d in data.items():
-        k = sym + "-PERP"
-        unreal += sum(float(p.signed_qty) * (float(d["kl"].close.iloc[-1]) - float(p.avg_px_open)) for p in eng.cache.positions_open(instrument_id=B[k]["iid"]))
-        end_pos[sym] = float(strat.pos(k))  # dispose'dan önce (sonra cache boşalır)
-    pr = eng.generate_positions_report()
-    positions = pd.DataFrame({"opened": pr.ts_opened, "closed": pr.ts_closed, "realized": pr.realized_pnl.map(lambda m: float(str(m).split()[0]))}).reset_index(drop=True) if len(pr) else pd.DataFrame(columns=["opened", "closed", "realized"])
-    eng.dispose()
-    fills = pd.DataFrame(strat.fills, columns=["sym", "ts", "side", "qty", "px", "commission", "liq", "stop"]).astype({"qty": float, "px": float, "commission": float, "liq": bool, "stop": bool})
-    fills["sym"] = fills.sym.str.removesuffix("-PERP")
-    notional = (fills.qty * fills.px).sum()
+    syms, prep = list(data), [_prep(s, d, spec) for s, d in data.items()]
+    n = np.array([len(p["t0"]) for p in prep])
+    off = np.r_[0, np.cumsum(n)]
+    cat = lambda key: np.concatenate([p[key] for p in prep])  # noqa: E731
+    T0, O, H, L, C, SZ = (cat(k) for k in ("t0", "o", "h", "l", "c", "sz"))
+    close_mode = spec.fill == "close"
+    bar, sym = np.arange(off[-1]), np.repeat(np.arange(len(syms)), n)
+    if close_mode:
+        ev_t, ev_b, ev_k, ev_kind = T0 + HOUR_NS, bar, sym, np.full(len(bar), core.KIND_CLOSE, np.int8)
+    else:
+        ev_t, ev_b, ev_k = np.r_[T0, T0 + HOUR_NS - 1], np.r_[bar, bar], np.r_[sym, sym]
+        ev_kind = np.r_[np.zeros(len(bar), np.int8), np.ones(len(bar), np.int8)]
+    fx = [_fund_inputs(d["kl"], d.get("mark"), d.get("funding")) for d in data.values()]
+    o_ = np.lexsort((ev_k, ev_t))  # zaman, sonra sembol sırası (eski motor: veri ekleme sırası)
+    return dict(syms=syms, prep=prep, n=n, off=off, T0=T0, O=O, H=H, L=L, C=C, SZ=SZ, U=np.array([p["u"] for p in prep]), close_mode=close_mode, tg=cat("tg"), st=cat("st"),
+                ev_k=ev_k[o_].astype(np.int64), ev_b=ev_b[o_].astype(np.int64), ev_kind=ev_kind[o_], fx=fx, **_fund_arrays(fx), key=(spec.fill, spec.tick, spec.step))
+
+
+def _inputs(pr: dict, spec: Spec):
+    """Senaryoya özgü girdiler: kaydırılmış hedef/stop (karar j -> yuva j + 1 + delay; close modunda j + delay) ve parametre vektörü."""
+    off, sh = pr["off"], spec.delay if pr["close_mode"] else 1 + spec.delay
+    TG, ST = pr["tg"].copy(), pr["st"].copy()
+    for k in range(len(pr["syms"])):
+        sl = slice(off[k], off[k + 1])
+        TG[sl], ST[sl] = _shift(pr["tg"][sl], sh), _shift(pr["st"][sl], sh)
+    P = np.array([(spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4, spec.leverage, spec.mmr, float(spec.liq and not spec.native_liq), spec.min_notional, spec.capital, float(spec.equity_scale), spec.gross_cap or 0.0, float(pr["close_mode"])])
+    return TG, ST, P
+
+
+def _kernel_cpu(pr: dict, TG, ST, P):
+    nb = len(pr["T0"])
+    cap = max(4096, nb // 16)  # tipik dolum sayısı bar sayısının ~%1'i; taşarsa iki katına çıkarıp yeniden koş (senaryo başına ~110 MB yerine ~5 MB tampon)
+    while True:
+        FI, FF, PI, PF, RJ = np.zeros((cap, 4), np.int64), np.zeros((cap, 3)), np.zeros((cap, 3), np.int64), np.zeros(cap), np.zeros((cap, 3), np.int64)
+        IT, IF, PRE, END = np.zeros((cap, 3), np.int64), np.zeros((cap, 5)), np.zeros(nb, np.int64), np.zeros(nb, np.int64)
+        F, I, G, N = core.simulate(pr["ev_k"], pr["ev_b"], pr["ev_kind"], pr["T0"], pr["O"], pr["H"], pr["L"], pr["C"], pr["SZ"], TG, ST, pr["U"], P, cap, pr["FOFF"], pr["FT"], pr["FC"], pr["FR"], FI, FF, PI, PF, RJ, IT, IF, PRE, END)
+        if N[0] >= 0:
+            return dict(F=F, I=I, G=G, N=N, FI=FI, FF=FF, PI=PI, PF=PF, RJ=RJ, IT=IT, IF=IF, PRE=PRE, END=END)
+        cap *= 2
+
+
+def run_portfolio(data: dict[str, dict], spec: Spec = Spec(), prepared: dict | None = None) -> dict:
+    """Tek USDT hesap, ortak marj. data[sym] = dict(kl, target, funding=None, mark=None, stop=None, tick=None, step=None).
+    stop[t] = t kapanışında bilinen koruyucu stop fiyatı (NaN = stop yok), t+1 açılışından itibaren geçerli. Sembol başına likidasyon (cross-margin likidasyonu yok)."""
+    pr = prepared if prepared is not None and prepared["key"] == (spec.fill, spec.tick, spec.step) else prepare(data, spec)
+    return _finish(pr, data, spec, _kernel_cpu(pr, *_inputs(pr, spec)))
+
+
+def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> dict:
+    """Çekirdek çıktısından özet + (full ise) fills/positions tabloları. Funding çekirdekte settlement anında işlendi (G[1] toplam, N[3] kaçan). full=False: DataFrame üretilmez (tarama)."""
+    syms, prep, off, U, close_mode = pr["syms"], pr["prep"], pr["off"], pr["U"], pr["close_mode"]
+    F, I, G, N, FI, FF, PI, PF, RJ, IT, IF = (raw[k] for k in ("F", "I", "G", "N", "FI", "FF", "PI", "PF", "RJ", "IT", "IF"))
+    side_fee, (nf, npos, nrej), PF = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4, (int(N[0]), int(N[1]), int(N[2])), PF.copy()
+    for k in range(len(syms)):
+        if I[k, core.LOT] != 0:
+            PF[I[k, core.COPEN]] = F[k, core.CYC]  # açık döngü: o ana kadarki realize (komisyon dahil)
+    fi, ff = FI[:nf], FF[:nf]
+    liq, stp = (fi[:, 3] & 1) > 0, (fi[:, 3] & 2) > 0
+    notional = float((ff[:, 0] * ff[:, 1]).sum())
     fee, slip = notional * spec.fee_rt_bps / 2 / 1e4, notional * spec.slip_rt_bps / 2 / 1e4
-    lq = fills[fills.liq]
-    liq_fee = float((lq.qty * lq.px).sum()) * max(0.0, (spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate) - side_fee)  # motor taker fee'yi zaten kesti
-    exit_cost = sum(abs(end_pos[s]) * float(d["kl"].close.iloc[-1]) * side_fee for s, d in data.items()) if spec.close_out else 0.0
-    fund, missed, fallback = strat.cash, strat.missed + sum(len(B[k]['fund']) - strat.fund_i[k] for k in B), strat.fallback  # funding settlement anında uygulandı (Adapter.settle); bakiye Nautilus'ta değil, burada eklenir
-    net = bal + unreal - spec.capital + fund - liq_fee - exit_cost
-    intents, isum = finalize(strat.intents)
-    return dict(summary=dict(net_pnl=net, gross_pnl=net + fee + slip + exit_cost - fund + liq_fee, fee=fee, slippage=slip, funding=fund, liq_fee=liq_fee, exit_cost=exit_cost,
-                             n_fills=len(fills), n_liq=int(fills.liq.sum()), n_stop=int(fills.stop.sum()), end_position=next(iter(end_pos.values())) if len(end_pos) == 1 else sum(abs(v) for v in end_pos.values()),
-                             engine_commission=float(fills.commission.sum()), n_rejected=len(strat.rejected), funding_missed=missed, funding_mark_fallback=fallback, **isum),
-                fills=fills, positions=positions, rejected=strat.rejected, intents=intents)
+    liq_fee = float((ff[liq, 0] * ff[liq, 1]).sum()) * max(0.0, (spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate) - side_fee)  # motor taker fee'yi zaten kesti
+    last = [float(d["kl"].close.iloc[-1]) for d in data.values()]
+    end_pos = {s: I[k, core.LOT] / U[k, 0] for k, s in enumerate(syms)}
+    unreal = sum(end_pos[s] * (last[k] - F[k, core.AVG]) for k, s in enumerate(syms) if I[k, core.LOT] != 0)
+    exit_cost = sum(abs(end_pos[s]) * last[k] * side_fee for k, s in enumerate(syms)) if spec.close_out else 0.0
+    fund, missed, fallback = float(G[1]), int(N[3]), sum(f["fallback"] for f in pr["fx"] if f is not None)  # funding çekirdekte settlement anında işlendi (G[0] bakiyesine dahil; burada tekrar eklenmez)
+    net = float(G[0]) + unreal - spec.capital - liq_fee - exit_cost
+    rejected = [f"OrderRejected(sym={syms[r[0]]} ts={r[1]} qty={r[2] / U[r[0], 0]}: {'stop kitap fiyatında' if r[2] == 0 else 'marj/piyasa yok'})" for r in RJ[:nrej]]
+    summary = dict(net_pnl=net, gross_pnl=net + fee + slip + exit_cost - fund + liq_fee, fee=fee, slippage=slip, funding=fund, liq_fee=liq_fee, exit_cost=exit_cost, n_fills=nf, n_liq=int(liq.sum()), n_stop=int(stp.sum()),
+                   end_position=next(iter(end_pos.values())) if len(end_pos) == 1 else sum(abs(v) for v in end_pos.values()), engine_commission=float(ff[:, 2].sum()), n_rejected=len(rejected),
+                   funding_missed=missed, funding_mark_fallback=fallback)
+    intents, isum = finalize(from_kernel(syms, IT[: int(N[4])], IF[: int(N[4])]))
+    summary.update(isum)  # niyet izi (#11): n_intents, n_blocked_minimum, n_noop_lot, n_blocked_halt, n_partial, n_engine_unfilled, blocked_notional, gap_notional_abs
+    if not full:
+        return dict(summary=summary, rejected=rejected)
+    fills = pd.DataFrame(dict(sym=np.array(syms, dtype=object)[fi[:, 0]], ts=fi[:, 1], side=np.where(fi[:, 2] > 0, "BUY", "SELL"), qty=ff[:, 0], px=ff[:, 1], commission=ff[:, 2], liq=liq, stop=stp))
+    pi = PI[:npos]
+    return dict(summary=summary, fills=fills, rejected=rejected, intents=intents, positions=pd.DataFrame(dict(opened=pd.to_datetime(pi[:, 0], utc=True), closed=pd.to_datetime(np.where(pi[:, 1] > 0, pi[:, 1], np.iinfo(np.int64).min), utc=True), realized=PF[:npos])))
+
+
+def run_many(data: dict[str, dict], specs: list[Spec], workers: int = 4, full: bool = True, kernel=None) -> list[dict]:
+    """Aynı veri, çok senaryo; hazırlık bir kez, çekirdek nogil olduğundan iş parçacıklarıyla paralel. full=False: yalnızca özet + reddedilenler (fills/positions DataFrame'i yok; tarama için).
+    kernel: isteğe bağlı GPU çekirdeği `simulate_many(pr, inputs) -> ham çıktılar|None` (scripts/referee_gpu.py; tam hatta kazanç ~1,1x ve ~4x pahalı olduğundan varsayılan CPU)."""
+    from concurrent.futures import ThreadPoolExecutor
+    if kernel is not None:
+        raise NotImplementedError("GPU yolu funding settlement'ı (#10) taşımıyor: CPU çekirdeğini kullanın (scripts/referee_gpu.py güncellenene kadar)")
+    pr = prepare(data, specs[0])
+    assert all((sp.fill, sp.tick, sp.step) == pr["key"] for sp in specs), "tüm senaryolar aynı fill/tick/step'i paylaşmalı"
+    raws = kernel(pr, [_inputs(pr, sp) for sp in specs]) if kernel else [None] * len(specs)
+    with ThreadPoolExecutor(workers) as ex:
+        return list(ex.map(lambda a: _finish(pr, data, a[0], a[1], full) if a[1] is not None else _run_cpu(pr, data, a[0], full), zip(specs, raws)))
+
+
+def _run_cpu(pr: dict, data: dict, sp: Spec, full: bool) -> dict:
+    return _finish(pr, data, sp, _kernel_cpu(pr, *_inputs(pr, sp)), full)

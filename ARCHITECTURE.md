@@ -17,7 +17,7 @@ yok; her şey tape'in tekrar oynatılmasıyla (replay) yapılır. Sonuçlar tek 
 | 1 | **Veri hattı** | Tarihsel veriyi indirir, doğrular, sürümler | Binance → tape + manifest (hash) | Platform (indirici) + biz (kalite kontrol, manifest) |
 | 2 | **Durum + uzman** | Piyasa durumunu hesaplar (oynaklık, korelasyon, funding, ATR); uzman bundan tahmin üretir. Basit sinyaller (`signals.py`) aynı akışın yön-only halidir | tape → durum → tahmin [-1, 1] veya yön | **Biz** |
 | 3 | **Risk motoru** | Tahmini/niyeti pozisyon büyüklüğüne ve kaldıraca çevirir; hesabı korur | tahmin + oynaklık + korelasyon + hesap durumu → hedef pozisyon | **Biz** |
-| 4 | **Yürütme/muhasebe** | Hedef pozisyonu fill, fee, funding, slippage, likidasyonla işler | hedef pozisyon + tape → işlem defteri, equity eğrisi | Platform: eleme vectorbt, hakem Nautilus; yedek hakem Freqtrade |
+| 4 | **Yürütme/muhasebe** | Hedef pozisyonu fill, fee, funding, slippage, likidasyonla işler | hedef pozisyon + tape → işlem defteri, equity eğrisi | Platform: eleme vectorbt, hakem numba olay motoru (Nautilus'un yerini aldı); yedek hakem Freqtrade |
 | 5 | **Denetim** | Sonucun gerçek olup olmadığını sınar: defter, null kontroller, nedensellik, mühürlü dönem, çoklu test | 2–4'ün çıktıları → karar | **Biz** (+ `arch`, `skfolio`) |
 | 6 | **Rapor** | İşlem seviyesinde açıklanabilir sonuç | 4–5 → rapor | **Biz** (küçük) |
 | 7 | **Araştırma ajanı** (7/24; G2'den sonra) | LLM sinyal önerir; aynı hat ölçer | öneri → 2 → 3 → 4 → 5 | Runtime: Hermes veya RD-Agent (doğrulanmadı); sözleşme bizim |
@@ -31,7 +31,7 @@ yok; her şey tape'in tekrar oynatılmasıyla (replay) yapılır. Sonuçlar tek 
 - **Ana sistem Ensemble'dır** (`kepler/ensemble.py`): durum → uzmanlar (trend, kesitsel momentum, carry) → aday → risk motoru. Tek sinyaller (`signals.py`, `turtle.py`) karşılaştırma ve kontrol içindir.
 - Ajan (7) yalnızca sinyalleri (2) değiştirebilir. Risk parametrelerine ve mühürlü döneme
   erişemez.
-- Sonuç üreten hakem tektir (Nautilus; yedek Freqtrade). vectorbt yalnızca eleme filtresidir,
+- Sonuç üreten hakem tektir (numba motoru; yedek Freqtrade). vectorbt yalnızca eleme filtresidir,
   deftere sonuç yazmaz; elemede koşulan her konfigürasyon yine de deneme sayacına girer.
 
 ## Katmanlar ve kurallar (kod bunu zorlar)
@@ -42,7 +42,7 @@ Alt katman üst katmanı import edemez. Düşükten yükseğe:
 | Katman | Modüller | Görev |
 |---|---|---|
 | veri | `data qc tape universe` | indirme, kalite, tape yükleme |
-| temel | `ledger report intents funding receipt stats capacity stress nested signals` | defter, istatistik, basit sinyaller |
+| temel | `ledger report intents receipt stats capacity stress nested signals` | defter, istatistik, basit sinyaller |
 | risk | `risk portfolio` | boyutlama, kaldıraç, kill switch |
 | durum | `market_state state indicators` | oynaklık/korelasyon/funding, ATR/swing/profil, göstergeler |
 | uzman | `experts/* turtle` | tahmin üretir: `experts/trend`, `xs_momentum`, `carry`, `zone_fade`; edge ailesi (`reports/edge_experts_protocol.md`): `bollinger`, `lowvol`, `nearhigh`, `fundcrowd`, `volrev`, `orderflow`. **Ensemble tek altyapıdır**: uzmanlar `ensemble.REG`'e kayıtlı takılabilir üyeler, bileşim `Params.names` + `Params.weights`. EV1 ayrı bir sistem değil, varsayılan bileşimdir (trend 0,6 / xs_momentum 0,2 / carry 0,2); yeni uzman henüz hiçbir bileşime ağırlıkla girmedi (kapı: `reports/edge_experts.md`) |
@@ -106,7 +106,7 @@ sembole boyut verir. Kaldıraç girdi değil, bu boyutun sonucudur.
 | Platformdan (yazmıyoruz) | Biz yazıyoruz |
 |---|---|
 | Veri indirme (Freqtrade indiricisi) | Veri kalite kontrolü + manifest |
-| Eleme: vectorbt. Hakem muhasebe (fee/funding/marjin): Nautilus | Durum, uzmanlar ve basit sinyaller |
+| Eleme: vectorbt. Hakem muhasebe (fee/funding/marjin): numba motoru | Durum, uzmanlar ve basit sinyaller |
 | `lookahead-analysis` (Freqtrade, yedek hakem devredeyse) | Risk motoru |
 | `arch` (SPA / StepM / MCS), `skfolio` (CPCV) | Denetim katmanı: defter, null, mühür, DSR |
 | LLM sağlayıcı (H4'te) | Yapıştırma kodu: funding, hedef→emir adaptörü; rapor; ince ajan döngüsü |
@@ -133,7 +133,7 @@ bağlam, ayrı worktree), güncelleme ajanı (deterministik durum mesajı). Kal�
 - **Veri:** saatlik (1h) tape ana; 4h ve 1d yukarı toplanır. Depolama Parquet + DuckDB.
 - **Kitap sözleşmesi:** `book({sym: kl}) -> {sym: DataFrame[target, stop]}` (BACKTEST §4). Sürekli
   uzmanlar `experts/_interface.py` (`forecast(close, st, p)`, [-1, 1]); boyutlamayı risk katmanı yapar.
-  vectorbt (eleme) ve Nautilus (hakem) aynı seriyi oynatır. Yapıştırma kodu hakemle birlikte
+  vectorbt (eleme) ve numba hakem aynı seriyi oynatır. Yapıştırma kodu hakemle birlikte
   sayılır (MISSION kural 7a: tavan kaldırıldı, sayı raporlanır).
 - **Eleme ve hakem:** eleme başına ~100 konfigürasyon bütçesi; hepsi deftere ve DSR sayısına
   girer. Eleme–hakem sıralama uyumu ölçülür; öneri eşiği ≥0,8 (doğrulanmadı), altındaysa

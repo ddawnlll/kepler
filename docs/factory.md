@@ -28,7 +28,7 @@ Fabrikadaki her tasarım kararı bu cümleye geri götürülebilir. Bir LLM'in �
 
 **Kapsam dışı:** canlı işlem, ML model eğitimi, bandit, bilgi ormanı, boğa/ayı analist ajanları, LLM trader, vectorbt ile eleme.
 
-**Motor (kodda zaten var):** tek hakem, `kepler/evaluate.py::evaluate_book` ve portföy hakemi (Nautilus 2.0.0rc5 + yapıştırma; BACKTEST §6). Fabrika **yalnızca bu hakemle** koşar. vectorbt eleme yolunda değildir: sonuç sayılmaz (MISSION kural 1), G2'de yoldan çıkarıldı, stop ve portföy bilmez (BACKTEST §6.6). v1'deki "iki motor, parite" fikri kaldırıldı (§2, B3).
+**Motor (kodda zaten var):** tek hakem, `kepler/evaluate.py::evaluate_book` ve portföy hakemi (numba olay motoru; BACKTEST §6, §6.6). Fabrika **yalnızca bu hakemle** koşar. vectorbt eleme yolunda değildir: sonuç sayılmaz (MISSION kural 1), G2'de yoldan çıkarıldı, stop ve portföy bilmez (BACKTEST §6.6). v1'deki "iki motor, parite" fikri kaldırıldı (§2, B3).
 
 ### 1.1 Karar kodlarının repo ile eşlemesi
 

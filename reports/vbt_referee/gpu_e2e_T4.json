@@ -1,0 +1,41 @@
+{
+ "cuda": true,
+ "cpus": 24,
+ "gpu": "T4",
+ "rows": [
+  {
+   "n": 16,
+   "cpu_s": 11.131783853999998,
+   "gpu_s": 5.850802820999995,
+   "speedup": 1.902607931691911,
+   "cpu_ms_per": 695.7364908749998,
+   "gpu_ms_per": 365.6751763124997,
+   "counts_equal": true,
+   "max_abs_net_diff": 1.4699987787025748e-06,
+   "max_abs_funding_diff": 0.0
+  },
+  {
+   "n": 64,
+   "cpu_s": 10.835164726000002,
+   "gpu_s": 11.782994342999999,
+   "speedup": 0.919559528808305,
+   "cpu_ms_per": 169.29944884375004,
+   "gpu_ms_per": 184.10928660937498,
+   "counts_equal": true,
+   "max_abs_net_diff": 1.4699987787025748e-06,
+   "max_abs_funding_diff": 0.0
+  },
+  {
+   "n": 128,
+   "cpu_s": 21.494180064999995,
+   "gpu_s": 19.10016116,
+   "speedup": 1.125340246343764,
+   "cpu_ms_per": 167.92328175781245,
+   "gpu_ms_per": 149.2200090625,
+   "counts_equal": true,
+   "max_abs_net_diff": 1.5499995242862497e-06,
+   "max_abs_funding_diff": 0.0
+  }
+ ],
+ "gpu_compile_warm_s": 18.381290788999998
+}
