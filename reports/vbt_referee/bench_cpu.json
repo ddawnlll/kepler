@@ -1,0 +1,16 @@
+{
+ "cpus": 20,
+ "bars": 473297,
+ "t_load_book": 1.8737972630000002,
+ "t_first_cold_compile": 11.804133516,
+ "t_single_warm_s": 0.5930127759999984,
+ "t_prep_inputs_s": 0.11349909099999778,
+ "n_scenarios": 64,
+ "t_sweep_serial_s": 34.094669774,
+ "t_sweep_prepared_serial_s": 24.333791476000002,
+ "t_sweep_threads2_s": 14.746258655000005,
+ "t_sweep_threads4_s": 9.34559287799999,
+ "t_sweep_threads8_s": 10.056181186000003,
+ "t_sweep_threads_s": 9.34559287799999,
+ "sweep_throughput_per_s_threads": 6.848147660129654
+}

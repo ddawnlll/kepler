@@ -1,0 +1,13 @@
+{
+ "gpu": "A10G",
+ "n": 1024,
+ "bars": 462409,
+ "cpu_1core_s_per_scenario": 0.5028766585624999,
+ "cpu_8thread_s_per_scenario": 0.06255056846874996,
+ "gpu_compile_warm_s": 11.310438083000001,
+ "gpu_total_s": 5.144141683999997,
+ "gpu_s_per_scenario": 0.0050235758632812474,
+ "max_abs_balance_diff_vs_cpu": 1.9999970390927047e-07,
+ "speedup_vs_1core": 100.10332724109317,
+ "speedup_vs_8threads": 12.451403177953367
+}

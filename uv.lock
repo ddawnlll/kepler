@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = "==3.12.*"
 resolution-markers = [
     "sys_platform == 'win32'",
@@ -396,7 +396,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "cryptography" },
     { name = "duckdb" },
-    { name = "nautilus-trader" },
+    { name = "numba" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "pyarrow" },
@@ -414,7 +414,7 @@ dev = [
 requires-dist = [
     { name = "cryptography" },
     { name = "duckdb" },
-    { name = "nautilus-trader", specifier = "==2.0.0rc5" },
+    { name = "numba" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "pyarrow" },
@@ -522,18 +522,6 @@ wheels = [
 ]
 
 [[package]]
-name = "nautilus-trader"
-version = "2.0.0rc5"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/3b/67/69d7a90c86c55abe46b1097b5353dc590285df2f7a8a64c1fef678398f84/nautilus_trader-2.0.0rc5.tar.gz", hash = "sha256:d566bade9e8dc6ad35de0e2566658fbd1ae75a89ee2c45c8e48de5fcc6929399", size = 10704087, upload-time = "2026-09-15T06:13:57.781Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/cd/c9/8c1f4412054265cc53486d5f3c500961d6d9c9f163364e0e769db02bc01f/nautilus_trader-2.0.0rc5-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:c3feca068a507b1651ed8e9d0ee81d10a3520a2e3b37eccbe88cba3487b4e652", size = 60020882, upload-time = "2026-09-15T06:07:55.97Z" },
-    { url = "https://files.pythonhosted.org/packages/2c/45/e7ef14d10098220a4cbea26229fa47c2580f8ddb79f7e9d5b6f4a0910d32/nautilus_trader-2.0.0rc5-cp312-cp312-manylinux_2_34_aarch64.whl", hash = "sha256:d68fcd0938449c0b8cce412dc4ac806072272d627baa19ef87393f25077e5432", size = 65782986, upload-time = "2026-09-15T06:08:00.741Z" },
-    { url = "https://files.pythonhosted.org/packages/9c/f7/c3ff46171588fb1cf52ccfde078e5738ab1929aa72ad8da5831c086a1c8a/nautilus_trader-2.0.0rc5-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:eab45fafd2312deda1236554c49a9798bfc76bc8465af864878e2f70189ebebe", size = 69963442, upload-time = "2026-09-15T06:08:05.461Z" },
-    { url = "https://files.pythonhosted.org/packages/86/cf/3519e97ef353bbd2a0117a99df00d8b132e340b9f53459606ebba548a183/nautilus_trader-2.0.0rc5-cp312-cp312-win_amd64.whl", hash = "sha256:7cf55f842ebcc47b4ccd6c7c2ba855e7359941d9eb87da44c7fdd1d17108165f", size = 64446752, upload-time = "2026-09-15T06:08:09.161Z" },
-]
-
-[[package]]
 name = "numba"
 version = "0.68.0"
 source = { registry = "https://pypi.org/simple" }
@@ -614,7 +602,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "ptyprocess" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
