@@ -82,8 +82,7 @@ class Adapter(Strategy):
     def __init__(self, B: dict, spec: Spec):
         super().__init__(None)
         self.B, self.spec, self.fills, self.rejected, self.split = B, spec, [], [], spec.fill == "next_open"
-        self.q = {k: Decimal(0) for k in B}  # fill olaylarından beslenen imzalı miktar
-        self.last, self.px = dict.fromkeys(B, 0.0), {}
+        self.q, self.last, self.px = {k: Decimal(0) for k in B}, dict.fromkeys(B, 0.0), {}  # q: fill olaylarından beslenen imzalı miktar
         self.stop, self.lvl, self.prot = dict.fromkeys(B, math.nan), {}, set()  # strateji stopu; (stop, LP) koruyucu seviyeler; koruyucu emir kimlikleri
         self.cash, self.cash_ref, self.mc, self.fund_i = 0.0, 0.0, {}, dict.fromkeys(B, 0)  # settlement'ta uygulanmış funding toplamı (USDT); cash_ref: son tam likidasyon-fiyatı taramasındaki cash; mc: sembol başına açık pozisyon başlangıç marjı (yalnız dolumda değişir); sembol başına bir sonraki işlenecek funding indeksi
         self.missed = self.fallback = 0
@@ -107,8 +106,7 @@ class Adapter(Strategy):
                 self.missed += 1  # mark da kline da yok: sessizce atlanmaz, özette sayılır
                 continue
             self.fallback += fb
-            amt = -float(pos) * c * rate
-            self.cash += amt
+            self.cash += (amt := -float(pos) * c * rate)
             hit |= amt != 0
         self.fund_i[k] = i
         if hit:  # bakiye değişti: funding'i alan sembolün likidasyon seviyesi yeni bakiyeyle yeniden kurulur; seviye > %0,2 kaymadıysa dokunulmaz (O(olay x pozisyon) emir fırtınası olmasın)
