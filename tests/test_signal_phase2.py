@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-pytest.importorskip("nautilus_trader")
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import signal_phase2 as p2  # noqa: E402
 

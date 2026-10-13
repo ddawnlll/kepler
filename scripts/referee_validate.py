@@ -19,6 +19,9 @@ from kepler import evaluate as ev  # noqa: E402
 REF = Path(__file__).resolve().parents[1] / "reports" / "trade_audit_data"
 
 
+OUT = "/data/vbt_val"
+
+
 def compare(name, res, t):
     ref_f, meta = pd.read_csv(REF / name / "fills.csv"), json.loads((REF / name / "meta.json").read_text())
     f = res["fills"].sort_values("ts", kind="stable").reset_index(drop=True)
@@ -33,6 +36,9 @@ def compare(name, res, t):
     out["max_abs_px_diff"] = float((b.px_new - b.px_ref).abs().max()) if len(b) else None
     out["max_abs_comm_diff"] = float((b.commission_new - b.commission_ref).abs().max()) if len(b) else None
     s, r = res["summary"], meta["summary"]
+    b2 = b.sort_values("ts")
+    np.savez_compressed(Path(OUT) / f"{name}_diff.npz", ts=b2.ts.to_numpy(), dpx=(b2.px_new - b2.px_ref).to_numpy(), dcomm=(b2.commission_new - b2.commission_ref).to_numpy(),
+                        cash_new=(-np.where(b2.side == "BUY", 1, -1) * b2.qty * b2.px_new - b2.commission_new).cumsum().to_numpy(), cash_ref=(-np.where(b2.side == "BUY", 1, -1) * b2.qty * b2.px_ref - b2.commission_ref).cumsum().to_numpy())
     out["summary_diff"] = {k: float(s[k]) - float(r[k]) for k in r if k in s and isinstance(r[k], (int, float))}
     out["net_new"], out["net_ref"] = float(s["net_pnl"]), float(r["net_pnl"])
     return out
@@ -43,6 +49,8 @@ def main():
     ap.add_argument("--out", default="/data/vbt_val")
     ap.add_argument("--cap", type=float, default=1000.0)
     a = ap.parse_args()
+    global OUT
+    OUT = a.out
     Path(a.out).mkdir(parents=True, exist_ok=True)
     t0 = time.perf_counter()
     E.load(E.EXT, [("/data/pre2022", None, E.SPLIT), ("/data", E.SPLIT, None)], cap=a.cap)
