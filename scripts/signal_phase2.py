@@ -20,7 +20,7 @@ import signal_diag as sd  # noqa: E402
 
 from kepler import ensemble as en  # noqa: E402
 from kepler import evaluate as ev  # noqa: E402
-from kepler import portfolio, report  # noqa: E402
+from kepler import portfolio, receipt, report  # noqa: E402
 from kepler.experts import carry_xs  # noqa: E402
 
 CAPR, TH_OUT, TH_IN = 10_000.0, 0.10, 0.25
@@ -78,7 +78,7 @@ def run(name: str, out: Path):
     sp = E.spec(cap=CAPR)
     out.mkdir(parents=True, exist_ok=True)
     if to_ledger:
-        rows = ev.evaluate_book(book, data, [sp], out / f"ledger_phase2_{name}.jsonl", f"Faz 2 {name}: {json.dumps(comp)} hyst={hyst}", "dyn_top20_" + sd.hashlib.sha256(",".join(syms).encode()).hexdigest()[:16],
+        rows = ev.evaluate_book(book, data, [sp], out / f"ledger_phase2_{name}.jsonl", f"Faz 2 {name}: {json.dumps(comp)} hyst={hyst}", "dyn_top20_" + receipt.data_manifest(data)["id"][:16],
                                 name=name, params=dict(comp=comp, hyst=hyst, th=[TH_OUT, TH_IN]), window=E.MAIN)
         res, win = rows[0]["res"], rows[0]["win"]
     else:

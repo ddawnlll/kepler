@@ -1,5 +1,4 @@
-"""evaluate.run_book(trim_flat=True): sonuç değişmez (net, dolum tablosu, günlük PnL), yalnızca düz bar dizileri/semboller hakeme gitmez. Nautilus gerekir (Modal).
-Ayrıca hakem Nautilus günlüğünü stdout'a yazmaz (issue #27)."""
+"""Numba trim_flat preserves fills/PnL and original funding valuation; the engine is silent."""
 import numpy as np
 import pandas as pd
 import pytest
@@ -57,8 +56,35 @@ def test_trim_flat_rejects_kill_dd():
         ev.run_book(out, data, referee.Spec(capital=10000.0), IDX[0], IDX[-1], kill_dd=0.1, trim_flat=True)
 
 
+@pytest.mark.parametrize("partial_mark", [False, True])
+def test_trimming_keeps_original_funding_fallback_prices(partial_mark):
+    out, data = setup()
+    for d in data.values():
+        d["funding"] = pd.DataFrame(dict(last_funding_rate=.0001), index=IDX[8::8])
+        if partial_mark:
+            d["mark"] = d["kl"].drop(IDX[79])  # inactive funding T80 needs original kline fallback
+    sp = referee.Spec(tick=".01", capital=10000., fee_rt_bps=10., slip_rt_bps=2.)
+    r0, _, _ = ev.run_book(out, data, sp, IDX[0], IDX[-1] + pd.Timedelta("1h"))
+    r1, w1, _ = ev.run_book(out, data, sp, IDX[0], IDX[-1] + pd.Timedelta("1h"), trim_flat=True)
+    assert r0["summary"]["funding_missed"] == r1["summary"]["funding_missed"] == 0
+    assert r0["summary"]["funding"] == pytest.approx(r1["summary"]["funding"], abs=1e-12)
+    pd.testing.assert_frame_equal(r0["fills"], r1["fills"])
+    assert report.reconcile(w1, r1, sp)["ok"]
+    if partial_mark:
+        assert r1["summary"]["funding_mark_fallback"] > 0
+
+
 def test_referee_is_silent(capfd):
     data = {"A": dict(kl=kl_of(0), target=book({3: 500.0, 20: 0.0}).target.ffill().fillna(0.0))}
     referee.run_portfolio(data, referee.Spec(tick="0.01", step="0.001", capital=10000.0))
     cap = capfd.readouterr()
     assert "[INFO]" not in cap.out + cap.err and cap.out.strip() == ""
+
+
+def test_entirely_flat_book_remains_a_valid_zero_trade_account():
+    out = {"C": book({0: 0.})}
+    data = {"C": dict(kl=kl_of(0))}
+    sp = referee.Spec(capital=1000., liq=True, fee_rt_bps=10., slip_rt_bps=2.)
+    r0, _, _ = ev.run_book(out, data, sp, IDX[0], IDX[-1] + pd.Timedelta("1h"))
+    r1, _, _ = ev.run_book(out, data, sp, IDX[0], IDX[-1] + pd.Timedelta("1h"), trim_flat=True)
+    assert r1["summary"] == r0["summary"] and r1["summary"]["n_fills"] == 0

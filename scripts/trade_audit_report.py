@@ -1,5 +1,5 @@
 """Trade denetimi, RAPOR AŞAMASI: scripts/trade_audit.py çıktısından (trades.csv, daily.csv, hourly.csv, meta.json ...) istatistikleri hesaplar, grafikleri çizer ve PDF üretir.
-LLM yok: her rakam bu betikte tanımlı bir formülden gelir (tekrarlanabilir). Gereksinim: pandas, numpy, matplotlib, reportlab; Nautilus çapraz kontrolü için nautilus_trader (yoksa o bölüm atlanır).
+LLM yok: her rakam bu betikte tanımlı bir formülden gelir (tekrarlanabilir). Gereksinim: pandas, numpy, matplotlib, reportlab. Yalnız Numba hakem çıktıları okunur; tarihsel motor çalıştırılmaz.
 
   python scripts/trade_audit_report.py <veri dizini> <PDF yolu>     (veri dizini = modal volume get ile indirilmiş /data/audit/<ad>)
 Palet: dataviz referans paleti (validate_palette.js ile doğrulandı: 4 kategorik slot, açık yüzey); gelir/zarar = mavi/kırmızı ıraksak çift, nötr gri."""
@@ -136,22 +136,9 @@ cause_tab = tr[tr.net < 0].groupby("cause").agg(n=("net", "size"), total=("net",
 drive = tr[[f"c_{n}" for n in NAMES]].idxmax(axis=1).str[2:]
 tr["driver"] = drive
 
-# Nautilus çapraz kontrolü (bağımsız hesaplayıcılar; yoksa atlanır)
-naut = None
-try:
-    from nautilus_trader import analysis as an
+# Historical Nautilus outputs remain archival references; never import or execute that engine.
+naut, ours, n_naut = None, None, None
 
-    npos = pd.read_csv(SRC / "nautilus_positions.csv")
-    mine_nb = (tr.price_pnl - tr.commission).to_numpy()  # Nautilus realized: fiyat - komisyon (funding hakem tarafında, Nautilus dışında)
-    rd = {int(t.value): float(v) for t, v in ret.items()}
-    ours = dict(win_rate=float((mine_nb > 0).mean()), expectancy=float(mine_nb.mean()), avg_winner=float(mine_nb[mine_nb > 0].mean()), sharpe=float(sharpe), sortino=float(sortino), maxdd=float(dd_pct.max()), vol=float(vol))
-    naut = dict(win_rate=float(an.WinRate().calculate_from_realized_pnls(npos.realized.to_numpy())), expectancy=float(an.Expectancy().calculate_from_realized_pnls(npos.realized.to_numpy())),
-                avg_winner=float(an.AvgWinner().calculate_from_realized_pnls(npos.realized.to_numpy())), sharpe=float(an.SharpeRatio(365).calculate_from_returns(rd)),
-                sortino=float(an.SortinoRatio(365).calculate_from_returns(rd)), maxdd=float(abs(an.MaxDrawdown().calculate_from_returns(rd))), vol=float(an.ReturnsVolatility(365).calculate_from_returns(rd)))
-    n_naut = len(npos)
-except Exception as e:  # noqa: BLE001
-    ours, n_naut = None, None
-    print("Nautilus çapraz kontrolü atlandı:", repr(e)[:120])
 
 # ---------------------------------------------------------------- grafikler
 figs = {}
@@ -929,6 +916,113 @@ for n_, w_ in zip(NAMES, meta["weights"]):
         EXP += [img(f"x_{n_}_b")]
     else:
         EXP += [Paragraph(f"Bu bileşimde sürücü olduğu trade sayısı {len(dt_)}; trade bazlı grafik için yetersiz (≥ 10 gerekir).", SM)]
+# ---------------------------------------------------------------- güven aralıkları, Monte Carlo, dönemsel tablolar, funding (sabit tohum 0: deterministik)
+RNG = np.random.default_rng(0)
+B_ = 2000
+r_arr = ret.dropna().to_numpy()
+n_r, L_ = len(r_arr), 20  # dairesel blok bootstrap, blok = 20 gün
+
+
+def block_boot(x):
+    nb = int(np.ceil(len(x) / L_))
+    st_ = RNG.integers(0, len(x), (B_, nb))
+    idx = ((st_[:, :, None] + np.arange(L_)[None, None, :]).reshape(B_, -1)[:, : len(x)]) % len(x)
+    return x[idx]
+
+
+bs = block_boot(r_arr)
+sh_b = bs.mean(1) / bs.std(1, ddof=1) * np.sqrt(365)
+eq_b = np.cumprod(1 + bs, axis=1)
+pk_b = np.maximum.accumulate(eq_b, axis=1)
+dd_b = ((pk_b - eq_b) / pk_b).max(1)
+cagr_b = eq_b[:, -1] ** (365 / n_r) - 1
+nets = tr.net.to_numpy()
+ix_ = RNG.integers(0, len(nets), (B_, len(nets)))
+S_ = nets[ix_]
+exp_b, win_b = S_.mean(1), (S_ > 0).mean(1)
+pf_b = np.where(S_ > 0, S_, 0).sum(1) / -np.where(S_ < 0, S_, 0).sum(1)
+q = lambda a, p_: float(np.percentile(a, p_))  # noqa: E731
+ci_rows = [["Ölçü", "Nokta tahmin", "%2,5", "%97,5", "Yöntem"],
+           ["Sharpe", f"{sharpe:.2f}", f"{q(sh_b, 2.5):.2f}", f"{q(sh_b, 97.5):.2f}", f"blok bootstrap (blok {L_} gün, B = {B_})"],
+           ["Yıllık getiri (CAGR)", pct(cagr), pct(q(cagr_b, 2.5)), pct(q(cagr_b, 97.5)), "aynı"],
+           ["Maks drawdown", pct(dd_pct.max()), pct(q(dd_b, 2.5)), pct(q(dd_b, 97.5)), "aynı (bileşik equity, tepeye göre)"],
+           ["Trade başına beklenti (USDT)", f"{nets.mean():.3f}", f"{q(exp_b, 2.5):.3f}", f"{q(exp_b, 97.5):.3f}", f"trade bootstrap (iid, B = {B_})"],
+           ["Kazanma oranı", pct((nets > 0).mean()), pct(q(win_b, 2.5)), pct(q(win_b, 97.5)), "aynı"],
+           ["Profit factor", f"{pf:.2f}", f"{q(pf_b, 2.5):.2f}", f"{q(pf_b, 97.5):.2f}", "aynı"]]
+# trade sırası Monte Carlo: realize edilmiş trade net'leri (kapanış sırasıyla) karıştırılır
+ord_ = tr.sort_values("closed").net.to_numpy()
+eq_a = CAP + np.cumsum(ord_)
+act_dd = float(((np.maximum.accumulate(np.r_[CAP, eq_a])[1:] - eq_a) / np.maximum.accumulate(np.r_[CAP, eq_a])[1:]).max())
+perm = np.array([RNG.permutation(ord_) for _ in range(B_)])
+eq_m = CAP + np.cumsum(perm, axis=1)
+pk_m = np.maximum.accumulate(np.concatenate([np.full((B_, 1), CAP), eq_m], axis=1), axis=1)[:, 1:]
+dd_m = ((pk_m - eq_m) / pk_m).max(1)
+fig, ax = plt.subplots(1, 3, figsize=(9.6, 2.9))
+ax[0].hist(sh_b, bins=40, color=BLUE)
+for v_ in (q(sh_b, 2.5), q(sh_b, 97.5)):
+    ax[0].axvline(v_, color=ORANGE, lw=1.2)
+ax[0].axvline(sharpe, color=INK2, lw=1.2, ls="--")
+ax[0].set_title("Sharpe bootstrap (%95 aralık turuncu)", fontsize=8)
+ax[1].hist(100 * dd_b, bins=40, color=BLUE)
+ax[1].axvline(100 * dd_pct.max(), color=INK2, lw=1.2, ls="--")
+ax[1].set_title("Maks DD bootstrap (%; kesikli = gerçek)", fontsize=8)
+ax[2].hist(100 * dd_m, bins=40, color=BLUE)
+ax[2].axvline(100 * act_dd, color=INK2, lw=1.2, ls="--")
+ax[2].set_title("Trade sırası MC maks DD (%; kesikli = gerçek sıra)", fontsize=8)
+figs["boot"] = save(fig, "40_boot")
+mc_rows = [["Trade sırası Monte Carlo (B = 2000)", "Maks DD (%)", "Maks DD (USDT)", "Final equity (USDT)"],
+           ["Gerçek sıra (realize trade'ler)", pct(act_dd), "-", f"{eq_a[-1]:.1f}"],
+           ["MC medyan", pct(q(dd_m, 50)), "-", f"{eq_a[-1]:.1f} (sıra bağımsız)"],
+           ["MC %5 - %95", f"{pct(q(dd_m, 5))} - {pct(q(dd_m, 95))}", "-", "-"],
+           ["MC %99", pct(q(dd_m, 99)), "-", "-"],
+           ["Gerçek DD'nin MC dağılımındaki yüzdelik konumu", f"%{100 * (dd_m < act_dd).mean():.0f}", "-", "-"]]
+E_ += [PageBreak(), Paragraph("10b. Güven aralıkları ve trade sırası Monte Carlo", H1), img("boot"), Spacer(1, 4), tbl(ci_rows, [50 * mm, 28 * mm, 22 * mm, 22 * mm, 58 * mm]), Spacer(1, 5), tbl(mc_rows, [76 * mm, 34 * mm, 34 * mm, 36 * mm]),
+       Spacer(1, 3), Paragraph("Bootstrap örneklem-içi belirsizliği ölçer (tek tarihsel yol); gelecekte aynı dağılımın süreceğini göstermez. Blok bootstrap günlük getirideki kısa vadeli bağımlılığı korur, trade bootstrap iid varsayar. "
+                              "Trade sırası MC, realize PnL toplamını sabit tutup yalnızca sırayı değiştirir: drawdown yolunun sıraya duyarlılığını gösterir. Tohum sabit (0), aynı veriyle aynı sonuç.", SM)]
+# aylık USDT tablosu (yıl x ay) + haftalık en iyi/en kötü
+mt = month.to_frame("v")
+mt["y"], mt["m"] = mt.index.year, mt.index.month
+pv = mt.pivot(index="y", columns="m", values="v")
+rows = [["Yıl"] + ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"] + ["Yıl"]]
+for y_ in pv.index:
+    rows.append([y_] + [f"{pv.loc[y_, m_]:.1f}" if m_ in pv.columns and pd.notna(pv.loc[y_, m_]) else "" for m_ in range(1, 13)] + [f"{pv.loc[y_].sum():.1f}"])
+wk_t = week.nsmallest(5), week.nlargest(5)
+E_ += [Paragraph("Aylık net PnL (USDT)", H2), tbl(rows, [13 * mm] + [12 * mm] * 12 + [15 * mm]), Spacer(1, 4),
+       tbl([["En kötü 5 hafta", "USDT", "En iyi 5 hafta", "USDT"]] + [[f"{a_:%Y-%m-%d}", f"{x_:.1f}", f"{b_:%Y-%m-%d}", f"{y_:.1f}"] for (a_, x_), (b_, y_) in zip(wk_t[0].items(), wk_t[1].items())], [40 * mm, 30 * mm, 40 * mm, 30 * mm])]
+# kayan trade metrikleri (trade sırasına göre, pencere 100)
+ts_ = tr.sort_values("closed").reset_index(drop=True)
+fig, ax = plt.subplots(1, 2, figsize=(9.4, 2.6))
+ax[0].plot(ts_.closed, (ts_.net > 0).rolling(100).mean() * 100, color=BLUE, lw=1.2)
+ax[0].set_title("Kayan kazanma oranı (son 100 trade, %)", fontsize=8.5)
+ax[1].plot(ts_.closed, ts_.net.rolling(100).mean(), color=BLUE, lw=1.2)
+ax[1].axhline(0, color=AXIS, lw=0.8)
+ax[1].set_title("Kayan beklenti (son 100 trade, USDT/trade)", fontsize=8.5)
+figs["rolltr"] = save(fig, "41_rolltr")
+E_ += [Spacer(1, 4), img("rolltr")]
+# funding: long/short pozisyondan, yıl bazında
+if hourly is not None:
+    f_long = sum(H_[s_].funding.where(H_[s_].pos > 1e-12, 0.0) for s_ in SYMS)
+    f_short = sum(H_[s_].funding.where(H_[s_].pos < -1e-12, 0.0) for s_ in SYMS)
+    fy = pd.DataFrame({"Long pozisyondan": f_long.resample("YS").sum(), "Short pozisyondan": f_short.resample("YS").sum()})
+    fy.index = fy.index.year
+    fig, ax = plt.subplots(1, 2, figsize=(9.4, 2.7), gridspec_kw=dict(width_ratios=[1.2, 1.6]))
+    fy.plot.bar(ax=ax[0], color=[BLUE, ORANGE], width=0.7, edgecolor=SURF, linewidth=2)
+    ax[0].axhline(0, color=AXIS, lw=0.8)
+    ax[0].set_title("Funding PnL, pozisyon yönüne göre (USDT)", fontsize=8.5)
+    ax[0].grid(axis="x", visible=False)
+    ax[0].set_xlabel("")
+    ax[0].legend(fontsize=7)
+    ax[1].plot(f_long.cumsum().resample("1D").last().index, f_long.cumsum().resample("1D").last(), color=BLUE, lw=1.2, label="Long")
+    ax[1].plot(f_short.cumsum().resample("1D").last().index, f_short.cumsum().resample("1D").last(), color=ORANGE, lw=1.2, label="Short")
+    ax[1].plot((f_long + f_short).cumsum().resample("1D").last().index, (f_long + f_short).cumsum().resample("1D").last(), color=INK2, lw=1.2, ls="--", label="Toplam")
+    ax[1].axhline(0, color=AXIS, lw=0.8)
+    ax[1].legend(fontsize=7)
+    ax[1].set_title("Kümülatif funding PnL (USDT)", fontsize=8.5)
+    figs["fund"] = save(fig, "42_fund")
+    E_ += [Paragraph("10c. Funding: long ve short pozisyondan", H1), img("fund"),
+           Paragraph(f"Toplam funding {f_long.sum() + f_short.sum():+.1f} USDT: long pozisyondan {f_long.sum():+.1f}, short pozisyondan {f_short.sum():+.1f}. Pozitif funding'de long öder, short alır; işaret funding oranı ve pozisyon yönünün çarpımıdır (saatlik bileşenlerden yeniden kurulmuştur, hakem funding toplamıyla uyumu: "
+                     f"{S['funding']:+.1f} USDT).", SM)]
+
 E_ += [CondPageBreak(90 * mm), Paragraph("11. Nautilus çapraz kontrolü ve veri bütünlüğü", H1)]
 if naut is not None:
     rows = [["Ölçü", "Bu rapor (pandas)", "Nautilus hesaplayıcısı", "Not"],
@@ -939,7 +1033,7 @@ if naut is not None:
     E_ += [tbl(rows, [52 * mm, 38 * mm, 42 * mm, 46 * mm]), Spacer(1, 3),
            Paragraph("Nautilus'un kendi PnL'i funding içermez (funding hakemde Nautilus dışında muhasebeleşir), bu yüzden kazanma/beklenti karşılaştırması fiyat−komisyon tabanında yapıldı. Sharpe/Sortino/DD/oynaklık aynı günlük getiri serisi üzerinde iki bağımsız uygulamayla hesaplandı.", SM)]
 else:
-    E_ += [Paragraph("Nautilus çapraz kontrolü bu ortamda koşulamadı (nautilus_trader yok).", B)]
+    E_ += [Paragraph("Tarihsel Nautilus çıktıları arşiv referansıdır. Bu rapor yalnız Numba hakem çıktıları ve bağımsız muhasebe kontrollerini kullanır.", B)]
 E_ += [Spacer(1, 4), tbl([["Kontrol", "Sonuç"], ["Saatlik PnL bileşimi vs hakem net'i (tek hesap yolu)", f"fark {AN['recon']['net_diff']:.2e} USDT"], ["Pozisyon dönemleri net toplamı vs hakem net'i (aynı yol)", f"fark {tr.net.sum() - S['net_pnl']:.2e} USDT"],
                       ["Reddedilen emir / likidasyon / eksik funding", f"{meta['rejected']} / {int(S['n_liq'])} / {int(S['funding_missed'])}"],
                       ["Nedensellik denetimi", f"ev1_plus_new kitabı için audit.check_causal_book koşuldu (kötü kesim {len(AN['causal']['check_causal_book_bad'])}) + {AN['causal']['prefix']['real']['n_cuts']} kesim gününde önek-değişmezlik (fark 0); ayrıntı Bölüm I.1. evaluate_book (defter) bu rapor için koşulmadı."]], [70 * mm, 100 * mm])]

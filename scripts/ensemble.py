@@ -64,7 +64,7 @@ def utc(w):
 
 def keep(res):
     s = res["summary"]
-    return {k: float(s[k]) for k in ("net_pnl", "gross_pnl", "fee", "slippage", "funding", "exit_cost", "liq_fee", "n_fills", "n_liq", "n_rejected", "funding_missed")}
+    return {k: float(s[k]) for k in ("net_pnl", "gross_pnl", "fee", "slippage", "funding", "exit_cost", "liq_fee", "n_fills", "n_liq", "n_rejected", "n_engine_unfilled", "funding_missed")}
 
 
 def daily(pnl):
@@ -237,5 +237,10 @@ if __name__ == "__main__":
         else:
             hi = a.b if a.null_to is None else a.null_to
             res = dict(ex.map(null_draw, range(a.null_from, hi), chunksize=1))
-            Path(a.out, f"null_{a.null_from}_{hi}.json").write_text(json.dumps(res))
+            shard = Path(a.out, f"null_{a.null_from}_{hi}.json")
+            shard.write_text(json.dumps(res, allow_nan=False))
+            import null_merge as NM
+            from kepler import receipt
+            identity = receipt.make(dict(script="ensemble", params=asdict(P0), spec=spec().__dict__, window=MAIN), data_of(EXT), cut=utc(MAIN), extra_files=[__file__])
+            NM.publish_identity(shard, identity["economic_id"])
     print(f"{a.stage} bitti {time.time() - t0:.0f}s", flush=True)

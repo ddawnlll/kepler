@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ensemble as E  # noqa: E402
 
 from kepler import ensemble as en  # noqa: E402
-from kepler import evaluate as ev  # noqa: E402
+from kepler import evaluate as ev, ledger, receipt, report  # noqa: E402
 
 REF = Path(__file__).resolve().parents[1] / "reports" / "trade_audit_data"
 
@@ -28,8 +28,10 @@ def compare(name, res, t):
     ref_f = ref_f.sort_values("ts", kind="stable").reset_index(drop=True)
     out = dict(preset=name, n_new=len(f), n_ref=len(ref_f), seconds=t)
     key = ["sym", "ts", "side"]
+    for df in (f, ref_f):
+        df["fill_ordinal"] = df.groupby(key, sort=False).cumcount()  # prevent many-to-many duplicate matches
     f["qty"], ref_f["qty"] = f.qty.round(8), ref_f.qty.round(8)  # CSV gidiş-dönüşünde 1 ulp
-    m = f.merge(ref_f, on=key + ["qty"], how="outer", suffixes=("_new", "_ref"), indicator=True)
+    m = f.merge(ref_f, on=key + ["qty", "fill_ordinal"], how="outer", suffixes=("_new", "_ref"), indicator=True, validate="one_to_one")
     out["rows_matched"] = int((m._merge == "both").sum())
     out["rows_only_new"], out["rows_only_ref"] = int((m._merge == "left_only").sum()), int((m._merge == "right_only").sum())
     b = m[m._merge == "both"]
@@ -41,6 +43,12 @@ def compare(name, res, t):
                         cash_new=(-np.where(b2.side == "BUY", 1, -1) * b2.qty * b2.px_new - b2.commission_new).cumsum().to_numpy(), cash_ref=(-np.where(b2.side == "BUY", 1, -1) * b2.qty * b2.px_ref - b2.commission_ref).cumsum().to_numpy())
     out["summary_diff"] = {k: float(s[k]) - float(r[k]) for k in r if k in s and isinstance(r[k], (int, float))}
     out["net_new"], out["net_ref"] = float(s["net_pnl"]), float(r["net_pnl"])
+    count_keys = {k for k in out["summary_diff"] if k.startswith("n_") or k.startswith("funding_m")}
+    out["economic_pass"] = bool(len(f) == len(ref_f) == out["rows_matched"] and not out["rows_only_new"] and not out["rows_only_ref"]
+                                and (out["max_abs_px_diff"] or 0) <= 1e-9 and (out["max_abs_comm_diff"] or 0) <= 1e-8
+                                and all(abs(v) <= (0 if k in count_keys else 1e-6) for k, v in out["summary_diff"].items())
+                                and ledger.invalid_reason(s) is None)
+    out["reference_capital"] = meta["cap"]
     return out
 
 
@@ -64,16 +72,23 @@ def main():
         book = en.make_book(a.cap, p)(kls)
         t_book = time.perf_counter() - t1
         t2 = time.perf_counter()
-        res, _, _ = ev.run_book(book, data, sp, *E.utc(E.MAIN))
+        res, win, _ = ev.run_book(book, data, sp, *E.utc(E.MAIN))
         t_ref = time.perf_counter() - t2
         t3 = time.perf_counter()
         res2, _, _ = ev.run_book(book, data, sp, *E.utc(E.MAIN))  # ısınmış ikinci koşu
         t_warm = time.perf_counter() - t3
         c = compare(name, res, t_ref)
+        c["reconcile"] = report.reconcile(win, res, sp)
+        c["cold_warm_parity"] = res["fills"].equals(res2["fills"]) and res["summary"] == res2["summary"]
+        c["receipt"] = receipt.make(dict(preset=name, cap=a.cap, spec=sp.__dict__, window=E.MAIN), win, cut=E.utc(E.MAIN), extra_files=[__file__, E.__file__])
+        c["economic_pass"] &= c["reconcile"]["ok"] and c["cold_warm_parity"] and c["reference_capital"] == a.cap
+        c["within_60s"] = t_load + t_book + t_warm < 60
         c.update(t_load=t_load, t_book=t_book, t_first=t_ref, t_warm=t_warm, symbols=len(data), bars=int(sum(len(k) for k in kls.values())))
         results.append(c)
         print(json.dumps(c, indent=1, default=str), flush=True)
     Path(a.out, "validate.json").write_text(json.dumps(results, indent=1, default=str))
+    if not all(r["economic_pass"] for r in results):
+        raise SystemExit("FAILED: archived fill/summary parity or reconciliation; inspect validate.json")
 
 
 if __name__ == "__main__":

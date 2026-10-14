@@ -55,7 +55,7 @@ Değişmez kurallar:
 - **Hakem hattı sinyalden habersizdir.** `referee audit ledger stats robust` uzman, ensemble, sinyal, durum
   ve risk koduna bakmaz.
 - `kepler/` dışarıdaki `scripts`, `factory`, `tools` koduna bağlanmaz (akış tek yönlü).
-- **Boyut bütçesi:** dosya başına 300, `kepler/` toplam 3000 satır. Aşılırsa önce var olan sadeleşir.
+- **Boyut bütçesi:** dosya başına 300, `kepler/` toplam 3500 satır (2026-10-15 kullanıcı açık yetkilendirmesi: PR #53 muhasebe, receipts ve Numba entegrasyonu; diğer güvenlik ve katman kuralları korunur). Aşılırsa önce var olan sadeleşir.
 - **Belge izin listesi:** yeni `.md` açılmaz; kalıcı belge türleri MISSION, ARCHITECTURE, BACKTEST, TASKS (+ `docs/factory.md` dondurulmuş, `reports/` deney çıktıları). GitHub katkı akışı için `.github/CONTRIBUTING.md`, `.github/SECURITY.md` ve `.github/pull_request_template.md` dosya bazında izinlidir; issue formları YAML'dir. İzin listesinin tek kaynağı `tests/test_architecture.py`'dir.
 - Yeni modül = `LAYERS`a satır; test bunu zorlar. Kural değişince bu bölüm aynı commit'te güncellenir.
 
@@ -111,7 +111,7 @@ sembole boyut verir. Kaldıraç girdi değil, bu boyutun sonucudur.
 | `arch` (SPA / StepM / MCS), `skfolio` (CPCV) | Denetim katmanı: defter, null, mühür, DSR |
 | LLM sağlayıcı (H4'te) | Yapıştırma kodu: funding, hedef→emir adaptörü; rapor; ince ajan döngüsü |
 
-Kural: yazdığımız kod küçük kalır (dosya başına 300, `kepler/` toplamı 3000 satır; testle zorlanır).
+Kural: yazdığımız kod küçük kalır (dosya başına 300, `kepler/` toplamı 3500 satır; testle zorlanır).
 Bir parça platformda yoksa yazmadan önce kanıtlı engel gösterilir (`MISSION.md` kural 4, 7).
 
 ## Operasyon katmanı (7/24, telefondan yönetim)

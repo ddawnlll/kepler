@@ -133,3 +133,29 @@ def test_stable_spool_identity_and_single_writer(tmp_path, monkeypatch):
     payload_file.write_text(json.dumps(payload))
     with pytest.raises(ValueError):
         ingest(spool, target, expected_code="c", expected_data="d", producer_ledger=payload["ledger"])
+
+
+def test_rich_receipt_spool_roundtrip_keeps_invalid_attempt_and_provenance(tmp_path, monkeypatch):
+    """New attempt metadata survives the single writer; replay is idempotent."""
+    from factory.ledger_writer import ingest
+
+    spool = tmp_path / "spool"
+    target = tmp_path / "central.jsonl"
+    receipt = {"economic_id": "econ-one", "run_id": "job-one", "attempt": 1}
+    monkeypatch.setenv("KEPLER_LEDGER_SPOOL", str(spool))
+    monkeypatch.setenv("KEPLER_RUN_ID", "job-one")
+    produced = ledger.record_attempt(
+        "/data/run/attempt.jsonl", "invalid", "h", {"audit_causal": True},
+        "source-code", "source-data", reason="rejected",
+        result={"n_rejected": 1}, receipt=receipt)
+    assert produced["trial"] is None and produced["invalid_result"]["n_rejected"] == 1
+    monkeypatch.delenv("KEPLER_LEDGER_SPOOL")
+    for _ in range(2):
+        ingest(spool, target, expected_code="source-code", expected_data="source-data",
+               producer_ledger="/data/run/attempt.jsonl")
+    assert ledger.trial_count(target) == 1
+    saved = json.loads(target.read_text().splitlines()[0])
+    assert saved["status"] == "invalid"
+    assert saved["result"] is None
+    assert saved["invalid_result"]["n_rejected"] == 1
+    assert saved["receipt"]["economic_id"] == "econ-one"

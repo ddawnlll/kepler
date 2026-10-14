@@ -1,5 +1,7 @@
 # Sinyal teşhisi: 9 uzman gerçekte ne biliyor?
 
+> **Kapsam etiketi (#14):** bu sonuç YEREL/KEŞİF kapsamlıdır: yalnız bu kartın/ölçümün kendi ailesini kapsar, tüm seçim geçmişini (ledger dışı keşif, post-hoc seçimler) ve karşılaştırılabilir hipotez evrenini temsil etmez; ham satır sayısı bağımsız hipotez sayısı değildir. NO_EDGE ve negatif sonuçlar korunur, bu etiket onları değiştirmez. Politika: BACKTEST.md §9 'Deneme ailesi'.
+
 Bu dosya `scripts/signal_diag_report.py` ile üretildi (rakamlar `reports/signal_diagnostics_data/*.json`'dan). Ön kayıtlar: `reports/preregistration/signal_diagnostics.md`, `neutral_zone_hysteresis.md`, `carry_rebuild.md` (hepsi ilgili koşudan önceki commit'lerde). Tüm sonuçlar görülmüş veride (2020-04 → 2026-03) **örneklem içi**; mühürlü dönem (≥ 2026-04-01) yüklenmedi; ensemble ağırlığı, sizing, vol hedefi ve parametre araması yapılmadı.
 
 ## Özet

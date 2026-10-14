@@ -1,0 +1,8 @@
+........................................                                 [100%]
+=============================== warnings summary ===============================
+tests/test_settlement_clock.py::test_gap_in_funded_symbol_cannot_delay_other_symbols_equity_sizing
+  /workspace/scratch/kepler-completion/repo/kepler/report.py:47: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+    return pd.concat(parts, axis=1).fillna(0.0).sum(axis=1).sort_index()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+40 passed, 1 warning in 12.91s

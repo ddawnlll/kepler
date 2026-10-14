@@ -1,0 +1,255 @@
+"""#18: veri QC bulgularının strateji sonuçlarına (carry_xs C1 geliştirme koşusu) ekonomik etkisi. Veriyi TEMİZLEMEZ; ölçer. Geliştirme verisi; mühürlü dönem yok.
+  modal run modal_app.py --cmd "python scripts/qc_impact.py --out /data/qc_impact"
+BAYRAKLAR (kepler/qc.py eşikleriyle aynı, bayrak = kanıt değil): gap (eksik saatlik bar sonrası ilk bar), mark_fallback (funding anında mark barı yok: kline kapanışına düşüldü), mark_last_div (|mark/last−1| > MARK_DIV),
+fund_extreme (|oran| > FUND_MAX), fund_interval (aralık ≠ 8h): aralık 1/2/4/8 ve olay aralığı bildirilenle tutarlıysa 'legit_interval' (anomali DEĞİL), tutarsızsa UNKNOWN; jump (|saatlik getiri| > JUMP).
+Meşru ekstrem vs hata: çözülemeyen alan UNKNOWN kalır (gerçek/hata ayrımı için bağımsız kaynak yok; hiçbir değer 'hatalı' ilan edilmez).
+KESİŞİM: gerçek pozisyon (fill'lerden saatlik), emir (fill) ve settlement olaylarıyla; sayı değil ETKİ: etkilenen notional, fiyat/funding/maliyet/net katkısı, risk tepkisi (stop/likidasyon fill'leri).
+ÖNCEDEN KAYITLI REPLAY POLİTİKALARI (koşudan önce, Sharpe artırmak için seçilmedi; hepsi aynı muhasebe yolunda `ev.run_book` + `report.reconcile`):
+  P0 orijinal; P1 'funding_exclude_flagged': bayraklı (fund_extreme ∪ mark_fallback ∪ mark_last_div) settlement olaylarında funding 0 (muhafazakâr DEĞİL: gelir de çıkar; yalnız duyarlılık);
+  P2 'funding_adverse_flagged': bayraklı olaylarda oran işareti pozisyon aleyhine çevrilmiş mutlak oran (|oran| x pozisyon ödemesi: ödeme muhafazakâr stres);
+  P3 'mark_last_worst' tarihsel ad: yüksek mark duyarlılığıdır, short funding gelirini de artırabilir; bütün yönler için en kötü sonuç garantisi yok.
+Point-in-time: üyelik ve veri kesimi korunur (aynı `mem`/pencere); bayrak her olay için YALNIZ o olayın kendi verisinden (oran, o barın mark/last'ı, bar varlığı) hesaplanır: gelecekteki bilgiyle sembol/bar seçimi yok;
+qc.divergence_cutoff (24 ardışık bar, gelecekten bakar) sembol dışlaması olarak UYGULANMAZ. Eski kart sonuçları (NO_EDGE) ve eski veri kimliği korunur; replay'ler ayrı receipt alır."""
+import argparse
+import json
+import math
+import sys
+import time
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from kepler import qc, receipt, report
+
+HOUR = pd.Timedelta("1h")
+HOUR_NS = 3_600_000_000_000
+POLICIES = ("P0_original", "P1_funding_exclude_flagged", "P2_funding_adverse_flagged", "P3_mark_last_worst")
+
+
+
+def schedule(kl: pd.DataFrame, mark: pd.DataFrame | None, funding: pd.DataFrame | None) -> list[tuple]:
+    if funding is None or not len(funding):
+        return []
+    ns = lambda ix: [int(x) for x in pd.DatetimeIndex(ix).as_unit("ns").asi8]  # noqa: E731
+    lo, hi = ns(kl.index)[0] + HOUR_NS, ns(kl.index)[-1] + HOUR_NS
+    mk = (mark if mark is not None else kl).close.astype(float)
+    by_close = dict(zip([t + HOUR_NS for t in ns(mk.index)], mk))  # T'de biten barın mark kapanışı
+    out = []
+    for ts, rate in zip(ns(pd.DatetimeIndex(funding.index).round("1min")), funding["last_funding_rate"].astype(float)):
+        if not lo <= ts <= hi:
+            continue
+        c, fb = by_close.get(ts, math.nan), 0
+        if math.isnan(c) and mark is not None:  # mark barı eksik (gerçek veri: BTC'de 3 boşluk): kline kapanışına düş, özette say
+            c = float(kl.close.get(pd.Timestamp(ts, unit="ns", tz="UTC") - pd.Timedelta("1h"), math.nan))
+            fb = int(not math.isnan(c))
+        out.append((ts, rate, c, fb))
+    return sorted(out, key=lambda e: e[0])
+
+
+def flags(kl: pd.DataFrame, mark: pd.DataFrame | None, funding: pd.DataFrame | None) -> dict:
+    """Sembol başına bayraklar: bar bayrakları (ts indeksi) ve funding olay bayrakları (T)."""
+    full = pd.date_range(kl.index[0], kl.index[-1], freq="1h")
+    miss = full.difference(kl.index)
+    after = pd.DatetimeIndex(sorted({kl.index[kl.index.searchsorted(t)] for t in miss if kl.index.searchsorted(t) < len(kl)}))
+    ret = kl.close.pct_change().abs()
+    out = dict(gap=after, jump=ret.index[ret > qc.JUMP])
+    if mark is not None:
+        m = mark.close.reindex(kl.index)
+        out["mark_last_div"] = kl.index[((m / kl.close - 1).abs() > qc.MARK_DIV).to_numpy()]
+    ev = pd.DataFrame(columns=["rate", "fund_extreme", "mark_fallback", "interval", "interval_consistent"])
+    if funding is not None and len(funding):
+        sched = schedule(kl, mark, funding)
+        T = pd.to_datetime([e[0] for e in sched], unit="ns", utc=True)
+        f = funding.copy()
+        f.index = f.index.round("1min")
+        iv = f["funding_interval_hours"].reindex(T).to_numpy() if "funding_interval_hours" in f else np.full(len(T), np.nan)
+        gap_h = pd.Series(T, index=T).diff().dt.total_seconds().to_numpy() / 3600
+        ev = pd.DataFrame(dict(rate=[e[1] for e in sched], fund_extreme=[abs(e[1]) > qc.FUND_MAX for e in sched], mark_fallback=[bool(e[3]) for e in sched], interval=iv,
+                               interval_consistent=np.isclose(gap_h, iv, atol=0.02) | np.isnan(gap_h)), index=T)
+    out["fund_events"] = ev
+    return out
+
+
+def positions(fills: pd.DataFrame, sym: str, index: pd.DatetimeIndex) -> pd.Series:
+    """Bar sonu pozisyon (hourly_pnl ile aynı kural: gövde fill'i kendi barında)."""
+    f = fills[fills.sym == sym]
+    bar = pd.DatetimeIndex(pd.to_datetime(f.ts, unit="ns", utc=True)).floor("1h")
+    sg = pd.Series(np.where(f.side == "BUY", f.qty, -f.qty), index=bar)
+    return sg.groupby(level=0).sum().reindex(index, fill_value=0.0).cumsum()
+
+
+def settlement_positions(fills: pd.DataFrame, sym: str, times: pd.DatetimeIndex) -> np.ndarray:
+    """Actual held quantity immediately before T; funding liquidations at T are excluded."""
+    f = fills[fills.sym == sym].sort_values("ts", kind="stable")
+    q = np.r_[0., np.cumsum(np.where(f.side == "BUY", f.qty, -f.qty))]
+    j = np.searchsorted(f.ts.to_numpy(), times.as_unit("ns").asi8, side="left")
+    return q[j]
+
+
+def impact(data: dict, res: dict, spec) -> dict:
+    """Bayrak türü başına gerçek etki. Fiyat bileşeni: bayraklı barın PnL'i (saatlik fiyat yolu, funding/maliyet hariç); funding: bayraklı settlement tutarı (hakemle aynı formül); maliyet: o bardaki fill komisyonu."""
+    z = spec.__class__(**{**spec.__dict__, "fee_rt_bps": 0.0, "slip_rt_bps": 0.0})
+    rows: dict[str, dict] = {}
+    tot = dict(price=0.0, funding=0.0)
+    unknown_interval = 0
+    for s, d in data.items():
+        kl, mark, fund = d["kl"], d.get("mark"), d.get("funding")
+        fl = flags(kl, mark, fund)
+        f = res["fills"][res["fills"].sym == s]
+        pos = positions(res["fills"], s, kl.index)
+        zf = f.assign(commission=0.0, liq=False)
+        price = report.hourly_pnl(kl, mark, None, zf, z)
+        cost = pd.Series(0.0, index=kl.index)
+        fb = pd.DatetimeIndex(pd.to_datetime(f.ts, unit="ns", utc=True)).floor("1h")
+        cost = pd.Series(f.commission.to_numpy(), index=fb).groupby(level=0).sum().reindex(kl.index, fill_value=0.0)
+        risk = pd.Series((f.liq | f.stop).to_numpy().astype(int), index=fb).groupby(level=0).sum().reindex(kl.index, fill_value=0)
+        tot["price"] += float(price.sum())
+        for kind in ("gap", "jump", "mark_last_div"):
+            ix = fl.get(kind, pd.DatetimeIndex([]))
+            r = rows.setdefault(kind, dict(n_flags=0, n_with_position=0, notional_sum=0.0, notional_max=0.0, price=0.0, funding=0.0, cost=0.0, n_risk_fills=0))
+            r["n_flags"] += len(ix)
+            held = pos.reindex(ix).abs() > 0
+            r["n_with_position"] += int(held.sum())
+            nt = (pos.reindex(ix).abs() * kl.close.reindex(ix))[held]
+            r["notional_sum"] += float(nt.sum())
+            r["notional_max"] = max(r["notional_max"], float(nt.max()) if len(nt) else 0.0)
+            r["price"] += float(price.reindex(ix).sum())
+            r["cost"] += float(cost.reindex(ix).sum())
+            r["n_risk_fills"] += int(risk.reindex(ix).sum())
+        ev = fl["fund_events"]
+        if len(ev):  # vektörel: T anında pozisyon (boşlukta sonraki barın karar öncesi pozisyonu), mark kapanışı (yoksa kline), tutar = -pos x mark x oran
+            T = ev.index
+            b = T - HOUR
+            p_ = settlement_positions(res["fills"], s, T)
+            c = (mark.close if mark is not None else kl.close).reindex(b).to_numpy()
+            c = np.where(np.isnan(c), kl.close.reindex(b).to_numpy(), c)
+            amt = np.where(np.isnan(c), 0.0, -p_ * np.nan_to_num(c) * ev.rate.to_numpy())
+            tot["funding"] += float(amt.sum())
+            ic = ev.interval_consistent.to_numpy().astype(bool)
+            iv = ev.interval.to_numpy()
+            masks = dict(fund_extreme=ev.fund_extreme.to_numpy().astype(bool), mark_fallback=ev.mark_fallback.to_numpy().astype(bool), fund_interval_inconsistent=~ic,
+                         fund_interval_legit_nonstd=ic & ~np.isnan(iv) & (iv != 8))
+            unknown_interval += int((~ic).sum())
+            for k, m in masks.items():
+                if not m.any():
+                    continue
+                r = rows.setdefault(k, dict(n_flags=0, n_with_position=0, notional_sum=0.0, notional_max=0.0, price=0.0, funding=0.0, cost=0.0, n_risk_fills=0))
+                held = m & (np.abs(p_) > 0)
+                nt = np.abs(p_[held]) * np.nan_to_num(c[held])
+                r["n_flags"] += int(m.sum())
+                r["n_with_position"] += int(held.sum())
+                r["notional_sum"] += float(nt.sum())
+                r["notional_max"] = max(r["notional_max"], float(nt.max()) if len(nt) else 0.0)
+                r["funding"] += float(amt[m].sum())
+    for r in rows.values():
+        r["net"] = r["price"] + r["funding"] - r["cost"]  # cost = o bardaki fill komisyonu (pozitif tutar)
+    return dict(kinds=rows, totals=tot, unknown_interval_events=unknown_interval)
+
+
+def apply_policy(data: dict, res0: dict | None, policy: str, targets: dict | None = None) -> dict:
+    """Politikaya göre funding/mark verisini dönüştürür (aynı sembol/pencere; point-in-time: olay başına yalnız kendi verisi)."""
+    if policy == "P0_original":
+        return data
+    out = {}
+    for s, d in data.items():
+        fund, mark, kl = d.get("funding"), d.get("mark"), d["kl"]
+        if fund is None or not len(fund):
+            out[s] = d
+            continue
+        fl = flags(kl, mark, fund)
+        ev = fl["fund_events"]
+        f = fund.copy()
+        f.index = f.index.round("1min")
+        bad_T = set(ev.index[ev.fund_extreme | ev.mark_fallback])
+        div = set(fl.get("mark_last_div", []))
+        if policy == "P1_funding_exclude_flagged":
+            bad_T |= {T for T in ev.index if (T - HOUR) in div}
+            f.loc[f.index.isin(bad_T), "last_funding_rate"] = 0.0
+            out[s] = dict(d, funding=f.set_axis(fund.index))
+        elif policy == "P2_funding_adverse_flagged":
+            bad_T |= {T for T in ev.index if (T - HOUR) in div}
+            # pozisyon yönü: orijinal fill'ler varsa onlardan, yoksa tutulan hedefin işaretinden (lot no-op'u yönü değiştirmez; tek koşu bütçesi için)
+            if res0 is None:
+                raise ValueError("P2 requires original actual fills; target sign is not actual exposure")
+            qty = dict(zip(f.index, settlement_positions(res0["fills"], s, pd.DatetimeIndex(f.index))))
+            for T in f.index[f.index.isin(bad_T)]:
+                p_ = float(qty[T])
+                if p_ != 0:  # pozisyon aleyhine: long öder (+oran), short öder (−oran)
+                    f.loc[T, "last_funding_rate"] = abs(f.loc[T, "last_funding_rate"]) * (1.0 if p_ > 0 else -1.0)
+            out[s] = dict(d, funding=f.set_axis(fund.index))
+        elif policy == "P3_mark_last_worst":
+            if mark is None:
+                out[s] = d
+                continue
+            m = mark.copy()
+            worse = np.maximum(m.close, kl.close.reindex(m.index))
+            m.loc[m.index.isin(div), "close"] = worse[m.index.isin(div)]
+            out[s] = dict(d, mark=m)
+        else:
+            raise ValueError(policy)
+    return out
+
+
+def stage_all(out_dir: str, part: str, system: str = "carry_xs"):
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import audit_fix as AF  # noqa: E402
+    import ensemble as E  # noqa: E402
+    import signal_diag as sd  # noqa: E402
+    import signal_phase2 as P2  # noqa: E402
+
+    from kepler import ensemble as en  # noqa: E402
+    from kepler import evaluate as ev  # noqa: E402
+    cap = P2.CAPR
+    E.D.clear()
+    if system == "carry_xs":
+        mem = sd.members(20)
+        syms = sorted(mem.sym.unique())
+        AF.load_dynamic(syms, cap=cap)
+        syms = [s for s in syms if s in E.D]
+        data, kls = E.data_of(syms), {s: E.D[s]["kl"] for s in syms}
+        out = P2.make_book(en.Params(names=("carry_xs",), weights=(1.0,)), mem, False, cap)(kls)
+    elif system == "EV1":
+        E.load(E.EXT, [("/data/pre2022", None, E.SPLIT), ("/data", E.SPLIT, None)], cap=cap)
+        syms, data = E.EXT, E.data_of(E.EXT)
+        kls = {s: d["kl"] for s, d in data.items()}
+        out = en.make_book(cap, en.Params(**en.PRESETS["ev1"]))(kls)
+    else:
+        raise ValueError(system)
+    sp = E.spec(cap=cap)
+    cut = E.utc(E.MAIN)
+    rcp = receipt.make(dict(system=system, policy="qc_impact_source", window=E.MAIN, spec=sp.__dict__), data, cut=cut, extra_files=[__file__])
+    files = {f"{r}:{s}": {k: (qc.sha256_file(p_) if (p_ := Path(r) / "tape" / kk / f"{s}.parquet").exists() else None) for k, kk in (("klines", "klines"), ("mark", "markPriceKlines"), ("funding", "fundingRate"))}
+             for s in syms for r, _, _ in AF.ROOTS if (Path(r) / "tape" / "klines" / f"{s}.parquet").exists()}  # eksik tür = None (kök başına)
+    t0 = time.time()
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    base = dict(system=system, receipt=dict(economic_id=rcp["economic_id"], data_manifest_id=rcp["data"]["id"], provenance=rcp["provenance"], cut=rcp["data"]["cut"], symbols=rcp["data"]["symbols"]), tape_file_sha256=files, window=E.MAIN)
+
+    def replay(pol, res0=None):
+        d = data if pol == "P0_original" else apply_policy(data, res0, pol, out)
+        r, w, _ = ev.run_book(out, d, sp, *cut)
+        rc = report.reconcile(w, r, sp)
+        replay_receipt = receipt.make(dict(system=system, policy=pol, window=E.MAIN, spec=sp.__dict__), w, cut=cut, extra_files=[__file__])
+        dn = report.book_pnl(w, r, sp).resample("1D").sum()
+        return r, w, dict(receipt=replay_receipt, net=float(r["summary"]["net_pnl"]), funding=float(r["summary"]["funding"]), sharpe=float((dn / cap).mean() / (dn / cap).std(ddof=1) * np.sqrt(365)), n_liq=int(r["summary"]["n_liq"]), recon_ok=bool(rc["ok"]),
+                          recon_diff=float(rc["diff"]), funding_mark_fallback=int(r["summary"]["funding_mark_fallback"]), funding_missed=int(r["summary"]["funding_missed"]), n_rejected=int(r["summary"]["n_rejected"]), seconds=time.time() - t0)
+    if part == "P0_original":  # etki tablosu + orijinal replay (yalnız bu parça bayrak x pozisyon kesişimini üretir)
+        r0, w0, rep = replay(part)
+        doc = dict(base, part=part, replay=rep, impact=impact(w0, r0, sp), original_net=float(r0["summary"]["net_pnl"]))
+    else:
+        res0 = replay("P0_original")[0] if part == "P2_funding_adverse_flagged" else None
+        doc = dict(base, part=part, replay=replay(part, res0)[2], direction_source="original actual fills before settlement")
+    doc["source_receipt"] = doc["receipt"]
+    doc["receipt"] = doc["replay"].pop("receipt")
+    doc["seconds"] = time.time() - t0
+    (Path(out_dir) / f"{part}.json").write_text(json.dumps(doc, indent=1, default=str, allow_nan=False))
+    print(part, "tamam", f"{doc['seconds']:.0f}s", json.dumps(doc["replay"]))
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", default="/data/qc_impact")
+    ap.add_argument("--part", required=True, choices=POLICIES)  # her politika ayrı konteynerde (modal run --detach); çıktı <out>/<part>.json
+    ap.add_argument("--system", choices=["EV1", "carry_xs"], default="carry_xs")
+    a = ap.parse_args()
+    stage_all(a.out, a.part, a.system)

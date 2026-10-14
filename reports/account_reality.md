@@ -76,3 +76,28 @@ Kod sayısı: hakem+yapıştırma 473; veri/QC/mühür 439, artış 0. Proje tes
 3 Ekim 2026 09:45 Europe/Istanbul penceresi kapandı; kontrol saati 2026-10-03 09:50:11 +0300. Hesap tamam; güncel MEXC kuralları/fee/funding resmi doğrulaması engelli ve doğrulanmadı olarak kapandı. Ağ politikası değişmedi; engelli istek tekrarlanmadı. Gerçek MEXC uygunluk/Zone Fade aday testi atlandı. Kapanış bütünlük ve erişim kanıtı: `audit_closure.json`. Mühür/anahtar/seal aracı ve üretim test suite'i **atlandı**; yeni strateji denemesi 0.
 
 **İş durumları:** A **kırmızı** (tamamlandı); B **kırmızı** (hesap tamam, güncel MEXC doğrulaması engelli); C **kırmızı** (tamamlandı, Volume flock/deneme envanteri bulguları).
+
+
+## 12 Ekim 2026: $500 uygulanabilirlik offline replay (#16)
+
+**Karar: FAIL (her iki sistem, her ücret senaryosu). Bu operasyonel uygunluk ölçümüdür, edge veya kârlılık kanıtı değildir.** Kod/ölçüt: `scripts/account500.py` (ölçütler koşudan ÖNCE docstring'e yazıldı); ham çıktı: `reports/account500_data/<sistem>__<senaryo>.json`. Canlı API emri, anahtar ve mühürlü dönem yok; pencere 2020-04 → 2026-04 (geliştirme verisi), sermaye $500, mevcut hakem + `min_notional=0` (borsada ayrı min-notional alanı yok; gerçek minimum `minVol` sözleşme), kör yukarı yuvarlama ve risk bütçesi büyütme yok.
+
+**Kural kaynağı ve tarihi:** MEXC `contract/detail` halka açık GET, `fetched_utc` = 2026-10-11T20:05:05Z, 1.088 USDT sözleşmesi (`reports/account500_data/mexc_rules.json`). Bu dosya 6 Ekim'deki 9 sembollük `trade_audit_data/fix/mexc_rules.json` ile 3 Ekim'deki "engelli" `account_reality.md` bulgusunun YERİNE geçer: 3 Ekim erişemedi, 6 Ekim ve bu koşu erişti; iki belge tarihleriyle okunmalıdır. Eşleme yalnız ad olarak `BASEUSDT` = `BASE_USDT`; 1000× vb. dönüşümler doğrulanmadı. Güncel kurallar geçmiş döneme uygulanır; listeleme tarihi ve eski kurallar UNKNOWN.
+
+| sistem | senaryo (fee+slip RT bps) | niyet | lot/minimum'da gönderilemeyen | medyan hedef→fiili sapma | risk sapması payı | net $ (kurallı / ince adım) | Sharpe (kurallı / ince adım) | ölçüt kararı |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| EV1 (9 sembol) | model 10+2 | 5.297 | %28,5 | %20,8 | %28,3 | 363,4 / 405,6 | 2,07 / 1,89 | FAIL (C1, C2) |
+| EV1 | MEXC liste 4+2 | 5.297 | %28,5 | %20,8 | %28,3 | 370,9 / 415,2 | 2,12 / 1,93 | FAIL |
+| EV1 | stres 16+4 | 5.297 | %28,5 | %20,8 | %28,3 | 353,3 / 392,8 | 2,02 / 1,83 | FAIL |
+| carry_xs (dinamik evren) | model 10+2 | 8.528 | %42,3 | %46,2 | %41,7 | 64,2 / 126,8 | 0,89 / 1,36 | FAIL (C1, C2) |
+| carry_xs (dinamik evren) | MEXC liste 4+2 | 8.528 | %42,3 | %46,2 | %41,7 | 69,4 / 134,6 | 0,96 / 1,44 | FAIL |
+| carry_xs | stres 16+4 | 8.528 | %42,3 | %46,2 | %41,7 | 57,4 / 116,3 | 0,80 / 1,24 | FAIL |
+
+Ölçüt C1: bloke ≤ %5; C2: |Δnet| ≤ %5 ve |ΔSharpe| ≤ 0,10. Hepsi aşıldı. "Ince adım" = aynı hedeflerin yuvarlamasız referansı (heuristic adım, min_notional=0).
+
+- **Bloke niyetlerin tamamı lot no-op'tur (`noop_lot`)**: hedef, bir sözleşmeye yuvarlanınca mevcut pozisyondan farklı çıkmıyor; hata/red değil, görünür bir sınırlama (`n_rejected=0`, `n_engine_unfilled=0`, `n_liq=0`). EV1'de sembol bazında: ETH 476/606, DOGE 419/587, SOL 350/623, AVAX 97/585, BNB 72/589 gibi; ADA ve XRP neredeyse hiç bloke değil. carry_xs'te 119 sembolün 42'sinde niyetlerin yarıdan fazlası bloke.
+- **Eşlenemeyen/listelenmeyen semboller (carry_xs):** 43 sembol (ör. `1000PEPEUSDT`, `1000SHIBUSDT`, `FTMUSDT`, `EOSUSDT`) MEXC listesinde birebir adla bulunamadı; hedef notional payı %17,4. Bu koşu onları dışarıda bıraktı; ölçüt C4 bu yüzden UNKNOWN (FAIL değil).
+- **Maruziyet/maliyet:** ideal ortalama brüt hedef ≈ $8,38 (EV1) ve $3,49 (carry) ölçeğinde kalır; fiili ortalama brüt EV1'de $6,01, carry'de $2,04 (sermaye $500, hedef kaldıraç düşük). Devir (işlem hacmi / sermaye, 6 yıl): EV1 50,2×, carry 34,2×. Fee+slip toplamı EV1'de 7,5 / 15,1 / 25,1 USDT (liste / model / stres), carry'de 5,1 / 17,1 (liste / stres). Funding: EV1 toplamı −0,35 USDT, carry +22,36 USDT (Binance funding verisiyle; MEXC funding kanıtı değildir).
+- **Muhasebe:** `report.reconcile` her koşuda tuttu (fark ~0). Stop sapması: EV1/carry kitaplarında strateji stopu yok (`stop=NaN`); yalnız likidasyon stopu var, `n_liq=0`.
+- **Bu replay'in KANITLAMADIĞI (UNKNOWN):** hesap ücreti/VIP/indirim (liste ücreti ≠ hesap ücreti), likidite/slippage (yalnız sabit bps), MEXC funding ödeme kuralı ve zamanı, mmr/marj kademeleri ve likidasyon kuralı, Binance fiyat ve funding'inin MEXC davranışıyla eşdeğerliği, güncel kuralların 2020-2026 boyunca geçerliliği, sembol listeleme/delist tarihleri, 1000× kontrat eşlemeleri. "Daha yüksek sermayede yakınsama" (6 Ekim: $2.500) evrensel minimum sermaye veya carry/$500 doğrulaması değildir.
+- **Sonuç:** $500'da EV1 niyetlerinin ~%28'i ve carry_xs niyetlerinin ~%42'si borsa kontrat adımı yüzünden uygulanamıyor ve sonuçlar yuvarlamasız referanstan ölçüt dışı sapıyor. Çözüm (daha büyük sermaye, daha az/ucuz sembol, farklı boyutlama) yeni önkayıt ister; bu iş hedefleri yukarı yuvarlamadı ve risk bütçesini büyütmedi.

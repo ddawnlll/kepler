@@ -16,6 +16,7 @@ import requests
 S3 = "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision"
 CDN = "https://data.binance.vision"
 BASE = "data/futures/um/monthly"
+DAILY = "data/futures/um/daily"  # yalnızca metrics (OI, long/short, taker) günlük; aylık dosya yok
 DEV_END = "2026-03"  # son dev ayı (bugünden 6 ay önce = 2026-04-01 sınırı); sonrası mühürlü
 
 
@@ -61,6 +62,8 @@ def list_bucket(prefix: str, delimiter: str = "/") -> tuple[list[str], list[str]
 
 
 def key(kind: str, sym: str, month: str, interval: str = "1h") -> str:
+    if kind == "metrics":  # `month` yerine gün (YYYY-MM-DD)
+        return f"{DAILY}/metrics/{sym}/{sym}-metrics-{month}.zip"
     if kind == "fundingRate":
         return f"{BASE}/fundingRate/{sym}/{sym}-fundingRate-{month}.zip"
     return f"{BASE}/{kind}/{sym}/{interval}/{sym}-{interval}-{month}.zip"
@@ -80,8 +83,15 @@ def months(kind: str, sym: str, interval: str = "1h") -> list[str]:
     return sorted(m.group(1) for m in found if m and m.group(1) <= DEV_END)
 
 
+def days(sym: str) -> list[str]:
+    """metrics arşivindeki günler (yalnızca DEV_END ayına kadar; mühürlü gün adları bile döndürülmez)."""
+    keys, _ = list_bucket(f"{DAILY}/metrics/{sym}/")
+    found = (re.search(r"(\d{4}-\d{2}-\d{2})\.zip$", k) for k in keys)
+    return sorted(m.group(1) for m in found if m and m.group(1)[:7] <= DEV_END)
+
+
 def _check_dev(k: str) -> None:
-    m = re.search(r"(\d{4}-\d{2})\.zip$", k)
+    m = re.search(r"(\d{4}-\d{2})(?:-\d{2})?\.zip$", k)
     if not m or m.group(1) > DEV_END:
         raise SealedError(f"{k}: mühürlü dönem veya tanınmayan ay (> {DEV_END}); indirilmez")
 
