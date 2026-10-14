@@ -11,6 +11,7 @@ import json
 import math
 import random
 import re
+import shlex
 import sys
 import time
 import urllib.error
@@ -129,7 +130,46 @@ def _save_acquisition(result):
     tmp.replace(OUT / "acquisition.json")
 
 
+def _ensure_protocol():
+    """Fail before downloading; file presence does not prove historical preregistration."""
+    protocol = ROOT / "reports" / "erf01_protocol.md"
+    if not protocol.is_file() or not protocol.read_text(encoding="utf-8").strip():
+        raise FileNotFoundError(f"ERF-01 protocol missing or empty: {protocol}")
+    return protocol
+
+
+def _check_seal():
+    from kepler.qc import SEAL_START
+    if SEAL_START.date() != SEAL:
+        raise RuntimeError(f"ERF-01 seal {SEAL} differs from kepler.qc {SEAL_START.date()}")
+
+
+def _verify_acquisition(a: dict, raw: Path):
+    records = a.get("records", [])
+    if (not a.get("complete") or a.get("errors") or not records
+            or len(records) != a.get("record_count") or len(records) != a.get("expected_archives")
+            or not isinstance(a.get("workers"), int)):
+        raise RuntimeError("incomplete or inconsistent ERF-01 acquisition")
+    if Path(a["raw_root"]).resolve() != raw.resolve():
+        raise RuntimeError("acquisition raw_root mismatches --raw-root")
+    seen = set()
+    for r in records:
+        key = (r["symbol"], r["kind"], r["month"])
+        if key in seen or r["symbol"] not in SYMS or r["kind"] not in ("klines", "fundingRate"):
+            raise RuntimeError(f"duplicate/unknown archive: {key}")
+        seen.add(key)
+        if r["month"] > LAST_MONTH or r["month"] >= SEAL.strftime("%Y-%m"):
+            raise RuntimeError(f"archive outside development window: {key}")
+        path = raw / r["kind"] / r["symbol"] / f"{r['month']}.zip"
+        if not path.is_file() or sha(path.read_bytes()) != r["sha256"]:
+            raise RuntimeError(f"missing or modified source archive: {path}")
+
+
 def fetch(raw: Path, workers=12):
+    _ensure_protocol()
+    _check_seal()
+    if workers < 1:
+        raise ValueError("workers must be >= 1")
     manifest = _combined_manifest()
     jobs, errors = [], []
     for sym in SYMS:
@@ -499,9 +539,11 @@ def _cluster_events(events):
     return len(clusters)
 
 
-def _alert_episodes(rows, probs, threshold):
+def _alert_episodes(rows, probs, threshold, last=None):
     order = sorted(range(len(rows)), key=lambda i: (rows[i][1], rows[i][0]))
-    alerts, last = [], {}
+    alerts = []
+    if last is None:
+        last = {}
     for i in order:
         d, sym, y, _ = rows[i]
         score = float(max(probs[i, 1], probs[i, 2]))
@@ -515,18 +557,31 @@ def _alert_episodes(rows, probs, threshold):
     return alerts
 
 
-def _choose_threshold(train, train_probs):
-    directional = np.maximum(train_probs[:, 1], train_probs[:, 2])
+def _choose_threshold(calibration, calibration_probs):
+    """Threshold is chosen on an out-of-training chronological calibration slice."""
+    directional = np.maximum(calibration_probs[:, 1], calibration_probs[:, 2])
     candidates = sorted(set(float(x) for x in np.quantile(directional, np.linspace(0, 1, 101))))
     candidates.append(float(np.nextafter(np.max(directional), np.inf)))
-    exposure = len(set((r[0], r[1]) for r in train)) / 365.25
+    exposure = len(set((r[0], r[1]) for r in calibration)) / 365.25
     for threshold in candidates:
-        alerts = _alert_episodes(train, train_probs, threshold)
+        alerts = _alert_episodes(calibration, calibration_probs, threshold)
         false = sum(a["y"] == 0 or a["side"] != a["y"] for a in alerts)
         rate = false / exposure if exposure else math.inf
         if rate <= 3.0:
             return threshold, rate, false, exposure
     raise AssertionError("above-maximum threshold must meet false-alarm ceiling")
+
+
+def _calibration_split(train, purge_days=17):
+    dates = sorted({r[0] for r in train})
+    if len(dates) < 2:
+        raise RuntimeError("too few dates for calibration")
+    start = dates[min(len(dates)-1, max(1, int(len(dates)*.80)))]
+    early = [r for r in train if r[0] < start - timedelta(days=purge_days)]
+    heldout = [r for r in train if r[0] >= start]
+    if not early or not heldout:
+        raise RuntimeError("no purged training/calibration rows")
+    return early, heldout
 
 
 def _operational_gate(fold_contexts, events, oos_events):
@@ -535,11 +590,12 @@ def _operational_gate(fold_contexts, events, oos_events):
     for e in events:
         event_map.setdefault(e["symbol"], []).append((date.fromisoformat(e["onset"]), 1 if e["direction"] == "up" else 2))
     all_alerts = []
+    last_test_alert = {}  # carry suppression across test-fold boundaries
     for ctx in fold_contexts:
-        threshold, train_rate, train_false, exposure = _choose_threshold(ctx["train"], ctx["train_probs"])
+        threshold, train_rate, train_false, exposure = _choose_threshold(ctx["calibration"], ctx["calibration_probs"])
         thresholds.append({"fold": ctx["fold"], "threshold": threshold, "train_false_alarms": train_false,
-                           "train_asset_years": exposure, "train_false_per_asset_year": train_rate})
-        alerts = _alert_episodes(ctx["test"], ctx["test_probs"], threshold)
+                           "calibration_asset_years": exposure, "calibration_false_per_asset_year": train_rate})
+        alerts = _alert_episodes(ctx["test"], ctx["test_probs"], threshold, last_test_alert)
         for a in alerts:
             hits = [(d, side) for d, side in event_map.get(a["symbol"], []) if a["date"] < d <= a["date"] + timedelta(days=7)]
             hits.sort()
@@ -616,18 +672,14 @@ def _posthoc_event_diagnostic(preds, events, B=50000, seed=20261014):
             "cluster_bootstrap_95": boot}
 
 
-def run(raw: Path):
-    protocol = ROOT / "reports" / "erf01_protocol.md"
-    if not protocol.exists():
-        raise FileNotFoundError(f"pre-registration missing: {protocol} (write the protocol before running)")
+def run(raw: Path, trial_ledger: Path | None = None):
+    protocol = _ensure_protocol()
+    _check_seal()
     acq_path = OUT / "acquisition.json"
     if not acq_path.exists():
         raise FileNotFoundError(f"{acq_path} missing; run --stage fetch first")
     acquisition = json.loads(acq_path.read_text())
-    if acquisition.get("errors"):
-        raise RuntimeError("incomplete acquisition")
-    if not acquisition.get("complete") or acquisition.get("record_count") != acquisition.get("expected_archives"):
-        raise RuntimeError(f"incomplete acquisition: {acquisition.get('record_count')}/{acquisition.get('expected_archives')} verified")
+    _verify_acquisition(acquisition, raw)
     if any(date.fromisoformat(x["month"] + "-01") >= SEAL for x in acquisition["records"]):
         raise AssertionError("sealed month recorded")
     parquet_files = _parquet_inventory()
@@ -661,23 +713,25 @@ def run(raw: Path):
             continue
         predfold = []
         iters = {}
-        m2_train_probs = m2_test_probs = None
+        m2_test_probs = None
         for model_name, cols in model_masks.items():
-            probs, it, train_probs = _fit_predict(train, test, cols, return_train=(model_name == "M2"))
+            probs, it, _ = _fit_predict(train, test, cols)
             iters[model_name] = it
             if model_name == "M2":
-                m2_train_probs, m2_test_probs = train_probs, probs
+                m2_test_probs = probs
             brier, logloss = _scores(np.asarray([r[2] for r in test]), probs)
             for k, row in enumerate(test):
                 predfold.append({"date": row[0].isoformat(), "symbol": row[1], "y": row[2], "model": model_name,
                                  "p_none": float(probs[k, 0]), "p_up": float(probs[k, 1]), "p_down": float(probs[k, 2]),
                                  "brier": float(brier[k]), "logloss": float(logloss[k])})
-        fold_contexts.append({"fold": name, "train": train, "test": test,
-                              "train_probs": m2_train_probs, "test_probs": m2_test_probs})
+        cal_early, calibration = _calibration_split(train)
+        calibration_probs, _, _ = _fit_predict(cal_early, calibration, model_masks["M2"])
+        fold_contexts.append({"fold": name, "calibration": calibration, "test": test,
+                              "calibration_probs": calibration_probs, "test_probs": m2_test_probs})
         preds.extend(predfold)
         fold_stats.append({"fold": name, "start": start.isoformat(), "end_exclusive": end.isoformat(),
                            "train_start": min(r[0] for r in train).isoformat(), "train_last": max(r[0] for r in train).isoformat(),
-                           "train_rows": len(train), "test_rows": len(test), "test_asset_rows": len(test),
+                           "train_rows": len(train), "calibration_rows": len(calibration), "test_rows": len(test), "test_asset_rows": len(test),
                            "iterations": iters, "status": "ok"})
         all_dates.update(r[0] for r in test)
         print(f"fold {name}: train {len(train):,}, test {len(test):,} asset-days", flush=True)
@@ -712,10 +766,11 @@ def run(raw: Path):
     if forecast_gate:
         operational, alert_rows = _operational_gate(fold_contexts, events, event_oos)
     final_gate = bool(forecast_gate and operational and operational["passed"])
-    verdict = "INCONCLUSIVE" if not sufficient else ("NO_EDGE" if not final_gate else "HISTORICAL_OPERATIONAL_GATE_PASS")
+    verdict = "INCONCLUSIVE" if not sufficient or final_gate else "NO_EDGE"  # no economic referee has run
     posthoc = _posthoc_event_diagnostic(preds, events)
     metrics = {"verdict": verdict, "scope": "fixed survivor-biased extended-9; daily confirmed q-state transitions; development data only",
-               "sealed_boundary": SEAL.isoformat(), "no_economic_test": not final_gate,
+               "sealed_boundary": SEAL.isoformat(), "no_economic_test": True,
+               "historically_preregistered": False, "independent_confirmation": False,
                "data": {"requested_first_month": FIRST_MONTH, "requested_last_month": LAST_MONTH, "rows_by_symbol": qc,
                         "archives": acquisition["record_count"], "source_archive_bytes": acquisition["downloaded_bytes"],
                         "sha256_archive_manifest": sha((OUT / "acquisition.json").read_bytes()),
@@ -738,12 +793,25 @@ def run(raw: Path):
                "folds": fold_stats, "forecast_gate_passed": bool(forecast_gate), "operational_gate": operational,
                "posthoc_event_diagnostic": posthoc,
                 "runtime": {"python": sys.version.split()[0], "numpy": np.__version__, "scikit_learn": sklearn.__version__,
-                            "pyarrow": pyarrow.__version__, "device": "CPU", "reproduction_command": "python scripts/erf01.py --stage all"},
+                            "pyarrow": pyarrow.__version__, "device": "CPU", "reproduction_command": shlex.join([sys.executable, "scripts/erf01.py", *sys.argv[1:]])},
                 "execution": {"parallel_archive_fetch_workers": acquisition.get("workers"), "archive_count_verified": acquisition["record_count"],
                               "archive_errors": len(acquisition["errors"]), "parquet_reused_for_model_run": parquet_reused},
-               "economic_stage": "not run unless both forecast and operational gates pass",
+               "economic_stage": "NOT_RUN: forecasting screen is not an economic referee verdict",
+               "screening_gate_passed": final_gate,
+               "trial_ledger": {"status": "NOT_RECORDED", "trial": None},
                "protocol_sha256": sha((ROOT / "reports" / "erf01_protocol.md").read_bytes()),
                "code_sha256": sha(Path(__file__).read_bytes())}
+    if trial_ledger is not None:
+        from kepler import ledger  # append-only screening trial; never a referee result
+        config = {"experiment": "ERF-01", "symbols": SYMS, "first": FIRST_MONTH,
+                  "last": LAST_MONTH, "models": ["M0", "M1", "M2"], "protocol_sha256": metrics["protocol_sha256"]}
+        fingerprint = sha(json.dumps([config, metrics["code_sha256"], metrics["data"]["sha256_archive_manifest"]],
+                                     sort_keys=True).encode())
+        entry = ledger.record(trial_ledger, "screen", "ERF-01 early regime onset", config,
+                              metrics["code_sha256"], metrics["data"]["sha256_archive_manifest"],
+                              score=float(relative), event_id=fingerprint)
+        metrics["trial_ledger"] = {"status": "SCREEN_ONLY", "trial": entry.get("trial"),
+                                   "path": str(trial_ledger), "event_id": fingerprint}
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n")
     with (OUT / "events.csv").open("w", newline="") as f:
@@ -893,13 +961,15 @@ def main():
     ap.add_argument("--stage", choices=["fetch", "run", "all", "self-test"], default="all")
     ap.add_argument("--raw-root", type=Path, default=Path("/tmp/kepler_erf01_raw"))
     ap.add_argument("--workers", type=int, default=12)
+    ap.add_argument("--trial-ledger", type=Path, default=None,
+                    help="append-only Kepler screening-trial ledger (not a referee result)")
     args = ap.parse_args()
     if args.stage == "self-test":
         self_test(); return
     if args.stage in ("fetch", "all"):
         fetch(args.raw_root, workers=args.workers)
     if args.stage in ("run", "all"):
-        run(args.raw_root)
+        run(args.raw_root, trial_ledger=args.trial_ledger)
 
 
 if __name__ == "__main__":
