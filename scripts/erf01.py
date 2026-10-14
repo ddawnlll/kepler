@@ -672,7 +672,7 @@ def _posthoc_event_diagnostic(preds, events, B=50000, seed=20261014):
             "cluster_bootstrap_95": boot}
 
 
-def run(raw: Path, trial_ledger: Path | None = None, *, source="archive", data_root=Path("/data")):
+def run(raw: Path, trial_ledger: Path | None = None, *, source="tape", data_root=Path("/data")):
     protocol = _ensure_protocol()
     _check_seal()
     if source == "tape":
@@ -986,7 +986,7 @@ def main():
     ap.add_argument("--workers", type=int, default=12)
     ap.add_argument("--trial-ledger", type=Path, default=None,
                     help="append-only Kepler screening-trial ledger (not a referee result)")
-    ap.add_argument("--source", choices=["archive", "tape"], default="archive")
+    ap.add_argument("--source", choices=["archive", "tape"], default="tape")
     ap.add_argument("--data-root", type=Path, default=Path("/data"))
     ap.add_argument("--out-root", type=Path, default=None)
     ap.add_argument("--parquet-root", type=Path, default=None)
