@@ -1,0 +1,78 @@
+name: One-time bounded Modal DEV mini-replay
+on:
+  push:
+    branches: [integration/pr53-validation-20261015]
+    paths: [.github/workflows/modal-dev-mini-replay-once.yml]
+permissions:
+  contents: read
+jobs:
+  read-only-dev-mini:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Modal client only
+        run: python -m pip install --disable-pip-version-check 'modal>=1.6,<2'
+      - name: Execute strictly bounded DEV-only CPU replay
+        shell: bash
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+        run: |
+          set -euo pipefail
+          cat > .kepler_dev_smoke_temp.py <<'PY'
+          import pathlib
+          import modal
+
+          ROOT = pathlib.Path(__file__).resolve().parent
+          app = modal.App("kepler-one-time-dev-mini-replay")
+          vol = modal.Volume.from_name("kepler-data", create_if_missing=False)
+          image = (
+              modal.Image.debian_slim(python_version="3.12")
+              .pip_install("numpy>=2,<2.3", "pandas>=2,<3", "numba>=0.60,<0.64", "duckdb>=1,<2",
+                           "pyarrow>=17,<24", "requests>=2,<3")
+              .add_local_dir(str(ROOT / "kepler"), remote_path="/repo/kepler")
+              .env({"PYTHONPATH": "/repo", "NUMBA_NUM_THREADS": "2"})
+          )
+
+          @app.function(image=image, volumes={"/data": vol}, timeout=110, cpu=2, memory=4096,
+                        max_containers=1, min_containers=0)
+          def dev_replay():
+              import pandas as pd
+              from kepler import tape, qc
+              from kepler.referee import Spec, run_portfolio, run_many
+              start, end = "2025-01-01", "2025-01-06"
+              assert pd.Timestamp(end, tz="UTC") < qc.SEAL_START
+              streams = tape.load("/data", "BTCUSDT", start=start, end=end)
+              kl = streams["klines"].iloc[:72]
+              if len(kl) < 48:
+                  raise RuntimeError("NOT_RUN: insufficient pre-seal DEV BTCUSDT hourly tape")
+              target = pd.Series(0.0, index=kl.index)
+              target.iloc[12:46] = 150.0
+              mark = streams["mark"].loc[kl.index.min():kl.index.max()]
+              funding = streams["funding"].loc[kl.index.min():kl.index.max() + pd.Timedelta(hours=1)]
+              d = {"BTCUSDT": {"kl": kl, "target": target, "mark": mark, "funding": funding}}
+              sp = Spec(capital=1000.0, fee_rt_bps=10.0, slip_rt_bps=2.0,
+                        tick="0.1", step="0.001")
+              one = run_portfolio(d, sp)
+              another = run_portfolio(d, sp)
+              many = run_many(d, [sp], workers=1)[0]
+              columns = ["net_pnl", "fee", "slippage", "funding", "liq_fee",
+                         "n_fills", "funding_missed", "n_rejected"]
+              for key in columns:
+                  assert one["summary"][key] == another["summary"][key] == many["summary"][key], key
+              assert one["fills"].equals(another["fills"]) and one["fills"].equals(many["fills"])
+              return {"symbol": "BTCUSDT", "dev_rows": len(kl), "stream_funding_rows": len(funding),
+                      "source_period": [start, end], "strict_summary_parity": True,
+                      "n_fills": one["summary"]["n_fills"], "net_pnl": one["summary"]["net_pnl"],
+                      "funding": one["summary"]["funding"]}
+
+          @app.local_entrypoint()
+          def main():
+              result = dev_replay.remote()
+              print("MODAL_DEV_MINI_REPLAY_OK", result)
+          PY
+          timeout --signal=TERM --kill-after=5s 170s modal run .kepler_dev_smoke_temp.py
