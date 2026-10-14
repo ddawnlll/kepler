@@ -54,6 +54,33 @@ def invalid_reason(result: dict) -> str | None:
 def _append(path, source, hypothesis, config, code, data, status, reason, kind, result, score, invalid_result, receipt, family=None) -> dict:
     p = Path(path)
     job_dir = os.environ.get("KEPLER_JOB_RECEIPTS")
+    spool = os.environ.get("KEPLER_LEDGER_SPOOL")
+    volume_target = p.resolve().is_relative_to(Path("/data"))
+    if volume_target and spool:
+        # Emit immutable job-local events; the VPS collector is the sole ledger writer.
+        economic_id = (receipt or {}).get("economic_id")
+        event_id = sha([os.environ.get("KEPLER_RUN_ID", uuid.uuid4().hex), str(p),
+                        source, hypothesis, config, code, data, kind, status])[:32]
+        row = dict(trial=None, time=time.time(), source=source, hypothesis=hypothesis,
+                   config=config, config_hash=sha(config), code_hash=code, data_hash=data,
+                   result=result, score=score, status=status, reason=reason, kind=kind,
+                   attempt=(receipt or {}).get("attempt", 1), event_id=event_id)
+        if receipt is not None:
+            row.update(receipt=receipt, economic_id=economic_id)
+        if family is not None:
+            row["family"] = family
+        if invalid_result is not None:
+            row["invalid_result"] = invalid_result
+        json.dumps(row, default=str, allow_nan=False)
+        folder = Path(spool) / uuid.uuid4().hex
+        folder.mkdir(parents=True, exist_ok=False)
+        temp = folder / "pending"
+        temp.write_text(json.dumps({"version": 1, "ledger": str(p), "row": row},
+                                   default=str, allow_nan=False) + "\n")
+        temp.replace(folder / "event.json")
+        return row
+    if volume_target and not job_dir:
+        raise ValueError("Modal Volume defterine doğrudan yazma yasak; KEPLER_LEDGER_SPOOL gerekli")
     if job_dir:
         p = Path(job_dir) / ((receipt or {}).get("run_id", uuid.uuid4().hex) + ".jsonl")
     p.parent.mkdir(parents=True, exist_ok=True)
