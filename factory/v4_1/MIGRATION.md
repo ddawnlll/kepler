@@ -4,8 +4,8 @@ Bu bir yeni mimari dokümanı değildir. İki SOUL'un projede tek başına işe 
 
 ## Tutulan roller
 
-- **Müdür:** tek Telegram muhatabı, araştırma lideri, aktif bilimsel hafıza tüketicisi ve raporlayan kişi. `KEPLER_MUDUR_SOUL_V4_1.md` taslağı.
-- **İşçi:** her görev için birincil mod seçilen kısa ömürlü araştırmacı/uygulayıcı/eleştirmen. `KEPLER_ISCI_SOUL_V4_1.md` taslağı.
+- **Müdür:** tek Telegram muhatabı, araştırma lideri, aktif bilimsel hafıza tüketicisi ve raporlayan kişi. [`MANAGER_SOUL.md`](./MANAGER_SOUL.md) taslağı.
+- **İşçi:** her görev için birincil mod seçilen kısa ömürlü araştırmacı/uygulayıcı/eleştirmen. [`WORKER_SOUL.md`](./WORKER_SOUL.md) taslağı.
 
 **Silinen LLM rolleri:** Sekreter SOUL (doğrudan müdüre Telegram aktarımı); Güncelleme Ajanı SOUL (deterministik trusted telemetry ve outbox bildirim fonksiyonu). **Önemli:** bu rollerin çalışır entegrasyonunu yönlendirmeden prompt dosyalarını silmek Telegram'ı ve kuyruk doğrulamasını bozabilir.
 
