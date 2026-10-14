@@ -814,16 +814,25 @@ def run(raw: Path, trial_ledger: Path | None = None, *, source="archive", data_r
                "protocol_sha256": sha((ROOT / "reports" / "erf01_protocol.md").read_bytes()),
                "code_sha256": sha(Path(__file__).read_bytes())}
     if trial_ledger is not None:
-        from kepler import ledger  # append-only screening trial; never a referee result
-        config = {"experiment": "ERF-01", "symbols": SYMS, "first": FIRST_MONTH,
-                  "last": LAST_MONTH, "models": ["M0", "M1", "M2"], "protocol_sha256": metrics["protocol_sha256"]}
-        fingerprint = sha(json.dumps([config, metrics["code_sha256"], metrics["data"]["sha256_archive_manifest"]],
-                                     sort_keys=True).encode())
-        entry = ledger.record(trial_ledger, "screen", "ERF-01 early regime onset", config,
-                              metrics["code_sha256"], metrics["data"]["sha256_archive_manifest"],
-                              score=float(relative), event_id=fingerprint)
-        metrics["trial_ledger"] = {"status": "SCREEN_ONLY", "trial": entry.get("trial"),
-                                   "path": str(trial_ledger), "event_id": fingerprint}
+        from kepler import ledger  # append-only model screening, NOT an economic referee result
+        trial_rows = []
+        for model_name in ("M0", "M1", "M2"):
+            config = {"experiment": "ERF-01", "symbol_universe": SYMS,
+                      "first_month": FIRST_MONTH, "last_month": LAST_MONTH,
+                      "model": model_name, "protocol_sha256": metrics["protocol_sha256"]}
+            fingerprint = sha(json.dumps([config, metrics["code_sha256"],
+                                         metrics["data"]["sha256_archive_manifest"]],
+                                        sort_keys=True).encode())
+            model_scores = [r["brier"] for r in preds if r["model"] == model_name]
+            if not model_scores:
+                raise RuntimeError(f"no out-of-sample scores for {model_name}")
+            entry = ledger.record(trial_ledger, "screen", "ERF-01 early regime onset", config,
+                                  metrics["code_sha256"], metrics["data"]["sha256_archive_manifest"],
+                                  score=-float(np.mean(model_scores)), event_id=fingerprint)
+            trial_rows.append({"model": model_name, "trial": entry.get("trial"),
+                               "event_id": fingerprint})
+        metrics["trial_ledger"] = {"status": "SCREEN_ONLY", "path": str(trial_ledger),
+                                   "n_model_configs": len(trial_rows), "rows": trial_rows}
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n")
     with (OUT / "events.csv").open("w", newline="") as f:
@@ -907,7 +916,7 @@ def _write_report(m):
             "- The fixed nine are current-survivor contracts; results do not generalize to delisted/universe-wide assets.",
             f"- Economic test NOT_RUN. Forecast gate {m['forecast_gate_passed']}; operational gate {bool(m['operational_gate'] and m['operational_gate']['passed'])}. No referee evaluation or live orders.",
             f"- Screening ledger: {m['trial_ledger']}; independent confirmation: {m['independent_confirmation']}.",
-            "- Detailed reproducibility artifacts: `reports/erf01_data/metrics.json`, `events.csv`, `candidates.csv`, `oos_predictions.csv`, and `acquisition.json`.", ""]
+            f"- Reproducibility outputs: \`{OUT}\` (metrics.json, events.csv, candidates.csv, oos_predictions.csv, acquisition.json).", ""]
     report_text = "\n".join(txt) + "\n"
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "report.md").write_text(report_text)
@@ -956,10 +965,7 @@ def self_test():
     for sym in SYMS:
         assert np.array_equal(past_panel[sym]["features"][:cutoff+1], future_panel[sym]["features"][:cutoff+1], equal_nan=True)
     # Onset requires prior ten q=0 and persistence confirmed on >=8 of the next ten.
-    # Checked by a hand-constructed q stream using the same event criterion.
-    q = np.zeros(40); q[12:] = 1; q[21:23] = 0
-    assert np.count_nonzero(q[13:23] == 1) == 8
-    assert np.count_nonzero(q[13:23] == 1) >= 8 and np.all(q[2:12] == 0)
+    # Exercise the actual labels_for implementation below, not a hand-only assertion.
     qstream = np.zeros(40); qstream[10:18] = 1; qstream[18:20] = 0; qstream[20:] = 1
     test_days = [DAYS[0] + timedelta(days=i) for i in range(40)]
     dummy = {s: {"q": qstream.copy()} for s in SYMS}
