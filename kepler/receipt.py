@@ -59,7 +59,9 @@ def closure_fp(f, depth: int = 0) -> str:
 def code_hash(*extra_files) -> str:
     """Canonical dependency hash: all package/scripts sources, lock and explicit inputs."""
     from kepler import ledger
-    return ledger.code_hash(*extra_files)
+    # Pass the canonical package file list explicitly so dependency coverage is inspectable.
+    files = sorted((ROOT / "kepler").rglob("*.py"))
+    return ledger.code_hash(*files, *extra_files)
 
 
 def data_manifest(data: dict[str, dict], cut=None) -> dict:
