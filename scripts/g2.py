@@ -58,7 +58,7 @@ def run_symbol(a):
     sig, led = make_signal(job, sym), Path(out) / f"ledger_{job}.jsonl"
     specs = [spec_for(kl, f, SLIP) for f in FEES] + [spec_for(kl, 10, SLIP_HI)]
     hyp = f"G2 {job}: kitap sinyali, sabit parametre (reports/book_signals.md)"
-    res = ev.evaluate(sig, kl, specs, led, hyp, data_hash, funding, mark, NOTIONAL, job, dict(job=job), None)
+    res = ev.evaluate(sig, kl, specs, led, hyp, data_hash, funding, mark, NOTIONAL, job, dict(job=job), None, symbol=sym)
     full = []
     for sp, r in zip(specs, res):
         s = dict(r["res"]["summary"], fee_bps=sp.fee_rt_bps, slip_bps=sp.slip_rt_bps, traded=float((r["res"]["fills"].qty * r["res"]["fills"].px).sum()))
@@ -69,7 +69,7 @@ def run_symbol(a):
     wins = []
     base = spec_for(kl, 10, SLIP)
     for w in WINDOWS:
-        r = ev.evaluate(sig, kl, [base], led, hyp, data_hash, funding, mark, NOTIONAL, job, dict(job=job, window=w), w)[0]["res"]
+        r = ev.evaluate(sig, kl, [base], led, hyp, data_hash, funding, mark, NOTIONAL, job, dict(job=job, window=w), w, symbol=sym)[0]["res"]
         wins.append(dict(r["summary"], window=w[0], traded=float((r["fills"].qty * r["fills"].px).sum())))
     return sym, dict(full=full, windows=wins)
 

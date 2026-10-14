@@ -61,3 +61,37 @@ Kod sayıları (boş/yorum satırı hariç mevcut yöntem): hakem+yapıştırma 
 3 Ekim 2026 09:45 Europe/Istanbul penceresi kapandı; kontrol saati 2026-10-03 09:50:11 +0300. Tamamlandı; 2531/2531 Parquet, 0 okunamayan/atlanan dosya. Resmi delist teyidi doğrulanmadı. Yeni tarama başlatılmadı. Kapanış bütünlük ve erişim kanıtı: `audit_closure.json`. Mühür/anahtar/seal aracı ve üretim test suite'i **atlandı**; yeni strateji denemesi 0.
 
 **İş durumları:** A **kırmızı** (tamamlandı); B **kırmızı** (hesap tamam, güncel MEXC doğrulaması engelli); C **kırmızı** (tamamlandı, Volume flock/deneme envanteri bulguları).
+
+
+## QC bulgularının strateji sonuçlarına etkisi (#18, 12 Ekim 2026)
+
+Kod: `scripts/qc_impact.py` (politikalar ve bayrak tanımları koşudan ÖNCE docstring'e yazıldı; Sharpe'a bakılarak seçilmedi); ham çıktı: `reports/data_audit_data/qc_impact/*.json`. Veri TEMİZLENMEDİ; ölçüldü. Geliştirme verisi (2020-04 → 2026-04), mühür yok. Kapsam: `carry_xs` C1 geliştirme koşusu (dinamik top-20 evren, sermaye $10.000, fee 10 + slip 2), bu koşunun gerçek fill'leri/pozisyonları/settlement olaylarıyla kesiştirildi. NO_EDGE ve önceki kart sonuçları değişmedi; replay'ler ayrı receipt aldı ve deftere yazılmadı.
+
+**Receipt (kullanılan geliştirme verisi):** `economic_id` 529763cb6e49…f933; 196 sembol (aylık üyelik birleşimi), kesim 2020-04-01 → 2026-04-01, 241 tape dosyasının sha256'sı JSON'da (`tape_file_sha256`, kök başına: `/data/pre2022`, `/data`). Modal'e `.git` bağlanmadığı için `git_sha` boş: kod sürümü commit `29e10b1` (P0, P2) ve `f2872ca` (P1) olarak elle kaydedildi. Hakem net'i 2.358,40 (kartla aynı), Sharpe 1,237; mutabakat tuttu.
+
+**Bayraklar** (`qc.py` eşikleri; bayrak, hata kanıtı değil) **x gerçek pozisyon/settlement** (etiketler çakışabilir, tutarlar toplanmaz):
+
+| bayrak | olay | pozisyon varken | etkilenen notional (toplam / en yüksek, $) | fiyat | funding | maliyet | net katkı | risk tepkisi (stop/likid. fill) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| bar boşluğu sonrası ilk bar | 65 | 24 | 731 / 125 | −1,79 | 0 | 0,08 | −1,86 | 0 |
+| \|saatlik getiri\| > %30 | 252 | 53 | 1.107 / 175 | −274,41 | 0 | 0 | −274,41 | 0 |
+| mark/last ayrışması > %5 | 1.076 | 88 | 2.570 / 251 | −121,56 | 0 | 0 | −121,57 | 0 |
+| \|funding\| > %1 | 907 | 173 | 7.097 / 241 | 0 | +111,37 | 0 | +111,37 | 0 |
+| mark yok, kline'a düşüş | 1.068 | 561 | 18.724 / 227 | 0 | +0,85 | 0 | +0,85 | 0 |
+| funding aralığı ≠ 8 sa, olay aralığı bildirilenle tutarlı (meşru) | 284.067 | 55.645 | 1.788.596 / 294 | 0 | +366,65 | 0 | +366,65 | 0 |
+| funding aralığı bildirilenle tutarsız (UNKNOWN) | 38 | 12 | 400 / 148 | 0 | +1,00 | 0 | +1,00 | 0 |
+
+Toplam: fiyat +1.706,85, funding +1.021,94. Okuma: (1) 8 saat dışı aralık TEK BAŞINA anomali değil (284 bin olayın hepsi tutarlı; funding'in %36'sı bu olaylardan); yalnız 38 olayda aralık metadata ile tutarsız ve çözülemiyor → UNKNOWN. (2) Aşırı funding (>%1) olaylarında pozisyon varken funding gelirin %10,9'u; gerçek ekstrem mi hatalı değer mi ayrımı için bağımsız kaynak yok → UNKNOWN, hiçbir değer hatalı ilan edilmedi. (3) %30'u aşan saatlik sıçrama barlarında pozisyon taşırken fiyat −274 USDT (53 olay); strateji stop kullanmadığı için risk tepkisi 0. Gerçek olay mı veri hatası mı UNKNOWN. (4) Mark fallback: 1.068 olayın 561'inde pozisyon vardı, funding etkisi +0,85, ihmal edilebilir; fallback'in "doğru mark" olduğunu KANITLAMAZ.
+
+**Önceden kayıtlı replay'ler (aynı muhasebe yolu, `ev.run_book` + `report.reconcile`):**
+
+| politika | net | Δnet | funding | Sharpe | likid. | mutabakat |
+|---|---:|---:|---:|---:|---:|---|
+| P0 orijinal | 2.358,40 | 0 | 1.021,94 | 1,237 | 0 | tuttu |
+| P1 bayraklı (aşırı ∪ mark-yok ∪ ayrışma) funding olayları 0 | 2.246,16 | −112,24 | 909,70 | 1,178 | 0 | tuttu |
+| P2 bayraklı olaylarda oran pozisyon aleyhine (muhafazakâr stres) | 2.129,71 | −228,69 | 793,25 | 1,116 | 0 | tuttu |
+| P3 ayrışan barlarda büyük mark | 2.358,88 | +0,47 | 1.022,41 | 1,237 | 0 | tuttu |
+
+P3 etkisi ihmal edilebilir (+0,47 USDT; ayrışan barlarda büyük mark seçmek funding'i yön olarak küçük artırdı, yani bu politika pozisyon aleyhine muhafazakâr çıkmadı: işaret pozisyon/oran işaretine bağlı). P1 yalnız duyarlılıktır (gelir de silinir), düzeltme değil. P2'de pozisyon yönü fill'lerden değil tutulan hedefin işaretinden alındı (tek koşu bütçesi; yön lot no-op'undan etkilenmez). Hiçbir politika sonuçlara bakılarak seçilmedi.
+
+**Point-in-time:** üyelik ve veri kesimi aynı (`mem`, pencere); bayrak her olay için yalnız o olayın kendi verisinden (oran, o barın mark/last'ı, bar varlığı) hesaplandı; `qc.divergence_cutoff` (24 ardışık sapma, gelecekten bakar) sembol dışlaması olarak UYGULANMADI. **Sınırlar:** yalnız carry_xs C1 koşusu (EV1 ve diğer koşular ölçülmedi); hakem fill'lerinin QC'den bağımsız doğruluğu kanıtlanmadı; yeni veri servisi kurulmadı; ham Volume otopside yeniden ölçülmedi (bu rapor mevcut tape ile yeni ölçümdür).

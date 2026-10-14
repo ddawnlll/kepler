@@ -1,5 +1,6 @@
 """Sinyal teşhisi: saf istatistik (reports/preregistration/signal_diagnostics.md). Girdiler [gün x sembol] dizileri (NaN = geçersiz hücre); Modal/Nautilus gerekmez.
-IC-TS: sembol başına Spearman, n_s ağırlıklı havuz. IC-XS: tarih başına kesitsel Spearman, tarihler üzerinde ortalama. Güven aralığı: durağan blok bootstrap (tarihler; sıra-sonra-yeniden-örnekle),
+IC-TS: sembol başına Spearman, n_s ağırlıklı havuz. IC-XS: tarih başına kesitsel Spearman, tarihler üzerinde ortalama. Güven aralığı: durağan blok bootstrap (tarihler; sıra-sonra-yeniden-örnekle: TAM-ÖRNEK sıraları sabit tutulur, replika içinde yeniden sıralanmaz;
+bootstrap edilen estimator = sabit tam-örnek sıraların Pearson'ı, nokta tahmin = tam örnek Spearman. Replika-içi yeniden-sıra referansı ve uygunluk simülasyonu: scripts/null_calibration.py, #15),
 her iki IC de "oran = toplamlar/toplamlar" olduğundan alt küme (alt dönem, rejim, uzlaşma kovası) hücre maskesiyle alan tahmini olarak aynı sayım matrisiyle bootstrap edilir."""
 import numpy as np
 import pandas as pd
@@ -9,14 +10,20 @@ HORIZONS = (1, 3, 5, 10, 20, 40)
 MIN_N_TS = 250  # IC-TS: ön kayıt, sembol başına en az gün (alt küme analizlerinde 60)
 
 
-def block_counts(T: int, B: int, mean_block: float, seed: int = 0) -> np.ndarray:
-    """Durağan blok bootstrap: [B, T] tarih sayım matrisi (her satır bir yeniden örneklem, toplam T)."""
+def block_idx(T: int, B: int, mean_block: float, seed: int = 0) -> np.ndarray:
+    """Durağan blok bootstrap: [B, T] örneklenen tarih indeksleri (Politis-Romano; yeni blok olasılığı 1/mean_block)."""
     rng = np.random.default_rng(seed)
     new, start = rng.random((B, T)) < 1.0 / mean_block, rng.integers(0, T, (B, T))
     idx = np.empty((B, T), dtype=np.int64)
     idx[:, 0] = start[:, 0]
     for t in range(1, T):
         idx[:, t] = np.where(new[:, t], start[:, t], (idx[:, t - 1] + 1) % T)
+    return idx
+
+
+def block_counts(T: int, B: int, mean_block: float, seed: int = 0) -> np.ndarray:
+    """Durağan blok bootstrap: [B, T] tarih sayım matrisi (her satır bir yeniden örneklem, toplam T)."""
+    idx = block_idx(T, B, mean_block, seed)
     flat = (idx + np.arange(B)[:, None] * T).ravel()
     return np.bincount(flat, minlength=B * T).reshape(B, T).astype(np.float64)
 
@@ -94,7 +101,8 @@ def ic_xs(F, Y, C: np.ndarray | None = None, mask=None, min_cells: int = 8) -> t
 
 
 def summarize(theta: float, boots: np.ndarray | None, z_corr: float | None = None) -> dict:
-    """Nokta tahmin + bootstrap SE → z, iki yönlü normal p, %95 yüzdelik AA; z_corr verilirse düzeltilmiş (Bonferroni) AA."""
+    """Nokta tahmin + bootstrap SE → z, iki yönlü normal p, %95 yüzdelik AA; z_corr verilirse düzeltilmiş (Bonferroni) AA.
+    UYARI (#15, scripts/null_calibration.py): kalıcı tahmin + örtüşen etiket altında bu p anti-muhafazakârdır (sıfır-edge sentetikte nominal 0,05 yerine ≈0,09–0,27); sertifika değil, betimsel ölçüdür."""
     if boots is None:
         return dict(ic=theta)
     b = boots[np.isfinite(boots)]

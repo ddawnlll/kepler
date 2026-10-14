@@ -1,0 +1,31 @@
+{
+  "label": "SYNTHETIC_CPU_ONLY",
+  "hours": 52560,
+  "symbols": 9,
+  "bars": 473040,
+  "funding": false,
+  "n_scenarios": 16,
+  "fixture_s": 0.028492320999930598,
+  "first_s": 1.774419555999998,
+  "warm_s": 1.5475272429999904,
+  "parity": {
+    "net": -1001.6840170245995,
+    "funding": 0.0,
+    "n_fills": 8360,
+    "fills_sha256": "af84742f5eb9ff2925606d24bd94f03afb01d29fb24ef176b5d0891c292ffe03"
+  },
+  "reconcile": {
+    "ok": true,
+    "diff": 1.0231815394945443e-12,
+    "method": "historical_hourly_reconstruction",
+    "tol": 1e-06
+  },
+  "cpu_count": 3,
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "source_sha": "7fe47e2c9fe6acb05a3281348bafc595da495afd",
+  "serial_summary_s": 16.07905494700003,
+  "threads4_summary_s": 9.41169530600007,
+  "serial_thread_parity": true,
+  "peak_rss_kib": 533632,
+  "dirty_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

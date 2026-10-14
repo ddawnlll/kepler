@@ -11,8 +11,8 @@ PKG = ROOT / "kepler"
 
 # Alt katman üst katmanı import edemez (aynı katman serbest). Düşükten yükseğe.
 LAYERS = [
-    ("veri", ["data", "qc", "tape", "universe"]),
-    ("temel", ["ledger", "report", "stats", "capacity", "stress", "nested", "signals"]),
+    ("veri", ["data", "qc", "tape", "universe", "positioning"]),
+    ("temel", ["ledger", "report", "intents", "receipt", "stats", "capacity", "stress", "nested", "signals"]),
     ("risk", ["risk", "portfolio"]),
     ("durum", ["market_state", "state", "indicators"]),
     ("uzman", ["experts", "turtle"]),  # experts = kepler/experts/* (tek grup)
@@ -34,7 +34,7 @@ ALLOW = {
 }
 
 MAX_FILE_LINES = 300
-MAX_TOTAL_LINES = 3000
+MAX_TOTAL_LINES = 3500  # 2026-10-13 authorized full integration: Numba, provenance and positioning; per-file/import protections retained.
 
 # Git'te izlenen .md dosyaları için izin listesi (doc hell kapısı). Yeni belge türü açmak = bu listeyi bilerek değiştirmek.
 ALLOWED_MD = [

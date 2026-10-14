@@ -1,0 +1,36 @@
+{
+  "label": "SYNTHETIC_CPU_ONLY",
+  "hours": 52560,
+  "symbols": 9,
+  "bars": 473040,
+  "funding": false,
+  "n_scenarios": 0,
+  "fixture_s": 0.04911950500002149,
+  "first_s": 1.3408918760000006,
+  "warm_s": 0.8157962939999379,
+  "warm_runs": [
+    1.0976935609999146,
+    0.8090942950000226,
+    0.9346561560000737,
+    0.8018994430000248,
+    0.8157962939999379
+  ],
+  "parity": {
+    "net": -1001.6840170245995,
+    "funding": 0.0,
+    "n_fills": 8360,
+    "fills_sha256": "af84742f5eb9ff2925606d24bd94f03afb01d29fb24ef176b5d0891c292ffe03"
+  },
+  "reconcile": {
+    "recon_sum": -1001.6840170245985,
+    "net_pnl": -1001.6840170245995,
+    "diff": 1.0231815394945443e-12,
+    "tol": 0.17650154016,
+    "ok": true
+  },
+  "cpu_count": 3,
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "source_sha": "2abd7626133476f928793f4572b231278a0f5e80",
+  "peak_rss_kib": 457016,
+  "dirty_diff_sha256": "8289338c481bb1922d97ed9fabcfc99ec70ec0652a56b625d8ab41c5b08d932a"
+}

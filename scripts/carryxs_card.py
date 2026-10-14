@@ -107,7 +107,14 @@ def main():
         for k, v in ex.map(task, tasks, chunksize=1):
             res[k] = v
             print(k, f"{time.time() - t0:.0f}s", "net", round(v["summary"]["net_pnl"], 1), flush=True)
-    (out / f"{name}.json").write_text(json.dumps(res))
+    shard = out / f"{name}.json"
+    shard.write_text(json.dumps(res, allow_nan=False))
+    if a.stage == "null":
+        import null_merge as NM
+        from kepler import receipt
+        identity = receipt.make(dict(script="carryxs_card", params=asdict(P0), spec=E.spec(cap=CAPR).__dict__, window=E.MAIN,
+                                     membership_sha=receipt.fingerprint(G["mem"])), G["data"], cut=E.utc(E.MAIN), extra_files=[__file__, P2.__file__])
+        NM.publish_identity(shard, identity["economic_id"])
     print(a.stage, "bitti", f"{time.time() - t0:.0f}s")
 
 
