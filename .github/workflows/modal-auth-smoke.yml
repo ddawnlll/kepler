@@ -1,0 +1,38 @@
+name: Modal credential smoke test
+
+# Manual-only credential test; not a CI pipeline.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  modal-auth:
+    name: Verify Modal authentication (no cloud compute)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Modal CLI
+        run: python -m pip install --disable-pip-version-check 'modal>=1.6,<2'
+
+      - name: Verify credentials with read-only Modal API
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$MODAL_TOKEN_ID" || -z "$MODAL_TOKEN_SECRET" ]]; then
+            echo "::error::Required Modal repository secrets are missing or empty."
+            exit 1
+          fi
+          # This lists metadata only. It does not start apps, create containers,
+          # access volumes, or execute Kepler research.
+          modal app list --limit 1 > /dev/null
+          echo "Modal authentication OK (no compute started)."
