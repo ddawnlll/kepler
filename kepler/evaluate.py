@@ -2,9 +2,7 @@
 
 Sinyal birim pozisyon (+1/-1/0/NaN) döndürür; hedef = birim x notional. Gerçekçi koşul zorunlu: sonraki-bar dolum, slippage >= MIN_SLIP_RT_BPS,
 açık pozisyon çıkış maliyeti. `window`: sinyal TAM seride hesaplanır (ısınma), hakem yalnızca pencerede koşar."""
-import inspect
 from dataclasses import asdict
-from pathlib import Path
 
 import pandas as pd
 
@@ -14,9 +12,7 @@ MIN_SLIP_RT_BPS = 1.0  # UNKNOWN: gerçek slippage ölçülmedi; majörlerde alt
 
 
 def _code_hash(*producers):
-    paths = set(Path(__file__).parent.rglob("*.py"))
-    paths.update(Path(inspect.getsourcefile(fn)) for fn in producers if fn is not None)
-    return ledger.code_hash(*sorted(paths))  # çekirdek, uzmanlar, boyutlama ve rapor dahil tüm paket
+    return ledger.code_fingerprint(*producers)  # çekirdek, uzmanlar, boyutlama, rapor, yüklü scripts/factory modülleri, bağımlılık sürümleri
 
 
 def _realistic(specs):

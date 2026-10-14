@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from factory import enqueue, status
+from factory import enqueue, runner, status
 from kepler import ledger, report, risk, tape
 from kepler.referee import Spec, run
 from tests.test_referee import A, bars, tgt
@@ -84,20 +84,24 @@ def test_evaluate_with_risk_sizing_and_kill_switch(tmp_path):
         assert out["res"]["summary"]["end_position"] == 0
 
 
-def test_status_is_query_only_and_counts_queue(tmp_path):
+def test_status_is_query_only_and_counts_queue(tmp_path, monkeypatch):
     p = tmp_path / "l.jsonl"
     ledger.record(p, "screen", "h", {"name": "a"}, "c", "d", score=1.0)
     ledger.record(p, "referee", "h", {"name": "a", "audit_causal": True}, "c", "d", result={"net_pnl": 12.5})
     ledger.record(p, "referee", "h", {"name": "b", "audit_causal": True}, "c", "d", result={"net_pnl": -3.0})
     q = tmp_path / "q.jsonl"
-    enqueue.enqueue("sekreter", "C", "request", "mührü aç", path=q)
-    out = status.status([str(p)], {"x|y": {"cand": False}, "z|y": {"cand": True}}, queue=q)
-    assert out[0].startswith("deneme: 3 (hakem 2, eleme 1)") and "a 12.5" in out[1] and "aday: 1 (z|y)" in out[2] and "kullanıcı bekleyen 1" in out[3]
-    assert len(out) <= 6 and status.status([], None, queue=tmp_path / "none.jsonl")[0] == "defter boş: deneme 0"
+    monkeypatch.setattr(enqueue, "QUEUE", q)
+    monkeypatch.setattr(enqueue, "HALT", tmp_path / "HALT")
+    monkeypatch.setattr(runner, "RUNS", tmp_path / "runs")
+    enqueue.enqueue("sekreter", "C", "request", "mührü aç")
+    out = status.status([str(p)], {"x|y": {"cand": False}, "z|y": {"cand": True}}, queue=q, outbox_path=tmp_path / "o.jsonl")
+    assert out[0].startswith("deneme: 3 (hakem 2, eleme 1)") and "a 12.5" in out[1] and "aday: 1 (z|y)" in out[2] and "insan onayı bekleyen 1" in out[3]
+    assert out[4] == "çalışıyor; koşan iş 0" and out[5].startswith("giden kutusu bekleyen 0")
+    assert len(out) <= 6 and status.status([], None, queue=tmp_path / "none.jsonl", outbox_path=tmp_path / "o.jsonl")[0] == "defter boş: deneme 0"
 
 
 def test_status_accepts_search_summary_shape(tmp_path):
-    out = status.status([], {"summary": {"donchian": {"cand": False}}, "search": []}, queue=tmp_path / "q.jsonl")
+    out = status.status([], {"summary": {"donchian": {"cand": False}}, "search": []}, queue=tmp_path / "q.jsonl", outbox_path=tmp_path / "o.jsonl")
     assert any(l.startswith("aday: 0") and "yapılandırma 1" in l for l in out)
 
 

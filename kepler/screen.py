@@ -23,7 +23,7 @@ def screen(kl: pd.DataFrame, targets: dict[str, pd.Series], fee_rt_bps: float, l
     pf = vbt.Portfolio.from_orders(close, size=size, size_type="targetvalue", direction="both", fees=(fee_rt_bps + slip_rt_bps) / 2 / 1e4,
                                    init_cash=capital, freq="1h")
     score = pf.final_value() - capital
-    code = ledger.code_hash(__file__)
+    code = ledger.code_fingerprint()
     for name, s in score.items():
         cfg = dict(name=name, fee_rt_bps=fee_rt_bps, slip_rt_bps=slip_rt_bps, capital=capital, target_sha=ledger.sha(targets[name].round(6).tolist()))
         ledger.record(ledger_path, "screen", hypothesis, cfg, code, data_hash, score=float(s))

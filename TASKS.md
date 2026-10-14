@@ -1,6 +1,8 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: Backtest muhasebesi ve test kapıları düzeltmeleri (kullanıcı görevi 2026-10-14) | durum: bitti (yerel sentetik kontroller geçti; push aşaması) | protokol: BACKTEST.md §6.6 / §7 (hata düzeltmesi, strateji denemesi değil)
+Aktif iş: Fabrika P0/P1 sertleştirme (çekirdek koruma, hash, tek yazarlı defter, kuyruk yetkisi, durdurma, çalıştırıcı, outbox, kapı) | durum: bitti (yerel kanıt; Modal/VPS koşulmadı) | protokol: docs/factory.md §5, factory/README.md
+
+Önceki aktif iş: Backtest muhasebesi ve test kapıları düzeltmeleri (2026-10-14) | durum: bitti | protokol: BACKTEST.md §6.6 / §7.
 
 ## Backtest düzeltmeleri (2026-10-14)
 - Kullanıcı bu oturumdaki düzeltmeler için çekirdek kilidi şartını kaldırdı; yerel sentetik testleri ve push'u açıkça yetkilendirdi. Gerçek tape / mühürlü dönem kullanılmaz.

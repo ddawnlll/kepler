@@ -58,3 +58,7 @@ reports/full_systems_data/*.json
 
 # Rapor üretici ara görselleri (scripts/trade_audit_report.py): yeniden üretilebilir, repoya girmez
 reports/*_figs/
+
+# Tek yazarlı defter: işçi teslimleri ve kilit dosyası (ingest işler, repoya girmez)
+ledger/staging/
+ledger/*.lock

@@ -120,7 +120,7 @@ Ayrıntı ve güncel tasarım **`docs/factory.md`** (roller, kapılar, değişme
 v1 özeti: sekreter (Telegram, karar vermez), müdür (seyrek uyanır, brif yazar), işçiler (tek brif, taze
 bağlam, ayrı worktree), güncelleme ajanı (deterministik durum mesajı). Kalıcı kurallar:
 - **Sayı hafızadan değil, sorgudan gelir** (ledger / `state/STATUS.md`); sorguda yoksa "bilmiyorum".
-- **İletişim ortak çalışma alanından:** `state/queue.jsonl` (tek giriş `factory/enqueue.py`), ledger, raporlar.
+- **İletişim ortak çalışma alanından:** `state/queue.jsonl` (tek giriş `factory/enqueue.py`; B/C onayı yalnızca imzalı `factory/approve.py`), ledger (tek yazar `factory/ingest.py`; işçiler `ledger.Staging` ile teslim yazar), raporlar.
 - **Yazma sınırı:** ajanlar değerlendiriciyi, denetimi, risk parametrelerini, mühür dosyasını değiştiremez;
   yol kuralları `.claude/hooks/guard.py` (Claude Code) ve `.githooks/pre-commit` (tüm ajanlar) ile zorlanır.
 - **Geri dönüşsüz komutlar** (mühür açmak, gerçek para) sohbet yorumuyla yürümez; LLM'siz onay adımı gerekir.

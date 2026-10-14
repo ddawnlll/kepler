@@ -40,7 +40,7 @@ def data_hash(root):
 def corr(root, out):
     t = tape.load(root, SYM, start="2022-01-01")
     kl, fund, mark = t["klines"], t["funding"], t["mark"]
-    led, dh, code = Path(out) / "ledger.jsonl", data_hash(root), ledger.code_hash(referee.__file__)
+    led, dh, code = Path(out) / "ledger.jsonl", data_hash(root), ledger.code_fingerprint()
     g = grid(kl)
     scr = screen.screen(kl, g, SPEC.fee_rt_bps, led, capital=1e5, hypothesis="G1 eleme-hakem uyumu (fixture ızgarası)", data_hash=dh)
     ref, bad = {}, {}

@@ -10,6 +10,8 @@ import importlib.util
 import json
 import os
 import pathlib
+import re
+import shlex
 import subprocess
 import sys
 
@@ -33,6 +35,57 @@ def _allowed_md() -> list[str]:
     m = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m.ALLOWED_MD
+
+
+def _protected_path(rel: str) -> bool:
+    """Yol (ya da glob/dizin) korumalı bir dosyayı kapsıyor mu: `kepler/*.py`, `kepler`, `.` ve `*` de kapsar."""
+    rel = rel.removeprefix("./").rstrip("/") or "."
+    if rel == ".":
+        return True
+    pats = CORE + NEVER_BY_AGENT + [EXISTING_TESTS]
+    if any(fnmatch.fnmatch(rel, g) for g in pats):
+        return True
+    if "*" in rel or "?" in rel:
+        return any(fnmatch.fnmatch(g, rel) for g in pats)
+    return any(g.startswith(rel + "/") for g in pats)  # dizin: içinde korumalı dosya var
+
+
+def bash_hits(cmd: str) -> list[str]:
+    """Yıkıcı bir komutun hedeflediği korumalı yollar (kilit kapalıyken engellenir). Okuma (cat x > y) hedef sayılmaz: yalnızca
+    silme/taşıma/üzerine yazma fiilinin argümanları ve yönlendirme (>, >>) hedefleri bakılır."""
+    hits = []
+    for seg in re.split(r"&&|\|\||[;&|\n]", cmd):
+        try:
+            toks = shlex.split(seg)
+        except ValueError:
+            hits.append(seg.strip())  # ayrıştırılamayan segment: güvenli tarafta engelle
+            continue
+        while toks and toks[0] in ("sudo", "nohup", "time", "env"):
+            toks = toks[1:]
+        if not toks:
+            continue
+        head, verb = " ".join(toks[:2]), toks[0]
+        destructive = (verb in ("rm", "unlink", "truncate", "shred", "mv", "tee") or head.startswith(("git rm", "git mv", "git checkout", "git restore", "git clean"))
+                       or (verb == "sed" and "-i" in toks) or (verb == "find" and "-delete" in toks))
+        targets = [t for t in toks[1:] if not t.startswith("-")] if destructive else []
+        if verb == "dd":
+            targets = [t[3:] for t in toks if t.startswith("of=")]
+        for i, t in enumerate(toks):  # yönlendirme: `> x`, `>x`, `2>x`
+            if t in (">", ">>"):
+                targets.append(toks[i + 1] if i + 1 < len(toks) else "")
+            elif m := re.match(r"^\d*>>?(.+)$", t):
+                targets.append(m.group(1))
+        for t in targets:
+            if not t or t.startswith("&"):
+                continue
+            p = pathlib.Path(t)
+            try:
+                rel = (p if p.is_absolute() else ROOT / p).resolve().relative_to(ROOT).as_posix()
+            except ValueError:
+                rel = t  # repo dışı: düz metin olarak karşılaştır
+            if _protected_path(rel):
+                hits.append(t)
+    return hits
 
 
 def classify(rel: str, is_new: bool) -> tuple[str, str]:
@@ -61,6 +114,12 @@ def _arch_test() -> tuple[bool, str]:
 def pretool() -> int:
     ev = json.load(sys.stdin)
     ti = ev.get("tool_input", {})
+    if ev.get("tool_name") == "Bash":
+        hits = [] if os.environ.get("KEPLER_CORE_UNLOCK") == "1" else bash_hits(ti.get("command", ""))
+        if hits:
+            print(f"korumalı yol yıkıcı komutta: {hits}. Silme/taşıma/üzerine yazma çekirdekte yasak (KEPLER_CORE_UNLOCK=1 ile açılır).", file=sys.stderr)
+            return 2
+        return 0
     path = ti.get("file_path") or ti.get("notebook_path")
     if not path:
         return 0
@@ -98,7 +157,7 @@ def staged() -> int:
     for line in out:
         st, rel = line.split("\t", 1)
         verdict, why = classify(rel, is_new=(st == "A"))
-        if verdict == "deny" and st != "D":
+        if verdict == "deny":  # silme de dahil: korumalı dosya kilit kapalıyken commit'le silinemez
             bad.append(why)
         elif verdict == "ask":
             print(f"uyarı: {why}", file=sys.stderr)

@@ -31,3 +31,18 @@ Aşama 1 (şimdi): sekreter + güncelleme ajanı, salt okunur. Aşama 2 (G2 haz�
 - ChatGPT Plus OAuth'un Hermes'te sorunsuz çalışması.
 - Ucuz modelin Türkçe komutları doğru sınıflaması (test seti).
 - B işlerinde ucuz modelin kod kalitesi; yetersizse B işleri yerel Claude Code ile yapılır.
+
+## Repoda kurulu (yerel testle doğrulandı; Modal/VPS'te koşulmadı)
+- `factory/enqueue.py`: sabit yol, alan whitelist'i, izinli durum geçişleri; B/C ajan tarafından ilerletilmez.
+- `factory/approve.py`: insan onayı (HMAC, `KEPLER_APPROVAL_KEY`). Anahtar yoksa onay üretilemez.
+- `factory/halt.py`: `engage` (herkes) yeni işi kapatır, `--kill` çalışanı sonlandırır; `release` yalnızca anahtarla. Bayrak `state/PAUSED`.
+- `factory/runner.py`: iş başına kiralama, heartbeat, zaman aşımı, sınırlı tekrar (`--retries`), bitmiş iş yeniden koşmaz, eski canlı süreç varken devralma yok, çalıştırıcı ölürse çocuk PDEATHSIG ile ölür.
+- `factory/ingest.py`: tek yazarlı defter. İşçi teslimi içerikten türeyen kimlikle tekilleşir; bozuk teslim `rejected/` altına gider.
+- `factory/outbox.py`: kalıcı giden kutusu (yeniden deneme, anahtarla tekilleştirme, at-least-once). Telegram'a bağlı değil.
+- `factory/gate.py`: birleştirme kapısı (korumalı yol + mimari + isteğe bağlı pytest). Ajan kodunu ayrı kullanıcıda koşmaz; bu P1'in OS kısmı kurulum işidir.
+- `factory/status.py`: durdurma durumu, koşan iş ve son kalp atışı, insan onayı bekleyen iş, giden kutusu, özet zamanı.
+
+## Henüz yok (dürüst liste)
+- Ayrı OS kullanıcısı / sandbox'ta test (gate yalnızca kontrol eder).
+- Telegram'a outbox bağlantısı ve sekreter tarafında enqueue CLI'sinin VPS'te denenmesi (sudoers kapalı).
+- 24–72 saatlik dayanıklılık provası (kesinti, süreç ölümü, kota, bozuk çıktı): koşulmadı.

@@ -3,14 +3,16 @@
   python -m factory.status ledger/g2/*.jsonl --summary reports/g2_data/summary.json --out state/STATUS.md"""
 import argparse
 import glob
+import json
+import time
 from pathlib import Path
 
 import duckdb
 
-from factory import enqueue
+from factory import enqueue, outbox, runner
 
 
-def status(ledgers: list[str], summary: dict | None = None, queue=enqueue.QUEUE) -> list[str]:
+def status(ledgers: list[str], summary: dict | None = None, queue=enqueue.QUEUE, outbox_path=outbox.OUTBOX) -> list[str]:
     files = [f for p in ledgers for f in glob.glob(p)]
     lines = []
     if files:
@@ -27,8 +29,14 @@ def status(ledgers: list[str], summary: dict | None = None, queue=enqueue.QUEUE)
         cands = [k for k, v in summary.items() if v.get("cand")]
         lines.append(f"aday: {len(cands)}" + (f" ({', '.join(cands)})" if cands else "") + f"; yapılandırma {len(summary)}")
     q = enqueue.latest(queue)
-    wait = [r for r in q.values() if r["status"] in ("needs_human", "needs_approval")]
-    lines.append(f"kuyruk: {len(q)} kayıt, kullanıcı bekleyen {len(wait)}" + (": " + "; ".join(r["text"][:40] for r in wait[:3]) if wait else ""))
+    wait = [r for r in q.values() if r["status"] in enqueue.WAITING]
+    lines.append(f"kuyruk: {len(q)} kayıt, insan onayı bekleyen {len(wait)}" + (": " + "; ".join(r["text"][:40] for r in wait[:3]) if wait else ""))
+    runs = [json.loads(p.read_text()) for p in sorted(runner.RUNS.glob("*.json"))] if runner.RUNS.exists() else []
+    live = [r for r in runs if r.get("state") == "running"]
+    beat = max((time.time() - r["heartbeat"] for r in live), default=None)
+    halt = "DURDURULDU" if enqueue.halted() else "çalışıyor"
+    lines.append(f"{halt}; koşan iş {len(live)}" + (f" (son kalp atışı {int(beat)} sn önce, kiralama {int(runner.LEASE_S)} sn)" if live else ""))
+    lines.append(f"giden kutusu bekleyen {len(outbox.pending(outbox_path))}; özet {time.strftime('%Y-%m-%d %H:%M:%S')} itibarıyla")
     return lines[:6]
 
 
