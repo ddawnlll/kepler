@@ -58,13 +58,16 @@ def test_funding_can_liquidate_even_when_the_next_market_price_is_unchanged():
     assert r["summary"]["net_pnl"] == pytest.approx(-1100.0)
 
 
-def test_gpu_kernel_falls_back_to_cpu_for_funding_before_importing_cuda():
+def test_retired_gpu_route_fails_closed_and_cpu_parity_is_preserved():
     from kepler.referee import run_many
     from scripts.referee_gpu import simulate_many
     kl = bars([100.0] * 12)
     data = {"A": dict(kl=kl, target=tgt(kl, b0=500.0, b7=600.0), funding=funding(kl, 0.1))}
     specs = [sp(equity_scale=True), sp()]
-    many = run_many(data, specs, kernel=simulate_many)
+    # Retired GPU must not silently pretend its funding/intent behavior is verified.
+    with pytest.raises(NotImplementedError, match="GPU yolu"):
+        run_many(data, specs, kernel=simulate_many)
+    many = run_many(data, specs)
     assert [r["summary"] for r in many] == [run_portfolio(data, s)["summary"] for s in specs]
 
 
