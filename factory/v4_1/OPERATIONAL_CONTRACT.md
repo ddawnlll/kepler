@@ -2,8 +2,8 @@
 
 **V4 mimarisinin uygulama, deney özerkliği ve 24 saatlik kabul sözleşmesi**  
 **Tarih:** 15 Ekim 2026  
-**Durum:** Uygulamaya yönelik hedefli değişiklik sözleşmesi. **Henüz uygulanmadı; VPS/Modal/Telegram kabulü yapılmadı; GitHub `main` değiştirilmedi.**  
-**Dayanak:** `kepler_factory_v4_focus_memory.md` (V4), `MISSION.md`, `BACKTEST.md`, `ARCHITECTURE.md`, `AGENTS.md`, `docs/factory.md` (mevcut v2 kod/deployment referansı), Kepler `factory/` kodu ve kullanıcı tarafından sağlanan *Early Market Regime Forecasting* monografisi.
+**Durum:** Uygulamaya yönelik hedefli değişiklik sözleşmesi. **Henüz uygulanmadı; VPS/Modal/Telegram kabulü yapılmadı; Yayımlandığı sırada GitHub'a yalnız doküman/SOUL kaynakları aktarıldı; runtime uygulanmadı.**  
+**Dayanak:** [`FOCUS_MEMORY.md`](./FOCUS_MEMORY.md) (V4), `MISSION.md`, `BACKTEST.md`, `ARCHITECTURE.md`, `AGENTS.md`, `docs/factory.md` (mevcut v2 kod/deployment referansı), Kepler `factory/` kodu ve kullanıcı tarafından sağlanan *Early Market Regime Forecasting* monografisi.
 
 > **Karar:** V5 yok. Yeni agent organizasyonu, yeni yönetim sistemi veya sırf şık göründüğü için yeni soyutlama yok. Mevcut V4 hedef ve hafıza tasarımı, mevcut broker/runner ve mevcut Kepler laboratuvarı **çalışan bir araştırma döngüsüne** bağlanacak. Bu dosya V4'ün yerine baştan yazılmış bir fabrika değildir; V4'ün uygulanması için değişiklik/kabul ekidir. Üst belgelerle çelişen kurallar, ancak insanın onayladığı eşzamanlı belge ve kod değişikliğiyle geçerli olur.
 
