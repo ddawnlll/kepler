@@ -1,5 +1,5 @@
 name: One-time Kepler PR53+ERF integrated validation
-# Rerun after settlement, receipt and factory safety reconciliation 2026-10-15
+# Final rerun after strict writer schema and full finance/identity reconciliation 2026-10-15
 on:
   push:
     branches: [integration/pr53-validation-20261015]
