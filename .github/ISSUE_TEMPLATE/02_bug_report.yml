@@ -1,0 +1,79 @@
+name: "Hata bildirimi"
+description: "Tekrarlanabilir bir yazılım hatası veya regresyon."
+title: "[bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ajanın prompt, izin veya talimat davranışıyla ilgili hatalar için ajan davranışı formunu kullan.
+        Güvenlik açığı veya sızmış kimlik bilgisi için [güvenlik bildirim yoluna](https://github.com/ddawnlll/kepler/blob/main/.github/SECURITY.md) bak; hassas ayrıntıları issue'ya koyma.
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: "Ön kontrol"
+      options:
+        - label: "Aynı sorun için mevcut issue'ları kontrol ettim."
+          required: true
+        - label: "Bu bildirim tek hatayı anlatıyor; örnekler ve loglar hassas veri içermiyor."
+          required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Gerçek davranış"
+      description: "Ne oldu? Hata mesajını veya yanlış sonucu belirt."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Beklenen davranış"
+      description: "Ne olmalıydı? Beklentiyi destekleyen sözleşme, belge veya örneği bağla."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Minimal tekrar üretim"
+      description: "En küçük komut, girdi, yapılandırma veya sentetik fixture; adımlar ve hata oluşma sıklığı. Ham araştırma verisini yükleme."
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Ortam"
+      description: "Commit/sürüm, OS, Python ve ilgili bağımlılık sürümleri; yerel/Modal ortamı ve sonucu etkileyen yapılandırma. Bilinmeyeni belirt."
+    validations:
+      required: true
+  - type: textarea
+    id: regression
+    attributes:
+      label: "Regresyon"
+      description: "Önceden çalışıyor muydu? Biliniyorsa son çalışan ve ilk bozulan commit/sürüm."
+  - type: textarea
+    id: evidence
+    attributes:
+      label: "Loglar / kanıt"
+      description: "İlgili çıktıyı ve kanıt bağlantısını ekle. Kimlik bilgilerini, kişisel veriyi ve özel yolları gizle."
+  - type: textarea
+    id: suspected_cause
+    attributes:
+      label: "İlgili kod / olası neden"
+      description: "İsteğe bağlı; gözlem ile hipotezi ayır."
+  - type: textarea
+    id: verification
+    attributes:
+      label: "Düzeltme kabul kriterleri / doğrulama"
+      description: "Tekrar üretim ve düzeltme kontrolünün komut/prosedürünü ve beklenen sonucu yaz. İlgili test komutları için AGENTS.md kaynaktır; CI yok."
+      value: |
+        - [ ] Minimal örnek beklenen sonucu veriyor.
+        - [ ] Gerekliyse regresyon testi eklendi veya güncellendi.
+        - [ ] İlgili mevcut kontroller geçiyor.
+        - [ ] İlgisiz davranış değişikliği yok.
+
+        Komut / prosedür ve beklenen sonuç:
+    validations:
+      required: true

@@ -1,0 +1,58 @@
+name: "Araştırma / deney"
+description: "Gözlenmiş bir engelden çıkan, ön kayıt ve kanıt gerektiren araştırma işi."
+title: "[research] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bu issue ön kayıt yerine geçmez. [MISSION.md](https://github.com/ddawnlll/kepler/blob/main/MISSION.md) ve [BACKTEST.md](https://github.com/ddawnlll/kepler/blob/main/BACKTEST.md) deney sözleşmesinin kaynağıdır.
+        Ön kayıt gerekli işte protokol koddan ve koşudan önce commit'lenir; sonuçlanmış protokol değiştirilmez. Mühürlü dönem ve anahtar bu forma girmez.
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: "Soru / hipotez / gözlenmiş engel"
+      description: "Tek soru, onu gerekli kılan gözlem ve önceki basit yaklaşım. Keşif mi, ölçüm mü, doğrulayıcı test mi?"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: "Bağlam / ön kayıt"
+      description: "İlgili kod, mevcut rapor, kaynak ve protokol yolu/commit'i. Ön kayıt gerekmiyorsa gerekçesini; henüz hazırlanmadıysa ilk teslimat olduğunu belirt."
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: "Veri / deney tasarımı"
+      description: "Kaynak ve manifest, evren seçimi, zaman aralığı/ufuk, dev/doğrulama ayrımı, baseline ve ilgiliyse null/maliyet varsayımları. Ham veri veya anahtar ekleme."
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: "Kapsam / değişmezler"
+      description: "İlgili alanlar, kapsam dışı işler, korumalı alan yetkilendirmesi ve nedensellik/determinizm gibi bu deneye özgü değişmezler."
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: "Kabul kriterleri / karar kuralı"
+      description: "Teslimatları bilimsel başarıdan ayır. İlgili başarı kartı, baseline, donmuş eşikler ve olumsuz/sonuçsuz durumda raporlanacak karar; sonuca bakıp eşik değiştirme."
+    validations:
+      required: true
+  - type: textarea
+    id: trials
+    attributes:
+      label: "Denemeler / bütçe / durma koşulları"
+      description: "Planlanan koşu/konfigürasyon sayısı, deneme sayacı ve hakem/defter yolu; süre/araç bütçesi, bağımlılıklar ve durma koşulları. Uygulanmayan alanın gerekçesini belirt."
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: "Doğrulama / kanıt teslimi"
+      description: "Elle koşulacak test ve deney komut/prosedürleri, ortam, beklenen kanıt, rapor/çıktı yolu ve yeniden üretim bilgisi. Çalıştırma talimatlarını AGENTS.md'den al; CI yok."
+    validations:
+      required: true

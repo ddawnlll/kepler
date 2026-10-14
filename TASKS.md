@@ -1,6 +1,8 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: hakem motoru değişimi Nautilus -> numba (kullanıcı görevi 2026-10-13) | durum: bitti (PR #39) | protokol: BACKTEST.md §6.6
+Aktif iş: GitHub issue/PR şablonları ve ortak ajan akışı (kullanıcı görevi 2026-10-13; CI yok) | durum: bitti (yerel kontroller geçti) | protokol: yok (katkı akışı, ön kayıt gerekmez)
+
+(Önceki aktif iş: hakem motoru değişimi Nautilus -> numba (kullanıcı görevi 2026-10-13) | durum: bitti (PR #39) | protokol: BACKTEST.md §6.6)
 
 (Önceki aktif iş: Modal koşu süresi < 5 dk (issue #34: fan-out, kırpma, benchmark) | durum: bitti | protokol: yok (araç/hız işi))
 
@@ -9,6 +11,11 @@ Aktif iş: hakem motoru değişimi Nautilus -> numba (kullanıcı görevi 2026-1
 (Önceki aktif iş: 10 edge türü → uzmanlar (aile testi, kullanıcı görevi 2026-10-04) | durum: bitti | protokol: reports/edge_experts_protocol.md)
 
 (Önceki aktif iş, EV1 iş planı v1, aşağıda; kullanıcı bu iş için Faz 3 durma kuralını kaldırdı, EV1 kararı hâlâ bekliyor.)
+
+## GitHub katkı akışı (2026-10-13)
+`.github/` içinde 4 YAML issue formu (görev, hata, araştırma, ajan davranışı), form seçici, PR şablonu, katkı/güvenlik bildirim yönergeleri ve CODEOWNERS. Ortak akış `AGENTS.md`'de; `CLAUDE.md` mevcut `@AGENTS.md` importunu kullanır. Model bazlı kritik kod şartı MISSION/ARCHITECTURE ile birlikte yetkilendirme + bağımsız incelemeye çevrildi; dosya korumaları değişmedi. Markdown izin listesine yalnız 3 yeni belge yolu eklendi.
+- **Geçti:** mimari 8/8, YAML/form alanları ve belge bağlantıları, dar izin listesi/korumalı yol kontrolü, yetkilendirilmiş staged hook, `git diff --cached --check`.
+- **Koşulmadı:** Modal suite (uygulama kodu değişmedi); GitHub form arayüzü (şablonlar default dala merge edilince kullanılacak). CI eklenmedi.
 
 ## Modal koşu süresi (2026-10-12, kullanıcı görevi "5 dakikanın altına"): devam
 Ölçümler ve gerekçeler issue #27–#34 (`#34` izleme). Sonuç değişmeden hız: tüm değişiklikler `scripts/` katmanında; hakem/`evaluate`/`modal_app.py` değişmedi.

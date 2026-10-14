@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "Çalıştırma ve ajan yönergeleri"
+    url: "https://github.com/ddawnlll/kepler/blob/main/AGENTS.md"
+    about: "Komutlar, korumalı alanlar ve issue → PR akışı için tek kaynak."
+  - name: "Araştırma ve değerlendirme sözleşmesi"
+    url: "https://github.com/ddawnlll/kepler/blob/main/BACKTEST.md"
+    about: "Deney tasarımı, başarı kartı ve backtest doğrulama kuralları."
+  - name: "Güvenlik bildirimi"
+    url: "https://github.com/ddawnlll/kepler/blob/main/.github/SECURITY.md"
+    about: "Güvenlik açığı veya sızmış kimlik bilgisi için özel bildirim yolu."

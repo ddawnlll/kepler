@@ -1,0 +1,49 @@
+name: "Ajan davranışı"
+description: "Prompt, talimat, izin veya araç kullanımında beklenmeyen ajan davranışı."
+title: "[agent] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tüm ajanlar için ortak teşhis formu. Model bilgisi görev yetkisi veya yönlendirme kuralı değildir.
+        Prompt, konuşma ve loglardan kimlik bilgilerini ve özel veriyi çıkar. Güvenlik açığı için [SECURITY.md](https://github.com/ddawnlll/kepler/blob/main/.github/SECURITY.md) yolunu kullan.
+  - type: textarea
+    id: prompt
+    attributes:
+      label: "Prompt / talimat bağlamı"
+      description: "Asıl istek, ilgili konuşma kesiti ve repo talimatlarının yolları/commit'i. Uzun konuşmadan yalnız tekrar üretim için gereken kısmı ekle."
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Gerçek davranış / etkilenen alanlar"
+      description: "Gözlenen işlem, araç çağrısı, çıktı/diff ve ilgili dosyalar. Gözlemi olası açıklamadan ayır."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Beklenen davranış / kabul kriterleri"
+      description: "Hangi gereksinim karşılanmalıydı? Düzeltmenin gözlenebilir bitiş koşulu nedir?"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Ajan / ortam / izinler"
+      description: "Ajan ve istemci sürümü, repo commit'i, çalışma ortamı, permission/sandbox modu ve ilgili hook/ayarlar. Model/effort biliniyorsa teşhis için ekle; zorunlu değil."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Tekrar üretim / doğrulama"
+      description: "Adımlar, gerçekleşme sıklığı ve beklenen davranışı kontrol etme prosedürü. Tekrarlanamıyorsa eldeki kanıtı ve belirsizliği belirt."
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: "Ek kanıt / geçici çözüm"
+      description: "İsteğe bağlı; ayıklanmış log, diff, önceki çalışan sürüm veya geçici çözüm."

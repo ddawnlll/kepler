@@ -41,6 +41,7 @@ ALLOWED_MD = [
     "AGENTS.md", "CLAUDE.md", "MISSION.md", "ARCHITECTURE.md", "BACKTEST.md", "TASKS.md", "README.md", "docs/factory.md",
     "reports/*", "factory/*", "books_text/*", "data_manifest/*", "state/*", ".pi/*", "tests/*",
     ".claude/rules/*", ".claude/skills/*", ".claude/agents/*",
+    ".github/CONTRIBUTING.md", ".github/SECURITY.md", ".github/pull_request_template.md",
 ]
 
 
