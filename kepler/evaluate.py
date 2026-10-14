@@ -36,8 +36,15 @@ def evaluate(signal, kl: pd.DataFrame, specs: list, ledger_path, hypothesis: str
     sig_src = inspect.getsourcefile(signal)
     out = []
     for sp in specs:
+        if size is not None:
+            def sized(k):
+                return tape.check_target(k, size(k, signal(k).astype(float).ffill(), sp.capital))
+            audit.assert_causal(sized, kl)
+            target = sized(kl)
+            if not target.equals(sized(kl)):
+                raise ValueError("boyutlama belirlenimsiz")
         k, mk = kl[keep], None if mark is None else mark.loc[(mark.index >= lo) & (mark.index < hi)]
-        tgt = (unit * notional if size is None else size(kl, unit, sp.capital))[keep]
+        tgt = (unit * notional if size is None else target)[keep]
         if size is not None and tgt.abs().max() > sp.capital * sp.leverage:
             raise ValueError("risk motoru kaldıraç tavanını aştı")
         cfg = dict(name=name, params=params or {}, notional=notional, spec=asdict(sp), window=[str(lo), str(hi)], audit_causal=True, sized=size is not None, kill_dd=kill_dd, **({"symbol": symbol} if symbol else {}))
