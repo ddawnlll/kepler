@@ -1,0 +1,57 @@
+name: Modal connection smoke (one-time)
+
+on:
+  push:
+    branches:
+      - chore/modal-connection-smoke-20261015
+    paths:
+      - .github/workflows/modal-connection-smoke.yml
+
+permissions:
+  contents: read
+
+jobs:
+  check-modal:
+    name: Minimal Modal CPU test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - name: Validate secret presence without disclosing values
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$MODAL_TOKEN_ID"
+          test -n "$MODAL_TOKEN_SECRET"
+          echo "GitHub secrets are present."
+      - name: Install Modal Python SDK
+        run: python3 -m pip install --disable-pip-version-check 'modal>=1.0,<2.0'
+      - name: Run one bounded CPU function on Modal
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/kepler_modal_smoke.py" <<'PY'
+          import modal
+
+          app = modal.App("kepler-github-connection-smoke")
+
+          @app.function(
+              cpu=0.125,
+              memory=128,
+              timeout=60,
+              max_containers=1,
+              min_containers=0,
+              single_use_containers=True,
+          )
+          def ping() -> int:
+              return 6 * 7
+
+          @app.local_entrypoint()
+          def main() -> None:
+              result = ping.remote()
+              assert result == 42, f"Unexpected CPU result: {result!r}"
+              print("MODAL_CONNECTION_AND_REMOTE_CPU_OK")
+          PY
+          modal run "$RUNNER_TEMP/kepler_modal_smoke.py"
