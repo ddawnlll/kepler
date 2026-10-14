@@ -1,0 +1,26 @@
+[Unit]
+Description=Kepler durable single-worker supervisor
+After=kepler-broker.service
+Requires=kepler-broker.service
+
+[Service]
+Type=simple
+User=krunner
+SupplementaryGroups=kepler-results
+WorkingDirectory=/srv/kepler
+UMask=0027
+ExecStart=/opt/kepler/venv/bin/python -m factory.runner
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=45
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX
+ReadWritePaths=/srv/kepler/state /srv/kepler/ledger /srv/kepler.git
+
+[Install]
+WantedBy=multi-user.target

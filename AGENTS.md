@@ -44,3 +44,11 @@ büyük bir adımdan önce yeniden oku.
 - Yeni bileşen için gözlenmiş engel gerekir. Yeni spec/anayasa belgesi yazılmaz (tek istisnalar `BACKTEST.md`, tasarım değişikliği oraya yazılır, ve fabrika spesifikasyonu `docs/factory.md`).
 - Kendi kodumuz küçük kalır (MISSION kural 7 iki sayıyı da raporlar). Testleri elle koş; CI yok.
 - Doğrulanmamış rakam "doğrulanmadı" diye yazılır. Kuyruğa yazmak için `factory/enqueue.py`.
+
+## Fabrika çalışma sınırı
+- Operasyon kodu `docs/factory.md` §20'de; kurulum varsayılanı **PAUSED**. Çalıştırıcı, provadan sonra da insan `resume` verene kadar iş almaz.
+- Agent kodu testte kendi Linux kullanıcısı/ağsız sandbox içinde çalışır. Araştırma ayrı, açık bir insan isteğiyle, yalnızca onaylanmış `main` ve önceden kaydedilmiş DEV protokolünde yürür. G3/mühür ve canlı emir bu yolun dışında kalır.
+- Ajan branch'i kontrollerden sonra insan aynı OS kimliğiyle `review` diff'ini görür ve ayrıca `merge` çağırırsa yerel bare `main`'e alınır. Test başarı raporu güvenlik kanıtı değildir; diff insan tarafından okunur.
+- Modal Volume'a deney ledger'ı yazılmaz: koşular kendi `ledger-spool` olaylarını üretir; yerel tek yazar, kod/veri hash'ini kontrol ettikten ve olay kimliğini tekilleştirdikten sonra `ledger/factory/` altına ekler.
+- İnsan durdurma çağrısı yeni iş claim'lerini kapatır ve çalışan systemd iş birimini sonlandırır. `pause` yeni işleri bekletir, çalışan işi bırakır; `stop` çalışan işi keser.
+- Bütçe tahmini yalnızca broker'a kaydedilmiş tutardır. Sağlayıcı maliyetini kendisi okuyamaz; sağlayıcı tarafındaki sert harcama limitleri ayrıca kurulmadan `research_enabled` açılmaz.
