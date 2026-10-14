@@ -892,7 +892,7 @@ def _write_report(m):
            f"- Directional NLL/event M1 vs. M2: {_fmt(ph['mean_directional_nll_m1'])} / {_fmt(ph['mean_directional_nll_m2'])}; event-equal improvement M1−M2: {_fmt(ph['event_equal_improvement_m1_minus_m2'])}.",
            f"- Equal-weight 14-day clusters: {ph['unique_14day_clusters']}; cluster-bootstrap 95% interval: {_ci_text(ph['cluster_bootstrap_95'])}.", "",
            "## Execution record", "",
-           f"- Parallel fetch verified {m['execution']['archive_count_verified']}/{data['archives']} source archives using {m['execution']['parallel_archive_fetch_workers']} workers; archive/checksum errors: {m['execution']['archive_errors']}. Model run reused Parquet: {m['execution']['parquet_reused_for_model_run']}.",
+           f"- Input source {data['source']}: {m['execution']['archive_count_verified']} checked source records; acquisition workers {m['execution']['parallel_archive_fetch_workers']}; errors {m['execution']['archive_errors']}. Reused Parquet: {m['execution']['parquet_reused_for_model_run']}.",
            f"- Runtime: Python {m['runtime']['python']}, NumPy {m['runtime']['numpy']}, scikit-learn {m['runtime']['scikit_learn']}, PyArrow {m['runtime']['pyarrow']} ({m['runtime']['device']}). Reproduce with `{m['runtime']['reproduction_command']}`.",
            "",
            "## Fold record", "", "| Test origin | Train rows | Test asset-days | Status |", "|---|---:|---:|---|"]
@@ -906,7 +906,7 @@ def _write_report(m):
                 f"- False alerts per asset-year: {op['false_alerts_per_asset_year']:.3f}; median lead: {op['median_lead_days']} days.",
                 f"- Operational gate passed: {op['passed']}.", ""]
     txt += ["", "## Protocol checks and limits", "",
-            f"- Input Parquet (local ignored data archive): `{data['parquet_files']}`; total {data['parquet_total_bytes']} bytes. Parquet hashes are in `metrics.json`; source archive hashes are in `acquisition.json`.",
+            f"- Input Parquet: `{data['parquet_files']}`; {data['parquet_total_bytes']} bytes. Hashes in `metrics.json`; original source records in `acquisition.json`.",
             f"- Dataset QC by symbol: `{data['rows_by_symbol']}`. Bad OHLC/duplicate day counts and missing archive errors are in `reports/erf01_data/acquisition.json` / `metrics.json`.",
             f"- Confirmed candidate events total {c['confirmed_onsets_all']}; OOS-direction floor is 30 per direction (observed {c['confirmed_up_oos']} up / {c['confirmed_down_oos']} down); {c['unconfirmed_crossings_all']} unconfirmed candidate crossings were recorded.",
             f"- Funding QC: events with |rate| > 1% by symbol: {funding_extreme or 'none'}; preserved as source observations, not silently corrected.",
