@@ -1,0 +1,45 @@
+name: One-time consolidation smoke (NOT a standing CI)
+
+on:
+  push:
+    branches:
+      - integration/kepler-consolidation-20261015
+    paths:
+      - .github/workflows/consolidation-smoke.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kepler-one-time-consolidation-smoke
+  cancel-in-progress: false
+
+jobs:
+  synthetic-and-readonly-modal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install only targeted test and Modal CLI dependencies
+        run: python -m pip install --disable-pip-version-check 'pytest>=8,<9' 'numpy>=2,<2.3' 'pandas>=2,<3' 'scikit-learn>=1.5,<2' 'pyarrow>=17,<24' 'duckdb>=1,<2' 'modal>=1.6,<2'
+      - name: Python syntax and unchanged architectural limits
+        run: |
+          python -m py_compile scripts/erf01.py scripts/erf01_tape.py
+          python tests/test_architecture.py
+      - name: Synthetic ERF01 temporal, provenance and QC fixtures
+        run: python -m pytest -q tests/test_erf01_regression.py tests/test_erf01_tape.py
+      - name: Read-only Modal authentication and existing volume metadata preflight
+        shell: bash
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+        run: |
+          set -euo pipefail
+          test -n "$MODAL_TOKEN_ID"
+          test -n "$MODAL_TOKEN_SECRET"
+          modal app list --limit 1 >/dev/null
+          modal volume ls kepler-data / >/dev/null
+          echo "MODAL_AUTH_AND_VOLUME_READONLY_OK"
