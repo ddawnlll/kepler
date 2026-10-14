@@ -1,6 +1,6 @@
 """Hakem çekirdeği (numba): referee.py'nin olay döngüsü. Sözleşme ve anlamlar referee.py başlığında; burada yalnızca durum makinesi.
 Olay sırası (zaman, sembol sırası): next_open modunda her bar iki olay (A = açılış parçası (o,o,o,o): eşleşme -> karar; B = gövde (o,h,l,c) t+1sa-1ns: eşleşme),
-close modunda tek olay (gövde eşleşmesi -> karar). Eşleşme = Nautilus L1 bar yürütmesinin kaynak koddan okunmuş kuralları: bar -> O,H,L,C tikleri (yalnızca son fiyattan farklıysa),
+close modunda gövde (T-1ns) ve karar (T) ayrıdır, settlement ikisinin arasında uygulanır. Eşleşme = Nautilus L1 bar yürütmesinin kaynak koddan okunmuş kuralları: bar -> O,H,L,C tikleri (yalnızca son fiyattan farklıysa),
 tik boyutu = hacim/4 (BarTickSizes), piyasa/stop emri tik boyutuyla sınırlı dolar, kalan miktar son dolum fiyatının 1 tick ötesinden dolar, stop tetik fiyatından (gap'te piyasadan) dolar.
 Miktarlar tam sayı lot (U[k,0] = 1/step, U[k,1] = 1/tick, U[k,2] = tick artışı), fiyatlar tick ızgarasında float. Aynı funding zamanındaki bütün ödemeler pozisyon snapshot'ından hesaplanır, sonra koruma yenilenir. Nautilus çalıştırılmaz."""
 import numpy as np
@@ -10,8 +10,8 @@ from numba import njit
 AVG, STOP, LAST, ORD, LP, PX, CYC, TLAST, BP = range(9)  # TLAST: motorun son tik fiyatı; BP: L1 kitap fiyatı
 # I sütunları (int): lot, stop kilidi (±1), ölü, döngü açılış ts
 LOT, HALT, DEAD, COPEN, BS = range(5)  # COPEN: açık döngünün PI satırı; BS: L1 kitap boyutu (lot)
-# P: yan ücret, kaldıraç, mmr, liq, min_notional, sermaye, equity_scale, gross_cap (0 = yok), mod (0 next_open, 1 close)
-FEE, LEV, MMR, LIQ, MINN, CAP, EQS, GCAP, MODE = range(9)
+# P: yan ücret, kaldıraç, mmr, liq, min_notional, sermaye, equity_scale, gross_cap, mode, liq_fee_rate
+FEE, LEV, MMR, LIQ, MINN, CAP, EQS, GCAP, MODE, LQF = range(10)
 HOUR = 3_600_000_000_000
 KIND_OPEN, KIND_BODY, KIND_CLOSE = 0, 1, 2
 
@@ -53,6 +53,11 @@ def _book(k, d, px, ts, prot, F, I, G, N, U, P, FI, FF, PI, PF):
             F[k, AVG] = (F[k, AVG] * abs(p) + px * o) / (abs(p) + o)
             F[k, CYC] -= comm
     G[0] -= comm
+    if liq:
+        # Cash cost is effective immediately; the next symbol sizes from the reduced wallet.
+        extra = q * px * max(0.0, P[LQF] - P[FEE])
+        G[0] -= extra
+        G[2] += extra
     I[k, LOT] = p + d
     n = N[0]
     FI[n, 0], FI[n, 1], FI[n, 2], FI[n, 3] = k, ts, -1 if sell else 1, (1 if liq else 0) | (2 if (prot and not liq) else 0)
@@ -246,7 +251,7 @@ def simulate(ev_k, ev_b, ev_kind, T0, O, H, L, C, SZ, TG, ST, U, P, cap_fills, F
     K = U.shape[0]
     F, I = np.zeros((K, 9)), np.zeros((K, 5), np.int64)
     F[:, STOP], F[:, ORD], F[:, LP], F[:, TLAST], F[:, BP] = np.nan, np.nan, np.nan, np.nan, np.nan
-    G, N = np.array([P[CAP], 0.0]), np.zeros(5, np.int64)
+    G, N = np.array([P[CAP], 0.0, 0.0]), np.zeros(5, np.int64)
     e, fp, reserve = 0, 0, 8 * K + 8
     while e < len(ev_k):
         if N[0] + reserve >= cap_fills or N[2] + reserve >= len(RJ) or N[4] + reserve >= len(IT):
@@ -270,8 +275,10 @@ def simulate(ev_k, ev_b, ev_kind, T0, O, H, L, C, SZ, TG, ST, U, P, cap_fills, F
             if kind == KIND_OPEN:
                 _bar(k, O[b], O[b], O[b], O[b], SZ[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
                 F[k, PX] = O[b]
-            else:
+            elif kind == KIND_BODY:
                 _bar(k, O[b], H[b], L[b], C[b], SZ[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
+                F[k, PX] = C[b]
+            else:  # close decision: body has already executed at T-1ns, never replay it.
                 F[k, PX] = C[b]
         if kind != KIND_OPEN:
             fp = _settle(ts + (1 if kind == KIND_BODY else 0), fp, FK, FT, FC, FR, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
