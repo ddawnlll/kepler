@@ -57,9 +57,9 @@ def closure_fp(f, depth: int = 0) -> str:
 
 
 def code_hash(*extra_files) -> str:
-    """kepler/ altındaki TÜM .py içeriği + ek dosyalar (örn. çağıran betik)."""
-    files = sorted((ROOT / "kepler").rglob("*.py")) + [Path(p) for p in extra_files]
-    return _h("".join(f"{p.name}:{_h(p.read_bytes())};" for p in files).encode())
+    """Canonical dependency hash: all package/scripts sources, lock and explicit inputs."""
+    from kepler import ledger
+    return ledger.code_hash(*extra_files)
 
 
 def data_manifest(data: dict[str, dict], cut=None) -> dict:
