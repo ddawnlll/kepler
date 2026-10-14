@@ -24,6 +24,25 @@ jobs:
       - name: Selected Numba CPU financial regressions (NO Modal cloud compute)
         run: |
           python -m pytest -q tests/test_referee.py tests/test_referee_engine.py tests/test_portfolio.py tests/test_account_events.py tests/test_evaluation_gates.py tests/test_tape_ledger.py tests/test_core_guard.py
+      - name: Independent actual-byte-source hash sensitivity probe (does not modify files)
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from unittest.mock import patch
+          from kepler import evaluate
+          baseline = evaluate._code_hash()
+          core = Path(evaluate.__file__).parent / "referee_core.py"
+          original = Path.read_bytes
+          def changed(self, *args, **kwargs):
+              data = original(self, *args, **kwargs)
+              return data + b"\n# synthetic source mutation\n" if self.resolve() == core.resolve() else data
+          with patch.object(Path, "read_bytes", changed):
+              changed_hash = evaluate._code_hash()
+          assert baseline != changed_hash, "real byte-source change did not alter code hash"
+          print("CODE_HASH_REAL_BYTES_SENSITIVITY_OK")
+          PY
       - name: Print provenance
         run: |
           git rev-parse HEAD
