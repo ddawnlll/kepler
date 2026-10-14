@@ -23,7 +23,7 @@ jobs:
           MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
         run: |
           set -euo pipefail
-          cat > .kepler_dev_smoke_temp.py <<'PY'
+          cat > kepler_dev_smoke_temp.py <<'PY'
           import pathlib
           import modal
 
@@ -75,4 +75,4 @@ jobs:
               result = dev_replay.remote()
               print("MODAL_DEV_MINI_REPLAY_OK", result)
           PY
-          timeout --signal=TERM --kill-after=5s 170s modal run .kepler_dev_smoke_temp.py
+          timeout --signal=TERM --kill-after=5s 170s modal run kepler_dev_smoke_temp.py
