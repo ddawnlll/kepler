@@ -675,6 +675,8 @@ def _posthoc_event_diagnostic(preds, events, B=50000, seed=20261014):
 def run(raw: Path, trial_ledger: Path | None = None, *, source="tape", data_root=Path("/data")):
     protocol = _ensure_protocol()
     _check_seal()
+    if trial_ledger is None:
+        raise RuntimeError("ERF-01 scored runs require --trial-ledger to count all M0/M1/M2 screens")
     if source == "tape":
         from erf01_tape import load_development
         klines, funding, fund_records, qc, acquisition = load_development(
@@ -1004,6 +1006,8 @@ def main():
         self_test(); return
     _ensure_protocol()
     _check_seal()
+    if args.stage in ("run", "all") and args.trial_ledger is None:
+        ap.error("--trial-ledger required for scored ERF-01 runs (3 model configurations)")
     if args.stage in ("fetch", "all") and args.source == "archive":
         fetch(args.raw_root, workers=args.workers)
     elif args.stage == "fetch":
