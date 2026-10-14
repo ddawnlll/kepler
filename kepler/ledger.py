@@ -21,7 +21,16 @@ def sha(obj) -> str:
 
 
 def code_hash(*paths) -> str:
-    return sha([Path(p).read_text() for p in paths])
+    # Conservative closure: all in-repo computation, lock and explicit external sources.
+    # File names participate; renaming identical sources must also change the identity.
+    root = Path(__file__).resolve().parent.parent
+    files = set((root / "kepler").rglob("*.py"))
+    files.update((root / "scripts").rglob("*.py"))
+    files.update(root / name for name in ("pyproject.toml", "uv.lock"))
+    files.update(Path(p).resolve() for p in paths if p is not None)
+    entries = [(p.relative_to(root).as_posix() if p.is_relative_to(root) else p.name,
+                hashlib.sha256(p.read_bytes()).hexdigest()) for p in files]
+    return sha(sorted(entries))
 
 
 def trial_count(path) -> int:
