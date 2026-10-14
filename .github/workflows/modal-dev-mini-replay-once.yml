@@ -34,8 +34,8 @@ jobs:
               modal.Image.debian_slim(python_version="3.12")
               .pip_install("numpy>=2,<2.3", "pandas>=2,<3", "numba>=0.60,<0.64", "duckdb>=1,<2",
                            "pyarrow>=17,<24", "requests>=2,<3")
-              .add_local_dir(str(ROOT / "kepler"), remote_path="/repo/kepler")
               .env({"PYTHONPATH": "/repo", "NUMBA_NUM_THREADS": "2"})
+              .add_local_dir(str(ROOT / "kepler"), remote_path="/repo/kepler")
           )
 
           @app.function(image=image, volumes={"/data": vol}, timeout=110, cpu=2, memory=4096,
