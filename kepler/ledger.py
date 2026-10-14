@@ -51,7 +51,7 @@ def invalid_reason(result: dict) -> str | None:
     return f"geçersiz koşu: {bad}" if bad else None
 
 
-def _append(path, source, hypothesis, config, code, data, status, reason, kind, result, score, invalid_result, receipt, family=None) -> dict:
+def _append(path, source, hypothesis, config, code, data, status, reason, kind, result, score, invalid_result, receipt, family=None, event_id=None) -> dict:
     p = Path(path)
     job_dir = os.environ.get("KEPLER_JOB_RECEIPTS")
     spool = os.environ.get("KEPLER_LEDGER_SPOOL")
@@ -59,7 +59,7 @@ def _append(path, source, hypothesis, config, code, data, status, reason, kind, 
     if volume_target and spool:
         # Emit immutable job-local events; the VPS collector is the sole ledger writer.
         economic_id = (receipt or {}).get("economic_id")
-        event_id = sha([os.environ.get("KEPLER_RUN_ID", uuid.uuid4().hex), str(p),
+        event_id = event_id or sha([os.environ.get("KEPLER_RUN_ID", uuid.uuid4().hex), str(p),
                         source, hypothesis, config, code, data, kind, status])[:32]
         row = dict(trial=None, time=time.time(), source=source, hypothesis=hypothesis,
                    config=config, config_hash=sha(config), code_hash=code, data_hash=data,
@@ -89,9 +89,20 @@ def _append(path, source, hypothesis, config, code, data, status, reason, kind, 
         fcntl.flock(f, fcntl.LOCK_EX)
         f.seek(0)
         prev = [json.loads(l) for l in f if l.strip()]
+        if event_id:
+            existing = [r for r in prev if r.get("event_id") == event_id]
+            if existing:
+                expected = dict(source=source, hypothesis=hypothesis, config=config,
+                                code_hash=code, data_hash=data, result=result, score=score,
+                                status=status, reason=reason, kind=kind)
+                if any(existing[0].get(k) != v for k, v in expected.items()):
+                    raise ValueError("event_id farklı içerikle tekrar kullanıldı")
+                return existing[0]
         eid = (receipt or {}).get("economic_id")
         row = dict(trial=len(prev) + 1, time=time.time(), source=source, hypothesis=hypothesis, config=config, config_hash=sha(config), code_hash=code, data_hash=data,
                    result=result, score=score, status=status, reason=reason, kind=kind, attempt=(next((r["attempt"] for r in prev if receipt and kind == "run" and (r.get("receipt") or {}).get("run_id") == receipt.get("run_id")), None) or (1 + max((r.get("attempt", 1) for r in prev if eid and r.get("economic_id") == eid), default=0))))
+        if event_id is not None:
+            row["event_id"] = event_id
         if invalid_result is not None:
             row["invalid_result"] = invalid_result  # performans alanı (result) boş; ham sonuç yalnız araştırma izi
         if family is not None:
@@ -105,7 +116,7 @@ def _append(path, source, hypothesis, config, code, data, status, reason, kind, 
     return row
 
 
-def record(path, source: str, hypothesis: str, config: dict, code: str, data: str, result: dict | None = None, score: float | None = None, receipt: dict | None = None, kind: str = "run", family: dict | None = None) -> dict:
+def record(path, source: str, hypothesis: str, config: dict, code: str, data: str, result: dict | None = None, score: float | None = None, receipt: dict | None = None, kind: str = "run", family: dict | None = None, *, event_id: str | None = None) -> dict:
     """kind: run | retry | smoke (retry/smoke yeni bağımsız hipotez sayılmaz: `summary`). family: hipotez/aile/kontrol rolü/run/attempt sözleşmesi (scripts/trial_policy.check_family_meta ile doğrulanır; opsiyonel, eski çağrılar bozulmaz)."""
     if source not in ("referee", "screen"):
         raise ValueError("source referee veya screen olmalı")
@@ -117,7 +128,7 @@ def record(path, source: str, hypothesis: str, config: dict, code: str, data: st
         raise InvalidRun(why + "; deftere performans satırı olarak yazılmaz (record_attempt status=invalid)")
     if source == "referee" and config.get("audit_causal") is not True:  # korkuluk (güvenlik değil): bayrağı evaluate koyar; elle yazan bunu atlatabilir
         raise ValueError("hakem kaydı nedensellik denetiminden (evaluate) geçmemiş: config.audit_causal=True yok")
-    return _append(path, source, hypothesis, config, code, data, "completed", "", kind, result, score, None, receipt, family)
+    return _append(path, source, hypothesis, config, code, data, "completed", "", kind, result, score, None, receipt, family, event_id)
 
 
 def record_attempt(path, status: str, hypothesis: str, config: dict, code: str, data: str, reason: str = "", result: dict | None = None, receipt: dict | None = None, kind: str = "run", family: dict | None = None) -> dict:
@@ -125,7 +136,7 @@ def record_attempt(path, status: str, hypothesis: str, config: dict, code: str, 
     completed için `record` kullanılır."""
     if status not in STATUSES or status == "completed":
         raise ValueError(f"status {STATUSES[:2] + STATUSES[3:]} içinden olmalı (completed -> record)")
-    return _append(path, "referee", hypothesis, config, code, data, status, reason, kind, None, None, result if status == "invalid" else None, receipt, family)
+    return _append(path, "referee", hypothesis, config, code, data, status, reason, kind, None, None, result if status == "invalid" else None, receipt, family, event_id)
 
 
 def query(path, sql: str) -> pd.DataFrame:
