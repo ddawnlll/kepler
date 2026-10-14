@@ -864,9 +864,9 @@ def _write_report(m):
            "- No prior Kepler report directly tested confirmed directional-onset hazard; adjacent results are not H1-A evidence.",
            "- Prior G2 reported NO_EDGE; the 88-configuration search had no validation candidate after multiplicity controls. The ensemble-decay test was also below its DSR threshold. These support a skeptical prior, not an automatic rejection of this target.",
            "- Existing trend diagnostics were in-sample and did not find reliable time-series IC; prior Kepler dates are extensively seen and cannot serve as independent confirmation here.",
-           "- Trial inventory is inconsistent across snapshots: `reports/trial_inventory.md` records 4,117 repository / 5,434 Volume rows (2026-10-03), while later `TASKS.md` records repo N=5,091. This is not a reconciled statistical N. ERF-01 makes no DSR/independent-edge claim.", "",
+           "- Historical trial inventory remains unreconciled. Screening entries are recorded only with an explicit ledger path; no DSR or independent-edge claim.", "",
            f"Protocol: `reports/erf01_protocol.md` (SHA-256 `{m['protocol_sha256']}`). Code SHA-256 `{m['code_sha256']}`.",
-           f"Data: Binance USDT-M monthly daily klines + funding, {data['first_date']} through {data['last_date']} (strictly before sealed boundary {m['sealed_boundary']}); {data['archives']} verified archives ({data['source_archive_bytes']:,} compressed bytes). No G3 data accessed.", "",
+           f"Data: {data['source']} ({'canonical QC' if data['canonical_qc'] else 'archive-specific QC only'}); {data['first_date']} through {data['last_date']} (seal {m['sealed_boundary']}); {data['archives']} source records ({data['source_bytes']:,} bytes). G3 not accessed.", "",
            "## Primary results", "", "| Measure | Result |", "|---|---:|",
            f"| Confirmed OOS onsets (up / down) | {c['confirmed_up_oos']} / {c['confirmed_down_oos']} |",
            f"| OOS 14-day event clusters | {c['unique_14day_oos_event_clusters']} |",
@@ -903,9 +903,10 @@ def _write_report(m):
             f"- Funding QC: events with |rate| > 1% by symbol: {funding_extreme or 'none'}; preserved as source observations, not silently corrected.",
             f"- Verdict {m['verdict']}: event floor {'met' if c['confirmed_up_oos'] >= 30 and c['confirmed_down_oos'] >= 30 else 'NOT met'} (up {c['confirmed_up_oos']}/30, down {c['confirmed_down_oos']}/30); M2 point improvement {100*f['relative_brier_improvement']:.2f}%; forecast gate passed: {m['forecast_gate_passed']}; operational gate run: {m['operational_gate'] is not None}.",
             "- Feature rows and labels are timestamped causally; training outcome labels are purged strictly before each test origin. H1-B after-onset detections do not count as positive forecasts.",
-            "- The historical date range has prior Kepler exposure. Walk-forward folds prevent fitting to the future within each split but do not restore pristine data status.",
+            "- Historical data has prior Kepler exposure; a retrospective protocol cannot be claimed as historical preregistration.",
             "- The fixed nine are current-survivor contracts; results do not generalize to delisted/universe-wide assets.",
-            f"- Economic test is gated on forecasting and operational skill (forecast gate passed: {m['forecast_gate_passed']}; operational gate passed: {bool(m['operational_gate'] and m['operational_gate']['passed'])}). Kepler's Numba referee was not invoked and no live orders were sent. No production/core code was changed.",
+            f"- Economic test NOT_RUN. Forecast gate {m['forecast_gate_passed']}; operational gate {bool(m['operational_gate'] and m['operational_gate']['passed'])}. No referee evaluation or live orders.",
+            f"- Screening ledger: {m['trial_ledger']}; independent confirmation: {m['independent_confirmation']}.",
             "- Detailed reproducibility artifacts: `reports/erf01_data/metrics.json`, `events.csv`, `candidates.csv`, `oos_predictions.csv`, and `acquisition.json`.", ""]
     report_text = "\n".join(txt) + "\n"
     OUT.mkdir(parents=True, exist_ok=True)
