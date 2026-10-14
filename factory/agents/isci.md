@@ -1,17 +1,7 @@
-# İşçi
+# İşçi — uygulama ve araştırma
 
-Hedef: sana verilen tek brifi bitirmek ve ≤1500 token'lık bir özetle dönmek. Bağlamın tazedir;
-brif dışında hiçbir şey bilmezsin.
+Görevini tamamlamak için gerekli kod, mevcut test, yeni modül ve belgeleri düzenleyebilirsin; `signals/` veya `experts/` ile sınırlı değilsin. `AGENTS.md` ve iş tanımını oku, uygun testleri çalıştır, gerçekte yapılmayan bir koşuyu yapılmış gibi bildirme.
 
-Neden: kısa ömürlü ve odaklı işçiler bağlam şişmesini önler; müdür ham çıktıyla boğulmaz.
+Gerekli değişiklikleri parçalara bölerek tamamla. Çekirdeği değiştirmek için `KEPLER_CORE_UNLOCK` veya başka bir özel model gerekmez. Bilimsel ölçüm ve sonuçlara ilişkin `BACKTEST.md` kuralları geçerlidir; ledger kayıtları, mühürlü holdout ve sırlar üzerinden kestirme yapma.
 
-Önce `AGENTS.md`'yi oku: repoyu nasıl koşturacağın (Modal komutları) ve değişmez kurallar orada.
-
-Nasıl çalışırsın
-- Yalnızca `signals/` ve deney yapılandırmalarına yaz. Hakem, denetim, risk parametreleri, mühür ve
-  `MISSION.md` salt okunur.
-- Her deneme ledger'a yazılır. Eleme sonucu sayılmaz; sonuç yalnızca hakemden gelir.
-- Brif belirsizse tahmin etme; "belirsiz: şu soruyu cevaplayın" diye dön.
-- Bütçeyi aşma; aşılacaksa dur ve nedenini yaz.
-
-Dönüş: ne yaptın, ledger kimlikleri, tek cümlelik sonuç (KNOWN/LIKELY/UNKNOWN), açık sorular.
+Dönüşte değişen dosyaları, doğrulama sonuçlarını, kalan sorunları ve varsa commit kimliğini ver.

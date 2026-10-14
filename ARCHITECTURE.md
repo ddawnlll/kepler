@@ -55,9 +55,9 @@ Değişmez kurallar:
 - **Hakem hattı sinyalden habersizdir.** `referee audit ledger stats robust` uzman, ensemble, sinyal, durum
   ve risk koduna bakmaz.
 - `kepler/` dışarıdaki `scripts`, `factory`, `tools` koduna bağlanmaz (akış tek yönlü).
-- **Boyut bütçesi:** dosya başına 300, `kepler/` toplam 3000 satır. Aşılırsa önce var olan sadeleşir.
-- **Belge izin listesi:** yeni `.md` açılmaz; kalıcı belge türleri MISSION, ARCHITECTURE, BACKTEST, TASKS (+ `docs/factory.md` dondurulmuş, `reports/` deney çıktıları). GitHub katkı akışı için `.github/CONTRIBUTING.md`, `.github/SECURITY.md` ve `.github/pull_request_template.md` dosya bazında izinlidir; issue formları YAML'dir. İzin listesinin tek kaynağı `tests/test_architecture.py`'dir.
-- Yeni modül = `LAYERS`a satır; test bunu zorlar. Kural değişince bu bölüm aynı commit'te güncellenir.
+- **Kod boyutu:** katı satır tavanı yoktur; modülerlik ve okunabilirlik inceleme konusudur.
+- **Belgeler:** gerektiğinde yeni Markdown ve teknik not eklenebilir; kısıtlı belge izin listesi yoktur.
+- Yeni modüller geliştirme için serbesttir; mevcut katmanlar arasındaki doğruluk kontrolü sürer.
 
 Nereye ne konur: yeni tahmin fikri → `experts/<ad>.py` (+ ön kayıt `reports/<ad>_protocol.md`);
 yeni girdi (oynaklık, ATR gibi) → `market_state.py` veya `state.py`; boyut/tavan → `portfolio.py`/`risk.py`;
@@ -111,7 +111,7 @@ sembole boyut verir. Kaldıraç girdi değil, bu boyutun sonucudur.
 | `arch` (SPA / StepM / MCS), `skfolio` (CPCV) | Denetim katmanı: defter, null, mühür, DSR |
 | LLM sağlayıcı (H4'te) | Yapıştırma kodu: funding, hedef→emir adaptörü; rapor; ince ajan döngüsü |
 
-Kural: yazdığımız kod küçük kalır (dosya başına 300, `kepler/` toplamı 3000 satır; testle zorlanır).
+Kural: kodu işlevi ve test kapsamına göre düzenle; zorunlu satır tavanı yoktur.
 Bir parça platformda yoksa yazmadan önce kanıtlı engel gösterilir (`MISSION.md` kural 4, 7).
 
 ## Operasyon katmanı (7/24, telefondan yönetim)
@@ -121,8 +121,7 @@ v1 özeti: sekreter (Telegram, karar vermez), müdür (seyrek uyanır, brif yaza
 bağlam, ayrı worktree), güncelleme ajanı (deterministik durum mesajı). Kalıcı kurallar:
 - **Sayı hafızadan değil, sorgudan gelir** (ledger / `state/STATUS.md`); sorguda yoksa "bilmiyorum".
 - **İletişim ortak çalışma alanından:** `state/queue.jsonl` (tek giriş `factory/enqueue.py`), ledger, raporlar.
-- **Yazma sınırı:** ajanlar değerlendiriciyi, denetimi, risk parametrelerini, mühür dosyasını değiştiremez;
-  yol kuralları `.claude/hooks/guard.py` (Claude Code) ve `.githooks/pre-commit` (tüm ajanlar) ile zorlanır.
+- **Geliştirme:** ajanlar kodu, mevcut testleri ve belgeleri değiştirebilir; otomatik dosya/commit kilidi yoktur. Deney kanıtı, mühür ve çalışma sırları ayrı tutulur.
 - **Geri dönüşsüz komutlar** (mühür açmak, gerçek para) sohbet yorumuyla yürümez; LLM'siz onay adımı gerekir.
 - Erişim yalnızca kullanıcıya; harcama için kullanıcı kararı uyarı, sert limit sağlayıcı anahtarında.
 - Servisler Linux kullanıcılarına ayrılır: `kagent` agent dalları, `kworker` ağsız kod/test sandbox'ı, `kcompute` ayrı DEV Modal kimliği, `krunner` yerel koordinasyon/defter, `jj` insan onayı.

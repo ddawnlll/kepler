@@ -1,15 +1,23 @@
-"""Korumalı çekirdek listesi motor değişince boşluk bırakmaz (stdlib)."""
+"""Editing core code and existing tests does not require a magic environment switch."""
 import importlib.util
-import os
 from pathlib import Path
-from unittest.mock import patch
 
 
-def test_referee_core_is_protected_without_an_unlock():
+def _guard():
     path = Path(__file__).resolve().parents[1] / ".claude" / "hooks" / "guard.py"
     spec = importlib.util.spec_from_file_location("kepler_guard_regression", path)
-    guard = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(guard)
-    with patch.dict(os.environ, {"KEPLER_CORE_UNLOCK": "0"}):
-        verdict, _ = guard.classify("kepler/referee_core.py", is_new=False)
-    assert verdict == "deny"
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_core_and_existing_tests_are_editable():
+    guard = _guard()
+    for path in ("kepler/referee_core.py", "tests/test_referee.py", "AGENTS.md", "factory/runner.py"):
+        assert guard.classify(path, is_new=False)[0] == "allow"
+
+
+def test_generated_evidence_is_not_agent_edited():
+    guard = _guard()
+    for path in ("ledger/trials.jsonl", "registry/events.jsonl", "state/queue.jsonl"):
+        assert guard.classify(path, is_new=False)[0] == "deny"

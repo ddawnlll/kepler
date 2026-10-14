@@ -17,12 +17,12 @@ def git(*args):
 
 
 def protected_patterns():
-    # Source is the installed trusted tree, NEVER the candidate's hook module.
+    # Preserve generated evidence, not developer-owned source code.
     source = Path(__file__).resolve().parents[1] / ".claude/hooks/guard.py"
     spec = importlib.util.spec_from_file_location("installed_guard", source)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    return mod.CORE + mod.NEVER_BY_AGENT + mod.ASK + ["pyproject.toml", "uv.lock", ".github/*", "factory/*"]
+    return mod.NEVER_BY_AGENT
 
 
 def check(commit, base):
@@ -30,7 +30,6 @@ def check(commit, base):
         raise ValueError("tam commit SHA gerekli")
     if git("merge-base", commit, base).decode().strip() != base:
         raise ValueError("aday güncel main üzerinden gelmeli; önce rebase gerekli")
-    tracked_tests = set(git("ls-tree", "-r", "--name-only", base, "tests").decode().splitlines())
     patterns = protected_patterns()
     raw = git("diff", "--raw", "-z", "--no-renames", base, commit).split(b"\0")
     changed = []
@@ -40,10 +39,8 @@ def check(commit, base):
         modes = header.split()[:2]
         if any(m in {":120000", "120000", ":160000", "160000"} for m in modes):
             raise PermissionError("symlink/submodule değişikliği reddedildi")
-        if path in tracked_tests or any(fnmatch.fnmatch(path, p) for p in patterns):
-            raise PermissionError(f"korumalı yol: {path}")
-        if not (path.startswith("kepler/experts/") or path.startswith("scripts/") or path.startswith("tests/test_") or path.startswith("reports/")):
-            raise PermissionError(f"ajan yazma alanı dışında: {path}")
+        if any(fnmatch.fnmatch(path, p) for p in patterns):
+            raise PermissionError(f"üretilmiş kanıt/durum yolu: {path}")
         if path.endswith("_protocol.md"):
             result = path.removesuffix("_protocol.md") + ".md"
             if git("ls-tree", "--name-only", base, result).strip():

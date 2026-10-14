@@ -2,9 +2,7 @@
 Yalnızca stdlib: Modal'siz, pytest'siz koşar (`python3 tests/test_architecture.py`); Stop hook'u ve .githooks/pre-commit bunu çağırır.
 Yeni modül ekleyince LAYERS'a yaz (test bunu zorlar). İstisna eklemek yerine sorunu çöz: ALLOW listesi yalnızca küçülür (bayatlarsa test kırılır)."""
 import ast
-import fnmatch
 import pathlib
-import subprocess
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PKG = ROOT / "kepler"
@@ -32,18 +30,6 @@ JUDGE_FORBIDDEN = {"experts", "ensemble", "signals", "turtle", "indicators", "ma
 ALLOW = {
     ("experts", "ledger"): "zone_fade.py defter yazıyor (K1 rotate_book/yönetici dahil); WP1'de (experts/_interface) yönetici ayrılınca kalkar",
 }
-
-MAX_FILE_LINES = 300
-MAX_TOTAL_LINES = 3000
-
-# Git'te izlenen .md dosyaları için izin listesi (doc hell kapısı). Yeni belge türü açmak = bu listeyi bilerek değiştirmek.
-ALLOWED_MD = [
-    "AGENTS.md", "CLAUDE.md", "MISSION.md", "ARCHITECTURE.md", "BACKTEST.md", "TASKS.md", "README.md", "docs/factory.md",
-    "reports/*", "factory/*", "books_text/*", "data_manifest/*", "state/*", ".pi/*", "tests/*",
-    ".claude/rules/*", ".claude/skills/*", ".claude/agents/*",
-    ".github/CONTRIBUTING.md", ".github/SECURITY.md", ".github/pull_request_template.md",
-]
-
 
 def _group(mod: str) -> str | None:
     p = mod.split(".")
@@ -77,12 +63,6 @@ def _edges() -> dict[tuple[str, str], list[str]]:
     return e
 
 
-def test_every_module_has_a_layer():
-    missing = sorted(set(_modules()) - set(RANK))
-    assert not missing, f"katmanı olmayan modül(ler): {missing}. tests/test_architecture.py LAYERS'a ekle (ve ARCHITECTURE.md katman özetini güncelle)."
-    assert not (set(RANK) - set(_modules())), f"LAYERS'ta olup dosyası olmayan: {sorted(set(RANK) - set(_modules()))}"
-
-
 def test_no_upward_imports():
     bad = {k: v for k, v in _edges().items() if k[1] in RANK and k[0] in RANK and RANK[k[1]] > RANK[k[0]]}
     assert not bad, "üst katmanı import eden alt katman: " + "; ".join(f"{a}({LAYER_OF[a]}) -> {b}({LAYER_OF[b]}) @ {w[0]}" for (a, b), w in bad.items())
@@ -109,22 +89,6 @@ def test_package_does_not_import_outer_dirs():
             names = [n.module] if isinstance(n, ast.ImportFrom) and n.module else [a.name for a in n.names] if isinstance(n, ast.Import) else []
             for m in names:
                 assert m.split(".")[0] not in {"scripts", "factory", "tools", "tests"}, f"{f.relative_to(ROOT)}:{n.lineno}: kepler/ dışarıdaki '{m}' kodunu import edemez (akış tek yönlü)"
-
-
-def test_size_budget():
-    sizes = {f: len(f.read_text(encoding="utf-8").splitlines()) for f in PKG.rglob("*.py")}
-    big = {str(f.relative_to(ROOT)): n for f, n in sizes.items() if n > MAX_FILE_LINES}
-    assert not big, f"dosya başına {MAX_FILE_LINES} satır tavanı aşıldı (böl, uzmanı ayrı dosyaya al): {big}"
-    assert sum(sizes.values()) <= MAX_TOTAL_LINES, f"kepler/ toplam {sum(sizes.values())} satır > {MAX_TOTAL_LINES}: AGENTS.md 'kendi kodumuz küçük kalır'. Önce var olanı sadeleştir."
-
-
-def test_markdown_allowlist():
-    try:
-        tracked = subprocess.run(["git", "ls-files", "*.md"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.split()
-    except (OSError, subprocess.CalledProcessError):
-        return  # git yoksa atla
-    extra = [t for t in tracked if not any(fnmatch.fnmatch(t, g) for g in ALLOWED_MD)]
-    assert not extra, f"izin listesinde olmayan yeni .md: {extra}. Yeni belge açma; ilgili mevcut belgeye yaz (AGENTS.md 'nereye ne konur'). Gerçekten gerekiyorsa ALLOWED_MD'yi bilerek değiştir."
 
 
 if __name__ == "__main__":

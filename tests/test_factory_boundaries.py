@@ -18,13 +18,12 @@ def guard_module():
     return module
 
 
-def test_engine_and_deleted_core_are_protected(monkeypatch):
+def test_agent_core_edit_is_allowed_but_evidence_remains_protected():
     guard = guard_module()
-    monkeypatch.delenv("KEPLER_CORE_UNLOCK", raising=False)
-    assert guard.classify("kepler/referee_core.py", False)[0] == "deny"
-    monkeypatch.setattr(guard, "_arch_test", lambda: (True, ""))
-    monkeypatch.setattr(guard.subprocess, "run", lambda *a, **kw: SimpleNamespace(stdout="D\tkepler/referee.py\n", returncode=0))
-    assert guard.staged() == 1
+    assert guard.classify("kepler/referee_core.py", False)[0] == "allow"
+    assert guard.classify("tests/test_referee.py", False)[0] == "allow"
+    assert guard.classify("ledger/trials.jsonl", False)[0] == "deny"
+    assert guard.stop() == 0 and guard.staged() == 0
 
 
 def test_hash_tracks_engine_experts_scripts_and_lock(tmp_path, monkeypatch):

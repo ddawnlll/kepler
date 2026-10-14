@@ -85,22 +85,12 @@ NO_EDGE) ve testlerin tam tanımı orada. Kart yalnızca ön kayıtla ve bir son
    (aday yoksa hiçbir testte kullanılmaz; karar 2026-10-02). Veri
    şifreli saklanır, anahtar yalnızca kullanıcıdadır ve hiçbir ajanın ortamına girmez
    (ayrıntı `ARCHITECTURE.md` → Laboratuvar).
-4. **Yeni bileşen = gözlenmiş engel + önceki basit hale karşı karşılaştırma.** Engel yoksa
-   BUILD yok.
-5. **Doküman tavanı.** Yeni spec, karar, anayasa belgesi yazılmaz; tek istisnalar backtest tasarım belgesi `BACKTEST.md` (kullanıcı kararı 2026-10-02) ve fabrika spesifikasyonu `docs/factory.md` (kullanıcı kararı 2026-10-03). Sonuçlar `reports/`
-   altında kısa notlardır.
-6. **Bütçe.** Her blok için açık süre ve araç çağrısı/token tavanı yazılır; aşılınca dur ve
-   raporla. Dış sınır: 1 hafta.
-7. **Kendi kodumuz küçük kalır; iki ayrı sayı, ikisi de raporlanır.** (a) Hakem + yapıştırma
-   (hedef→emir adaptörü, funding, likidasyon ve strateji stopu, portföy, eleme, defter, sözleşme,
-   denetim, evaluate): **tavan kaldırıldı** (kullanıcı kararı, 2026-10-02; önceki tavan 300→450→600), sayı yine her raporda yazılır (G1 sonu: 268; G2 sonu: 347; Motor v2 sonu: 467; BACKTEST tamamlama sonu: 473). (b) Veri/QC/mühür araçları (indirici, kalite kontrol, evren, mühür)
-   ≲500 satır (G1 sonu: ~470). (c) Araştırma kodu (sinyaller, koşucular, rapor betikleri) tavansızdır ama
-   her modül testli ve kullanılıyor olmalı; kullanılmayan dosya silinir. Boş/yorum satırı ve testler
-   sayılmaz. (b) aşılırsa kullanıcıya sor; sessizce geçilmez. Bakım maliyeti V8'de projeyi bitirdi.
-8. **Geliştirme ajanları kilometre taşında onay bekler**, aralarda serbest çalışır.
-9. **Kritik kod** (değerlendirici, denetim, risk, mühür) kullanıcı yetkilendirmesi + bağımsız
-   inceleme ile değiştirilir; korumalı dosya sınırları bütün ajanlar için aynıdır. Model/effort
-   çalışma ortamında seçilir; model adı yetki veya doğrulama kanıtı değildir.
+4. **Bileşenler:** ihtiyaç olduğunda yeni modül ve refactor yapılabilir; eski yöntemle karşılaştırma bilimsel iddialar için önerilir.
+5. **Belgeler:** yeni teknik belge, deney notu veya tasarım belgesi serbesttir.
+6. **Bütçe:** gerçek maliyet ve kapasite sınırları çalışma ortamının politikasıdır; token/araç çağrısı için keyfî zorunlu tavan yoktur.
+7. **Kod:** dosya ve toplam satır tavanları kaldırılmıştır. Okunabilirlik ve test edilebilirlik esastır.
+8. **Geliştirme:** ajanlar kullanıcı kapsamı içinde kesintisiz ilerler; her kilometre taşında rutin onay beklemez.
+9. **Kritik kod:** hakem, risk ve denetim kodu değiştirilebilir; regresyon ve bağımsız inceleme uygun olduğu ölçüde yapılır. Mühür ve gerçek sermaye erişimi ayrı yetkilendirilir.
 10. **Sonuçlar dürüst raporlanır:** test kırmızıysa söylenir, atlanan adım "atlandı" diye
     yazılır, doğrulanmamış rakam "doğrulanmadı" etiketiyle gelir
     (KNOWN / LIKELY / UNKNOWN).

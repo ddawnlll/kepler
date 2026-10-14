@@ -3,8 +3,5 @@ paths:
   - scripts/**
   - reports/**
 ---
-# Deney / rapor kuralları
-- Bir deney = bir ön kayıt (`reports/<ad>_protocol.md`, koşudan önce commit) + bir işçi betiği. Var olan betiği genişlet, kopyalama; sonuç `reports/<ad>.md` + `reports/<ad>_data/`.
-- Sonuçlanmış ön kayıt (`<ad>.md` var) değişmez; değişiklik = yeni ön kayıt + yeni deneme. Deneme sayısı N kümülatif sayaca ve TASKS.md'ye yazılır.
-- Sonuç deftere yalnızca hakemden girer. Rakam sorgudan/defterden gelir; doğrulanmamış rakam "doğrulanmadı" yazılır, hafızadan sayı verilmez.
-- Mühürlü dönem (son 6 ay) açılmaz. Yeni `.md` açma: izin listesi `tests/test_architecture.py` içinde.
+# Deney ve rapor pratiği
+Deney hipotezini ve karar kuralını çalışmadan önce kaydet; geçmiş sonucu geriye dönük değiştirme. Yeni deney veya dokümantasyon dosyası açabilirsin; Markdown izin listesi yoktur. Rakamları ledger/hakem çıktısıyla kanıtla, negatif sonuçları koru. Mühürlü dönemi DEV araştırmasına katma.
