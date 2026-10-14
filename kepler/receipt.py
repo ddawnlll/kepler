@@ -2,6 +2,7 @@
 import dataclasses
 import hashlib
 import inspect
+import os
 import platform
 import subprocess
 import time
@@ -9,6 +10,7 @@ import uuid
 from contextlib import suppress
 from importlib import metadata
 from pathlib import Path
+from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -33,9 +35,11 @@ def fingerprint(o, depth: int = 0) -> str:
     if isinstance(o, (list, tuple, set, frozenset)):
         items = sorted((fingerprint(x, depth) for x in o)) if isinstance(o, (set, frozenset)) else (fingerprint(x, depth) for x in o)
         return _h(("[" + ",".join(items) + "]").encode())
+    if isinstance(o, partial):
+        return fingerprint((o.func, o.args, o.keywords), depth)
     if callable(o):
         try:
-            return _h(inspect.getsource(o).encode() + (closure_fp(o, depth + 1) if depth < 3 else "").encode())
+            return _h((getattr(o, "__module__", type(o).__module__) + ":" + getattr(o, "__qualname__", type(o).__qualname__)).encode() + inspect.getsource(o).encode() + fingerprint((getattr(o, "__defaults__", None), getattr(o, "__kwdefaults__", None))).encode() + (closure_fp(o, depth + 1) if depth < 3 else "").encode())
         except (OSError, TypeError):
             return _h(repr(o).encode())
     return _h(repr(o).encode())
@@ -64,8 +68,10 @@ def data_manifest(data: dict[str, dict], cut=None) -> dict:
     for s in sorted(data):
         d = data[s]
         per[s] = {k: dict(sha=fingerprint(v), n=len(v), first=str(v.index[0]) if len(v) else None, last=str(v.index[-1]) if len(v) else None)
-                  for k in ("kl", "funding", "mark") if (v := d.get(k)) is not None}
-    return dict(symbols=sorted(data), per_symbol=per, cut=[str(c) for c in cut] if cut else None, id=fingerprint(per) + fingerprint(sorted(data)) + fingerprint([str(c) for c in cut] if cut else None))
+                  for k in ("kl", "funding", "mark", "target", "stop", "funding_fallback_kl") if (v := d.get(k)) is not None}
+        per[s]["execution_rules"] = {k: d.get(k) for k in ("tick", "step")}
+    window = [str(c) for c in cut] if cut else None
+    return dict(symbols=sorted(data), execution_order=list(data), per_symbol=per, cut=window, id=fingerprint((list(data), per, window)))
 
 
 def _git(*a) -> str:
@@ -83,14 +89,14 @@ def _ver(pkg):
 def provenance() -> dict:
     """Köken: Git SHA, kirli-diff hash'i (izlenen dosyalar), uv.lock hash'i, Python/paket sürümleri."""
     lock = ROOT / "uv.lock"
-    return dict(git_sha=_git("rev-parse", "HEAD").strip() or None, dirty_diff_sha=_h(_git("diff", "HEAD").encode()), lock_sha=_h(lock.read_bytes()) if lock.exists() else None,
-                python=platform.python_version(), packages={p: _ver(p) for p in ("numpy", "pandas", "nautilus_trader", "scipy", "duckdb")})
+    return dict(git_sha=_git("rev-parse", "HEAD").strip() or os.environ.get("KEPLER_SOURCE_SHA"), dirty_diff_sha=os.environ.get("KEPLER_DIRTY_DIFF_SHA") or _h(_git("diff", "HEAD").encode()), lock_sha=_h(lock.read_bytes()) if lock.exists() else None,
+                python=platform.python_version(), packages={p: _ver(p) for p in ("numpy", "pandas", "numba", "scipy", "duckdb")})
 
 
-def make(config: dict, data: dict[str, dict], cut=None, book=None, extra_files=(), run_id: str | None = None, attempt: int = 1) -> dict:
+def make(config: dict, data: dict[str, dict], cut=None, book=None, extra_files=(), run_id: str | None = None, attempt: int = 1, size=None) -> dict:
     """Receipt: economic_id (ekonomik kimlik) + bileşen hash'leri + köken + run/attempt (kimlik dışı)."""
     code = code_hash(*extra_files)
-    cfg, dm, clo = fingerprint(config), data_manifest(data, cut), closure_fp(book) if book is not None else ""
+    cfg, dm, clo = fingerprint(config), data_manifest(data, cut), fingerprint((book, size))
     return dict(economic_id=_h(f"{code}|{cfg}|{dm['id']}|{clo}".encode()), code_hash=code, config_sha=cfg, data=dm, closure_sha=clo, provenance=provenance(),
                 run_id=run_id or uuid.uuid4().hex, attempt=attempt, created=time.time())
 

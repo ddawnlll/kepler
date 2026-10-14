@@ -2,7 +2,7 @@
 Olay sırası (zaman, sembol sırası): next_open modunda her bar iki olay (A = açılış parçası (o,o,o,o): eşleşme -> karar; B = gövde (o,h,l,c) t+1sa-1ns: eşleşme),
 close modunda tek olay (gövde eşleşmesi -> karar). Eşleşme = Nautilus L1 bar yürütmesinin kaynak koddan okunmuş kuralları: bar -> O,H,L,C tikleri (yalnızca son fiyattan farklıysa),
 tik boyutu = hacim/4 (BarTickSizes), piyasa/stop emri tik boyutuyla sınırlı dolar, kalan miktar son dolum fiyatının 1 tick ötesinden dolar, stop tetik fiyatından (gap'te piyasadan) dolar.
-Miktarlar tam sayı lot (U[k,0] = 10^sp, U[k,1] = 10^pp, U[k,2] = tick artışı, U[k,3] = adım/lot), fiyatlar tick ondalığına yuvarlanmış float. Nautilus çalıştırılmaz."""
+Miktarlar tam sayı lot (U[k,0] = 1/step, U[k,1] = 1/tick, U[k,2] = tick artışı), fiyatlar tick ızgarasında float. Aynı funding zamanındaki bütün ödemeler pozisyon snapshot'ından hesaplanır, sonra koruma yenilenir. Nautilus çalıştırılmaz."""
 import numpy as np
 from numba import njit
 
@@ -214,56 +214,72 @@ def _decide(k, tg, st, px, ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ, IT, IF):
 
 
 @njit(cache=True, nogil=True)
-def _settle(k, te, FP, FOFF, FT, FC, FR, F, I, G, N, U, P, FI, FF, PI, PF, RJ):
-    """k sembolünün zamanı <= te olan bekleyen funding olaylarını SETTLEMENT ANINDA, karardan önceki (eşleşme sonrası) lot x mark kapanışı x oranla bakiyeye (G[0]) işler (G[1] = toplam funding; mark ve kline yoksa N[3]++).
-    Bakiye değiştiği için equity, equity_scale, marj kilidi ve likidasyon fiyatı (_refresh'teki wb) aynı akışı görür; tutar sıfırdan farklıysa açık pozisyonların koruyucu emirleri yeni bakiyeyle yeniden kurulur
-    (seviye fiyatın ötesine geçtiyse reduce-only piyasa kapama = likidasyon). Boşlukta atlanan olay sonraki mevcut barın olayında (karar öncesi pozisyonla) işlenir."""
-    hit = False
-    while FP[k] < FOFF[k + 1] and FT[FP[k]] <= te:
-        j = FP[k]
-        FP[k] += 1
-        if np.isnan(FC[j]):
-            N[3] += 1
-            continue
-        amt = -(I[k, LOT] / U[k, 0]) * FC[j] * FR[j]
-        G[0] += amt
-        G[1] += amt
-        hit = hit or amt != 0
-    if hit:
-        for j in range(I.shape[0]):
-            if I[j, LOT] != 0 and I[j, DEAD] == 0 and F[j, PX] != 0.0:
-                if _refresh(j, F[j, PX], te, F, I, G, N, U, P, RJ):
-                    _exec(j, -I[j, LOT], F[j, BP], te, True, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
+def _settle(te, fp, FK, FT, FC, FR, F, I, G, N, U, P, FI, FF, PI, PF, RJ):
+    """Global funding clock: same-T debits/credits use the pre-settlement positions;
+    refresh/liquidation occurs once AFTER the complete batch. Missing bars cannot defer cash."""
+    while fp < len(FT) and FT[fp] <= te:
+        if N[0] + 2 * I.shape[0] + 8 >= len(FI) or N[2] + 2 * I.shape[0] + 8 >= len(RJ):
+            N[0] = -1
+            return fp
+        at, changed = FT[fp], False
+        while fp < len(FT) and FT[fp] == at:
+            if np.isnan(FC[fp]):
+                N[3] += 1
+            else:
+                amt = -I[FK[fp], LOT] / U[FK[fp], 0] * FC[fp] * FR[fp]
+                G[0] += amt
+                G[1] += amt
+                changed = changed or amt != 0
+            fp += 1
+        if changed:
+            for k in range(I.shape[0]):
+                if I[k, LOT] != 0 and I[k, DEAD] == 0 and F[k, PX] != 0:
+                    if _refresh(k, F[k, PX], at, F, I, G, N, U, P, RJ):
+                        _exec(k, -I[k, LOT], F[k, BP], at, True, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
+    return fp
 
 
 @njit(cache=True, nogil=True)
-def simulate(ev_k, ev_b, ev_kind, T0, O, H, L, C, SZ, TG, ST, U, P, cap_fills, FOFF, FT, FC, FR, FI, FF, PI, PF, RJ, IT, IF, PRE, END):  # noqa: E741
-    """Tüm olayları sırayla koştur. Dönüş: (F, I, G, N). PRE[b] = karar anındaki (eşleşme sonrası) lot, END[b] = gövde sonu lot (funding için)."""
+def simulate(ev_k, ev_b, ev_kind, T0, O, H, L, C, SZ, TG, ST, U, P, cap_fills, FK, FT, FC, FR, FI, FF, PI, PF, RJ, IT, IF):
+    """Batch bars with the same timestamp, then settlement, then decisions.
+    Record buffers reserve the worst-case whole-symbol batch; overflow requests a fresh retry."""
     K = U.shape[0]
     F, I = np.zeros((K, 9)), np.zeros((K, 5), np.int64)
     F[:, STOP], F[:, ORD], F[:, LP], F[:, TLAST], F[:, BP] = np.nan, np.nan, np.nan, np.nan, np.nan
-    G, N, FP = np.array([P[CAP], 0.0]), np.zeros(5, np.int64), FOFF[:-1].copy()  # G: [bakiye (funding dahil), toplam funding]; N: [dolum, döngü, red, funding kaçan, niyet]
-    for e in range(ev_k.shape[0]):
-        if N[0] + 8 >= cap_fills or N[2] + 8 >= RJ.shape[0] or N[4] + 8 >= IT.shape[0]:
+    G, N = np.array([P[CAP], 0.0]), np.zeros(5, np.int64)
+    e, fp, reserve = 0, 0, 8 * K + 8
+    while e < len(ev_k):
+        if N[0] + reserve >= cap_fills or N[2] + reserve >= len(RJ) or N[4] + reserve >= len(IT):
             N[0] = -1
             return F, I, G, N
-        k, b, kind = ev_k[e], ev_b[e], ev_kind[e]
-        if kind == KIND_OPEN:
-            ts = T0[b]
-            _bar(k, O[b], O[b], O[b], O[b], SZ[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
-            _settle(k, ts, FP, FOFF, FT, FC, FR, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
-            PRE[b] = I[k, LOT]
-            _decide(k, TG[b], ST[b], O[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ, IT, IF)
-        elif kind == KIND_BODY:
-            ts = T0[b] + HOUR - 1
-            _bar(k, O[b], H[b], L[b], C[b], SZ[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
-            F[k, PX] = C[b]
-            _settle(k, ts + 1, FP, FOFF, FT, FC, FR, F, I, G, N, U, P, FI, FF, PI, PF, RJ)  # funding anı T = kapanış = ts + 1ns
-            END[b] = I[k, LOT]
-        else:
-            ts = T0[b] + HOUR
-            _bar(k, O[b], H[b], L[b], C[b], SZ[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
-            _settle(k, ts, FP, FOFF, FT, FC, FR, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
-            PRE[b] = I[k, LOT]
-            _decide(k, TG[b], ST[b], C[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ, IT, IF)
+        b, kind = ev_b[e], ev_kind[e]
+        ts = T0[b] + (HOUR - 1 if kind == KIND_BODY else HOUR if kind == KIND_CLOSE else 0)
+        end = e + 1
+        while end < len(ev_k):
+            bb, kk = ev_b[end], ev_kind[end]
+            tt = T0[bb] + (HOUR - 1 if kk == KIND_BODY else HOUR if kk == KIND_CLOSE else 0)
+            if tt != ts:
+                break
+            end += 1
+        # Funding in a gap, and opening-time settlement, precedes new opening fills.
+        fp = _settle(ts - (0 if kind == KIND_OPEN else 1), fp, FK, FT, FC, FR, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
+        if N[0] < 0:
+            return F, I, G, N
+        for j in range(e, end):
+            k, b = ev_k[j], ev_b[j]
+            if kind == KIND_OPEN:
+                _bar(k, O[b], O[b], O[b], O[b], SZ[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
+                F[k, PX] = O[b]
+            else:
+                _bar(k, O[b], H[b], L[b], C[b], SZ[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
+                F[k, PX] = C[b]
+        if kind != KIND_OPEN:
+            fp = _settle(ts + (1 if kind == KIND_BODY else 0), fp, FK, FT, FC, FR, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
+            if N[0] < 0:
+                return F, I, G, N
+        if kind != KIND_BODY:
+            for j in range(e, end):
+                k, b = ev_k[j], ev_b[j]
+                _decide(k, TG[b], ST[b], O[b] if kind == KIND_OPEN else C[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ, IT, IF)
+        e = end
     return F, I, G, N

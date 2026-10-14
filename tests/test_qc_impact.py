@@ -69,10 +69,21 @@ def test_policies_same_accounting_path_and_point_in_time():
     assert qi.POLICIES[0] == "P0_original"
 
 
-def test_p2_direction_from_held_target_matches_fills_when_no_lot_noop():
+def test_p2_requires_actual_fills_instead_of_intended_target():
     data, sp = setup()
     res = run_portfolio(data, sp)
     tg = {"X": pd.DataFrame(dict(target=data["X"]["target"]))}
-    a = qi.apply_policy(data, res, "P2_funding_adverse_flagged")["X"]["funding"]
-    b = qi.apply_policy(data, None, "P2_funding_adverse_flagged", tg)["X"]["funding"]
-    assert a.equals(b)  # tek uzun pozisyon: fill'den ve hedef işaretinden aynı yön
+    assert qi.apply_policy(data, res, "P2_funding_adverse_flagged")["X"]["funding"].equals(data["X"]["funding"])
+    with pytest.raises(ValueError, match="actual fills"):
+        qi.apply_policy(data, None, "P2_funding_adverse_flagged", tg)
+
+
+def test_qc_funding_impact_uses_pre_settlement_fills_and_policy_identity():
+    from kepler import receipt
+    data, sp = setup()
+    data["X"]["target"] = -data["X"]["target"]
+    res = run_portfolio(data, sp)
+    p2 = qi.apply_policy(data, res, "P2_funding_adverse_flagged")
+    assert qi.impact(data, res, sp)["totals"]["funding"] == A(res["summary"]["funding"])
+    assert p2["X"]["funding"].loc[pd.Timestamp("2024-01-01 08:00", tz="UTC"), "last_funding_rate"] == -.02
+    assert receipt.data_manifest(data)["id"] != receipt.data_manifest(p2)["id"]

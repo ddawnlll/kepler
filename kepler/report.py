@@ -3,42 +3,48 @@ import numpy as np
 import pandas as pd
 
 
-def hourly_pnl(kl: pd.DataFrame, mark: pd.DataFrame | None, funding: pd.DataFrame | None, fills: pd.DataFrame, spec) -> pd.Series:
+def hourly_pnl(kl: pd.DataFrame, mark: pd.DataFrame | None, funding: pd.DataFrame | None, fills: pd.DataFrame, spec, fallback=None) -> pd.Series:
     """Saatlik net PnL (fiyat + funding - komisyon - likidasyon ücreti, son barda çıkış maliyeti); toplamı hakem net_pnl'ine eşit. Gövde barı dolumları (stop, likidasyon: ts = t+1h-1ns)
     kendi barlarına yazılır: bar PnL'i = önceki pozisyon x (sonraki açılış - açılış) + sum(Δ x (sonraki açılış - dolum fiyatı)) - komisyon."""
-    bar = pd.DatetimeIndex(pd.to_datetime(fills.ts, unit="ns", utc=True)).floor("1h")
-    signed = pd.Series(np.where(fills.side == "BUY", fills.qty, -fills.qty), index=bar)
-    nxt = kl.open.shift(-1).fillna(kl.close.iloc[-1])
-    by_bar = lambda v: pd.Series(np.asarray(v, float), index=bar).groupby(level=0).sum().reindex(kl.index, fill_value=0.0)  # noqa: E731
-    pos = by_bar(signed).cumsum()  # bar sonu pozisyonu
+    raw_ts = pd.DatetimeIndex(pd.to_datetime(fills.ts, unit="ns", utc=True))
+    bar = raw_ts.floor("1h").where(raw_ts.floor("1h") <= kl.index[-1], kl.index[-1])
+    rate = funding.last_funding_rate.copy() if funding is not None else pd.Series(dtype=float)
+    if len(rate):
+        rate.index = rate.index.round("1min")
+        rate = rate[(rate.index >= kl.index[0] + pd.Timedelta("1h")) & (rate.index <= kl.index[-1] + pd.Timedelta("1h"))]
+    # Keep gap-time and terminal settlement fills; the latter posts in the last real bar.
+    fund_bars = rate.index - pd.Timedelta("1h") if len(rate) else pd.DatetimeIndex([], tz=kl.index.tz)
+    ix = kl.index.union(bar.unique()).union(fund_bars.unique()).sort_values()
+    opened = kl.open.reindex(ix).fillna(kl.close.reindex(ix, method="ffill"))
+    nxt = opened.shift(-1).fillna(kl.close.iloc[-1])
+    signed = np.where(fills.side == "BUY", fills.qty, -fills.qty)
+    by_bar = lambda v: pd.Series(np.asarray(v, float), index=bar).groupby(level=0).sum().reindex(ix, fill_value=0.0)
+    pos = by_bar(signed).cumsum()
     side_fee = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4
     liq = fills.qty * fills.px * fills.liq * max(0.0, (spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate) - side_fee)
-    pnl = pos.shift(1, fill_value=0.0) * (nxt - kl.open) + by_bar(signed.to_numpy() * (nxt.reindex(bar).to_numpy() - fills.px.to_numpy())) - by_bar(fills.commission) - by_bar(liq)
-    if funding is not None and len(funding):
-        rate = funding.last_funding_rate.copy()
-        rate.index = rate.index.round("1min")
-        mk = (mark.close if mark is not None else kl.close)
-        before = pos.shift(1, fill_value=0.0)  # bar başı (karar öncesi) pozisyon
-        for T, r in rate.items():
-            b = T - pd.Timedelta("1h")
-            c = mk.get(b, np.nan)
-            if np.isnan(c) and mark is not None:
-                c = kl.close.get(b, np.nan)  # hakemle aynı geri düşüş
-            if np.isnan(c) or not (kl.index[0] + pd.Timedelta("1h") <= T <= kl.index[-1] + pd.Timedelta("1h")):
-                continue
-            if b in pos.index:
-                pnl[b] += -pos[b] * c * r  # T öncesi tutulan pozisyon x mark kapanışı (hakemle aynı kural)
-            else:  # boşluk: T'de bar yok, funding sonraki mevcut barın karar öncesi pozisyonuna (hakem: settle açılış tikinde)
-                j = kl.index.searchsorted(T)
-                if j < len(kl.index):
-                    pnl.iloc[j] += -before.iloc[j] * c * r
-    pnl.iloc[-1] -= abs(pos.iloc[-1]) * kl.close.iloc[-1] * side_fee
+    pnl = pos.shift(1, fill_value=0.0) * (nxt - opened) + by_bar(signed * (nxt.reindex(bar).to_numpy() - fills.px.to_numpy())) - by_bar(fills.commission) - by_bar(liq)
+    order = np.argsort(raw_ts.asi8, kind="stable")
+    ft, fq = raw_ts.asi8[order], np.cumsum(signed[order])
+    fallback = kl if fallback is None else fallback
+    for T, r in rate.items():
+        b = T - pd.Timedelta("1h")
+        c = (mark.close if mark is not None else fallback.close).get(b, np.nan)
+        if np.isnan(c) and mark is not None:
+            c = fallback.close.get(b, np.nan)
+        if np.isnan(c):
+            continue
+        # Timestamp-T liquidation and entries happen AFTER timestamp-T funding.
+        j = np.searchsorted(ft, T.value, side="left") - 1
+        pnl[b] -= (fq[j] if j >= 0 else 0.0) * c * r
+    if spec.close_out:
+        pnl.iloc[-1] -= abs(pos.iloc[-1]) * kl.close.iloc[-1] * side_fee
+
     return pnl
 
 
 def book_pnl(data: dict, res: dict, spec) -> pd.Series:
     """Portföy saatlik net PnL: sembol başına hourly_pnl'nin toplamı (data[sym] = kl, funding, mark içeren dict'ler; res = run_portfolio çıktısı)."""
-    parts = [hourly_pnl(d["kl"], d.get("mark"), d.get("funding"), res["fills"][res["fills"].sym == s], spec) for s, d in data.items()]
+    parts = [hourly_pnl(d["kl"], d.get("mark"), d.get("funding"), res["fills"][res["fills"].sym == s], spec, d.get("funding_fallback_kl")) for s, d in data.items()]
     return pd.concat(parts, axis=1).fillna(0.0).sum(axis=1).sort_index()
 
 

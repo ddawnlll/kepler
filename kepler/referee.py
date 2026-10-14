@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 
 from kepler import referee_core as core
-from kepler.intents import finalize, from_kernel
+from kepler.intents import finalize, from_kernel, summarize_kernel
 from kepler import tape
 
 HOUR_NS = core.HOUR
@@ -70,9 +70,11 @@ def _prep(sym: str, d: dict, spec: Spec):
     if len(kl) == 0 or (np.diff(t0) % HOUR_NS).any() or t0[0] % HOUR_NS:
         raise ValueError("kl boş ya da saatlik hizalı değil")
     tape.check_target(kl, target)  # yanlış hizalı/tz'siz hedef sessizce sıfır işleme dönüşmesin
-    if funding is not None and funding["last_funding_rate"].isna().any():
-        raise ValueError("funding oranında NaN var (QC'den geçmemiş veri)")
-    tick, step = d.get("tick") or spec.tick, d.get("step") or spec.step
+    if funding is not None and not np.isfinite(funding["last_funding_rate"].to_numpy(float)).all():
+        raise ValueError("funding oranında NaN/Inf var (QC'den geçmemiş veri)")
+    tick, step = (getattr(spec, k) if d.get(k) is None else d[k] for k in ("tick", "step"))
+    if not all(np.isfinite(float(x)) and float(x) > 0 for x in (tick, step)):
+        raise ValueError("tick/step sonlu ve pozitif olmalı")
     pp, sp = _dp(tick), _dp(step)
     mark = d.get("mark")
     hi, lo = kl.high, kl.low
@@ -80,7 +82,7 @@ def _prep(sym: str, d: dict, spec: Spec):
         hi, lo = mark.high.reindex(kl.index).fillna(kl.high), mark.low.reindex(kl.index).fillna(kl.low)
     o, c = kl.open.to_numpy(float), kl.close.to_numpy(float)
     h, l = np.fmax.reduce([hi.to_numpy(float), o, c]), np.fmin.reduce([lo.to_numpy(float), o, c])  # noqa: E741  O/C [L,H] içinde kalsın
-    q = lambda a: np.rint(a * 10.0**pp) / 10.0**pp  # noqa: E731  tick ondalığına yuvarla (Price.from_str karşılığı)
+    q = lambda a: np.rint(a * 10.0**pp / (float(tick) * 10.0**pp)) * (float(tick) * 10.0**pp) / 10.0**pp  # noqa: E731  tick ondalığına yuvarla (Price.from_str karşılığı)
     o, h, l, c = q(o), q(h), q(l), q(c)  # noqa: E741
     if not all(np.isfinite(a).all() and (a > 0).all() for a in (o, h, l, c)):
         raise ValueError(f"{sym}: kline OHLC'de NaN/sonsuz/pozitif olmayan fiyat (QC'den geçmemiş veri)")
@@ -95,37 +97,50 @@ def _prep(sym: str, d: dict, spec: Spec):
     sz[big] = np.c_[path, path, path, incs - 3 * path][big]
     sz[incs == 1, 3], sz[incs == 2, 1], sz[incs == 2, 2], sz[incs == 3, :3] = 1, 1, 1, 1
     stop = d.get("stop")
+    if stop is not None:
+        tape.check_target(kl, stop)
     tg = target.astype(float).to_numpy()
     st = stop.astype(float).to_numpy() if stop is not None else np.full(len(kl), np.nan)
-    return dict(t0=t0, o=o, h=h, l=l, c=c, tg=tg, st=st, sz=sz * inc, u=(10.0**sp, 10.0**pp, float(tick)))
+    return dict(t0=t0, o=o, h=h, l=l, c=c, tg=tg, st=st, sz=sz, u=(1.0 / float(step), 1.0 / float(tick), float(tick)))
 
 
-def _fund_inputs(kl, mark, funding):
+def _fund_inputs(kl, mark, funding, fallback=None):
     """Funding olaylarının pozisyondan bağımsız kısmı (bir kez): T (1 dk yuvarlı), oran, mark kapanışı (yoksa kline kapanışı), kaçan/kline'a düşen sayıları. Aralık dışı olaylar atlanır."""
     if funding is None or not len(funding):
         return None
     ts, rate, t0 = ns(pd.DatetimeIndex(funding.index).round("1min")), funding["last_funding_rate"].to_numpy(float), ns(kl.index)
     ok = (t0[0] + HOUR_NS <= ts) & (ts <= t0[-1] + HOUR_NS)
     ts, rate = ts[ok], rate[ok]
-    src = mark if mark is not None else kl
-    order = np.argsort(ns(src.index), kind="stable")
-    mk_close, mk_val = (ns(src.index) + HOUR_NS)[order], src.close.to_numpy(float)[order]
-    i = np.searchsorted(mk_close, ts, side="right") - 1  # yinelenen anahtarda sonuncusu (dict semantiği)
-    hit = (i >= 0) & (mk_close[np.maximum(i, 0)] == ts)
-    c, fallback = np.where(hit, mk_val[np.maximum(i, 0)], np.nan), 0
+    fallback = kl if fallback is None else fallback
+    src = mark if mark is not None else fallback
+    if len(src):
+        order = np.argsort(ns(src.index), kind="stable")
+        mk_close, mk_val = (ns(src.index) + HOUR_NS)[order], src.close.to_numpy(float)[order]
+        i = np.searchsorted(mk_close, ts, side="right") - 1  # yinelenen anahtarda sonuncusu (dict semantiği)
+        hit = (i >= 0) & (mk_close[np.maximum(i, 0)] == ts)
+        c = np.where(hit, mk_val[np.maximum(i, 0)], np.nan)
+    else:
+        c = np.full(len(ts), np.nan)
+    fallback_count = 0
     if mark is not None:  # mark barı yok: kline kapanışına düş (sayılır)
         miss = np.isnan(c)
-        j = np.searchsorted(t0, ts - HOUR_NS)
-        kh = (j < len(t0)) & (t0[np.minimum(j, len(t0) - 1)] == ts - HOUR_NS)
-        c2 = np.where(kh, kl.close.to_numpy(float)[np.minimum(j, len(t0) - 1)], np.nan)
-        c, fallback = np.where(miss, c2, c), int((miss & ~np.isnan(c2)).sum())
-    return dict(ts=ts, rate=rate, c=c, fallback=fallback)
+        fb_t = ns(fallback.index)
+        j = np.searchsorted(fb_t, ts - HOUR_NS)
+        kh = (j < len(fb_t)) & (fb_t[np.minimum(j, len(fb_t) - 1)] == ts - HOUR_NS)
+        c2 = np.where(kh, fallback.close.to_numpy(float)[np.minimum(j, len(fb_t) - 1)], np.nan)
+        c, fallback_count = np.where(miss, c2, c), int((miss & ~np.isnan(c2)).sum())
+    if np.isinf(c).any() or (c <= 0).any():
+        raise ValueError("funding mark/kline fiyatı sonlu ve pozitif olmalı (eksik NaN ayrı sayılır)")
+    return dict(ts=ts, rate=rate, c=c, fallback=fallback_count)
 
 
 def _fund_arrays(fx):
-    """Sembol başına zaman sıralı funding olaylarını tek dizilere topla (çekirdek: FOFF sembol sınırları, FT zaman, FC mark kapanışı, FR oran)."""
-    parts = [(np.zeros(0, np.int64), np.zeros(0), np.zeros(0)) if f is None else (lambda o: (f["ts"][o], f["c"][o], f["rate"][o]))(np.argsort(f["ts"], kind="stable")) for f in fx]
-    return dict(FOFF=np.r_[0, np.cumsum([len(p[0]) for p in parts])].astype(np.int64), FT=np.concatenate([p[0] for p in parts]).astype(np.int64), FC=np.concatenate([p[1] for p in parts]), FR=np.concatenate([p[2] for p in parts]))
+    """Global sorted settlement clock; same-time events keep one shared position snapshot."""
+    parts = [(np.zeros(0, np.int64), np.zeros(0), np.zeros(0)) if f is None else (f["ts"], f["c"], f["rate"]) for f in fx]
+    FT, FC, FR = (np.concatenate([p[i] for p in parts]) for i in range(3))
+    FK = np.repeat(np.arange(len(fx), dtype=np.int64), [len(p[0]) for p in parts])
+    order = np.argsort(FT, kind="stable")
+    return dict(FK=FK[order], FT=FT[order].astype(np.int64), FC=FC[order], FR=FR[order])
 
 
 def run(kl: pd.DataFrame, target: pd.Series, spec: Spec = Spec(), funding: pd.DataFrame | None = None, mark: pd.DataFrame | None = None, stop: pd.Series | None = None) -> dict:
@@ -149,7 +164,7 @@ def prepare(data: dict[str, dict], spec: Spec = Spec()) -> dict:
     else:
         ev_t, ev_b, ev_k = np.r_[T0, T0 + HOUR_NS - 1], np.r_[bar, bar], np.r_[sym, sym]
         ev_kind = np.r_[np.zeros(len(bar), np.int8), np.ones(len(bar), np.int8)]
-    fx = [_fund_inputs(d["kl"], d.get("mark"), d.get("funding")) for d in data.values()]
+    fx = [_fund_inputs(d["kl"], d.get("mark"), d.get("funding"), d.get("funding_fallback_kl")) for d in data.values()]
     o_ = np.lexsort((ev_k, ev_t))  # zaman, sonra sembol sırası (eski motor: veri ekleme sırası)
     return dict(syms=syms, prep=prep, n=n, off=off, T0=T0, O=O, H=H, L=L, C=C, SZ=SZ, U=np.array([p["u"] for p in prep]), close_mode=close_mode, tg=cat("tg"), st=cat("st"),
                 ev_k=ev_k[o_].astype(np.int64), ev_b=ev_b[o_].astype(np.int64), ev_kind=ev_kind[o_], fx=fx, **_fund_arrays(fx), key=(spec.fill, spec.tick, spec.step))
@@ -171,10 +186,10 @@ def _kernel_cpu(pr: dict, TG, ST, P):
     cap = max(4096, nb // 16)  # tipik dolum sayısı bar sayısının ~%1'i; taşarsa iki katına çıkarıp yeniden koş (senaryo başına ~110 MB yerine ~5 MB tampon)
     while True:
         FI, FF, PI, PF, RJ = np.zeros((cap, 4), np.int64), np.zeros((cap, 3)), np.zeros((cap, 3), np.int64), np.zeros(cap), np.zeros((cap, 3), np.int64)
-        IT, IF, PRE, END = np.zeros((cap, 3), np.int64), np.zeros((cap, 5)), np.zeros(nb, np.int64), np.zeros(nb, np.int64)
-        F, I, G, N = core.simulate(pr["ev_k"], pr["ev_b"], pr["ev_kind"], pr["T0"], pr["O"], pr["H"], pr["L"], pr["C"], pr["SZ"], TG, ST, pr["U"], P, cap, pr["FOFF"], pr["FT"], pr["FC"], pr["FR"], FI, FF, PI, PF, RJ, IT, IF, PRE, END)
+        IT, IF = np.zeros((cap, 3), np.int64), np.zeros((cap, 5))
+        F, I, G, N = core.simulate(pr["ev_k"], pr["ev_b"], pr["ev_kind"], pr["T0"], pr["O"], pr["H"], pr["L"], pr["C"], pr["SZ"], TG, ST, pr["U"], P, cap, pr["FK"], pr["FT"], pr["FC"], pr["FR"], FI, FF, PI, PF, RJ, IT, IF)
         if N[0] >= 0:
-            return dict(F=F, I=I, G=G, N=N, FI=FI, FF=FF, PI=PI, PF=PF, RJ=RJ, IT=IT, IF=IF, PRE=PRE, END=END)
+            return dict(F=F, I=I, G=G, N=N, FI=FI, FF=FF, PI=PI, PF=PF, RJ=RJ, IT=IT, IF=IF)
         cap *= 2
 
 
@@ -208,7 +223,8 @@ def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> d
     summary = dict(net_pnl=net, gross_pnl=net + fee + slip + exit_cost - fund + liq_fee, fee=fee, slippage=slip, funding=fund, liq_fee=liq_fee, exit_cost=exit_cost, n_fills=nf, n_liq=int(liq.sum()), n_stop=int(stp.sum()),
                    end_position=next(iter(end_pos.values())) if len(end_pos) == 1 else sum(abs(v) for v in end_pos.values()), engine_commission=float(ff[:, 2].sum()), n_rejected=len(rejected),
                    funding_missed=missed, funding_mark_fallback=fallback)
-    intents, isum = finalize(from_kernel(syms, IT[: int(N[4])], IF[: int(N[4])]))
+    it, iv = IT[: int(N[4])], IF[: int(N[4])]
+    intents, isum = finalize(from_kernel(syms, it, iv)) if full else (None, summarize_kernel(it, iv))
     summary.update(isum)  # niyet izi (#11): n_intents, n_blocked_minimum, n_noop_lot, n_blocked_halt, n_partial, n_engine_unfilled, blocked_notional, gap_notional_abs
     if not full:
         return dict(summary=summary, rejected=rejected)
@@ -219,15 +235,19 @@ def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> d
 
 def run_many(data: dict[str, dict], specs: list[Spec], workers: int = 4, full: bool = True, kernel=None) -> list[dict]:
     """Aynı veri, çok senaryo; hazırlık bir kez, çekirdek nogil olduğundan iş parçacıklarıyla paralel. full=False: yalnızca özet + reddedilenler (fills/positions DataFrame'i yok; tarama için).
-    kernel: isteğe bağlı GPU çekirdeği `simulate_many(pr, inputs) -> ham çıktılar|None` (scripts/referee_gpu.py; tam hatta kazanç ~1,1x ve ~4x pahalı olduğundan varsayılan CPU)."""
+    kernel: eski GPU çağrılarını açıkça reddetmek için korunan uyumluluk parametresi; yalnız Numba CPU desteklenir."""
     from concurrent.futures import ThreadPoolExecutor
     if kernel is not None:
-        raise NotImplementedError("GPU yolu funding settlement'ı (#10) taşımıyor: CPU çekirdeğini kullanın (scripts/referee_gpu.py güncellenene kadar)")
+        raise NotImplementedError("GPU yolu emekliye ayrıldı: funding/niyet eşdeğerliği doğrulanmadı. Numba CPU kullanın.")
+    if not specs:
+        return []
+    if workers < 1:
+        raise ValueError("workers >= 1 required")
     pr = prepare(data, specs[0])
-    assert all((sp.fill, sp.tick, sp.step) == pr["key"] for sp in specs), "tüm senaryolar aynı fill/tick/step'i paylaşmalı"
-    raws = kernel(pr, [_inputs(pr, sp) for sp in specs]) if kernel else [None] * len(specs)
+    if not all((sp.fill, sp.tick, sp.step) == pr["key"] for sp in specs):
+        raise ValueError("tüm senaryolar aynı fill/tick/step paylaşmalı")
     with ThreadPoolExecutor(workers) as ex:
-        return list(ex.map(lambda a: _finish(pr, data, a[0], a[1], full) if a[1] is not None else _run_cpu(pr, data, a[0], full), zip(specs, raws)))
+        return list(ex.map(lambda sp: _run_cpu(pr, data, sp, full), specs))
 
 
 def _run_cpu(pr: dict, data: dict, sp: Spec, full: bool) -> dict:

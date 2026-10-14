@@ -75,3 +75,9 @@ htmlcov/
 .worktrees/
 wt_*/
 modal_pull/
+
+# Only curated external test snapshots; raw market data remains ignored.
+!tests/data/
+!tests/data/tradingview/
+!tests/data/tradingview/*.csv.gz
+!tests/data/tradingview/*.json

@@ -88,3 +88,36 @@ def test_merge_key_format_for_carryxs_shards(tmp_path):
     assert list(m["results"]) == [f"null_{i}" for i in range(6)]
     with pytest.raises(NM.MergeError, match="tohum kümesi"):
         NM.merge(tmp_path, 6, 3)  # yanlış anahtar biçimi sessizce kabul edilmez
+
+
+def test_worker_identity_and_run_manifest_must_match(tmp_path, monkeypatch):
+    full(tmp_path)
+    manifest = dict(run_id="fresh", script="ensemble", b=10)
+    monkeypatch.setenv("KEPLER_NULL_MANIFEST", json.dumps(manifest))
+    for lo, hi in NM.spans(10, 4):
+        NM.publish_identity(tmp_path / f"null_{lo}_{hi}.json", "a" * 64)
+    assert NM.merge(tmp_path, 10, 4, run_manifest=manifest)["economic_id"] == "a" * 64
+    with pytest.raises(NM.MergeError, match="run manifest mismatch"):
+        NM.merge(tmp_path, 10, 4, run_manifest=dict(manifest, run_id="stale"))
+    NM.publish_identity(tmp_path / "null_4_8.json", "b" * 64)
+    with pytest.raises(NM.MergeError, match="identity mismatch"):
+        NM.merge(tmp_path, 10, 4, run_manifest=manifest)
+    (tmp_path / "null_4_8.manifest.json").unlink()
+    with pytest.raises(NM.MergeError, match="missing"):
+        NM.merge(tmp_path, 10, 4, run_manifest=manifest)
+
+
+@pytest.mark.parametrize("bad", [float("inf"), float("nan")])
+def test_nested_nonfinite_metrics_fail(tmp_path, bad):
+    full(tmp_path)
+    shard(tmp_path, 0, 4, **{"1": dict(u=U(1), summary=dict(net_pnl=bad))})
+    with pytest.raises(NM.MergeError, match="NaN/Inf"):
+        NM.merge(tmp_path, 10, 4)
+
+
+def test_production_economic_metrics_cannot_be_missing_or_invalid():
+    valid = dict(net_pnl=1., funding=-.01, n_fills=3., n_rejected=0, n_engine_unfilled=0, funding_missed=0)
+    NM.validate_economics(valid)
+    for bad in (dict(valid, n_rejected=1), dict(valid, n_engine_unfilled=1), dict(valid, funding_missed=1), dict(valid, net_pnl="1"), dict(valid, n_fills=-1)):
+        with pytest.raises(NM.MergeError):
+            NM.validate_economics(bad)

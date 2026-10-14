@@ -397,6 +397,8 @@ TV_LEVEL = {"Middle": "P", "S1": "S1", "S2": "S2", "S3": "S3", "R1": "R1", "R2":
 
 
 def tv_case(tf):
+    if not (TVDIR / f"btcusdt_{tf}.csv.gz").exists() or not (TVDIR / f"tv_{tf}.json").exists():
+        pytest.skip("Original 2026-10-03 TradingView external snapshot is absent; no synthetic replacement")
     with gzip.open(TVDIR / f"btcusdt_{tf}.csv.gz", "rt") as f:
         k = pd.read_csv(f)
     k.index = pd.DatetimeIndex(pd.to_datetime(k.open_time, unit="ms", utc=True)).as_unit("ns")

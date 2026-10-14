@@ -1,12 +1,14 @@
 """C1: deney defteri = append-only JSONL, DuckDB ile sorgulanır.
 
 Kural: sonuç (PnL vb.) deftere YALNIZCA source="referee" ile girer; source="screen" (vectorbt) yalnızca `score` taşır.
-Her kayıt (eleme dahil) deneme sayacını (`trial`) bir artırır; sayaç çoklu-test düzeltmesinin (DSR) girdisidir.
+Her olay (eleme/başarısızlık dahil) defter sırasını (`trial`) artırır. Bu sıra bağımsız hipotez veya DSR aile sayısı değildir; istatistik aile/protokol kapsamını kullanır.
 """
 import fcntl
 import hashlib
 import json
+import os
 import time
+import uuid
 from pathlib import Path
 
 import duckdb
@@ -42,6 +44,9 @@ def invalid_reason(result: dict) -> str | None:
 
 def _append(path, source, hypothesis, config, code, data, status, reason, kind, result, score, invalid_result, receipt, family=None) -> dict:
     p = Path(path)
+    job_dir = os.environ.get("KEPLER_JOB_RECEIPTS")
+    if job_dir:
+        p = Path(job_dir) / ((receipt or {}).get("run_id", uuid.uuid4().hex) + ".jsonl")
     p.parent.mkdir(parents=True, exist_ok=True)
     json.dumps([config, result, score, receipt, invalid_result], default=str, allow_nan=False)  # satır sayacı artmadan önce doğrula
     with p.open("a+") as f:  # append-only: mevcut satırlar asla yeniden yazılmaz; flock YALNIZ aynı makine/konteyner içinde güvence (Modal Volume'da konteynerler arası güvence DEĞİL: aşağıda job-receipt modeli)
@@ -50,13 +55,15 @@ def _append(path, source, hypothesis, config, code, data, status, reason, kind, 
         prev = [json.loads(l) for l in f if l.strip()]
         eid = (receipt or {}).get("economic_id")
         row = dict(trial=len(prev) + 1, time=time.time(), source=source, hypothesis=hypothesis, config=config, config_hash=sha(config), code_hash=code, data_hash=data,
-                   result=result, score=score, status=status, reason=reason, kind=kind, attempt=1 + sum(1 for r in prev if eid and r.get("economic_id") == eid))
+                   result=result, score=score, status=status, reason=reason, kind=kind, attempt=(next((r["attempt"] for r in prev if receipt and kind == "run" and (r.get("receipt") or {}).get("run_id") == receipt.get("run_id")), None) or (1 + max((r.get("attempt", 1) for r in prev if eid and r.get("economic_id") == eid), default=0))))
         if invalid_result is not None:
             row["invalid_result"] = invalid_result  # performans alanı (result) boş; ham sonuç yalnız araştırma izi
         if family is not None:
             row["family"] = family  # scripts/trial_policy.check_family_meta sözleşmesi
         if receipt is not None:
-            row.update(receipt=receipt, economic_id=eid)  # eski satırlarda yok: provenance_status 'legacy_partial_provenance'
+            row.update(receipt=dict(receipt, attempt=row["attempt"]), economic_id=eid)  # eski satırlarda yok: provenance_status 'legacy_partial_provenance'
+        if job_dir:
+            row["ledger_target"] = str(path)  # only the single collector appends to this logical ledger
         f.write(json.dumps(row, default=str, allow_nan=False) + "\n")  # NaN/inf sessizce yazılmaz (JSONL bozulmasın)
         f.flush()
     return row
@@ -77,12 +84,12 @@ def record(path, source: str, hypothesis: str, config: dict, code: str, data: st
     return _append(path, source, hypothesis, config, code, data, "completed", "", kind, result, score, None, receipt, family)
 
 
-def record_attempt(path, status: str, hypothesis: str, config: dict, code: str, data: str, reason: str = "", result: dict | None = None, receipt: dict | None = None, kind: str = "run") -> dict:
+def record_attempt(path, status: str, hypothesis: str, config: dict, code: str, data: str, reason: str = "", result: dict | None = None, receipt: dict | None = None, kind: str = "run", family: dict | None = None) -> dict:
     """Performans dışı deneme olayı (planned/running/invalid/failed/incomplete): araştırma geçmişinde korunur, `result` boş kalır (invalid ise ham sonuç `invalid_result`), deneme sayacını artırır.
     completed için `record` kullanılır."""
     if status not in STATUSES or status == "completed":
         raise ValueError(f"status {STATUSES[:2] + STATUSES[3:]} içinden olmalı (completed -> record)")
-    return _append(path, "referee", hypothesis, config, code, data, status, reason, kind, None, None, result if status == "invalid" else None, receipt)
+    return _append(path, "referee", hypothesis, config, code, data, status, reason, kind, None, None, result if status == "invalid" else None, receipt, family)
 
 
 def query(path, sql: str) -> pd.DataFrame:

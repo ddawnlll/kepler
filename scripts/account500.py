@@ -55,7 +55,7 @@ def metrics(res: dict, ref: dict, intents: pd.DataFrame, unmapped: float, rc: di
     s, r = res["summary"], ref["summary"]
     ni = max(len(intents), 1)
     sent = intents.status.isin(["sent", "partial"])
-    ach = np.where(sent, intents.want_qty, intents.pos_qty) * intents.px  # fiilen tutulan (işaretli) notional
+    ach = (intents.pos_qty + np.where(sent, np.sign(intents.delta_qty) * intents.filled_qty, 0)) * intents.px  # fiilen tutulan (işaretli) notional
     tgt = intents.target_notional.to_numpy()
     nz = np.abs(tgt) > 0
     dev = np.abs(tgt - ach)[nz] / np.abs(tgt)[nz] if nz.any() else np.array([0.0])
@@ -112,7 +112,10 @@ def stage_replay(out_dir: str, system: str, scen: str):
         kls = {s: E.D[s]["kl"] for s in syms}
         out, data = P2.make_book(en.Params(names=("carry_xs",), weights=(1.0,)), mem, False, CAP)(kls), E.data_of(syms)
     fee, slip = SCENARIOS[scen]
-    r, _ = run_one(system, out, data, doc["symbols"], fee, slip, E, AF, ev, report)
+    r, res = run_one(system, out, data, doc["symbols"], fee, slip, E, AF, ev, report)
+    from kepler import receipt
+    used = ev.book_window(out, data, *E.utc(E.MAIN))
+    r["receipt"] = receipt.make(dict(system=system, scenario=scen, capital=CAP, rules=doc, window=E.MAIN), used, cut=E.utc(E.MAIN), extra_files=[__file__])
     r = dict(r, scenario=scen, rules_fetched_utc=doc["fetched_utc"], rules_source=doc["source"], window=E.MAIN, capital=CAP, seconds=time.time() - t0)
     o = Path(out_dir)
     o.mkdir(parents=True, exist_ok=True)
