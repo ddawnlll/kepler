@@ -672,26 +672,35 @@ def _posthoc_event_diagnostic(preds, events, B=50000, seed=20261014):
             "cluster_bootstrap_95": boot}
 
 
-def run(raw: Path, trial_ledger: Path | None = None):
+def run(raw: Path, trial_ledger: Path | None = None, *, source="archive", data_root=Path("/data")):
     protocol = _ensure_protocol()
     _check_seal()
-    acq_path = OUT / "acquisition.json"
-    if not acq_path.exists():
-        raise FileNotFoundError(f"{acq_path} missing; run --stage fetch first")
-    acquisition = json.loads(acq_path.read_text())
-    _verify_acquisition(acquisition, raw)
-    if any(date.fromisoformat(x["month"] + "-01") >= SEAL for x in acquisition["records"]):
-        raise AssertionError("sealed month recorded")
-    parquet_files = _parquet_inventory()
-    prior_metrics_path = OUT / "metrics.json"
-    prior_metrics = json.loads(prior_metrics_path.read_text()) if prior_metrics_path.exists() else {}
-    parquet_reused = bool(parquet_files and parquet_files == prior_metrics.get("data", {}).get("parquet_files"))
-    if parquet_reused:
-        klines, funding, fund_records = _read_input_parquet()
-        qc = prior_metrics["data"]["rows_by_symbol"]
-    else:
-        klines, funding, fund_records, qc = _parse_archive(raw)
+    if source == "tape":
+        from erf01_tape import load_development
+        klines, funding, fund_records, qc, acquisition = load_development(
+            data_root, SYMS, DAYS[0], DAYS[1], SEAL)
+        _save_acquisition(acquisition)
         parquet_files = _write_input_parquet(klines, fund_records)
+        parquet_reused = False
+    elif source == "archive":
+        acq_path = OUT / "acquisition.json"
+        if not acq_path.exists():
+            raise FileNotFoundError(f"{acq_path} missing; run --stage fetch first")
+        acquisition = json.loads(acq_path.read_text())
+        _verify_acquisition(acquisition, raw)
+        parquet_files = _parquet_inventory()
+        prior_metrics_path = OUT / "metrics.json"
+        prior_metrics = json.loads(prior_metrics_path.read_text()) if prior_metrics_path.exists() else {}
+        parquet_reused = bool(parquet_files and parquet_files == prior_metrics.get("data", {}).get("parquet_files")
+                              and prior_metrics.get("data", {}).get("source") == "binance_archive")
+        if parquet_reused:
+            klines, funding, fund_records = _read_input_parquet()
+            qc = prior_metrics["data"]["rows_by_symbol"]
+        else:
+            klines, funding, fund_records, qc = _parse_archive(raw)
+            parquet_files = _write_input_parquet(klines, fund_records)
+    else:
+        raise ValueError(f"unknown ERF-01 data source: {source}")
     days, panel = make_panel(klines, funding)
     labels, events, candidates = labels_for(panel, days)
     rows = _rows(panel, labels, days)
@@ -771,8 +780,11 @@ def run(raw: Path, trial_ledger: Path | None = None):
     metrics = {"verdict": verdict, "scope": "fixed survivor-biased extended-9; daily confirmed q-state transitions; development data only",
                "sealed_boundary": SEAL.isoformat(), "no_economic_test": True,
                "historically_preregistered": False, "independent_confirmation": False,
-               "data": {"requested_first_month": FIRST_MONTH, "requested_last_month": LAST_MONTH, "rows_by_symbol": qc,
+               "data": {"source": "kepler_tape" if source == "tape" else "binance_archive",
+                        "canonical_qc": source == "tape", "requested_first_month": FIRST_MONTH,
+                        "requested_last_month": LAST_MONTH, "rows_by_symbol": qc,
                         "archives": acquisition["record_count"], "source_archive_bytes": acquisition["downloaded_bytes"],
+                        "source_bytes": acquisition.get("source_bytes", acquisition["downloaded_bytes"]),
                         "sha256_archive_manifest": sha((OUT / "acquisition.json").read_bytes()),
                         "first_date": min(min(v) for v in klines.values() if v).isoformat(),
                         "last_date": max(max(v) for v in klines.values() if v).isoformat(),
@@ -895,7 +907,11 @@ def _write_report(m):
             "- The fixed nine are current-survivor contracts; results do not generalize to delisted/universe-wide assets.",
             f"- Economic test is gated on forecasting and operational skill (forecast gate passed: {m['forecast_gate_passed']}; operational gate passed: {bool(m['operational_gate'] and m['operational_gate']['passed'])}). Kepler's Numba referee was not invoked and no live orders were sent. No production/core code was changed.",
             "- Detailed reproducibility artifacts: `reports/erf01_data/metrics.json`, `events.csv`, `candidates.csv`, `oos_predictions.csv`, and `acquisition.json`.", ""]
-    (ROOT / "reports" / "erf01.md").write_text("\n".join(txt))
+    report_text = "\n".join(txt) + "\n"
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "report.md").write_text(report_text)
+    if OUT.is_relative_to(ROOT):
+        (ROOT / "reports" / "erf01.md").write_text(report_text)
 
 
 def self_test():
@@ -963,13 +979,30 @@ def main():
     ap.add_argument("--workers", type=int, default=12)
     ap.add_argument("--trial-ledger", type=Path, default=None,
                     help="append-only Kepler screening-trial ledger (not a referee result)")
+    ap.add_argument("--source", choices=["archive", "tape"], default="archive")
+    ap.add_argument("--data-root", type=Path, default=Path("/data"))
+    ap.add_argument("--out-root", type=Path, default=None)
+    ap.add_argument("--parquet-root", type=Path, default=None)
     args = ap.parse_args()
+    global OUT, PARQUET_OUT
+    if args.out_root is not None:
+        OUT = args.out_root
+    elif args.source == "tape":
+        OUT = args.data_root / "erf01" / "results"
+    if args.parquet_root is not None:
+        PARQUET_OUT = args.parquet_root
+    elif args.source == "tape":
+        PARQUET_OUT = args.data_root / "erf01" / "parquet"
     if args.stage == "self-test":
         self_test(); return
-    if args.stage in ("fetch", "all"):
+    _ensure_protocol()
+    _check_seal()
+    if args.stage in ("fetch", "all") and args.source == "archive":
         fetch(args.raw_root, workers=args.workers)
+    elif args.stage == "fetch":
+        raise ValueError("fetch is only supported for --source archive")
     if args.stage in ("run", "all"):
-        run(args.raw_root, trial_ledger=args.trial_ledger)
+        run(args.raw_root, trial_ledger=args.trial_ledger, source=args.source, data_root=args.data_root)
 
 
 if __name__ == "__main__":
