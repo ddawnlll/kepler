@@ -131,7 +131,7 @@ def record(path, source: str, hypothesis: str, config: dict, code: str, data: st
     return _append(path, source, hypothesis, config, code, data, "completed", "", kind, result, score, None, receipt, family, event_id)
 
 
-def record_attempt(path, status: str, hypothesis: str, config: dict, code: str, data: str, reason: str = "", result: dict | None = None, receipt: dict | None = None, kind: str = "run", family: dict | None = None) -> dict:
+def record_attempt(path, status: str, hypothesis: str, config: dict, code: str, data: str, reason: str = "", result: dict | None = None, receipt: dict | None = None, kind: str = "run", family: dict | None = None, *, event_id: str | None = None) -> dict:
     """Performans dışı deneme olayı (planned/running/invalid/failed/incomplete): araştırma geçmişinde korunur, `result` boş kalır (invalid ise ham sonuç `invalid_result`), deneme sayacını artırır.
     completed için `record` kullanılır."""
     if status not in STATUSES or status == "completed":
