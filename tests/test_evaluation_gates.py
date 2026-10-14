@@ -53,14 +53,14 @@ def test_valid_sizer_is_audited_and_recorded(tmp_path):
 def test_core_source_change_changes_experiment_hash(tmp_path, monkeypatch):
     kl, path = market(), tmp_path / "ledger.jsonl"
     before = ev.evaluate(unit, kl, [sp()], path, "regression", "synthetic")[0]
-    original = Path.read_text
+    original = Path.read_bytes
     core = Path(ev.__file__).parent / "referee_core.py"
 
     def changed(file, *args, **kwargs):
         text = original(file, *args, **kwargs)
-        return text + "\n# changed core source\n" if file.resolve() == core.resolve() else text
+        return text + b"\n# changed core source\n" if file.resolve() == core.resolve() else text
 
-    monkeypatch.setattr(Path, "read_text", changed)
+    monkeypatch.setattr(Path, "read_bytes", changed)
     after = ev.evaluate(unit, kl, [sp()], path, "regression", "synthetic")[0]
     assert before["row"]["config_hash"] == after["row"]["config_hash"]
     assert before["row"]["code_hash"] != after["row"]["code_hash"]
