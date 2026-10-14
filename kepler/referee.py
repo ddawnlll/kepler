@@ -71,6 +71,8 @@ def _prep(sym: str, d: dict, spec: Spec):
     if funding is not None and funding["last_funding_rate"].isna().any():
         raise ValueError("funding oranında NaN var (QC'den geçmemiş veri)")
     tick, step = d.get("tick") or spec.tick, d.get("step") or spec.step
+    if not all(np.isfinite(float(x)) and float(x) > 0 for x in (tick, step)):
+        raise ValueError("tick ve step pozitif ve sonlu olmalı")
     pp, sp = _dp(tick), _dp(step)
     mark = d.get("mark")
     hi, lo = kl.high, kl.low
@@ -78,7 +80,7 @@ def _prep(sym: str, d: dict, spec: Spec):
         hi, lo = mark.high.reindex(kl.index).fillna(kl.high), mark.low.reindex(kl.index).fillna(kl.low)
     o, c = kl.open.to_numpy(float), kl.close.to_numpy(float)
     h, l = np.fmax.reduce([hi.to_numpy(float), o, c]), np.fmin.reduce([lo.to_numpy(float), o, c])  # noqa: E741  O/C [L,H] içinde kalsın
-    q = lambda a: np.rint(a * 10.0**pp) / 10.0**pp  # noqa: E731  tick ondalığına yuvarla (Price.from_str karşılığı)
+    q = lambda a: np.round(np.rint(a / float(tick)) * float(tick), pp)  # noqa: E731  gerçek tick katı
     o, h, l, c = q(o), q(h), q(l), q(c)  # noqa: E741
     if not all(np.isfinite(a).all() and (a > 0).all() for a in (o, h, l, c)):
         raise ValueError(f"{sym}: kline OHLC'de NaN/sonsuz/pozitif olmayan fiyat (QC'den geçmemiş veri)")
@@ -95,7 +97,7 @@ def _prep(sym: str, d: dict, spec: Spec):
     stop = d.get("stop")
     tg = target.astype(float).to_numpy()
     st = stop.astype(float).to_numpy() if stop is not None else np.full(len(kl), np.nan)
-    return dict(t0=t0, o=o, h=h, l=l, c=c, tg=tg, st=st, sz=sz * inc, u=(10.0**sp, 10.0**pp, float(tick)))
+    return dict(t0=t0, o=o, h=h, l=l, c=c, tg=tg, st=st, sz=sz * inc, u=(10.0**sp, 10.0**pp, float(tick), inc))
 
 
 def _fund_inputs(kl, mark, funding):
@@ -146,13 +148,19 @@ def prepare(data: dict[str, dict], spec: Spec = Spec()) -> dict:
     close_mode = spec.fill == "close"
     bar, sym = np.arange(off[-1]), np.repeat(np.arange(len(syms)), n)
     if close_mode:
-        ev_t, ev_b, ev_k, ev_kind = T0 + HOUR_NS, bar, sym, np.full(len(bar), core.KIND_CLOSE, np.int8)
+        ev_t, ev_b, ev_k = np.r_[T0 + HOUR_NS - 1, T0 + HOUR_NS], np.r_[bar, bar], np.r_[sym, sym]
+        ev_kind = np.r_[np.full(len(bar), core.KIND_BODY, np.int8), np.full(len(bar), core.KIND_CLOSE, np.int8)]
     else:
         ev_t, ev_b, ev_k = np.r_[T0, T0 + HOUR_NS - 1], np.r_[bar, bar], np.r_[sym, sym]
         ev_kind = np.r_[np.zeros(len(bar), np.int8), np.ones(len(bar), np.int8)]
-    o_ = np.lexsort((ev_k, ev_t))  # zaman, sonra sembol sırası (eski motor: veri ekleme sırası)
+    fx = [_fund_inputs(d["kl"], d.get("mark"), d.get("funding")) for d in data.values()]
+    FT = np.concatenate([x["ts"] for x in fx if x is not None]) if any(x is not None for x in fx) else np.empty(0, np.int64)
+    FV = np.concatenate([np.nan_to_num(x["c"], nan=0.0) * x["rate"] for x in fx if x is not None]) if len(FT) else np.empty(0)
+    fk = np.concatenate([np.full(len(x["ts"]), k, np.int64) for k, x in enumerate(fx) if x is not None]) if len(FT) else np.empty(0, np.int64)
+    ev_t, ev_b, ev_k, ev_kind = np.r_[ev_t, FT], np.r_[ev_b, np.arange(len(FT))], np.r_[ev_k, fk], np.r_[ev_kind, np.full(len(FT), core.KIND_FUND, np.int8)]
+    o_ = np.lexsort((ev_k, ev_kind != core.KIND_FUND, ev_t))  # T'de tüm funding, ardından dolum/karar; sembol sırası sabit
     return dict(syms=syms, prep=prep, n=n, off=off, T0=T0, O=O, H=H, L=L, C=C, SZ=SZ, U=np.array([p["u"] for p in prep]), close_mode=close_mode, tg=cat("tg"), st=cat("st"),
-                ev_k=ev_k[o_].astype(np.int64), ev_b=ev_b[o_].astype(np.int64), ev_kind=ev_kind[o_], fx=[_fund_inputs(d["kl"], d.get("mark"), d.get("funding")) for d in data.values()], key=(spec.fill, spec.tick, spec.step))
+                ev_k=ev_k[o_].astype(np.int64), ev_b=ev_b[o_].astype(np.int64), ev_kind=ev_kind[o_], fx=fx, FT=FT, FV=FV, key=(spec.fill, spec.tick, spec.step))
 
 
 def _inputs(pr: dict, spec: Spec):
@@ -162,7 +170,7 @@ def _inputs(pr: dict, spec: Spec):
     for k in range(len(pr["syms"])):
         sl = slice(off[k], off[k + 1])
         TG[sl], ST[sl] = _shift(pr["tg"][sl], sh), _shift(pr["st"][sl], sh)
-    P = np.array([(spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4, spec.leverage, spec.mmr, float(spec.liq and not spec.native_liq), spec.min_notional, spec.capital, float(spec.equity_scale), spec.gross_cap or 0.0, float(pr["close_mode"])])
+    P = np.array([(spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4, spec.leverage, spec.mmr, float(spec.liq and not spec.native_liq), spec.min_notional, spec.capital, float(spec.equity_scale), spec.gross_cap or 0.0, float(pr["close_mode"]), spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate])
     return TG, ST, P
 
 
@@ -172,7 +180,7 @@ def _kernel_cpu(pr: dict, TG, ST, P):
     while True:
         FI, FF, PI, PF, RJ = np.zeros((cap, 4), np.int64), np.zeros((cap, 3)), np.zeros((cap, 3), np.int64), np.zeros(cap), np.zeros((cap, 3), np.int64)
         PRE, END = np.zeros(nb, np.int64), np.zeros(nb, np.int64)
-        F, I, G, N = core.simulate(pr["ev_k"], pr["ev_b"], pr["ev_kind"], pr["T0"], pr["O"], pr["H"], pr["L"], pr["C"], pr["SZ"], TG, ST, pr["U"], P, cap, FI, FF, PI, PF, RJ, PRE, END)
+        F, I, G, N = core.simulate(pr["ev_k"], pr["ev_b"], pr["ev_kind"], pr["T0"], pr["O"], pr["H"], pr["L"], pr["C"], pr["SZ"], TG, ST, pr["U"], P, cap, FI, FF, PI, PF, RJ, PRE, END, pr["FT"], pr["FV"])
         if N[0] >= 0:
             return dict(F=F, I=I, G=G, N=N, FI=FI, FF=FF, PI=PI, PF=PF, RJ=RJ, PRE=PRE, END=END)
         cap *= 2
@@ -186,7 +194,7 @@ def run_portfolio(data: dict[str, dict], spec: Spec = Spec(), prepared: dict | N
 
 
 def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> dict:
-    """Çekirdek çıktısından özet + (full ise) fills/positions tabloları. Funding burada, T öncesi pozisyon dizilerinden (PRE/END) hesaplanır. full=False: DataFrame üretilmez (tarama)."""
+    """Çekirdek nakdinden özet + (full ise) fills/positions; PRE/END yalnız funding veri eksikliği sayaçları için. full=False: DataFrame üretilmez (tarama)."""
     syms, prep, off, U, close_mode = pr["syms"], pr["prep"], pr["off"], pr["U"], pr["close_mode"]
     F, I, G, N, FI, FF, PI, PF, RJ, PRE, END = (raw[k] for k in ("F", "I", "G", "N", "FI", "FF", "PI", "PF", "RJ", "PRE", "END"))
     side_fee, (nf, npos, nrej), PF = (spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4, (int(N[0]), int(N[1]), int(N[2])), PF.copy()
@@ -197,12 +205,11 @@ def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> d
     liq, stp = (fi[:, 3] & 1) > 0, (fi[:, 3] & 2) > 0
     notional = float((ff[:, 0] * ff[:, 1]).sum())
     fee, slip = notional * spec.fee_rt_bps / 2 / 1e4, notional * spec.slip_rt_bps / 2 / 1e4
-    liq_fee = float((ff[liq, 0] * ff[liq, 1]).sum()) * max(0.0, (spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate) - side_fee)  # motor taker fee'yi zaten kesti
     last = [float(d["kl"].close.iloc[-1]) for d in data.values()]
     end_pos = {s: I[k, core.LOT] / U[k, 0] for k, s in enumerate(syms)}
     unreal = sum(end_pos[s] * (last[k] - F[k, core.AVG]) for k, s in enumerate(syms) if I[k, core.LOT] != 0)
     exit_cost = sum(abs(end_pos[s]) * last[k] * side_fee for k, s in enumerate(syms)) if spec.close_out else 0.0
-    fund, missed, fallback = 0.0, 0, 0
+    missed, fallback = 0, 0
     for k, (s, d) in enumerate(data.items()):
         sl, kl = slice(off[k], off[k + 1]), d["kl"]
         pre, end, t0 = PRE[sl] / U[k, 0], END[sl] / U[k, 0], prep[k]["t0"]
@@ -212,9 +219,10 @@ def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> d
             new = np.r_[True, t0[1:] != t0[:-1] + HOUR_NS]
             keys, vals = np.r_[t0 + HOUR_NS, t0[new]], np.r_[end, pre[new]]
         srt = np.argsort(keys, kind="stable")
-        f, m, fb = _funding(pr["fx"][k], keys[srt], vals[srt])
-        fund, missed, fallback = fund + f, missed + m, fallback + fb
-    net = float(G[0]) + unreal - spec.capital + fund - liq_fee - exit_cost
+        _, m, fb = _funding(pr["fx"][k], keys[srt], vals[srt])
+        missed, fallback = missed + m, fallback + fb
+    fund, liq_fee = float(G[1]), float(G[2])
+    net = float(G[0]) + unreal - spec.capital - exit_cost
     rejected = [f"OrderRejected(sym={syms[r[0]]} ts={r[1]} qty={r[2] / U[r[0], 0]}: {'stop kitap fiyatında' if r[2] == 0 else 'marj/piyasa yok'})" for r in RJ[:nrej]]
     summary = dict(net_pnl=net, gross_pnl=net + fee + slip + exit_cost - fund + liq_fee, fee=fee, slippage=slip, funding=fund, liq_fee=liq_fee, exit_cost=exit_cost, n_fills=nf, n_liq=int(liq.sum()), n_stop=int(stp.sum()),
                    end_position=next(iter(end_pos.values())) if len(end_pos) == 1 else sum(abs(v) for v in end_pos.values()), engine_commission=float(ff[:, 2].sum()), n_rejected=len(rejected),

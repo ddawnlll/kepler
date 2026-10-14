@@ -1,8 +1,8 @@
 """Hakem çekirdeği (numba): referee.py'nin olay döngüsü. Sözleşme ve anlamlar referee.py başlığında; burada yalnızca durum makinesi.
 Olay sırası (zaman, sembol sırası): next_open modunda her bar iki olay (A = açılış parçası (o,o,o,o): eşleşme -> karar; B = gövde (o,h,l,c) t+1sa-1ns: eşleşme),
-close modunda tek olay (gövde eşleşmesi -> karar). Eşleşme = Nautilus L1 bar yürütmesinin kaynak koddan okunmuş kuralları: bar -> O,H,L,C tikleri (yalnızca son fiyattan farklıysa),
+close modunda gövde T-1ns, karar T; funding T'de dolum/karardan önce. Eşleşme = Nautilus L1 bar yürütmesinin kaynak koddan okunmuş kuralları: bar -> O,H,L,C tikleri,
 tik boyutu = hacim/4 (BarTickSizes), piyasa/stop emri tik boyutuyla sınırlı dolar, kalan miktar son dolum fiyatının 1 tick ötesinden dolar, stop tetik fiyatından (gap'te piyasadan) dolar.
-Miktarlar tam sayı lot (U[k,0] = 10^sp, U[k,1] = 10^pp, U[k,2] = tick artışı, U[k,3] = adım/lot), fiyatlar tick ondalığına yuvarlanmış float. Nautilus çalıştırılmaz."""
+Miktarlar tam sayı lot (U[k,0] = 10^sp, U[k,1] = 10^pp, U[k,2] = tick artışı, U[k,3] = adım/lot), fiyatlar gerçek tick katına yuvarlanmış float. Nautilus çalıştırılmaz."""
 import numpy as np
 from numba import njit
 
@@ -10,16 +10,16 @@ from numba import njit
 AVG, STOP, LAST, ORD, LP, PX, CYC, TLAST, BP = range(9)  # TLAST: motorun son tik fiyatı; BP: L1 kitap fiyatı
 # I sütunları (int): lot, stop kilidi (±1), ölü, döngü açılış ts
 LOT, HALT, DEAD, COPEN, BS = range(5)  # COPEN: açık döngünün PI satırı; BS: L1 kitap boyutu (lot)
-# P: yan ücret, kaldıraç, mmr, liq, min_notional, sermaye, equity_scale, gross_cap (0 = yok), mod (0 next_open, 1 close)
-FEE, LEV, MMR, LIQ, MINN, CAP, EQS, GCAP, MODE = range(9)
+# P: yan ücret, kaldıraç, mmr, liq, min_notional, sermaye, equity_scale, gross_cap (0 = yok), mod, likidasyon ücret oranı
+FEE, LEV, MMR, LIQ, MINN, CAP, EQS, GCAP, MODE, LQF = range(10)
 HOUR = 3_600_000_000_000
-KIND_OPEN, KIND_BODY, KIND_CLOSE = 0, 1, 2
+KIND_OPEN, KIND_BODY, KIND_CLOSE, KIND_FUND = 0, 1, 2, 3
 
 
 @njit(cache=True, nogil=True)
-def _lots(num, px, usc):
+def _lots(num, px, usc, step):
     """floor(num / px / adım): Decimal ROUND_DOWN karşılığı (göreli 1e-15 tolerans: tam bölünen yuvarlak sayılar float'ta 1 ulp altına düşmesin)."""
-    return np.int64(np.floor(num / px * usc * (1.0 + 1e-15)))
+    return np.int64(np.floor(num / px * usc / step * (1.0 + 1e-15))) * np.int64(step)
 
 
 @njit(cache=True, nogil=True)
@@ -53,6 +53,10 @@ def _book(k, d, px, ts, prot, F, I, G, N, U, P, FI, FF, PI, PF):
             F[k, AVG] = (F[k, AVG] * abs(p) + px * o) / (abs(p) + o)
             F[k, CYC] -= comm
     G[0] -= comm
+    if liq:
+        extra = q * px * max(0.0, P[LQF] - P[FEE])
+        G[0] -= extra
+        G[2] += extra
     I[k, LOT] = p + d
     n = N[0]
     FI[n, 0], FI[n, 1], FI[n, 2], FI[n, 3] = k, ts, -1 if sell else 1, (1 if liq else 0) | (2 if (prot and not liq) else 0)
@@ -61,7 +65,7 @@ def _book(k, d, px, ts, prot, F, I, G, N, U, P, FI, FF, PI, PF):
 
 
 @njit(cache=True, nogil=True)
-def _refresh(k, pxc, ts, F, I, G, N, U, P, RJ):
+def _refresh(k, pxc, ts, F, I, G, N, U, P, RJ, defer=False):
     """Sembol başına TEK koruyucu emir: stop ile LP'den fiyata yakın olan. Dönüş True = seviye pxc'nin ötesinde, hemen piyasa emriyle kapatılmalı.
     Kitap fiyatı zaten seviyedeyse motor stopu reddeder (reject_stop_orders): sayılır, koruma kurulmaz."""
     F[k, ORD] = np.nan
@@ -76,12 +80,15 @@ def _refresh(k, pxc, ts, F, I, G, N, U, P, RJ):
     lp = np.nan
     if P[LIQ] == 1.0:
         lp = (qf * F[k, AVG] - wb) / (qf * (1 - P[MMR])) if qf > 0 else (wb - qf * F[k, AVG]) / (-qf * (1 + P[MMR]))
-        lp = np.rint(lp * sc) / sc if lp > 0 else np.nan
-    s = np.rint(F[k, STOP] * sc) / sc if not np.isnan(F[k, STOP]) else np.nan
+        lp = np.rint(np.rint(lp / U[k, 2]) * U[k, 2] * sc) / sc if lp > 0 else np.nan
+    s = np.rint(np.rint(F[k, STOP] / U[k, 2]) * U[k, 2] * sc) / sc if not np.isnan(F[k, STOP]) else np.nan
     if np.isnan(s) and np.isnan(lp):
         return False
     lvl = lp if np.isnan(s) else (s if np.isnan(lp) else (max(s, lp) if q > 0 else min(s, lp)))
     F[k, LP] = lp
+    if defer:  # settlement: yeni koruma bir sonraki piyasa tikinde eşleşir, bayat kitaptan dolum yapılmaz
+        F[k, ORD] = lvl
+        return False
     if (pxc <= lvl) if q > 0 else (pxc >= lvl):
         return True
     if (F[k, BP] <= lvl) if q > 0 else (F[k, BP] >= lvl):
@@ -129,7 +136,8 @@ def _tick(k, price, size, at_market, ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ):
 def _bar(k, o, h, l, c, sz, ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ):  # noqa: E741
     """Nautilus process_trade_ticks_from_bar: O (son fiyattan farklıysa; boşluk/piyasadan), H (> son), L (< son), C (!= son); sıra O,H,L,C."""
     last = F[k, TLAST]
-    if np.isnan(last) or o != last:
+    crossed = not np.isnan(F[k, ORD]) and ((o <= F[k, ORD]) if I[k, LOT] > 0 else (o >= F[k, ORD]))
+    if np.isnan(last) or o != last or crossed:
         _tick(k, o, sz[0], True, ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
         last = o
     if h > last:
@@ -168,13 +176,13 @@ def _decide(k, tg, st, px, ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ):
                         eq += I[j, LOT] / U[j, 0] * (F[j, PX] - F[j, AVG])
                 f = max(eq / P[CAP], 0.0)
             pos = I[k, LOT]
-            want = _lots(abs(tg) * f, px, U[k, 0])
+            want = _lots(abs(tg) * f, px, U[k, 0], U[k, 3])
             if P[GCAP] > 0 and want > abs(pos):
                 room = P[GCAP] * f
                 for j in range(K):
                     if j != k and F[j, PX] != 0.0:
                         room -= abs(I[j, LOT]) / U[j, 0] * F[j, PX]
-                want = max(min(want, _lots(max(room, 0.0), px, U[k, 0])), abs(pos) if pos * d > 0 else 0)
+                want = max(min(want, _lots(max(room, 0.0), px, U[k, 0], U[k, 3])), abs(pos) if pos * d > 0 else 0)
             want *= d
             delta = want - pos
             reducing = want == 0 or (want * pos > 0 and abs(want) < abs(pos))
@@ -195,18 +203,25 @@ def _decide(k, tg, st, px, ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ):
 
 
 @njit(cache=True, nogil=True)
-def simulate(ev_k, ev_b, ev_kind, T0, O, H, L, C, SZ, TG, ST, U, P, cap_fills, FI, FF, PI, PF, RJ, PRE, END):  # noqa: E741
+def simulate(ev_k, ev_b, ev_kind, T0, O, H, L, C, SZ, TG, ST, U, P, cap_fills, FI, FF, PI, PF, RJ, PRE, END, FT, FV):  # noqa: E741
     """Tüm olayları sırayla koştur. Dönüş: (F, I, G, N). PRE[b] = karar anındaki (eşleşme sonrası) lot, END[b] = gövde sonu lot (funding için)."""
     K = U.shape[0]
     F, I = np.zeros((K, 9)), np.zeros((K, 5), np.int64)
     F[:, STOP], F[:, ORD], F[:, LP], F[:, TLAST], F[:, BP] = np.nan, np.nan, np.nan, np.nan, np.nan
-    G, N = np.array([P[CAP]]), np.zeros(3, np.int64)
+    G, N = np.array([P[CAP], 0.0, 0.0]), np.zeros(3, np.int64)  # nakit, funding, ek likidasyon ücreti
     for e in range(ev_k.shape[0]):
         if N[0] + 8 >= cap_fills or N[2] + 8 >= RJ.shape[0]:
             N[0] = -1
             return F, I, G, N
         k, b, kind = ev_k[e], ev_b[e], ev_kind[e]
-        if kind == KIND_OPEN:
+        if kind == KIND_FUND:
+            cash = -I[k, LOT] / U[k, 0] * FV[b]
+            G[0] += cash
+            G[1] += cash
+            if cash != 0.0:
+                for j in range(K):
+                    _refresh(j, F[j, PX], FT[b], F, I, G, N, U, P, RJ, True)
+        elif kind == KIND_OPEN:
             ts = T0[b]
             _bar(k, O[b], O[b], O[b], O[b], SZ[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
             PRE[b] = I[k, LOT]
@@ -218,7 +233,6 @@ def simulate(ev_k, ev_b, ev_kind, T0, O, H, L, C, SZ, TG, ST, U, P, cap_fills, F
             END[b] = I[k, LOT]
         else:
             ts = T0[b] + HOUR
-            _bar(k, O[b], H[b], L[b], C[b], SZ[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
             PRE[b] = I[k, LOT]
             _decide(k, TG[b], ST[b], C[b], ts, F, I, G, N, U, P, FI, FF, PI, PF, RJ)
     return F, I, G, N

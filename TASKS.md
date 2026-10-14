@@ -1,6 +1,17 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
-Aktif iş: GitHub issue/PR şablonları ve ortak ajan akışı (kullanıcı görevi 2026-10-13; CI yok) | durum: bitti (yerel kontroller geçti) | protokol: yok (katkı akışı, ön kayıt gerekmez)
+Aktif iş: Backtest muhasebesi ve test kapıları düzeltmeleri (kullanıcı görevi 2026-10-14) | durum: bitti (yerel sentetik kontroller geçti; push aşaması) | protokol: BACKTEST.md §6.6 / §7 (hata düzeltmesi, strateji denemesi değil)
+
+## Backtest düzeltmeleri (2026-10-14)
+- Kullanıcı bu oturumdaki düzeltmeler için çekirdek kilidi şartını kaldırdı; yerel sentetik testleri ve push'u açıkça yetkilendirdi. Gerçek tape / mühürlü dönem kullanılmaz.
+- Kapsam: settlement funding ve likidasyon ücreti nakdi; boyutlama nedenselliği/determinizmi; gerçek lot adımı; hakem çekirdeği koruması ve paket hash'i; temiz klonda harici TradingView fixture'larının açık durumu.
+- Kabul: elle hesaplı yeni regresyonlar eski kodda kırmızı, düzeltmede yeşil; mevcut ilgili testler ve mimari kontrol geçer; bağımsız inceleme; commit + dal push'u. CI eklenmez.
+- Bütçe: uygulama/doğrulama/inceleme bloğu 60 dakika, en çok 100 araç çağrısı; strateji ayarı ve gerçek veri koşusu kapsam dışı.
+- **Önce kırmızı:** yeni ilk regresyonlar 15 kaldı / 1 geçti (funding'in boyut/marj/LP etkisi, likidasyon ücreti nakdi, gerçek step, sızdıran/belirlenimsiz boyutlama, çekirdek hash/koruma).
+- **Geçti:** Python 3.12, `uv.lock` ile kurulan yerel ortamda `.venv/bin/pytest -q`: **410 geçti, 14 atlandı**; mimari **8/8**; numba imaj ısınma betiği (Modal'le aynı PYTHONPATH koşulu); diff whitespace kontrolü. Tam suite 37,20 sn. Önceki 6 deprecation uyarısı sürüyor (fork ve Pandas concat).
+- **Bağımsız inceleme:** `backtest_review` salt okunur inceleme; sabit fiyat funding-likidasyonu ve close gövde/settlement sırası bulguları düzeltildi; elle hesaplı regresyonlar eklendi; son incelemede kalan bulgu yok (ilgili 102 geçti / 1 atlandı, mimari 8/8).
+- **Atlandı / UNKNOWN:** TradingView dış snapshot'ları yok (9); opsiyonel TA kütüphaneleri (3), ağ (1), CUDA (1). Dataset tamamen yoksa açık skip; kısmi dataset hata. Modal/tape/gerçek veri paritesi ve GPU donanımı koşulmadı; eski raporlar yeniden yazılmadı. Funding'li GPU çağrısı CPU'ya düşer (testli).
+- **Boyut:** boş/yorum/docstring hariç hakem+yapıştırma **730**, veri/QC/mühür araçları **407** satır; `kepler/` fiziksel toplam **2943** (tavan 3000). Strateji/parametre/kart eşiği değişmedi; araştırma N'sine yeni deneme eklenmedi.
 
 (Önceki aktif iş: hakem motoru değişimi Nautilus -> numba (kullanıcı görevi 2026-10-13) | durum: bitti (PR #39) | protokol: BACKTEST.md §6.6)
 

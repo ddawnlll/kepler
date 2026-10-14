@@ -1,5 +1,5 @@
 """Hakem çekirdeğinin GPU yolu (numba.cuda): referee_core.py'nin AYNI kaynak metni cihaz fonksiyonlarına derlenir (kod kopyası yok), iş parçacığı başına bir senaryo.
-Kullanım: referee.run_many(data, specs, kernel=simulate_many). Yalnızca aynı veriyle çok senaryo (fee/slip/gecikme ızgarası) için; tek koşu CPU'da 0,6 sn. Çıktı CPU çekirdeğiyle aynı ham dizilerdir, funding/özet referee._finish'te hesaplanır.
+Kullanım: referee.run_many(data, specs, kernel=simulate_many). Yalnızca aynı veriyle çok senaryo için; funding varsa CPU'ya düşer. Çıktı CPU çekirdeğiyle aynı ham nakit/dolum dizileridir; özet referee._finish'te hazırlanır.
 Ölçüm (Modal, EV1 462 bin bar): yalnız çekirdek T4 9 ms, A10G 5 ms / senaryo (8 iş parçacıklı CPU 63-87 ms); TAM HAT (funding+özet CPU'da, T4, 128 senaryo) 149 ms vs CPU 168 ms = 1,1x: darboğaz CPU'daki _finish, bu yüzden varsayılan CPU. Derleme ~11 sn (süreç başına bir kez). Taşma (fills/RJ kapasitesi) -> None: çağıran CPU'ya düşer."""
 import math
 import pathlib
@@ -63,7 +63,6 @@ def kern(ev_k, ev_b, ev_kind, T0, O, H, L, C, SZ, TG, ST, U, Ps, F, I, G, N, FI,
             _decide(k, TG[b], ST[b], O[b], ts, f, i_, gg, nn, U, P, fi, ff, pi, pf, rj)
         else:
             ts = T0[b] + HOUR
-            _bar(k, O[b], H[b], L[b], C[b], SZ[b], ts, f, i_, gg, nn, U, P, fi, ff, pi, pf, rj)
             pre[b] = i_[k, LOT]
             _decide(k, TG[b], ST[b], C[b], ts, f, i_, gg, nn, U, P, fi, ff, pi, pf, rj)
 ''', "referee_kernel_gpu", "exec"), g)
@@ -73,6 +72,8 @@ def kern(ev_k, ev_b, ev_kind, T0, O, H, L, C, SZ, TG, ST, U, Ps, F, I, G, N, FI,
 def simulate_many(pr: dict, inputs: list) -> list:
     """inputs = [(TG, ST, P)] -> senaryo başına ham çıktı sözlüğü (CPU çekirdeğiyle aynı alanlar) ya da taşma olursa None."""
     global _kern
+    if len(pr["FT"]):  # settlement olayları CPU'da; eski GPU döngüsü sessizce farklı muhasebe yapamaz
+        return [None] * len(inputs)
     from numba import cuda
     _kern = _kern or _build()
     nb, K = len(pr["T0"]), len(pr["U"])
@@ -91,7 +92,7 @@ def simulate_many(pr: dict, inputs: list) -> list:
         for lo in range(0, len(idx), B):
             sel = idx[lo: lo + B]
             m = len(sel)
-            bufs = dict(F=np.zeros((m, K, 9)), I=np.zeros((m, K, 5), np.int64), G=np.zeros((m, 1)), N=np.zeros((m, 3), np.int64), FI=np.zeros((m, sim_cap, 4), np.int64), FF=np.zeros((m, sim_cap, 3)),
+            bufs = dict(F=np.zeros((m, K, 9)), I=np.zeros((m, K, 5), np.int64), G=np.zeros((m, 3)), N=np.zeros((m, 3), np.int64), FI=np.zeros((m, sim_cap, 4), np.int64), FF=np.zeros((m, sim_cap, 3)),
                         PI=np.zeros((m, sim_cap, 3), np.int64), PF=np.zeros((m, sim_cap)), RJ=np.zeros((m, rj_cap, 3), np.int64), PRE=np.zeros((m, nb), np.int64), END=np.zeros((m, nb), np.int64))
             dv = {k: cuda.to_device(v) for k, v in bufs.items()}
             _kern[(m + 31) // 32, 32](*shared, tg, st, dU, cuda.to_device(np.stack([inputs[i][2] for i in sel])), *(dv[k] for k in ("F", "I", "G", "N", "FI", "FF", "PI", "PF", "RJ", "PRE", "END")))

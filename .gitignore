@@ -39,6 +39,9 @@ books/
 
 # Ham veri ve atilabilir lab (Phase 2 spike; repoda yok)
 data/
+!tests/data/
+tests/data/*
+!tests/data/tradingview/
 lab/
 *.zip
 

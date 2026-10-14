@@ -146,14 +146,14 @@ Sinyal yalnızca yön verir; yönetici (`turtle_book`) günlük kararla (23:00 b
 | `close_out` | True | Dönem sonunda açık pozisyon son kapanıştan fee+slip ile değerlenir |
 | `delay` | 0 | Ek gecikme (bar): dolum karardan sonraki (1 + delay). açılışta (K3 stres: delay=1) |
 | `gross_cap` | None | Toplam brüt notional tavanı (USDT); artıran emir kalan alana küçülür (§6.5) |
-| `equity_scale` | False | True: yeni/değişen hedef notional × (equity / `capital`), equity = bakiye + gerçekleşmemiş PnL (emir anında, son görülen fiyatla; funding ve çıkış maliyeti dahil değil, UNKNOWN); `gross_cap` da aynı çarpanla ölçeklenir; hedef değişmedikçe yeniden boyutlama yok. **Davranış:** her hedef değişiminde TÜM pozisyon güncel f ile yeniden boyutlanır (yalnız delta değil); bu yüzden f düşükken yukarı giden bir hedef (piramit eklemesi) pozisyonu küçültebilir. Turtle'ın birim-başına-sabit boyutundan sapma (§5.1) |
+| `equity_scale` | False | True: yeni/değişen hedef notional × (equity / `capital`), equity = bakiye + gerçekleşmemiş PnL (emir anında, son görülen fiyatla; o ana kadar settlement funding ve likidasyon ücreti dahil, varsayımsal son çıkış maliyeti hariç); `gross_cap` da aynı çarpanla ölçeklenir; hedef değişmedikçe yeniden boyutlama yok. **Davranış:** her hedef değişiminde TÜM pozisyon güncel f ile yeniden boyutlanır (yalnız delta değil); bu yüzden f düşükken yukarı giden bir hedef (piramit eklemesi) pozisyonu küçültebilir. Turtle'ın birim-başına-sabit boyutundan sapma (§5.1) |
 
 ### 6.2 Yürütme semantiği [VAR]
 1. Her saatlik bar motora iki parça gider: açılış tiki (o,o,o,o) zaman t (karar anı) ve gövde (o,h,l,c) zaman t+1h−1ns.
 2. t barının kapanışında verilen hedef, **ilk mevcut sonraki barın açılışında** piyasa emriyle dolar (boşluk varsa sonraki mevcut bar). Son barın hedefi dolmaz.
 3. Hedef değişmedikçe yeniden boyutlama yok; değişince miktar = hedef notional / dolum fiyatı, lot adımına aşağı yuvarlanır.
 4. Maliyet: (fee + slip)/2 bps her dolumun notional'ına; özet `fee`, `slippage`, `exit_cost` ayrı raporlar.
-5. **Funding:** T anındaki oran × T'den önce (T'deki dolumlardan önce; açılış tikinde dolan gap stopu/likidasyon dahil) tutulan pozisyon × mark kapanışı; oran > 0 iken long öder. Mark yoksa kline'a düşer (`funding_mark_fallback` sayılır); ikisi de yoksa `funding_missed` sayılır ve koşu deftere giremez.
+5. **Funding:** T anındaki oran × T'den önce (T'deki dolumlardan önce; açılış tikinde dolan gap stopu/likidasyon dahil) tutulan pozisyon × mark kapanışı; oran > 0 iken long öder. T'de tüm sembollerin funding'i cüzdana işlenir, sonra piyasa dolumları ve kararlar çalışır; marj ve equity ölçekleme güncel bakiyeyi kullanır. Mark yoksa kline'a düşer (`funding_mark_fallback` sayılır); ikisi de yoksa `funding_missed` sayılır ve koşu deftere giremez.
 6. **Likidasyon:** (Eski Nautilus hakemi bar verisinde likide etmiyordu; bu yüzden yapıştırma konmuştu, yeni motorda da aynı kural korunur.) Her pozisyon değişiminde likidasyon fiyatına reduce-only stop-market konur. Gövde barının H/L'si **mark** H/L'sidir (mark yoksa kline). Boşlukla geçilirse stop piyasa fiyatından dolar (iyimser LP dolumu yok). Likidasyondan sonra hesap ölüdür, yeni işlem yok.
 7. Reddedilen emir (`n_rejected > 0`) veya eksik funding olan koşu geçersizdir; deftere yazılmaz.
 8. Çıktı: `summary` (net_pnl, gross_pnl, fee, slippage, funding, liq_fee, exit_cost, n_fills, n_liq, end_position, n_rejected, funding_missed, funding_mark_fallback), `fills`, `positions`, `rejected`.
@@ -172,6 +172,8 @@ Hakem `kepler/referee.py` (hazırlık, funding, özet) + `kepler/referee_core.py
 - Sınır (belgelenmiş, doğrulanmamış): bekleyen emirlerin kilitlediği başlangıç marjı serbest bakiyeden düşülmez (yalnızca bakiye ~notional/100 mertebesine inince fark eder).
 Doğrulama: `tests/test_portfolio.py` altın sayılar (28 dolum, net -2340,724875) ve tüm elle hesaplı testler birebir; gerçek veri: EV1/ev1_plus_new/all9_equal Nautilus dolumlarıyla satır satır eşleşti (`scripts/referee_validate.py`, `reports/vbt_referee/`).
 
+**Muhasebe düzeltmesi (2026-10-14):** funding ayrı settlement olayıdır, T'deki dolum/karardan önce nakdi değiştirir; koruyucu seviyeler yeni bakiyeyle yenilenir ve sonraki piyasa tikinde (fiyat değişmemiş olsa da) eşleşir. Likidasyonun taker fee dışında kalan ücreti her dolumda hemen cüzdandan düşer. Özet bu maliyetleri ikinci kez uygulamaz. `close` test modunda gövde T−1ns, karar T'dedir: funding yeni LP'yi geçmiş gövdeye uygulayamaz. Miktar gerçek `step` katına aşağı, OHLC/koruyucu fiyat gerçek `tick` katına yuvarlanır. Funding içeren GPU batch'i CPU'ya düşer; eski GPU olay döngüsü settlement'ı atlayamaz. `tests/test_account_events.py` elle hesaplı boyutlama, marj, LP, sabit fiyat, close sıralaması ve GPU fallback senaryolarını kapsar. Eski Nautilus gerçek-veri paritesi yukarıdaki tarihli sürümün kanıtıdır; düzeltilmiş motorun gerçek veri etkisi yeniden ölçülmedi, **UNKNOWN**.
+
 ### 6.4 Strateji stopu [VAR] (Motor v2; tests/test_stops.py)
 - `stop[t]` (t kapanışında bilinen), t+1 açılışından itibaren reduce-only stop-market olarak durur; seviye her açılış tikinde ve her dolumdan sonra yeniden kurulur.
 - **Sembol başına tek koruyucu emir:** stop ile likidasyon fiyatından (LP) fiyata **yakın** olan konur (aynı tikte iki stop'un sırası belirsiz olmasın; yakın olan fiyat yolunda zaten önce vurulur).
@@ -189,7 +191,7 @@ Doğrulama: `tests/test_portfolio.py` altın sayılar (28 dolum, net -2340,72487
   (churn yok); küçülen emir için alan sonradan açılsa da hedef değişmedikçe tamamlanmaz. (Eski taslak: "orantılı küçültme"; yol bağımlı ama churn'süz ve test 10 bunu sabitler.)
 - **Denklik şartı:** tek sembolde sonuç yeniden yazımdan önceki hakemle birebir aynı (tests/test_portfolio.py: eski hakemden alınan sabit sayılar; 28 dolumlu funding'li koşu ve 10x likidasyon).
 - Funding sembol başına; likidasyon yalnızca o sembolü kapatır, diğerleri açık kalır (cross-margin likidasyonu [YOK], UNKNOWN Binance davranışına bağlı). LP'nin kullandığı bakiye = cüzdan − diğer pozisyonların
-  başlangıç marjı (notional/kaldıraç); LP yalnızca o sembolün kendi dolumlarında yeniden hesaplanır (başkasının PnL'siyle kayması yok sayılır: yaklaşıklık, UNKNOWN).
+  başlangıç marjı (notional/kaldıraç); LP o sembolün kendi dolumlarında ve funding nakdi değiştiğinde yeniden hesaplanır (funding tüm açık sembollerin korumasını yeniler; başka sembolün gerçekleşmiş PnL'siyle kayması hâlâ yok sayılır: yaklaşıklık, UNKNOWN).
   **Cross-margin [YOK] gerekçesi:** doğru model bakım marjı kademelerini ve Binance likidasyon motorunu ister (ikisi UNKNOWN; `fapi` bulut ortamından 451). Yaklaşıklığın payı ölçüldü: tam Turtle `full` koşularında (S1, S2) n_liq = 0; likidasyon yalnızca stopsuz ablasyonlarda (S1 7, S2 4) ve S1 `equity_scale`'de (2) görüldü, yani yaklaşıklık yalnızca aşırı kaldıraçlı/stopsuz yollarda devreye girer (`reports/full_systems.md`, `reports/backtest_completion.md`).
 - `evaluate.evaluate_book`: gerçekçi Spec → panel nedensellik denetimi → belirlenimlilik → portföy hakemi → portföy kill switch (tüm hedefler 0) → defter.
 
@@ -203,13 +205,15 @@ Doğrulama: `tests/test_portfolio.py` altın sayılar (28 dolum, net -2340,72487
 
 - **Tek giriş:** `kepler/evaluate.py::evaluate(signal, kl, specs, ledger_path, hypothesis, data, funding, mark, notional, name, params, window, size, kill_dd)`.
   Sıra: Spec gerçekçilik kontrolü → `audit.assert_causal` (16 kesim noktasında geleceği bozar, geçmiş kararlar değişmemeli) →
-  belirlenimlilik (sinyal iki kez aynı) → |unit| ≤ 1 → hakem → `ledger.record`.
+  belirlenimlilik (sinyal iki kez aynı) → |unit| ≤ 1 → varsa her sermaye için bileşik sinyal+boyutlama nedensellik denetimi ve boyutlama belirlenimliliği → hakem → `ledger.record`.
 - `window=(başlangıç, bitiş)`: sinyal tam seride hesaplanır (ısınma), hakem yalnızca pencerede koşar; pencere başında tutulan pozisyon açık hedef olur.
 - **Defter satırı:** `trial, time, source (referee|screen), hypothesis, config, config_hash, code_hash, data_hash, result, score`.
   Append-only, `fcntl.flock` ile eşzamanlı yazarlar güvenli; NaN/inf reddedilir; hakem satırı `config.audit_causal=True` ister (korkuluk, güvenlik değil).
 - **Deneme sayımı:** her hakem ve eleme satırı +1. Null çekilişleri ve sağlamlık koşuları kontrol sayılır, **N'ye girmez**,
   ancak sonuçlarına göre seçim yapılırsa girer. Projenin kümülatif deneme sayısı her raporda ayrıca yazılır (DuckDB: `ledger.query`).
-- Hash'ler: `code_hash` = hakem, evaluate, audit, ledger, tape ve sinyal kaynak dosyaları; `data_hash` = manifest sha256.
+- Hash'ler: `code_hash` = sıralı tüm `kepler/**/*.py` kaynakları (hakem çekirdeği, risk, portfolio, rapor, durum ve uzmanlar dahil) + paket dışı sinyal/kitap/boyutlama kaynak dosyaları; `data_hash` = manifest sha256. Paket davranışındaki değişiklik aynı deney kod kimliğiyle saklanamaz. Eski defter satırları yeniden yazılmaz.
+- Çekirdek koruması `referee_core.py`'yi de kapsar (`.claude/hooks/guard.py`); mevcut çekirdek yazma yetkisi şartı değişmedi.
+- Harici TradingView snapshot'ları yoksa ilgili 9 test açık gerekçeyle atlanır; hazır snapshot'ların hesap/değer uyuşmazlıkları atlanmaz. `tests/data/tradingview/` Git'e eklenebilir. Birim testleri bağımsızdır; harici fixture skip'i TradingView doğrulamasının geçtiği anlamına gelmez.
 
 ## 8. Veri bölme (değerlendirme tasarımı)
 
@@ -548,6 +552,7 @@ Dinamik çizgiler (hareketli ortalama, anchored VWAP), trend çizgisi, kanal ve 
 
 | Tarih | Değişiklik |
 |---|---|
+| 2026-10-14 | Settlement funding ve likidasyon ücreti olay sırasında nakde işlendi; close gövde/karar ayrıldı; gerçek step/tick katları; boyutlama denetimi; tüm paket kod hash'i; referee_core koruması; harici fixture yokluğu açık skip, kısmi fixture hata. Strateji/kart eşikleri değişmedi; kullanıcı yerel sentetik doğrulama ve push'u yetkilendirdi |
 | 2026-10-03 | §15.10 seviye servisi (destek/direnç: 5 statik tür, dokunuş/kırılma, bölge) ve seviye olay çalışması tasarımı; ön kayıt `reports/levels_event_study_protocol.md` yazıldı (kod henüz yok) |
 | 2026-10-03 | §15.9 gösterge kütüphanesi (`kepler/indicators.py`): TradingView teknik analiz sayfasının 11 osilatörü, 15 hareketli ortalaması ve 5 pivot türü; referans kütüphanelerle doğrulandı; state servisine bağlanmadı |
 | 2026-10-03 | Ensemble katmanlara ayrıldı (sonuç birebir aynı, sentetik golden testle doğrulandı): `market_state.py`, `experts/{trend,xs_momentum,carry}.py`, `portfolio.py`; `ensemble.py` yalnızca kompozisyon; mimari kuralları `tests/test_architecture.py`, ARCHITECTURE v2 |

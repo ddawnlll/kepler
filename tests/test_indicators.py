@@ -397,6 +397,12 @@ TV_LEVEL = {"Middle": "P", "S1": "S1", "S2": "S2", "S3": "S3", "R1": "R1", "R2":
 
 
 def tv_case(tf):
+    files = [TVDIR / f"btcusdt_{tf}.csv.gz", TVDIR / f"tv_{tf}.json"]
+    missing = [p.name for p in files if not p.exists()]
+    if missing:
+        if TVDIR.exists() and any(TVDIR.iterdir()):
+            raise FileNotFoundError("Eksik TradingView fixture: " + ", ".join(missing))
+        pytest.skip("Harici TradingView fixture yok: " + ", ".join(missing))
     with gzip.open(TVDIR / f"btcusdt_{tf}.csv.gz", "rt") as f:
         k = pd.read_csv(f)
     k.index = pd.DatetimeIndex(pd.to_datetime(k.open_time, unit="ms", utc=True)).as_unit("ns")

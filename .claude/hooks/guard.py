@@ -15,7 +15,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 CORE = [
-    "kepler/referee.py", "kepler/audit.py", "kepler/evaluate.py", "kepler/ledger.py", "kepler/risk.py", "kepler/stats.py", "kepler/robust.py", "kepler/state.py",
+    "kepler/referee.py", "kepler/referee_core.py", "kepler/audit.py", "kepler/evaluate.py", "kepler/ledger.py", "kepler/risk.py", "kepler/stats.py", "kepler/robust.py", "kepler/state.py",
     "kepler/tape.py", "kepler/data.py", "kepler/qc.py", "kepler/universe.py", "modal_app.py", "tools/*", "factory/*.py", "factory/policy.yaml", "factory/agents/*",
     "BACKTEST.md", "AGENTS.md", "CLAUDE.md", "MISSION.md", "docs/*", ".claude/*", ".githooks/*",
 ]

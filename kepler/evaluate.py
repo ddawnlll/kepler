@@ -4,12 +4,19 @@ Sinyal birim pozisyon (+1/-1/0/NaN) döndürür; hedef = birim x notional. Gerç
 açık pozisyon çıkış maliyeti. `window`: sinyal TAM seride hesaplanır (ısınma), hakem yalnızca pencerede koşar."""
 import inspect
 from dataclasses import asdict
+from pathlib import Path
 
 import pandas as pd
 
-from kepler import audit, ledger, referee, report, risk, signals, tape, turtle
+from kepler import audit, ledger, referee, report, risk, tape
 
 MIN_SLIP_RT_BPS = 1.0  # UNKNOWN: gerçek slippage ölçülmedi; majörlerde alt sınır varsayımı, duyarlılık ızgarası g2'de
+
+
+def _code_hash(*producers):
+    paths = set(Path(__file__).parent.rglob("*.py"))
+    paths.update(Path(inspect.getsourcefile(fn)) for fn in producers if fn is not None)
+    return ledger.code_hash(*sorted(paths))  # çekirdek, uzmanlar, boyutlama ve rapor dahil tüm paket
 
 
 def _realistic(specs):
@@ -33,11 +40,17 @@ def evaluate(signal, kl: pd.DataFrame, specs: list, ledger_path, hypothesis: str
     if not keep.any():
         raise ValueError("pencerede bar yok")
     unit = unit.ffill()  # NaN = tut: pencere başında tutulan pozisyon açık hedef olur (pencereler bağımsız koşar)
-    code = ledger.code_hash(referee.__file__, __file__, audit.__file__, ledger.__file__, tape.__file__, inspect.getsourcefile(signal))
+    code = _code_hash(signal, size)
     out = []
     for sp in specs:
+        if size is not None:
+            sized = lambda k: tape.check_target(k, size(k, signal(k).astype(float).ffill(), sp.capital))  # noqa: E731
+            audit.assert_causal(sized, kl)
+            target = sized(kl)
+            if not target.equals(sized(kl)):
+                raise ValueError("boyutlama belirlenimsiz")
         k, mk = kl[keep], None if mark is None else mark.loc[(mark.index >= lo) & (mark.index < hi)]
-        tgt = (unit * notional if size is None else size(kl, unit, sp.capital))[keep]
+        tgt = (unit * notional if size is None else target)[keep]
         if size is not None and tgt.abs().max() > sp.capital * sp.leverage:
             raise ValueError("risk motoru kaldıraç tavanını aştı")
         res = referee.run(k, tgt, sp, funding, mk)
@@ -102,7 +115,7 @@ def evaluate_book(book, data: dict[str, dict], specs: list, ledger_path, hypothe
         raise ValueError("kitap belirlenimsiz")
     utc = lambda x: pd.Timestamp(x).tz_localize("UTC") if pd.Timestamp(x).tzinfo is None else pd.Timestamp(x).tz_convert("UTC")  # noqa: E731
     lo, hi = (utc(window[0]), utc(window[1])) if window else (min(k.index[0] for k in kls.values()), max(k.index[-1] for k in kls.values()) + pd.Timedelta("1h"))
-    code = ledger.code_hash(referee.__file__, __file__, audit.__file__, ledger.__file__, tape.__file__, inspect.getsourcefile(book), risk.__file__, turtle.__file__, signals.__file__)
+    code = _code_hash(book)
     rows = []
     pre = referee.run_many(book_window(out, data, lo, hi), specs) if kill_dd is None and len(specs) > 1 and len({(x.fill, x.tick, x.step) for x in specs}) == 1 else [None] * len(specs)  # çok senaryo: iş parçacıkları
     for sp, r0 in zip(specs, pre):
