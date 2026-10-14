@@ -1,0 +1,30 @@
+name: One-time Numba financial regression gate (temporary)
+
+on:
+  push:
+    branches:
+      - integration/kepler-consolidation-20261015
+    paths:
+      - .github/workflows/financial-regression-smoke.yml
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-finance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install minimal synthetic financial test dependencies
+        run: python -m pip install --disable-pip-version-check 'pytest>=8,<9' 'numpy>=2,<2.3' 'pandas>=2,<3' 'numba>=0.60,<0.64' 'duckdb>=1,<2' 'pyarrow>=17,<24'
+      - name: Selected Numba CPU financial regressions (NO Modal cloud compute)
+        run: |
+          python -m pytest -q tests/test_referee.py tests/test_referee_engine.py tests/test_portfolio.py tests/test_account_events.py tests/test_evaluation_gates.py tests/test_tape_ledger.py tests/test_core_guard.py
+      - name: Print provenance
+        run: |
+          git rev-parse HEAD
+          python -c "import numba, numpy; print('NUMBA_CPU_ONLY', numba.__version__, numpy.__version__)"
