@@ -9,6 +9,10 @@ Kepler is a minimal, reproducible quantitative research setup evaluating **Micro
 
 See [MISSION.md](MISSION.md) for core principles and constraints.
 
+## Agent factory status
+
+The repository includes an operator-installed broker, durable supervisor, Linux-isolated checks, human-reviewed branch promotion, Modal result spooling and a retrying status outbox. See [factory/README.md](factory/README.md) and [docs/factory.md §20](docs/factory.md) for the installation and acceptance sequence. Services are not started by the installer; research is disabled and paused until a human provisions separate DEV credentials and spending limits, runs the acceptance drill and resumes the dispatcher.
+
 ## Getting Started (default: train-free)
 
 ```bash

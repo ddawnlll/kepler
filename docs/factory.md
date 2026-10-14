@@ -1954,3 +1954,72 @@ Kullanıcı eşleştirildi: ilk mesaj `Unauthorized user ... on telegram` ile re
 - **Sekreter/müdür okuma sınırı sert değil** ve sistem bilgisi SOUL'larda statik (güncel tutan üretici yok): ayrıntı §19.2 "Sekreter + müdür, ara kurulum".
 - **Sertleştirme yok:** `kepler-status.service`'te yalnızca `NoNewPrivileges` ve `PrivateTmp` var (`ProtectHome` vb. yok).
 - Sunucuda `ufw` etkin değil (`systemctl is-active ufw` → `inactive`; kurulu olup olmadığına bakılmadı) ve `sshd` varsayılan ayarda; bunlara dokunulmadı. Ağ erişimi AWS güvenlik grubuna bağlı (**DOĞRULANMADI**).
+
+## 20. 7/24 broker ve işçi hattı — uygulama durumu, henüz kabul edilmedi
+
+Bu bölüm, yukarıdaki eski kurulum taslağının güncel kod karşılığıdır; **önceki VPS notları tarihsel
+gözlemdir**. `factory/` içindeki broker, kuyruk, işçi, ledger yazıcısı, outbox ve root'a ait launcher'lar
+oluşturuldu. Bu oturumun kullanıcı talimatı gereği kod, test, servis, `uv sync`, SSH veya VPS komutu
+çalıştırılmadı. Bu nedenle aşağıdaki mimari statik kod incelemesidir; kurulu/çalışan 7/24 sistem olarak
+sunulamaz.
+
+### Güven sınırları
+
+- `factory/broker.py` Unix socket'te `SO_PEERCRED` ile OS kimliğini alır. Agent'lar yalnız broker'a
+  bağlanır; sudoers'ta kuyruk, kabuk, worker veya credential yetkileri yoktur. İnsan kararı OS uid'si
+  üzerinden kaydedilir.
+- `factory/store.py` SQLite iş kuyruğu, lease/token ve outbox durumunu tutar. `runner.py` tek eşzamanlı
+  işi claim eder, lease'i izler, durmuş worker'ı önce öldürüp sonra claim'i bırakır. Yeniden denemeler
+  sınırlıdır; araştırma koşusu hata/timeout sonrası otomatik yinelenmez ve `unknown` olur.
+- `kepler-sandbox` yalnızca commit kimliğini ve root-owned test listesini alır. Test kodu ayrı `kworker`
+  uid'sinde, ağı kapalı, token'sız, salt okunur bare repo ve bağımlılık bağlamalarından çıkarılan geçici,
+  yazılabilir aday kopyasında, kaynak/CPU/zaman sınırlarıyla çalışır. Aday kodu rapor üretebilir veya
+  testleri aldatmaya çalışabilir. Bir rapor dosyasının varlığı testleri güvenli veya doğru kılmaz; başarı yalnızca
+  zorunlu komutların başarılı tamamlandığını gösterir.
+- `kepler-research` ayrı `kcompute` uid'sine geçer; Modal token'ı yalnız DEV amaçlı env dosyasındadır.
+  İzinli script ve argümanlar dar beyaz listeden gelir; checkout çalışma anında bare repo'daki
+  onaylanmış `main` commit'inden üretilir. Uzak ledger spool'u run başına ayrıdır; tek yerel writer
+  içerik/hash doğrulamasıyla kopyalar. Sağlayıcının gerçek harcama limiti yerel tahmin değildir.
+- `merge_gate.py` aday diff'i korunmuş çekirdek, testler, konfigürasyon ve ajanın yazamayacağı yollar
+  bakımından kontrol eder. Main'e geçiş iki aşamalıdır: insan `review` diff'ini inceler, sonra aynı
+  kullanıcı aynı main ve aynı politika için `merge` çağrısı yapar. Bu işlem otomatik değildir.
+- `policy.json` başlangıçta `research_enabled=false`, kabul bayrakları false ve bütçe aşım eylemi
+  `warn` olarak gelir. Bu yüzden yerel günlük tahmini, sağlayıcı sert limiti ve uyarı teslimatı
+  doğrulanana kadar güvenlik tavanı sayılmaz. Kurulum servisleri etkinleştirmez veya başlatmaz.
+- Telegram outbox bildirimleri kalıcı tutup tekrar dener. `status.py` runtime heartbeat'i ve eskimiş
+  durum bildirimi üretir. Telegram veya VPS erişim arızası için ikinci bir kanal kurulu değildir.
+
+### Elle açılış ve kabul kapısı
+
+1. Önce dosyaları insan olarak incele: `factory/vps/setup.sh`, `provision.sh`, `sudoers.kepler`, tüm
+   `kepler-*.service`, `kepler-sandbox*`, `kepler-research*` ve root policy dosyası. VPS yedeği al;
+   kurulumun mevcut kullanıcı/grup ve repository sahipliğiyle çakışmadığını doğrula.
+2. Ubuntu/systemd sürümünün kullanılan sandbox özelliklerini desteklediğini doğrula. Root kurulum
+   `factory/vps/setup.sh` kullanıcıları, grupları, servis/launcher dosyalarını kurar; mevcut root-owned
+   policy ve secret dosyalarını korur, yalnızca eksik olanları oluşturur; symlink yapılandırmayı reddeder.
+   Servisleri **başlatmaz**. `factory/vps/provision.sh` yalnız kilitli Python ortamını kurar; çalışma talimatında
+   resmi `uv` kurulumunun önkoşul olduğunu unutma.
+3. Token'ları terminalde `sudo kepler-configure-secret modal` ve `sudo kepler-configure-secret telegram`
+   ile yaz. Bunlar sadece DEV Modal anahtarı ve sınırlı Telegram bot kimlik bilgileridir. Sağlayıcı
+   konsolunda sert günlük harcama tavanı ayrıca ayarla; BotFather botunu özel tut ve Telegram chat ID
+   doğrula. Komutlar henüz burada denenmedi.
+4. Servisleri önce araştırma kapalı ve broker kontrolü `paused` durumunda aç. `systemctl status`, socket
+   sahibi/izinleri, SQLite kalıcılığı, restart sonrası outbox ve status timer davranışını elle doğrula.
+5. İzole sandbox kabulü: bilinen başarılı test commit'i, kasıtlı başarısız kontrol, timeout, stop ve
+   makine yeniden başlatma senaryoları. Her birinde worker uid/ağ erişimi, süreç sonlanması, lease'in
+   yeniden verilmesi ve log/outbox sonucu kontrol edilmeden `acceptance_verified` işaretleme.
+6. Broker kabulü: agent uid'si `pause/status/enqueue` yetkilerini; insan uid'si `approve/reject/review/merge`
+   yetkilerini almalı. Kimlik taklidi, bozuk JSON, tekrar idempotency key, yarım JSONL satırı, sunucu
+   restart'ı, outbox ağ hatası ve heartbeat eskimesi sınanmalı.
+7. Diff kapısı kabulü: yasak yol, symlink, test kodu değişikliği, eski base, boş diff, değişen main ve
+   farklı insan UID'si reddedilmeli. İnsan diff review olmadan `main` güncellenmemeli.
+8. Araştırma kabulü: yalnız DEV fixture/protokol, yalnız beyaz listedeki betik ve argüman, Modal hard
+   cap, başarısız koşu `unknown`, başarılı koşu spool/hash/receipt ve ledger dedupe. Bu kanıt olmadan
+   `/etc/kepler/policy.json`'daki dört araştırma açılış anahtarını true yapma.
+9. Kabul kayıtlarını tarih, commit, servis sürümü ve operatörle yaz. Sonra `control=running` yapıp önce
+   tek worker ve tek araştırma ile gözle; 24 saatlik gözlem ve sağlayıcı faturası teyidi olmadan tam
+   7/24 hazır puanı verilmemeli.
+
+Test komutları bu oturumda çalıştırılmadı. Uygulamanın tamamlanma ölçütü yalnız dosyaların yazılması
+değil, bu kabul kapısının insan gözetiminde geçilmesidir. Kalan pratik iş: paket/servis kabulini yapmak,
+`research_enabled` öncesi DEV ve harcama sınırını kanıtlamak ve gerçek 24 saatlik izlemeyi görmek.

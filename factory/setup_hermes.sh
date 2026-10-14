@@ -20,5 +20,5 @@ if [ -n "${REPO_URL:-}" ] && [ ! -d ~/kepler ]; then git clone "$REPO_URL" ~/kep
 if [ -n "${MODAL_TOKEN_ID:-}" ]; then uv tool run modal token set --token-id "$MODAL_TOKEN_ID" --token-secret "$MODAL_TOKEN_SECRET"; fi
 
 echo "Sağlayıcı/model seçimi etkileşimlidir: 'hermes model' (ChatGPT Plus OAuth için openai-codex). Sonra:"
-if command -v systemctl >/dev/null && systemctl --user status >/dev/null 2>&1; then hermes gateway install
-else tmux new-session -d -s hermes "hermes gateway" && echo "geçit tmux 'hermes' oturumunda"; fi
+hermes config set platforms.telegram.extra.drop_pending_on_cold_boot false
+echo "Geçit otomatik başlatılmaz. Prova sonrası kullanıcı: hermes gateway install"

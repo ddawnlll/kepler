@@ -30,7 +30,7 @@ canlıya gitmez.
 | Çalışma ortamı | Modal. Hiçbir bileşen belirli bir ajana/ortama bağlı olmaz (Claude cloud, Hermes vb. aynı repo ve komutlarla çalışır) |
 | Bütçe (G0–G1) | ~4–6 saat, ~200 araç çağrısı; aşılırsa dur ve raporla |
 | Bildirim | Telegram (canlı bot için; şimdi kurulmaz) |
-| Operasyon | Sistem kurulunca 7/24 ajan araştırır; 15–20 dk'da durum mesajı; telefondan sohbetle yönetilen "müdür" ajan (`ARCHITECTURE.md` → Operasyon katmanı). Harcama tavanı yok, yalnızca uyarı |
+| Operasyon | Sistem kurulunca insan `resume` sonrası 7/24 ajan araştırır; 15–20 dk'da durum mesajı; telefondan sohbetle yönetilen "müdür" ajan (`ARCHITECTURE.md` → Operasyon katmanı). Harcama tahmini uyarıdır; API sağlayıcı ve Modal sert limitleri ayrıca zorunludur |
 
 Kaldıraç girdi değildir. Risk bütçesinden ve sinyalin normal oynaklığından çıkan bir
 sonuçtur (%25 drawdown bütçesi 10x'te ~%2,5, 3x'te ~%8 ters harekete denk gelir).

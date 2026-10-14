@@ -1,0 +1,20 @@
+[Unit]
+Description=Kepler durable Telegram delivery
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=krunner
+WorkingDirectory=/srv/kepler
+EnvironmentFile=/etc/kepler/telegram.env
+UMask=0027
+ExecStart=/opt/kepler/venv/bin/python -m factory.outbox
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ReadWritePaths=/srv/kepler/state
+TimeoutStartSec=600

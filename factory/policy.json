@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "workers_max": 1,
+  "max_attempts": 3,
+  "heartbeat_seconds": 10,
+  "lease_seconds": 120,
+  "timeout_seconds": 10800,
+  "budget_usd_daily": 5.0,
+  "budget_hard_action": "warn",
+  "status_stale_seconds": 1800,
+  "research_enabled": false,
+  "dev_workspace_verified": false,
+  "provider_limits_verified": false,
+  "acceptance_verified": false,
+  "research_scripts": ["scripts/ensemble.py", "scripts/carryxs_card.py", "scripts/g2.py"],
+  "required_tests": ["tests/test_architecture.py", "tests/test_factory_runtime.py", "tests/test_factory_boundaries.py", "tests/test_tape_ledger.py", "tests/test_referee.py", "tests/test_referee_engine.py", "tests/test_portfolio.py", "tests/test_realistic.py", "tests/test_ops.py", "tests/test_enqueue.py"],
+  "checks_required_before_merge": true
+}

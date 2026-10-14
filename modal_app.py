@@ -46,6 +46,8 @@ def make_lock() -> str:
 
 
 def _run(cmd: str) -> int:
+    # All remote producers publish immutable events, never a shared ledger file.
+    os.environ["KEPLER_LEDGER_SPOOL"] = "/data/ledger-spool"
     proc = subprocess.Popen(cmd, shell=True, cwd="/repo")
     while True:  # uzun indirmede ilerleme kaybolmasın: dakikada bir Volume'a commit
         try:

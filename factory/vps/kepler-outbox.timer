@@ -1,0 +1,10 @@
+[Unit]
+Description=Kepler notification retries
+
+[Timer]
+OnBootSec=1min
+OnUnitInactiveSec=30sec
+Persistent=true
+
+[Install]
+WantedBy=timers.target

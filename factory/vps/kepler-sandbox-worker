@@ -1,0 +1,41 @@
+#!/usr/bin/python3
+"""Runs as kworker inside the root-owned sandbox. All candidate execution stays here."""
+import os
+from pathlib import Path
+import subprocess
+import sys
+import tarfile
+import xml.etree.ElementTree as ET
+
+root = Path.cwd()
+archive = root / "candidate.tar"
+with archive.open("wb") as out:
+    subprocess.run(["/usr/bin/git", "-c", "safe.directory=/input/repo.git", "--git-dir=/input/repo.git",
+                    "archive", "--format=tar", sys.argv[1]], stdout=out, check=True,
+                   env={"PATH": "/usr/bin:/bin", "HOME": str(root), "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": "/dev/null"})
+checkout = root / "checkout"
+checkout.mkdir()
+with tarfile.open(archive) as tar:
+    if any(not m.isfile() and not m.isdir() for m in tar.getmembers()):
+        raise SystemExit("symlink/submodule/özel dosya yasak")
+    tar.extractall(checkout, filter="data")
+os.chdir(checkout)
+env = {"PATH": "/opt/venv/bin:/usr/bin:/bin", "HOME": str(root), "PYTHONPATH": str(checkout),
+       "PYTHONNOUSERSITE": "1", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1", "NUMBA_CACHE_DIR": str(root / "numba"),
+       "UV_OFFLINE": "1", "KEPLER_NET": "0"}
+subprocess.run(["/opt/venv/bin/python", "tests/test_architecture.py"], env=env, check=True)
+report = root / "pytest.xml"
+rc = subprocess.run(["/opt/venv/bin/python", "-m", "pytest", "-q", "--junitxml=" + str(report), *sys.argv[2:]], env=env).returncode
+if rc != 0:
+    raise SystemExit(rc)
+if not report.exists() or report.stat().st_size > 4 * 1024 * 1024:
+    raise SystemExit("test tamamlanma raporu yok/geçersiz")
+cases = ET.parse(report).getroot().findall(".//testcase")
+if not cases or any(c.find("failure") is not None or c.find("error") is not None for c in cases):
+    raise SystemExit("test raporunda hata")
+for path in sys.argv[2:]:
+    stem = Path(path).stem
+    if not any(stem in c.get("classname", "").split(".") and c.find("skipped") is None for c in cases):
+        raise SystemExit("zorunlu test dosyası tamamlanmadı: " + path)
+# This report is a completeness check, not proof against malicious test code.
+# Every merge still requires authenticated human review of the candidate diff.

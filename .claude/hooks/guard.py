@@ -16,8 +16,8 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 CORE = [
     "kepler/referee.py", "kepler/referee_core.py", "kepler/audit.py", "kepler/evaluate.py", "kepler/ledger.py", "kepler/risk.py", "kepler/stats.py", "kepler/robust.py", "kepler/state.py",
-    "kepler/tape.py", "kepler/data.py", "kepler/qc.py", "kepler/universe.py", "modal_app.py", "tools/*", "factory/*.py", "factory/policy.yaml", "factory/agents/*",
-    "BACKTEST.md", "AGENTS.md", "CLAUDE.md", "MISSION.md", "docs/*", ".claude/*", ".githooks/*",
+    "kepler/tape.py", "kepler/data.py", "kepler/qc.py", "kepler/universe.py", "modal_app.py", "tools/*", "factory/*.py", "factory/policy.*", "factory/agents/*", "pyproject.toml", "uv.lock", ".github/*",
+    "BACKTEST.md", "AGENTS.md", "CLAUDE.md", "MISSION.md", "ARCHITECTURE.md", "docs/*", ".claude/*", ".githooks/*", "factory/vps/*",
 ]
 NEVER_BY_AGENT = ["ledger/*", "registry/*", "hypotheses.jsonl", "artifacts/*", "state/*"]  # yalnızca script'ler yazar
 ASK = ["tests/test_architecture.py"]  # LAYERS satırı eklemek serbest, kuralı gevşetmek kullanıcı onayı
@@ -98,7 +98,7 @@ def staged() -> int:
     for line in out:
         st, rel = line.split("\t", 1)
         verdict, why = classify(rel, is_new=(st == "A"))
-        if verdict == "deny" and st != "D":
+        if verdict == "deny":
             bad.append(why)
         elif verdict == "ask":
             print(f"uyarı: {why}", file=sys.stderr)

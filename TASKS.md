@@ -15,6 +15,8 @@ Aktif iş: Backtest muhasebesi ve test kapıları düzeltmeleri (kullanıcı gö
 
 (Önceki aktif iş: hakem motoru değişimi Nautilus -> numba (kullanıcı görevi 2026-10-13) | durum: bitti (PR #39) | protokol: BACKTEST.md §6.6)
 
+(Aktif altyapı işi: 7/24 ajan fabrikası sertleştirme | kaynak: `factory/`, `docs/factory.md` §20 | kod/test çalıştırılmadı; VPS kabulü ve canlı açılış bekliyor.)
+
 (Önceki aktif iş: Modal koşu süresi < 5 dk (issue #34: fan-out, kırpma, benchmark) | durum: bitti | protokol: yok (araç/hız işi))
 
 (Önceki aktif iş: ev1_plus_new trade denetimi düzeltmeleri | durum: bitti (push onayı bekliyor) | protokol: reports/fix_progress.md)

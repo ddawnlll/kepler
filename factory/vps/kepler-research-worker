@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+"""Executes only human-reviewed main code; this uid has DEV-only Modal credentials."""
+import json
+from pathlib import Path
+import shlex
+import subprocess
+import sys
+import tarfile
+
+commit, token, encoded = sys.argv[1:]
+payload = json.loads(encoded)
+root = Path.cwd()
+with (root / "repo.tar").open("wb") as out:
+    subprocess.run(["git", "-c", "safe.directory=/input/repo.git", "--git-dir=/input/repo.git", "archive", commit], stdout=out, check=True)
+with tarfile.open(root / "repo.tar") as tar:
+    if any(not m.isfile() and not m.isdir() for m in tar.getmembers()):
+        raise SystemExit("özel dosya/symlink yasak")
+    tar.extractall(root / "checkout", filter="data")
+command = shlex.join(["python", "-m", "factory.remote_run", json.dumps({**payload, "token": token})])
+# JSON argv is shell-quoted once at the Modal command-string boundary.
+rc = subprocess.run(["/opt/kepler/modal/bin/modal", "run", "modal_app.py", "--cmd", command], cwd=root / "checkout").returncode
+if rc == 0:
+    destination = Path("/var/lib/kepler-results") / token / "spool"
+    # A stage producing no trials (e.g. null controls) can have no spool directory.
+    result = subprocess.run(["/opt/kepler/modal/bin/modal", "volume", "get", "kepler-data", "ledger-spool/" + token,
+                             str(destination)], cwd=root / "checkout")
+    if result.returncode:
+        raise SystemExit("spool indirilemedi; iş insan mutabakatına kadar unknown kalmalı")
+raise SystemExit(rc)

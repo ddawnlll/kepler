@@ -1,0 +1,28 @@
+[Unit]
+Description=Kepler authenticated local broker
+After=local-fs.target
+
+[Service]
+Type=simple
+User=krunner
+Group=kepler-ipc
+SupplementaryGroups=kepler-results
+WorkingDirectory=/srv/kepler
+RuntimeDirectory=kepler
+RuntimeDirectoryMode=0770
+UMask=0027
+ExecStart=/opt/kepler/venv/bin/python -m factory.broker --serve
+Restart=on-failure
+RestartSec=5
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX
+ReadWritePaths=/srv/kepler/state /srv/kepler.git /run/kepler
+# NoNewPrivileges is deliberately absent: only fixed sudo launcher capabilities are required.
+
+[Install]
+WantedBy=multi-user.target

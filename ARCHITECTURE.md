@@ -20,7 +20,7 @@ yok; her şey tape'in tekrar oynatılmasıyla (replay) yapılır. Sonuçlar tek 
 | 4 | **Yürütme/muhasebe** | Hedef pozisyonu fill, fee, funding, slippage, likidasyonla işler | hedef pozisyon + tape → işlem defteri, equity eğrisi | Platform: eleme vectorbt, hakem numba olay motoru (Nautilus'un yerini aldı); yedek hakem Freqtrade |
 | 5 | **Denetim** | Sonucun gerçek olup olmadığını sınar: defter, null kontroller, nedensellik, mühürlü dönem, çoklu test | 2–4'ün çıktıları → karar | **Biz** (+ `arch`, `skfolio`) |
 | 6 | **Rapor** | İşlem seviyesinde açıklanabilir sonuç | 4–5 → rapor | **Biz** (küçük) |
-| 7 | **Araştırma ajanı** (7/24; G2'den sonra) | LLM sinyal önerir; aynı hat ölçer | öneri → 2 → 3 → 4 → 5 | Runtime: Hermes veya RD-Agent (doğrulanmadı); sözleşme bizim |
+| 7 | **Araştırma ajanı** (7/24; G2'den sonra) | LLM önerisi ve insan onaylı DEV araştırması; aynı hat ölçer | insan onayı + ön kayıt → 2 → 3 → 4 → 5 | Hermes/Kanban runtime; `factory/` broker, çalıştırıcı, sandbox ve tek ledger yazarı |
 | 8 | **Canlı emir katmanı** (sonra) | MEXC'e emir gönderir | hedef pozisyon → borsa | **Karar verilmedi** |
 | 9 | **Güncelleme katmanı** | 15–20 dk'da bir durum mesajı | defter → Telegram | **Biz** (deterministik, LLM yok) |
 | 10 | **Müdür ajan** (sohbet) | Direktifini alır, sistemden sorumludur, önemli durumda seni uyarır | sen ↔ sistem | Hermes (Telegram geçidi); yetki sınırları bizim |
@@ -125,6 +125,9 @@ bağlam, ayrı worktree), güncelleme ajanı (deterministik durum mesajı). Kal�
   yol kuralları `.claude/hooks/guard.py` (Claude Code) ve `.githooks/pre-commit` (tüm ajanlar) ile zorlanır.
 - **Geri dönüşsüz komutlar** (mühür açmak, gerçek para) sohbet yorumuyla yürümez; LLM'siz onay adımı gerekir.
 - Erişim yalnızca kullanıcıya; harcama için kullanıcı kararı uyarı, sert limit sağlayıcı anahtarında.
+- Servisler Linux kullanıcılarına ayrılır: `kagent` agent dalları, `kworker` ağsız kod/test sandbox'ı, `kcompute` ayrı DEV Modal kimliği, `krunner` yerel koordinasyon/defter, `jj` insan onayı.
+- Üretici konteynerleri aynı Volume ledger dosyasına yazmaz; her sonuç bir deneme olayıdır ve tek yerel yazar seri numarası atar.
+- Yeni kurulum **PAUSED** başlar; insan `resume` verene kadar worker dispatch edilmez. Kod/servis çalıştırma ve kabul provası bu mimari tariften ayrı işletim adımlarıdır.
 
 ## Laboratuvar (araçlar ve çalışma şekli)
 
