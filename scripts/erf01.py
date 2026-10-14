@@ -11,6 +11,7 @@ import json
 import math
 import random
 import re
+import shlex
 import sys
 import time
 import urllib.error
@@ -129,7 +130,46 @@ def _save_acquisition(result):
     tmp.replace(OUT / "acquisition.json")
 
 
+def _ensure_protocol():
+    """Fail before downloading; file presence does not prove historical preregistration."""
+    protocol = ROOT / "reports" / "erf01_protocol.md"
+    if not protocol.is_file() or not protocol.read_text(encoding="utf-8").strip():
+        raise FileNotFoundError(f"ERF-01 protocol missing or empty: {protocol}")
+    return protocol
+
+
+def _check_seal():
+    from kepler.qc import SEAL_START
+    if SEAL_START.date() != SEAL:
+        raise RuntimeError(f"ERF-01 seal {SEAL} differs from kepler.qc {SEAL_START.date()}")
+
+
+def _verify_acquisition(a: dict, raw: Path):
+    records = a.get("records", [])
+    if (not a.get("complete") or a.get("errors") or not records
+            or len(records) != a.get("record_count") or len(records) != a.get("expected_archives")
+            or not isinstance(a.get("workers"), int)):
+        raise RuntimeError("incomplete or inconsistent ERF-01 acquisition")
+    if Path(a["raw_root"]).resolve() != raw.resolve():
+        raise RuntimeError("acquisition raw_root mismatches --raw-root")
+    seen = set()
+    for r in records:
+        key = (r["symbol"], r["kind"], r["month"])
+        if key in seen or r["symbol"] not in SYMS or r["kind"] not in ("klines", "fundingRate"):
+            raise RuntimeError(f"duplicate/unknown archive: {key}")
+        seen.add(key)
+        if r["month"] > LAST_MONTH or r["month"] >= SEAL.strftime("%Y-%m"):
+            raise RuntimeError(f"archive outside development window: {key}")
+        path = raw / r["kind"] / r["symbol"] / f"{r['month']}.zip"
+        if not path.is_file() or sha(path.read_bytes()) != r["sha256"]:
+            raise RuntimeError(f"missing or modified source archive: {path}")
+
+
 def fetch(raw: Path, workers=12):
+    _ensure_protocol()
+    _check_seal()
+    if workers < 1:
+        raise ValueError("workers must be >= 1")
     manifest = _combined_manifest()
     jobs, errors = [], []
     for sym in SYMS:
@@ -499,9 +539,11 @@ def _cluster_events(events):
     return len(clusters)
 
 
-def _alert_episodes(rows, probs, threshold):
+def _alert_episodes(rows, probs, threshold, last=None):
     order = sorted(range(len(rows)), key=lambda i: (rows[i][1], rows[i][0]))
-    alerts, last = [], {}
+    alerts = []
+    if last is None:
+        last = {}
     for i in order:
         d, sym, y, _ = rows[i]
         score = float(max(probs[i, 1], probs[i, 2]))
@@ -515,18 +557,31 @@ def _alert_episodes(rows, probs, threshold):
     return alerts
 
 
-def _choose_threshold(train, train_probs):
-    directional = np.maximum(train_probs[:, 1], train_probs[:, 2])
+def _choose_threshold(calibration, calibration_probs):
+    """Threshold is chosen on an out-of-training chronological calibration slice."""
+    directional = np.maximum(calibration_probs[:, 1], calibration_probs[:, 2])
     candidates = sorted(set(float(x) for x in np.quantile(directional, np.linspace(0, 1, 101))))
     candidates.append(float(np.nextafter(np.max(directional), np.inf)))
-    exposure = len(set((r[0], r[1]) for r in train)) / 365.25
+    exposure = len(set((r[0], r[1]) for r in calibration)) / 365.25
     for threshold in candidates:
-        alerts = _alert_episodes(train, train_probs, threshold)
+        alerts = _alert_episodes(calibration, calibration_probs, threshold)
         false = sum(a["y"] == 0 or a["side"] != a["y"] for a in alerts)
         rate = false / exposure if exposure else math.inf
         if rate <= 3.0:
             return threshold, rate, false, exposure
     raise AssertionError("above-maximum threshold must meet false-alarm ceiling")
+
+
+def _calibration_split(train, purge_days=17):
+    dates = sorted({r[0] for r in train})
+    if len(dates) < 2:
+        raise RuntimeError("too few dates for calibration")
+    start = dates[min(len(dates)-1, max(1, int(len(dates)*.80)))]
+    early = [r for r in train if r[0] < start - timedelta(days=purge_days)]
+    heldout = [r for r in train if r[0] >= start]
+    if not early or not heldout:
+        raise RuntimeError("no purged training/calibration rows")
+    return early, heldout
 
 
 def _operational_gate(fold_contexts, events, oos_events):
@@ -535,11 +590,12 @@ def _operational_gate(fold_contexts, events, oos_events):
     for e in events:
         event_map.setdefault(e["symbol"], []).append((date.fromisoformat(e["onset"]), 1 if e["direction"] == "up" else 2))
     all_alerts = []
+    last_test_alert = {}  # carry suppression across test-fold boundaries
     for ctx in fold_contexts:
-        threshold, train_rate, train_false, exposure = _choose_threshold(ctx["train"], ctx["train_probs"])
+        threshold, train_rate, train_false, exposure = _choose_threshold(ctx["calibration"], ctx["calibration_probs"])
         thresholds.append({"fold": ctx["fold"], "threshold": threshold, "train_false_alarms": train_false,
-                           "train_asset_years": exposure, "train_false_per_asset_year": train_rate})
-        alerts = _alert_episodes(ctx["test"], ctx["test_probs"], threshold)
+                           "calibration_asset_years": exposure, "calibration_false_per_asset_year": train_rate})
+        alerts = _alert_episodes(ctx["test"], ctx["test_probs"], threshold, last_test_alert)
         for a in alerts:
             hits = [(d, side) for d, side in event_map.get(a["symbol"], []) if a["date"] < d <= a["date"] + timedelta(days=7)]
             hits.sort()
@@ -616,30 +672,37 @@ def _posthoc_event_diagnostic(preds, events, B=50000, seed=20261014):
             "cluster_bootstrap_95": boot}
 
 
-def run(raw: Path):
-    protocol = ROOT / "reports" / "erf01_protocol.md"
-    if not protocol.exists():
-        raise FileNotFoundError(f"pre-registration missing: {protocol} (write the protocol before running)")
-    acq_path = OUT / "acquisition.json"
-    if not acq_path.exists():
-        raise FileNotFoundError(f"{acq_path} missing; run --stage fetch first")
-    acquisition = json.loads(acq_path.read_text())
-    if acquisition.get("errors"):
-        raise RuntimeError("incomplete acquisition")
-    if not acquisition.get("complete") or acquisition.get("record_count") != acquisition.get("expected_archives"):
-        raise RuntimeError(f"incomplete acquisition: {acquisition.get('record_count')}/{acquisition.get('expected_archives')} verified")
-    if any(date.fromisoformat(x["month"] + "-01") >= SEAL for x in acquisition["records"]):
-        raise AssertionError("sealed month recorded")
-    parquet_files = _parquet_inventory()
-    prior_metrics_path = OUT / "metrics.json"
-    prior_metrics = json.loads(prior_metrics_path.read_text()) if prior_metrics_path.exists() else {}
-    parquet_reused = bool(parquet_files and parquet_files == prior_metrics.get("data", {}).get("parquet_files"))
-    if parquet_reused:
-        klines, funding, fund_records = _read_input_parquet()
-        qc = prior_metrics["data"]["rows_by_symbol"]
-    else:
-        klines, funding, fund_records, qc = _parse_archive(raw)
+def run(raw: Path, trial_ledger: Path | None = None, *, source="tape", data_root=Path("/data")):
+    protocol = _ensure_protocol()
+    _check_seal()
+    if trial_ledger is None:
+        raise RuntimeError("ERF-01 scored runs require --trial-ledger to count all M0/M1/M2 screens")
+    if source == "tape":
+        from erf01_tape import load_development
+        klines, funding, fund_records, qc, acquisition = load_development(
+            data_root, SYMS, DAYS[0], DAYS[1], SEAL)
+        _save_acquisition(acquisition)
         parquet_files = _write_input_parquet(klines, fund_records)
+        parquet_reused = False
+    elif source == "archive":
+        acq_path = OUT / "acquisition.json"
+        if not acq_path.exists():
+            raise FileNotFoundError(f"{acq_path} missing; run --stage fetch first")
+        acquisition = json.loads(acq_path.read_text())
+        _verify_acquisition(acquisition, raw)
+        parquet_files = _parquet_inventory()
+        prior_metrics_path = OUT / "metrics.json"
+        prior_metrics = json.loads(prior_metrics_path.read_text()) if prior_metrics_path.exists() else {}
+        parquet_reused = bool(parquet_files and parquet_files == prior_metrics.get("data", {}).get("parquet_files")
+                              and prior_metrics.get("data", {}).get("source") == "binance_archive")
+        if parquet_reused:
+            klines, funding, fund_records = _read_input_parquet()
+            qc = prior_metrics["data"]["rows_by_symbol"]
+        else:
+            klines, funding, fund_records, qc = _parse_archive(raw)
+            parquet_files = _write_input_parquet(klines, fund_records)
+    else:
+        raise ValueError(f"unknown ERF-01 data source: {source}")
     days, panel = make_panel(klines, funding)
     labels, events, candidates = labels_for(panel, days)
     rows = _rows(panel, labels, days)
@@ -661,23 +724,25 @@ def run(raw: Path):
             continue
         predfold = []
         iters = {}
-        m2_train_probs = m2_test_probs = None
+        m2_test_probs = None
         for model_name, cols in model_masks.items():
-            probs, it, train_probs = _fit_predict(train, test, cols, return_train=(model_name == "M2"))
+            probs, it, _ = _fit_predict(train, test, cols)
             iters[model_name] = it
             if model_name == "M2":
-                m2_train_probs, m2_test_probs = train_probs, probs
+                m2_test_probs = probs
             brier, logloss = _scores(np.asarray([r[2] for r in test]), probs)
             for k, row in enumerate(test):
                 predfold.append({"date": row[0].isoformat(), "symbol": row[1], "y": row[2], "model": model_name,
                                  "p_none": float(probs[k, 0]), "p_up": float(probs[k, 1]), "p_down": float(probs[k, 2]),
                                  "brier": float(brier[k]), "logloss": float(logloss[k])})
-        fold_contexts.append({"fold": name, "train": train, "test": test,
-                              "train_probs": m2_train_probs, "test_probs": m2_test_probs})
+        cal_early, calibration = _calibration_split(train)
+        calibration_probs, _, _ = _fit_predict(cal_early, calibration, model_masks["M2"])
+        fold_contexts.append({"fold": name, "calibration": calibration, "test": test,
+                              "calibration_probs": calibration_probs, "test_probs": m2_test_probs})
         preds.extend(predfold)
         fold_stats.append({"fold": name, "start": start.isoformat(), "end_exclusive": end.isoformat(),
                            "train_start": min(r[0] for r in train).isoformat(), "train_last": max(r[0] for r in train).isoformat(),
-                           "train_rows": len(train), "test_rows": len(test), "test_asset_rows": len(test),
+                           "train_rows": len(train), "calibration_rows": len(calibration), "test_rows": len(test), "test_asset_rows": len(test),
                            "iterations": iters, "status": "ok"})
         all_dates.update(r[0] for r in test)
         print(f"fold {name}: train {len(train):,}, test {len(test):,} asset-days", flush=True)
@@ -712,12 +777,16 @@ def run(raw: Path):
     if forecast_gate:
         operational, alert_rows = _operational_gate(fold_contexts, events, event_oos)
     final_gate = bool(forecast_gate and operational and operational["passed"])
-    verdict = "INCONCLUSIVE" if not sufficient else ("NO_EDGE" if not final_gate else "HISTORICAL_OPERATIONAL_GATE_PASS")
+    verdict = "INCONCLUSIVE" if not sufficient or final_gate else "NO_EDGE"  # no economic referee has run
     posthoc = _posthoc_event_diagnostic(preds, events)
     metrics = {"verdict": verdict, "scope": "fixed survivor-biased extended-9; daily confirmed q-state transitions; development data only",
-               "sealed_boundary": SEAL.isoformat(), "no_economic_test": not final_gate,
-               "data": {"requested_first_month": FIRST_MONTH, "requested_last_month": LAST_MONTH, "rows_by_symbol": qc,
+               "sealed_boundary": SEAL.isoformat(), "no_economic_test": True,
+               "historically_preregistered": False, "independent_confirmation": False,
+               "data": {"source": "kepler_tape" if source == "tape" else "binance_archive",
+                        "canonical_qc": source == "tape", "requested_first_month": FIRST_MONTH,
+                        "requested_last_month": LAST_MONTH, "rows_by_symbol": qc,
                         "archives": acquisition["record_count"], "source_archive_bytes": acquisition["downloaded_bytes"],
+                        "source_bytes": acquisition.get("source_bytes", acquisition["downloaded_bytes"]),
                         "sha256_archive_manifest": sha((OUT / "acquisition.json").read_bytes()),
                         "first_date": min(min(v) for v in klines.values() if v).isoformat(),
                         "last_date": max(max(v) for v in klines.values() if v).isoformat(),
@@ -738,12 +807,34 @@ def run(raw: Path):
                "folds": fold_stats, "forecast_gate_passed": bool(forecast_gate), "operational_gate": operational,
                "posthoc_event_diagnostic": posthoc,
                 "runtime": {"python": sys.version.split()[0], "numpy": np.__version__, "scikit_learn": sklearn.__version__,
-                            "pyarrow": pyarrow.__version__, "device": "CPU", "reproduction_command": "python scripts/erf01.py --stage all"},
+                            "pyarrow": pyarrow.__version__, "device": "CPU", "reproduction_command": shlex.join([sys.executable, "scripts/erf01.py", *sys.argv[1:]])},
                 "execution": {"parallel_archive_fetch_workers": acquisition.get("workers"), "archive_count_verified": acquisition["record_count"],
                               "archive_errors": len(acquisition["errors"]), "parquet_reused_for_model_run": parquet_reused},
-               "economic_stage": "not run unless both forecast and operational gates pass",
+               "economic_stage": "NOT_RUN: forecasting screen is not an economic referee verdict",
+               "screening_gate_passed": final_gate,
+               "trial_ledger": {"status": "NOT_RECORDED", "trial": None},
                "protocol_sha256": sha((ROOT / "reports" / "erf01_protocol.md").read_bytes()),
                "code_sha256": sha(Path(__file__).read_bytes())}
+    if trial_ledger is not None:
+        from kepler import ledger  # append-only model screening, NOT an economic referee result
+        trial_rows = []
+        for model_name in ("M0", "M1", "M2"):
+            config = {"experiment": "ERF-01", "symbol_universe": SYMS,
+                      "first_month": FIRST_MONTH, "last_month": LAST_MONTH,
+                      "model": model_name, "protocol_sha256": metrics["protocol_sha256"]}
+            fingerprint = sha(json.dumps([config, metrics["code_sha256"],
+                                         metrics["data"]["sha256_archive_manifest"]],
+                                        sort_keys=True).encode())
+            model_scores = [r["brier"] for r in preds if r["model"] == model_name]
+            if not model_scores:
+                raise RuntimeError(f"no out-of-sample scores for {model_name}")
+            entry = ledger.record(trial_ledger, "screen", "ERF-01 early regime onset", config,
+                                  metrics["code_sha256"], metrics["data"]["sha256_archive_manifest"],
+                                  score=-float(np.mean(model_scores)), event_id=fingerprint)
+            trial_rows.append({"model": model_name, "trial": entry.get("trial"),
+                               "event_id": fingerprint})
+        metrics["trial_ledger"] = {"status": "SCREEN_ONLY", "path": str(trial_ledger),
+                                   "n_model_configs": len(trial_rows), "rows": trial_rows}
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n")
     with (OUT / "events.csv").open("w", newline="") as f:
@@ -784,9 +875,9 @@ def _write_report(m):
            "- No prior Kepler report directly tested confirmed directional-onset hazard; adjacent results are not H1-A evidence.",
            "- Prior G2 reported NO_EDGE; the 88-configuration search had no validation candidate after multiplicity controls. The ensemble-decay test was also below its DSR threshold. These support a skeptical prior, not an automatic rejection of this target.",
            "- Existing trend diagnostics were in-sample and did not find reliable time-series IC; prior Kepler dates are extensively seen and cannot serve as independent confirmation here.",
-           "- Trial inventory is inconsistent across snapshots: `reports/trial_inventory.md` records 4,117 repository / 5,434 Volume rows (2026-10-03), while later `TASKS.md` records repo N=5,091. This is not a reconciled statistical N. ERF-01 makes no DSR/independent-edge claim.", "",
+           "- Historical trial inventory remains unreconciled. Screening entries are recorded only with an explicit ledger path; no DSR or independent-edge claim.", "",
            f"Protocol: `reports/erf01_protocol.md` (SHA-256 `{m['protocol_sha256']}`). Code SHA-256 `{m['code_sha256']}`.",
-           f"Data: Binance USDT-M monthly daily klines + funding, {data['first_date']} through {data['last_date']} (strictly before sealed boundary {m['sealed_boundary']}); {data['archives']} verified archives ({data['source_archive_bytes']:,} compressed bytes). No G3 data accessed.", "",
+           f"Data: {data['source']} ({'canonical QC' if data['canonical_qc'] else 'archive-specific QC only'}); {data['first_date']} through {data['last_date']} (seal {m['sealed_boundary']}); {data['archives']} source records ({data['source_bytes']:,} bytes). G3 not accessed.", "",
            "## Primary results", "", "| Measure | Result |", "|---|---:|",
            f"| Confirmed OOS onsets (up / down) | {c['confirmed_up_oos']} / {c['confirmed_down_oos']} |",
            f"| OOS 14-day event clusters | {c['unique_14day_oos_event_clusters']} |",
@@ -803,7 +894,7 @@ def _write_report(m):
            f"- Directional NLL/event M1 vs. M2: {_fmt(ph['mean_directional_nll_m1'])} / {_fmt(ph['mean_directional_nll_m2'])}; event-equal improvement M1−M2: {_fmt(ph['event_equal_improvement_m1_minus_m2'])}.",
            f"- Equal-weight 14-day clusters: {ph['unique_14day_clusters']}; cluster-bootstrap 95% interval: {_ci_text(ph['cluster_bootstrap_95'])}.", "",
            "## Execution record", "",
-           f"- Parallel fetch verified {m['execution']['archive_count_verified']}/{data['archives']} source archives using {m['execution']['parallel_archive_fetch_workers']} workers; archive/checksum errors: {m['execution']['archive_errors']}. Model run reused Parquet: {m['execution']['parquet_reused_for_model_run']}.",
+           f"- Input source {data['source']}: {m['execution']['archive_count_verified']} checked source records; acquisition workers {m['execution']['parallel_archive_fetch_workers']}; errors {m['execution']['archive_errors']}. Reused Parquet: {m['execution']['parquet_reused_for_model_run']}.",
            f"- Runtime: Python {m['runtime']['python']}, NumPy {m['runtime']['numpy']}, scikit-learn {m['runtime']['scikit_learn']}, PyArrow {m['runtime']['pyarrow']} ({m['runtime']['device']}). Reproduce with `{m['runtime']['reproduction_command']}`.",
            "",
            "## Fold record", "", "| Test origin | Train rows | Test asset-days | Status |", "|---|---:|---:|---|"]
@@ -817,17 +908,22 @@ def _write_report(m):
                 f"- False alerts per asset-year: {op['false_alerts_per_asset_year']:.3f}; median lead: {op['median_lead_days']} days.",
                 f"- Operational gate passed: {op['passed']}.", ""]
     txt += ["", "## Protocol checks and limits", "",
-            f"- Input Parquet (local ignored data archive): `{data['parquet_files']}`; total {data['parquet_total_bytes']} bytes. Parquet hashes are in `metrics.json`; source archive hashes are in `acquisition.json`.",
+            f"- Input Parquet: `{data['parquet_files']}`; {data['parquet_total_bytes']} bytes. Hashes in `metrics.json`; original source records in `acquisition.json`.",
             f"- Dataset QC by symbol: `{data['rows_by_symbol']}`. Bad OHLC/duplicate day counts and missing archive errors are in `reports/erf01_data/acquisition.json` / `metrics.json`.",
             f"- Confirmed candidate events total {c['confirmed_onsets_all']}; OOS-direction floor is 30 per direction (observed {c['confirmed_up_oos']} up / {c['confirmed_down_oos']} down); {c['unconfirmed_crossings_all']} unconfirmed candidate crossings were recorded.",
             f"- Funding QC: events with |rate| > 1% by symbol: {funding_extreme or 'none'}; preserved as source observations, not silently corrected.",
             f"- Verdict {m['verdict']}: event floor {'met' if c['confirmed_up_oos'] >= 30 and c['confirmed_down_oos'] >= 30 else 'NOT met'} (up {c['confirmed_up_oos']}/30, down {c['confirmed_down_oos']}/30); M2 point improvement {100*f['relative_brier_improvement']:.2f}%; forecast gate passed: {m['forecast_gate_passed']}; operational gate run: {m['operational_gate'] is not None}.",
             "- Feature rows and labels are timestamped causally; training outcome labels are purged strictly before each test origin. H1-B after-onset detections do not count as positive forecasts.",
-            "- The historical date range has prior Kepler exposure. Walk-forward folds prevent fitting to the future within each split but do not restore pristine data status.",
+            "- Historical data has prior Kepler exposure; a retrospective protocol cannot be claimed as historical preregistration.",
             "- The fixed nine are current-survivor contracts; results do not generalize to delisted/universe-wide assets.",
-            f"- Economic test is gated on forecasting and operational skill (forecast gate passed: {m['forecast_gate_passed']}; operational gate passed: {bool(m['operational_gate'] and m['operational_gate']['passed'])}). Kepler's Numba referee was not invoked and no live orders were sent. No production/core code was changed.",
-            "- Detailed reproducibility artifacts: `reports/erf01_data/metrics.json`, `events.csv`, `candidates.csv`, `oos_predictions.csv`, and `acquisition.json`.", ""]
-    (ROOT / "reports" / "erf01.md").write_text("\n".join(txt))
+            f"- Economic test NOT_RUN. Forecast gate {m['forecast_gate_passed']}; operational gate {bool(m['operational_gate'] and m['operational_gate']['passed'])}. No referee evaluation or live orders.",
+            f"- Screening ledger: {m['trial_ledger']}; independent confirmation: {m['independent_confirmation']}.",
+            f"- Reproducibility outputs: \`{OUT}\` (metrics.json, events.csv, candidates.csv, oos_predictions.csv, acquisition.json).", ""]
+    report_text = "\n".join(txt) + "\n"
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "report.md").write_text(report_text)
+    if OUT.is_relative_to(ROOT):
+        (ROOT / "reports" / "erf01.md").write_text(report_text)
 
 
 def self_test():
@@ -871,10 +967,7 @@ def self_test():
     for sym in SYMS:
         assert np.array_equal(past_panel[sym]["features"][:cutoff+1], future_panel[sym]["features"][:cutoff+1], equal_nan=True)
     # Onset requires prior ten q=0 and persistence confirmed on >=8 of the next ten.
-    # Checked by a hand-constructed q stream using the same event criterion.
-    q = np.zeros(40); q[12:] = 1; q[21:23] = 0
-    assert np.count_nonzero(q[13:23] == 1) == 8
-    assert np.count_nonzero(q[13:23] == 1) >= 8 and np.all(q[2:12] == 0)
+    # Exercise the actual labels_for implementation below, not a hand-only assertion.
     qstream = np.zeros(40); qstream[10:18] = 1; qstream[18:20] = 0; qstream[20:] = 1
     test_days = [DAYS[0] + timedelta(days=i) for i in range(40)]
     dummy = {s: {"q": qstream.copy()} for s in SYMS}
@@ -893,13 +986,34 @@ def main():
     ap.add_argument("--stage", choices=["fetch", "run", "all", "self-test"], default="all")
     ap.add_argument("--raw-root", type=Path, default=Path("/tmp/kepler_erf01_raw"))
     ap.add_argument("--workers", type=int, default=12)
+    ap.add_argument("--trial-ledger", type=Path, default=None,
+                    help="append-only Kepler screening-trial ledger (not a referee result)")
+    ap.add_argument("--source", choices=["archive", "tape"], default="tape")
+    ap.add_argument("--data-root", type=Path, default=Path("/data"))
+    ap.add_argument("--out-root", type=Path, default=None)
+    ap.add_argument("--parquet-root", type=Path, default=None)
     args = ap.parse_args()
+    global OUT, PARQUET_OUT
+    if args.out_root is not None:
+        OUT = args.out_root
+    elif args.source == "tape":
+        OUT = args.data_root / "erf01" / "results"
+    if args.parquet_root is not None:
+        PARQUET_OUT = args.parquet_root
+    elif args.source == "tape":
+        PARQUET_OUT = args.data_root / "erf01" / "parquet"
     if args.stage == "self-test":
         self_test(); return
-    if args.stage in ("fetch", "all"):
+    _ensure_protocol()
+    _check_seal()
+    if args.stage in ("run", "all") and args.trial_ledger is None:
+        ap.error("--trial-ledger required for scored ERF-01 runs (3 model configurations)")
+    if args.stage in ("fetch", "all") and args.source == "archive":
         fetch(args.raw_root, workers=args.workers)
+    elif args.stage == "fetch":
+        raise ValueError("fetch is only supported for --source archive")
     if args.stage in ("run", "all"):
-        run(args.raw_root)
+        run(args.raw_root, trial_ledger=args.trial_ledger, source=args.source, data_root=args.data_root)
 
 
 if __name__ == "__main__":
