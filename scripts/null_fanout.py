@@ -4,6 +4,7 @@
 Her konteyner `scripts/<script>.py --stage null --null-from lo --null-to hi` koşar; çıktı `--out/null_<lo>_<hi>.json`, tek koşuyla aynı biçim ve aynı tohumlar.
 Başarısızlık: worker returncode'u doğrudan aktarılır (shell/pipe yok); herhangi bir shard ≠ 0 ise iş exit 1 verir ve birleşim yazılmaz. Tüm shard'lar bitince `null_merge.merge`
 tohum aralığını, eksik/yarım shard'ı, şemayı ve u'yu doğrular, içerik hash'li `null_merged.json` yazar. Retry aynı shard dosyasının üzerine yazar (aynı çıktı = aynı hash).
+Seri referansla parity: tests/test_null_parity.py (küçük offline fixture, gerçek hakem; EV1/carry gerçek null'unda seri/parçalı karşılaştırma Modal'de burada YAPILMADI). Retry tüm shard'ları yeniden koşar, aynı adlı dosyaların üstüne yazar.
 Süreler: shard başına duvar süresi `--out/timing_<lo>_<hi>.json` (sonuç hash'ine girmez). modal_app.py'nin imajı/volume'u yeniden kullanılır (korumalı dosyaya dokunulmaz)."""
 import json
 import pathlib
