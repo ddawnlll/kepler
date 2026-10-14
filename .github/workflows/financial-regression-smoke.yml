@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install minimal synthetic financial test dependencies
-        run: python -m pip install --disable-pip-version-check 'pytest>=8,<9' 'numpy>=2,<2.3' 'pandas>=2,<3' 'numba>=0.60,<0.64' 'duckdb>=1,<2' 'pyarrow>=17,<24'
+        run: python -m pip install --disable-pip-version-check 'pytest>=8,<9' 'numpy>=2,<2.3' 'pandas>=2,<3' 'numba>=0.60,<0.64' 'duckdb>=1,<2' 'pyarrow>=17,<24' 'requests>=2,<3'
       - name: Selected Numba CPU financial regressions (NO Modal cloud compute)
         run: |
           python -m pytest -q tests/test_referee.py tests/test_referee_engine.py tests/test_portfolio.py tests/test_account_events.py tests/test_evaluation_gates.py tests/test_tape_ledger.py tests/test_core_guard.py
