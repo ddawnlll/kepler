@@ -1,5 +1,7 @@
 # Kepler Araştırma Fabrikası — Spesifikasyon v2
 
+> **V4.1 uygulama hedefi (2026-10-15):** V4 araştırma odağı/hafıza taslağı [`factory/v4_1/FOCUS_MEMORY.md`](../factory/v4_1/FOCUS_MEMORY.md), hedefli uygulama ve 24 saatlik kabul sözleşmesi [`factory/v4_1/OPERATIONAL_CONTRACT.md`](../factory/v4_1/OPERATIONAL_CONTRACT.md), Müdür/İşçi SOUL kaynakları [`factory/v4_1/`](../factory/v4_1/) altında sürümlendi. **Bu kaynaklar çalışan runtime veya verilmiş DEV yetkisi değildir.** Aşağıdaki v2 bölümlerinde belgelenen kurulu/henüz kabul edilmemiş broker davranışı, gerçek kod ve üst politika belgeleri değiştirilmedikçe yürürlükte kalır. İşletim geçişi [`MIGRATION.md`](../factory/v4_1/MIGRATION.md) kabul maddeleriyle yapılır.
+
 > **Durum:** uygulamaya hazır tasarım (kod yok). Fabrika ilk sürümde **tek seferde** kurulur; faz yoktur, yalnızca bağımlılık sırası vardır (§16).
 > **Kaynak:** v1 taslağı (Opus 5.5), v1 incelemesi (7 blocker + sadeleştirme) ve kullanıcı kararları: *kör deneme yok* (her koşu kartlı tek hipotez), *bürokrasi yok* (kapı yalnızca gözlenmiş bir engele karşı), *faz yok*.
 > **Uyarı:** Hermes, Modal ve model davranışlarına dair her şey dokümandan okundu, **hiçbiri kurulup denenmedi**. Bu yerler **[DOĞRULANMADI]** etiketi taşır (liste §18).
