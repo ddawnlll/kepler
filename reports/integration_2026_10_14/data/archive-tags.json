@@ -1,0 +1,107 @@
+[
+  {
+    "branch": "ccr-17bd8bb8-5alkzf",
+    "sha": "7ae0b76e8e0343366de791ae279718afb1d87e75",
+    "tag": "archive/2026-10-14/branch/ccr-17bd8bb8-5alkzf"
+  },
+  {
+    "branch": "ccr-018c70e2-hlz54f",
+    "sha": "c978623b4164035f9cb670d810e74361dcdf2001",
+    "tag": "archive/2026-10-14/branch/ccr-018c70e2-hlz54f"
+  },
+  {
+    "branch": "ccr-33b980ad-tifh9z",
+    "sha": "fd5ab44bb1211471156ee7aa6ee40689219fd300",
+    "tag": "archive/2026-10-14/branch/ccr-33b980ad-tifh9z"
+  },
+  {
+    "branch": "ccr-3876f17d-enqq5z",
+    "sha": "b4938f16525e9a67b2eece6f8bb948adba6f883c",
+    "tag": "archive/2026-10-14/branch/ccr-3876f17d-enqq5z"
+  },
+  {
+    "branch": "ccr-607053d9-nh21js",
+    "sha": "e282c0477bab6cea259ba085bc174bf0601aafae",
+    "tag": "archive/2026-10-14/branch/ccr-607053d9-nh21js"
+  },
+  {
+    "branch": "ccr-c70b496a-spmxi0",
+    "sha": "38b9c5397dd1c7a4e1529dd4354ba9c5deb1d216",
+    "tag": "archive/2026-10-14/branch/ccr-c70b496a-spmxi0"
+  },
+  {
+    "branch": "claude/dreamy-lamport-0t7yck",
+    "sha": "1c614d590d224cfa2fef4fc6c21c62659def41c2",
+    "tag": "archive/2026-10-14/branch/claude/dreamy-lamport-0t7yck"
+  },
+  {
+    "branch": "claude/ev1-decay-test",
+    "sha": "74c12e87cd7aeb7973a9dc534e6651e65cc7045c",
+    "tag": "archive/2026-10-14/branch/claude/ev1-decay-test"
+  },
+  {
+    "branch": "claude/jolly-carson-cdpdtq",
+    "sha": "dbedc4e4dd79d299c7317edf2fade0ccf44c2880",
+    "tag": "archive/2026-10-14/branch/claude/jolly-carson-cdpdtq"
+  },
+  {
+    "branch": "claude/sweet-shannon-qzwbzj",
+    "sha": "6e035af2d577e48d7c630c965b657332e07d3a63",
+    "tag": "archive/2026-10-14/branch/claude/sweet-shannon-qzwbzj"
+  },
+  {
+    "branch": "codex/github-templates",
+    "sha": "b5759143e1e187e33ce19ceeeaa593c7be221e8e",
+    "tag": "archive/2026-10-14/branch/codex/github-templates"
+  },
+  {
+    "branch": "i10-funding",
+    "sha": "7b03e7ff88762eaff9f3d208ae79139896cca7d8",
+    "tag": "archive/2026-10-14/branch/i10-funding"
+  },
+  {
+    "branch": "i11-intents",
+    "sha": "b4573f5cdb3315e1bd4f9678673a81b66a03afa5",
+    "tag": "archive/2026-10-14/branch/i11-intents"
+  },
+  {
+    "branch": "i12-identity",
+    "sha": "5779e32f3c20aa43b4b29a02f4d8615d1d604942",
+    "tag": "archive/2026-10-14/branch/i12-identity"
+  },
+  {
+    "branch": "i13-ledger",
+    "sha": "ee9454425d178146b5e14d959253ac6717a20f3a",
+    "tag": "archive/2026-10-14/branch/i13-ledger"
+  },
+  {
+    "branch": "i14-family",
+    "sha": "c80e3cd93f699999d412a9c7d21b93a9ccd4587c",
+    "tag": "archive/2026-10-14/branch/i14-family"
+  },
+  {
+    "branch": "i15-null",
+    "sha": "727d5ceb45dd851ba685bb06476d96ec0889a857",
+    "tag": "archive/2026-10-14/branch/i15-null"
+  },
+  {
+    "branch": "i16-500",
+    "sha": "5c8f38f897fdd19f2735e96ceba3231ee3fec807",
+    "tag": "archive/2026-10-14/branch/i16-500"
+  },
+  {
+    "branch": "i17-carry",
+    "sha": "e00825b5d2b7dc6f613bf2c8badde111f6082bec",
+    "tag": "archive/2026-10-14/branch/i17-carry"
+  },
+  {
+    "branch": "i18-qc",
+    "sha": "2e81941926b4664b9f38f3b4707370bd3a0d1c10",
+    "tag": "archive/2026-10-14/branch/i18-qc"
+  },
+  {
+    "branch": "i19-parity",
+    "sha": "b27918cf751e3889f1dc52d4ff33c9f7b86171be",
+    "tag": "archive/2026-10-14/branch/i19-parity"
+  }
+]

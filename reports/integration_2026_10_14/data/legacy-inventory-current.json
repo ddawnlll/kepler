@@ -1,0 +1,18 @@
+{
+ "files": 46,
+ "rows": 4119,
+ "by_source": {
+  "referee": 3247,
+  "screen": 872
+ },
+ "by_status": {
+  "completed": 4119
+ },
+ "unique_config_hash": 2964,
+ "extra_rows_sharing_config_hash": 1155,
+ "rows_without_explicit_symbol_id": 4086,
+ "rows_without_name_or_symbol": 0,
+ "legacy_partial_provenance": 4119,
+ "with_receipt": 0,
+ "note": "repo defterleri; Modal-yaln\u0131z sat\u0131rlar (reports/trial_inventory.md), smoke ve ledger d\u0131\u015f\u0131 ke\u015fif dahil de\u011fil; sat\u0131r say\u0131s\u0131 ba\u011f\u0131ms\u0131z hipotez say\u0131s\u0131 de\u011fildir"
+}
