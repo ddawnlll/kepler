@@ -160,7 +160,8 @@ def prepare(data: dict[str, dict], spec: Spec = Spec()) -> dict:
     close_mode = spec.fill == "close"
     bar, sym = np.arange(off[-1]), np.repeat(np.arange(len(syms)), n)
     if close_mode:
-        ev_t, ev_b, ev_k, ev_kind = T0 + HOUR_NS, bar, sym, np.full(len(bar), core.KIND_CLOSE, np.int8)
+        ev_t, ev_b, ev_k = np.r_[T0 + HOUR_NS - 1, T0 + HOUR_NS], np.r_[bar, bar], np.r_[sym, sym]
+        ev_kind = np.r_[np.full(len(bar), core.KIND_BODY, np.int8), np.full(len(bar), core.KIND_CLOSE, np.int8)]
     else:
         ev_t, ev_b, ev_k = np.r_[T0, T0 + HOUR_NS - 1], np.r_[bar, bar], np.r_[sym, sym]
         ev_kind = np.r_[np.zeros(len(bar), np.int8), np.ones(len(bar), np.int8)]
@@ -177,7 +178,7 @@ def _inputs(pr: dict, spec: Spec):
     for k in range(len(pr["syms"])):
         sl = slice(off[k], off[k + 1])
         TG[sl], ST[sl] = _shift(pr["tg"][sl], sh), _shift(pr["st"][sl], sh)
-    P = np.array([(spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4, spec.leverage, spec.mmr, float(spec.liq and not spec.native_liq), spec.min_notional, spec.capital, float(spec.equity_scale), spec.gross_cap or 0.0, float(pr["close_mode"])])
+    P = np.array([(spec.fee_rt_bps + spec.slip_rt_bps) / 2 / 1e4, spec.leverage, spec.mmr, float(spec.liq and not spec.native_liq), spec.min_notional, spec.capital, float(spec.equity_scale), spec.gross_cap or 0.0, float(pr["close_mode"]), spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate])
     return TG, ST, P
 
 
@@ -212,13 +213,13 @@ def _finish(pr: dict, data: dict, spec: Spec, raw: dict, full: bool = True) -> d
     liq, stp = (fi[:, 3] & 1) > 0, (fi[:, 3] & 2) > 0
     notional = float((ff[:, 0] * ff[:, 1]).sum())
     fee, slip = notional * spec.fee_rt_bps / 2 / 1e4, notional * spec.slip_rt_bps / 2 / 1e4
-    liq_fee = float((ff[liq, 0] * ff[liq, 1]).sum()) * max(0.0, (spec.mmr if spec.liq_fee_rate is None else spec.liq_fee_rate) - side_fee)  # motor taker fee'yi zaten kesti
+    liq_fee = float(G[2])  # already debited from settlement cash inside the Numba kernel
     last = [float(d["kl"].close.iloc[-1]) for d in data.values()]
     end_pos = {s: I[k, core.LOT] / U[k, 0] for k, s in enumerate(syms)}
     unreal = sum(end_pos[s] * (last[k] - F[k, core.AVG]) for k, s in enumerate(syms) if I[k, core.LOT] != 0)
     exit_cost = sum(abs(end_pos[s]) * last[k] * side_fee for k, s in enumerate(syms)) if spec.close_out else 0.0
     fund, missed, fallback = float(G[1]), int(N[3]), sum(f["fallback"] for f in pr["fx"] if f is not None)  # funding çekirdekte settlement anında işlendi (G[0] bakiyesine dahil; burada tekrar eklenmez)
-    net = float(G[0]) + unreal - spec.capital - liq_fee - exit_cost
+    net = float(G[0]) + unreal - spec.capital - exit_cost
     rejected = [f"OrderRejected(sym={syms[r[0]]} ts={r[1]} qty={r[2] / U[r[0], 0]}: {'stop kitap fiyatında' if r[2] == 0 else 'marj/piyasa yok'})" for r in RJ[:nrej]]
     summary = dict(net_pnl=net, gross_pnl=net + fee + slip + exit_cost - fund + liq_fee, fee=fee, slippage=slip, funding=fund, liq_fee=liq_fee, exit_cost=exit_cost, n_fills=nf, n_liq=int(liq.sum()), n_stop=int(stp.sum()),
                    end_position=next(iter(end_pos.values())) if len(end_pos) == 1 else sum(abs(v) for v in end_pos.values()), engine_commission=float(ff[:, 2].sum()), n_rejected=len(rejected),
