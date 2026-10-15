@@ -14,6 +14,8 @@ from kepler.intelligence.validation import daily_close_time, utc
 UTC = timezone.utc
 STATES = (-1, 0, 1)
 SURVIVAL_STATUSES = frozenset({"OBSERVED", "UNKNOWN_GAP", "RIGHT_CENSORED"})
+HAZARD_FAMILIES = frozenset({"state_age_blind", "age_only", "market_only", "market_plus_age"})
+MARKET_FEATURES = ("log_rv1", "log_rv7", "log_rv30")
 
 
 def _state(raw) -> int | None:
@@ -73,6 +75,197 @@ class SurvivalLandmark:
             raise ValueError("unknown/censored survival target cannot carry a fabricated outcome")
         object.__setattr__(self, "prediction_at", prediction)
         object.__setattr__(self, "label_end", end)
+
+
+@dataclass(frozen=True)
+class DiscreteHazardModel:
+    """Fixed-candidate one-day exit hazard fitted on a training risk set."""
+
+    family: str
+    feature_names: tuple[str, ...]
+    coefficients: tuple[float, ...]
+    means: tuple[float, ...]
+    scales: tuple[float, ...]
+    state_hazards: tuple[tuple[int, float], ...]
+    n_fit: int
+    n_exits: int
+    n_censored: int
+    n_left_censored: int
+    l2: float = 1.0
+
+
+def _hazard_row_features(state: int, age: int, market: Sequence[float], family: str) -> np.ndarray:
+    if state not in STATES or age < 1:
+        raise ValueError("hazard prediction needs a valid state and positive elapsed age")
+    market = np.asarray(market, dtype=np.float64)
+    if market.shape != (3,) or not np.isfinite(market).all():
+        raise ValueError("market features must be finite logRV1/logRV7/logRV30 values")
+    state_indicators = np.asarray([float(state == candidate) for candidate in STATES])
+    parts = [np.asarray([1.0]), state_indicators]
+    if family in {"age_only", "market_plus_age"}:
+        parts.append(np.asarray([math.log1p(age)]))
+    if family in {"market_only", "market_plus_age"}:
+        parts.append(market)
+    return np.concatenate(parts)
+
+
+def fit_discrete_hazard(
+    rows: Sequence[SurvivalLandmark],
+    market_conditions: Sequence[Sequence[float]],
+    *,
+    family: str,
+    matured_before: datetime,
+) -> DiscreteHazardModel:
+    """Fit one frozen H2 daily hazard candidate on known-onset training rows.
+
+    The four candidate names and ridge strength match the H2 preregistration.
+    Censored outcomes and unknown-onset spells are excluded, not imputed. The
+    continuous features are standardized on the retained fit rows only.
+    """
+    if family not in HAZARD_FAMILIES:
+        raise ValueError(f"unknown frozen hazard family: {family}")
+    cutoff = utc(matured_before)
+    if len(rows) != len(market_conditions) or not rows:
+        raise ValueError("market conditions must align with non-empty risk rows")
+    if any(row.horizon_days != 1 for row in rows):
+        raise ValueError("discrete hazard fitting requires one-day risk rows")
+    if any(row.label_end >= cutoff for row in rows):
+        raise ValueError("training risk rows must mature strictly before the cutoff")
+    market = np.asarray(market_conditions, dtype=np.float64)
+    if market.shape != (len(rows), 3):
+        raise ValueError("market conditions must have logRV1/logRV7/logRV30 columns")
+    if not np.isfinite(market).all():
+        raise ValueError("market conditions must be finite")
+
+    retained = [i for i, row in enumerate(rows)
+                if row.elapsed_age is not None and row.status == "OBSERVED"]
+    if not retained:
+        raise ValueError("no known-onset observed outcomes in training risk rows")
+    selected = [rows[i] for i in retained]
+    selected_market = market[retained]
+    outcomes = np.asarray([1 - int(row.survives_horizon) for row in selected], dtype=np.float64)
+    n_exits = int(outcomes.sum())
+    n_left_censored = sum(row.elapsed_age is None for row in rows)
+    n_censored = sum(row.elapsed_age is not None and row.status != "OBSERVED" for row in rows)
+
+    if family == "state_age_blind":
+        hazards = []
+        for state in STATES:
+            state_rows = [int(row.survives_horizon) for row in selected if row.state == state]
+            # Jeffreys Beta(1/2, 1/2) smoothing keeps empty/small state cells finite.
+            exits = len(state_rows) - sum(state_rows)
+            hazard = (exits + 0.5) / (len(state_rows) + 1.0)
+            hazards.append((state, float(hazard)))
+        return DiscreteHazardModel(
+            family, (), (), (), (), tuple(hazards), len(selected), n_exits,
+            n_censored, n_left_censored, 1.0)
+
+    feature_names = [f"state_{state}" for state in STATES]
+    if family in {"age_only", "market_plus_age"}:
+        feature_names.append("log1p_elapsed_age")
+    if family in {"market_only", "market_plus_age"}:
+        feature_names.extend(MARKET_FEATURES)
+
+    raw = np.vstack([
+        _hazard_row_features(row.state, row.elapsed_age, selected_market[i], family)[1:]
+        for i, row in enumerate(selected)
+    ])
+    means = np.zeros(raw.shape[1], dtype=np.float64)
+    scales = np.ones(raw.shape[1], dtype=np.float64)
+    # State indicators are not standardized; only continuous covariates use fit-only moments.
+    continuous_start = 3
+    if family in {"age_only", "market_plus_age"}:
+        continuous_start = 3
+    for column in range(continuous_start, raw.shape[1]):
+        means[column] = raw[:, column].mean()
+        scale = raw[:, column].std()
+        scales[column] = scale if np.isfinite(scale) and scale > 0 else 1.0
+    design = np.column_stack((np.ones(len(raw)), (raw - means) / scales))
+
+    # Convex ridge logistic loss, fixed L2=1 and fixed Newton solver.
+    penalty = np.eye(design.shape[1], dtype=np.float64)
+    theta = np.zeros(design.shape[1], dtype=np.float64)
+    prevalence = float(np.clip(outcomes.mean(), 1e-6, 1 - 1e-6))
+    theta[0] = math.log(prevalence / (1.0 - prevalence))
+    for _ in range(100):
+        logits = np.clip(design @ theta, -40.0, 40.0)
+        probabilities = 1.0 / (1.0 + np.exp(-logits))
+        gradient = design.T @ (probabilities - outcomes) + theta
+        weights = probabilities * (1.0 - probabilities)
+        hessian = (design.T * weights) @ design + penalty
+        step = np.linalg.solve(hessian, gradient)
+        theta -= step
+        if np.max(np.abs(step)) < 1e-9:
+            break
+    return DiscreteHazardModel(
+        family=family,
+        feature_names=tuple(feature_names),
+        coefficients=tuple(float(value) for value in theta),
+        means=tuple(float(value) for value in means),
+        scales=tuple(float(value) for value in scales),
+        state_hazards=(), n_fit=len(selected), n_exits=n_exits,
+        n_censored=n_censored, n_left_censored=n_left_censored, l2=1.0,
+    )
+
+
+def predict_one_day_exit_hazard(
+    model: DiscreteHazardModel, *, state: int, elapsed_age: int,
+    market_conditions: Sequence[float],
+) -> float:
+    """Predict a one-day state exit probability from an explicit model."""
+    if model.family == "state_age_blind":
+        mapping = dict(model.state_hazards)
+        if state not in mapping:
+            raise ValueError("age-blind hazard model is missing the requested state")
+        return mapping[state]
+    raw = _hazard_row_features(state, elapsed_age, market_conditions, model.family)[1:]
+    standardized = (raw - np.asarray(model.means)) / np.asarray(model.scales)
+    design = np.concatenate(([1.0], standardized))
+    logit = float(np.clip(design @ np.asarray(model.coefficients), -40.0, 40.0))
+    return float(np.clip(1.0 / (1.0 + math.exp(-logit)), 1e-6, 1 - 1e-6))
+
+
+def forecast_remaining_survival(
+    model: DiscreteHazardModel,
+    *,
+    state: int,
+    elapsed_age: int,
+    market_conditions: Sequence[float],
+    prediction_at: datetime,
+    feature_available_at: datetime,
+    horizon_days: int = 14,
+) -> dict:
+    """Forecast uninterrupted survival with explicit as-of timing.
+
+    Current market conditions are held fixed over the forecast and elapsed age
+    advances one day per hazard, matching the frozen H2 candidate definition.
+    """
+    prediction_at = utc(prediction_at)
+    feature_available_at = utc(feature_available_at)
+    if feature_available_at > prediction_at:
+        raise ValueError("market features were published after the prediction timestamp")
+    if (isinstance(horizon_days, bool) or not isinstance(horizon_days, (int, np.integer))
+            or horizon_days < 1):
+        raise ValueError("survival forecast horizon must be a positive whole number of days")
+    if elapsed_age < 1 or state not in STATES:
+        raise ValueError("survival forecast needs a valid observable state and positive age")
+    survival = 1.0
+    daily_hazards = []
+    for offset in range(int(horizon_days)):
+        age = elapsed_age + offset
+        hazard = predict_one_day_exit_hazard(
+            model, state=state, elapsed_age=age, market_conditions=market_conditions)
+        daily_hazards.append(hazard)
+        survival *= 1.0 - hazard
+    return {
+        "family": model.family,
+        "prediction_at": prediction_at.isoformat(),
+        "feature_available_at": feature_available_at.isoformat(),
+        "state": int(state), "elapsed_age": int(elapsed_age),
+        "horizon_days": int(horizon_days),
+        "survival_probability": float(survival),
+        "daily_exit_hazards": daily_hazards,
+    }
 
 
 def build_survival_landmarks(
@@ -146,7 +339,7 @@ def build_survival_landmarks(
 
 
 def fit_delayed_entry_censor_curve(
-    training: Iterable[SurvivalLandmark], *, through_age: int,
+    training: Iterable[SurvivalLandmark], *, through_age: int, matured_before: datetime,
 ) -> dict[int, dict[str, float]]:
     """Fit a reverse-KM observation-censor curve with left-truncated risk sets.
 
@@ -160,8 +353,11 @@ def fit_delayed_entry_censor_curve(
             or through_age < 1):
         raise ValueError("through_age must be a positive whole number of days")
     rows = list(training)
+    cutoff = utc(matured_before)
     if any(r.horizon_days != 1 for r in rows):
         raise ValueError("censor curve requires one-day training risk rows")
+    if any(r.label_end >= cutoff for r in rows):
+        raise ValueError("censor risk rows must mature strictly before the cutoff")
     rows = [r for r in rows if r.elapsed_age is not None]
     g = 1.0
     curve = {0: {"survival": 1.0, "risk": 0.0, "censors": 0.0}}
