@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import math
 from typing import Iterable, Mapping
 
@@ -18,12 +18,17 @@ def binary_probability_scores(
     labels, mismatched lengths or non-finite/out-of-range probabilities fail
     closed instead of being silently dropped.
     """
-    y = np.asarray(list(outcomes), dtype=np.int8)
+    raw_y = np.asarray(list(outcomes))
     p = np.asarray(list(probabilities), dtype=np.float64)
-    if y.ndim != 1 or p.ndim != 1 or len(y) != len(p) or not len(y):
+    if raw_y.ndim != 1 or p.ndim != 1 or len(raw_y) != len(p) or not len(raw_y):
         raise ValueError("non-empty one-dimensional outcomes and probabilities must align")
-    if not np.isin(y, (0, 1)).all():
+    try:
+        finite_y = np.isfinite(raw_y).all()
+    except TypeError as exc:
+        raise ValueError("outcomes must be numeric binary values") from exc
+    if not finite_y or not np.isin(raw_y, (0, 1)).all():
         raise ValueError("outcomes must be binary")
+    y = raw_y.astype(np.int8)
     if not np.isfinite(p).all() or np.any((p < 0) | (p > 1)):
         raise ValueError("probabilities must be finite and in [0, 1]")
     if bins < 1:
@@ -60,9 +65,14 @@ def paired_date_block_interval(
     """Date-clustered moving-block interval; multiple assets share one date unit."""
     if block_days < 1 or replicates < 1:
         raise ValueError("block_days and replicates must be positive")
-    per_date: dict[str, list[float]] = defaultdict(list)
+    per_date: dict[date, list[float]] = defaultdict(list)
     for when, value in dated_differences:
-        day = when.date().isoformat() if isinstance(when, datetime) else str(when)
+        if isinstance(when, datetime):
+            day = when.date()
+        elif isinstance(when, date):
+            day = when
+        else:
+            day = date.fromisoformat(str(when))
         value = float(value)
         if not math.isfinite(value):
             raise ValueError("paired differences must be finite")
@@ -75,15 +85,27 @@ def paired_date_block_interval(
     if len(x) < block_days:
         return {"n_dates": len(x), "mean": float(x.mean()), "p025": None, "p975": None,
                 "replicates": 0, "block_days": block_days, "seed": seed}
+    # A block means adjacent UTC calendar days. Never bridge missing dates by
+    # treating neighboring rows as adjacent observations.
+    valid_starts = []
+    run_start = 0
+    for i in range(1, len(dates) + 1):
+        if i == len(dates) or dates[i] - dates[i - 1] != timedelta(days=1):
+            run_end = i
+            if run_end - run_start >= block_days:
+                valid_starts.extend(range(run_start, run_end - block_days + 1))
+            run_start = i
+    if not valid_starts:
+        return {"n_dates": len(x), "mean": float(x.mean()), "p025": None, "p975": None,
+                "replicates": 0, "block_days": block_days, "seed": seed}
     rng = np.random.default_rng(seed)
     samples = np.empty(replicates, dtype=np.float64)
     n = len(x)
-    # Non-circular moving blocks preserve observed adjacency and avoid wraparound.
-    starts = n - block_days + 1
+    # Non-circular moving blocks preserve calendar adjacency and avoid wraparound.
     for b in range(replicates):
         pieces = []
         while sum(len(piece) for piece in pieces) < n:
-            start = int(rng.integers(starts))
+            start = valid_starts[int(rng.integers(len(valid_starts)))]
             pieces.append(x[start:start + block_days])
         samples[b] = np.concatenate(pieces)[:n].mean()
     return {"n_dates": n, "mean": float(x.mean()),
