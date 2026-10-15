@@ -1,0 +1,64 @@
+name: Temporary ERF01 five-year regime science validation
+on:
+  push:
+    branches: [research/erf01-regime-intelligence-20261015]
+    paths: [.github/workflows/erf01-regime-atlas-once.yml]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Locked dependencies and full test suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install uv
+          uv sync --frozen --dev --no-install-project
+          uv run --no-sync python -m py_compile scripts/erf01_regime_atlas.py
+          uv run --no-sync python tests/test_architecture.py
+          uv run --no-sync pytest -q
+  modal-regime-atlas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate actual Modal credentials
+        run: |
+          test -n "$MODAL_TOKEN_ID" && test -n "$MODAL_TOKEN_SECRET"
+          python -m pip install 'modal>=1.6,<2'
+      - name: Run five-year atlas on verified nine-symbol 1h canonical DEV
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout --signal=TERM --kill-after=10s 430s modal run modal_app.py --cmd "python scripts/erf01_regime_atlas.py --staging /data/erf01/staging --out /data/erf01/regime_atlas_20261015" 2>&1 | tee "$RUNNER_TEMP/erf01-atlas.log"
+          grep -q 'ERF01_REGIME_ATLAS_RESULT=' "$RUNNER_TEMP/erf01-atlas.log"
+      - name: Collect immutable atlas metrics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p erf01-atlas-artifacts
+          cp "$RUNNER_TEMP/erf01-atlas.log" erf01-atlas-artifacts/run.log 2>/dev/null || :
+          if modal volume ls kepler-data /erf01/regime_atlas_20261015 2>&1 | grep -q 'metrics.json'; then
+            modal volume get kepler-data /erf01/regime_atlas_20261015/metrics.json erf01-atlas-artifacts/metrics.json
+            modal volume get kepler-data /erf01/regime_atlas_20261015/report.md erf01-atlas-artifacts/report.md
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: erf01-regime-atlas-${{ github.run_id }}
+          path: erf01-atlas-artifacts/
+          if-no-files-found: warn
+          retention-days: 30
