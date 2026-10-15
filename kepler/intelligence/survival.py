@@ -126,6 +126,7 @@ def fit_discrete_hazard(
     *,
     family: str,
     matured_before: datetime,
+    feature_available_times: Sequence[datetime],
 ) -> DiscreteHazardModel:
     """Fit one frozen H2 daily hazard candidate on known-onset training rows.
 
@@ -136,12 +137,16 @@ def fit_discrete_hazard(
     if family not in HAZARD_FAMILIES:
         raise ValueError(f"unknown frozen hazard family: {family}")
     cutoff = utc(matured_before)
-    if len(rows) != len(market_conditions) or not rows:
-        raise ValueError("market conditions must align with non-empty risk rows")
+    if (len(rows) != len(market_conditions) or len(rows) != len(feature_available_times)
+            or not rows):
+        raise ValueError("market conditions and availability times must align with risk rows")
     if any(row.horizon_days != 1 for row in rows):
         raise ValueError("discrete hazard fitting requires one-day risk rows")
     if any(row.label_end >= cutoff for row in rows):
         raise ValueError("training risk rows must mature strictly before the cutoff")
+    available_times = [utc(when) for when in feature_available_times]
+    if any(available > row.prediction_at for row, available in zip(rows, available_times)):
+        raise ValueError("training market features were published after their prediction time")
     market = np.asarray(market_conditions, dtype=np.float64)
     if market.shape != (len(rows), 3):
         raise ValueError("market conditions must have logRV1/logRV7/logRV30 columns")

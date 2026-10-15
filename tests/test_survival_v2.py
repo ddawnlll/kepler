@@ -71,6 +71,7 @@ def test_four_frozen_hazard_candidates_are_train_only_and_forecast_as_of():
     rows = landmarks(states, horizon=1)
     market = [[-4.0 + (i % 7) / 10, -3.5 + (i % 5) / 10, -3.0 + (i % 3) / 10]
               for i in range(len(rows))]
+    feature_times = [row.prediction_at for row in rows]
     cutoff = datetime(2025, 6, 1, tzinfo=timezone.utc)
     target = next(row for row in rows if row.elapsed_age is not None)
     feature_time = target.prediction_at - timedelta(hours=1)
@@ -79,7 +80,10 @@ def test_four_frozen_hazard_candidates_are_train_only_and_forecast_as_of():
         "state_age_blind", "age_only", "market_only", "market_plus_age"
     }
     for family in sorted(HAZARD_FAMILIES):
-        model = fit_discrete_hazard(rows, market, family=family, matured_before=cutoff)
+        model = fit_discrete_hazard(
+            rows, market, family=family, matured_before=cutoff,
+            feature_available_times=feature_times,
+        )
         assert model.n_fit > 0 and model.n_exits > 0
         result = forecast_remaining_survival(
             model, state=target.state, elapsed_age=target.elapsed_age,
@@ -94,8 +98,15 @@ def test_four_frozen_hazard_candidates_are_train_only_and_forecast_as_of():
 
     with pytest.raises(ValueError, match="strictly before the cutoff"):
         fit_discrete_hazard(rows, market, family="market_plus_age",
-                            matured_before=rows[-2].label_end)
-    model = fit_discrete_hazard(rows, market, family="market_only", matured_before=cutoff)
+                            matured_before=rows[-2].label_end,
+                            feature_available_times=feature_times)
+    model = fit_discrete_hazard(rows, market, family="market_only", matured_before=cutoff,
+                                feature_available_times=feature_times)
+    future_times = list(feature_times)
+    future_times[5] = rows[5].prediction_at + timedelta(seconds=1)
+    with pytest.raises(ValueError, match="published after"):
+        fit_discrete_hazard(rows, market, family="market_only", matured_before=cutoff,
+                            feature_available_times=future_times)
     with pytest.raises(ValueError, match="published after"):
         forecast_remaining_survival(
             model, state=target.state, elapsed_age=target.elapsed_age,
