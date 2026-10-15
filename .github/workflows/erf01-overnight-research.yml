@@ -93,3 +93,8 @@ jobs:
           if test -f erf01-issue-comment.txt; then
             gh issue comment 56 --repo ddawnlll/kepler --body-file erf01-issue-comment.txt
           fi
+      - name: Alert on failed or interrupted research run
+        if: failure()
+        shell: bash
+        run: |
+          gh issue comment 56 --repo ddawnlll/kepler --body "ERF-01 overnight research **BLOCKED**: [GitHub Actions run](https://github.com/ddawnlll/kepler/actions/runs/${{ github.run_id }}). This run did **not** certify a new economic trial or an edge. Inspect the failing step and resume from the unchanged Modal Volume checkpoint."
