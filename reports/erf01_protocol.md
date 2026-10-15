@@ -36,3 +36,8 @@ The original screening rule above is preserved unmodified. An additional *second
 ## Data acquisition readiness, separate from empirical acceptance
 
 The `kepler-data` Volume's missing canonical tape is an observed prerequisite. Bounded public archive *connectivity and checksum* probes may use old pre-seal months without changing the frozen universe or scoring any forecasts. These probes are NOT a substitute for the full tape, archival QC or economic test. Do not populate a production Volume with unchecked sample data.
+
+
+## Exploratory full-panel archive diagnostic (committed before any scored download-based run)
+
+To debug the missing canonical Volume tape, one 9-symbol 2020-01 through 2026-03 **Binance published-SHA-verified** archive panel may be evaluated with the same frozen M0/M1/M2 models and fixed chronological folds. It uses **daily kline + fundingRate ZIPs** and is explicitly **not canonical hourly klines/markPriceKlines/QC**. This exploratory diagnostic consumes one recorded M0/M1/M2 screen family (3 model configurations). It may estimate Brier and alert counts to prioritize engineering; it cannot pass the canonical screening gate, repair survivor bias, justify tuning against its test outcomes or prove trading edge. If any month, checksum or input is missing, report `NOT_RUN`. Aggregate all shard manifests into one complete, deduplicated manifest before analysis. No G3, no live order, no economic referee, no production ledger write on Volume.
