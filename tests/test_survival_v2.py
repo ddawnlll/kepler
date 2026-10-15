@@ -105,6 +105,22 @@ def test_four_frozen_hazard_candidates_are_train_only_and_forecast_as_of():
         )
 
 
+def test_fixed_hazard_hidden_subtypes_create_a_pooled_age_gradient():
+    # Each latent subtype has a constant hazard. High-hazard spells leave the
+    # risk set sooner, so the pooled observed hazard falls with elapsed age.
+    subtype_hazards = (0.25, 0.05)
+
+    def pooled_next_day_hazard(elapsed_age):
+        survivor_mass = [0.5 * (1 - hazard) ** elapsed_age
+                         for hazard in subtype_hazards]
+        exit_mass = [mass * hazard for mass, hazard in zip(survivor_mass, subtype_hazards)]
+        return sum(exit_mass) / sum(survivor_mass)
+
+    assert pooled_next_day_hazard(0) == pytest.approx(0.15)
+    assert pooled_next_day_hazard(1) < pooled_next_day_hazard(0)
+    assert pooled_next_day_hazard(8) < pooled_next_day_hazard(1)
+
+
 def test_ipcw_uses_observation_probability_before_event_day():
     rows = landmarks([-1, 1, 1, 1, -1, -1], horizon=2)
     target = next(row for row in rows if row.prediction_at.date() == date(2025, 1, 4))

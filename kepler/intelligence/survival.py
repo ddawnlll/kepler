@@ -51,21 +51,30 @@ class SurvivalLandmark:
         prediction, end = utc(self.prediction_at), utc(self.label_end)
         if not self.symbol:
             raise ValueError("survival target symbol is required")
-        if self.state not in STATES:
+        if isinstance(self.state, bool) or not isinstance(self.state, (int, np.integer)) or self.state not in STATES:
             raise ValueError("survival target state must be -1, 0 or 1")
-        if self.horizon_days < 1 or not 0 <= self.followup_days <= self.horizon_days:
+        if (isinstance(self.horizon_days, bool)
+                or not isinstance(self.horizon_days, (int, np.integer))
+                or isinstance(self.followup_days, bool)
+                or not isinstance(self.followup_days, (int, np.integer))
+                or self.horizon_days < 1 or not 0 <= self.followup_days <= self.horizon_days):
             raise ValueError("invalid survival horizon/follow-up")
         if end < prediction or self.status not in SURVIVAL_STATUSES:
             raise ValueError("invalid survival label window or status")
-        if self.elapsed_age is not None and self.elapsed_age < 1:
+        if (self.elapsed_age is not None and (isinstance(self.elapsed_age, bool)
+                or not isinstance(self.elapsed_age, (int, np.integer)) or self.elapsed_age < 1)):
             raise ValueError("elapsed age must be positive when observed")
         if (self.elapsed_age is None) != bool(self.left_censored):
             raise ValueError("unknown elapsed age must be marked left-censored")
         if self.status == "OBSERVED":
-            if self.survives_horizon not in (0, 1):
+            if (isinstance(self.survives_horizon, bool)
+                    or not isinstance(self.survives_horizon, (int, np.integer))
+                    or self.survives_horizon not in (0, 1)):
                 raise ValueError("observed survival target must be binary")
             if self.survives_horizon == 0:
-                if self.event_time_days is None or not 1 <= self.event_time_days <= self.horizon_days:
+                if (self.event_time_days is None or isinstance(self.event_time_days, bool)
+                        or not isinstance(self.event_time_days, (int, np.integer))
+                        or not 1 <= self.event_time_days <= self.horizon_days):
                     raise ValueError("observed exit needs an in-horizon event time")
                 if self.followup_days != self.event_time_days:
                     raise ValueError("exit follow-up must end at its observed event")
@@ -95,7 +104,9 @@ class DiscreteHazardModel:
 
 
 def _hazard_row_features(state: int, age: int, market: Sequence[float], family: str) -> np.ndarray:
-    if state not in STATES or age < 1:
+    if (isinstance(state, bool) or not isinstance(state, (int, np.integer))
+            or state not in STATES or isinstance(age, bool)
+            or not isinstance(age, (int, np.integer)) or age < 1):
         raise ValueError("hazard prediction needs a valid state and positive elapsed age")
     market = np.asarray(market, dtype=np.float64)
     if market.shape != (3,) or not np.isfinite(market).all():
@@ -247,7 +258,9 @@ def forecast_remaining_survival(
     if (isinstance(horizon_days, bool) or not isinstance(horizon_days, (int, np.integer))
             or horizon_days < 1):
         raise ValueError("survival forecast horizon must be a positive whole number of days")
-    if elapsed_age < 1 or state not in STATES:
+    if (isinstance(elapsed_age, bool) or not isinstance(elapsed_age, (int, np.integer))
+            or elapsed_age < 1 or isinstance(state, bool)
+            or not isinstance(state, (int, np.integer)) or state not in STATES):
         raise ValueError("survival forecast needs a valid observable state and positive age")
     survival = 1.0
     daily_hazards = []
