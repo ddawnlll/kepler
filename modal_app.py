@@ -32,13 +32,16 @@ if lockfile.exists():
            .run_commands("cd /repo && uv sync --frozen --no-install-project"))
 else:
     img = lock_img
-# Numba önbelleği imaja pişirilir: çekirdek dosyası copy=True katmanında (zaman damgası sabit), çalışma zamanı mount'undan hariç; kod değişmedikçe soğuk başlangıçta derleme yok.
-CORE = ["kepler/__init__.py", "kepler/referee_core.py"]
-img = img.env({"NUMBA_CACHE_DIR": "/opt/numba_cache", "NUMBA_CPU_NAME": "generic"})  # generic: önbellek build ve çalışma makinesi CPU modeli farklı olsa da geçerli kalır
-for f_ in CORE + ["scripts/numba_warm.py"]:
-    img = img.add_local_file(ROOT / f_, f"/repo/{f_}", copy=True)
+# Compile against the exact *public* referee dependency graph before packaging. The
+# old 2-file core-only layer could run an obsolete private ABI and lacked imports
+# required by the public run_portfolio warmup (real Modal image-build failure).
+# Keep the full kepler package frozen into the cache-warming image layer so the
+# runtime and compiled code cannot silently diverge.
+img = img.env({"NUMBA_CACHE_DIR": "/opt/numba_cache", "NUMBA_CPU_NAME": "generic"})
+img = img.add_local_dir(ROOT / "kepler", "/repo/kepler", copy=True)
+img = img.add_local_file(ROOT / "scripts/numba_warm.py", "/repo/scripts/numba_warm.py", copy=True)
 img = img.run_commands("mkdir -p /opt/numba_cache && cd /repo && python scripts/numba_warm.py")
-img = img.add_local_dir(ROOT, "/repo", ignore=IGNORE + CORE)
+img = img.add_local_dir(ROOT, "/repo", ignore=IGNORE + ["kepler/**", "scripts/numba_warm.py"])
 
 
 @app.function(image=lock_img, timeout=900)

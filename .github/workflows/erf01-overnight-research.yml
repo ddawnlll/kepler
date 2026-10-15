@@ -1,0 +1,95 @@
+name: Kepler ERF01 bounded overnight economic research
+# Confirm checkpoint-resume with a second 21-day candidate after the first real Modal PASS.
+on:
+  workflow_dispatch:
+  schedule:
+    # 02:00 to 07:00 Europe/Istanbul (UTC+3) on six hourly ticks.
+    - cron: '0 23,0,1,2,3,4 * * *'
+  push:
+    branches:
+      - research/erf01-resumable-economics-20261015
+    paths:
+      - .github/workflows/erf01-overnight-research.yml
+concurrency:
+  group: kepler-erf01-economic-v1
+  cancel-in-progress: false
+permissions:
+  contents: read
+  issues: write
+jobs:
+  one-registered-trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run locked local causal safety regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check uv
+          uv sync --frozen --dev --no-install-project
+          uv run --no-sync python tests/test_architecture.py
+          uv run --no-sync pytest -q tests/test_erf01_trade_probe.py tests/test_erf01_regression.py tests/test_erf01_tape.py
+      - name: Check Modal token without displaying its value
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$MODAL_TOKEN_ID" && test -n "$MODAL_TOKEN_SECRET"
+          python -m pip install --disable-pip-version-check 'modal>=1.6,<2'
+      - name: Execute exactly one new economic candidate on real canonical DEV data
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout --signal=TERM --kill-after=10s 300s modal run modal_app.py --cmd "python scripts/erf01_trade_probe.py" 2>&1 | tee "$RUNNER_TEMP/erf01-run.log"
+          grep -q 'ERF01_RESEARCH_RESULT=' "$RUNNER_TEMP/erf01-run.log"
+      - name: Collect trial evidence from Modal Volume (read only)
+        shell: bash
+        if: always()
+        run: |
+          mkdir -p erf01-economic-artifact
+          cp "$RUNNER_TEMP/erf01-run.log" erf01-economic-artifact/run.log 2>/dev/null || :
+          timeout 45s modal volume get kepler-data /erf01/research/erf01_economic_v1 ./erf01-economic-artifact/trials || echo 'Evidence remains in Modal Volume; CLI copy unavailable'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: erf01-economics-${{ github.run_id }}
+          path: erf01-economic-artifact/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Send real new-trial result to issue 56 (no edge assertions)
+        if: success()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          lines=(Path(os.environ["RUNNER_TEMP"]) / "erf01-run.log").read_text().splitlines()
+          rows=[s.split("ERF01_RESEARCH_RESULT=",1)[1] for s in lines if "ERF01_RESEARCH_RESULT=" in s]
+          if not rows:
+              raise RuntimeError("Missing remote trial receipt")
+          outcome=json.loads(rows[-1])
+          if outcome["status"]=="EXHAUSTED":
+              print("NO_UNTESTED_HYPOTHESES: family is exhausted; not retesting")
+          else:
+              body=("ERF-01 economic exploratory trial **"+str(outcome.get("id"))+
+                    "** completed on immutable DEV data. Status: **"+str(outcome["status"])+
+                    "**. Base net USDT: "+str(outcome.get("main"))+
+                    "; stress net: "+str(outcome.get("stress"))+
+                    "; inverted control net: "+str(outcome.get("inverted"))+
+                    "; validity: "+str(outcome.get("valid"))+
+                    ". **This does NOT prove edge; independent confirmation NOT_RUN.** "+
+                    "GitHub Actions run: https://github.com/ddawnlll/kepler/actions/runs/"+
+                    str(${{ github.run_id }})+".")
+              Path("erf01-issue-comment.txt").write_text(body)
+          PY
+          if test -f erf01-issue-comment.txt; then
+            gh issue comment 56 --repo ddawnlll/kepler --body-file erf01-issue-comment.txt
+          fi
