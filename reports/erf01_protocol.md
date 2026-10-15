@@ -22,3 +22,17 @@ On frozen nine-symbol survivor-biased development data, can adding volatility/vo
 Before any scored run, require complete canonical data, clean QC, seal guard, real chronological temporal/calibration tests, all model screens accounted for and deterministic source/protocol hashes. A synthetic fixture only validates program behavior; it is not evidence for price prediction. Old data observations already influenced the hypothesis; historical DEV cannot become untouched independent confirmation.
 
 **Current block:** `kepler-data` Modal Volume was listed on 2026-10-15 without the expected `/tape` path. Actual DEV run, forecast gate scores and economic/21-day swing trade evaluation remain `NOT_RUN`. Do not create a passing PnL card from a forecast screen.
+
+
+## Additional evidence audit — fixed before first empirical ERF-01 run (15 Oct 2026)
+
+The original screening rule above is preserved unmodified. An additional *secondary* prospective gate is required before any forecast candidate can be considered for a separate economic test, to prevent a single lucky alarm from passing the low-false-alarm rule.
+
+- Require at least **20 correctly matched OOS alerts**, alert precision **≥25%**, unique event recall **≥20%**, correctly matched alerts across **≥4 test folds** and **≥3 symbols**. None of these requirements can rescue a failed original screen.
+- Report all attempts, symbol/fold counts, selected calibration threshold per fold, discarded alerts and original OOS score. `scripts/erf01_edge_audit.py` audits immutable `metrics.json` + `alerts.csv`, rejects missing or duplicate alert receipts, and never returns `EDGE`.
+- Even `FORECAST_CANDIDATE_ONLY` is **not** economic evidence: a separate registered max-21-day long/short/flat mapping, deterministic Numba referee including funding/fees/slippage, fee sensitivity, exposure-matched benchmarks, dependence-aware null and multiple-trial adjustment would be needed. No such trial is authorized by this forecast-only protocol; until then `economic_edge=NOT_RUN`.
+- Repeatedly optimizing on the same 2020–2026 DEV data consumes selection degrees of freedom; a newly tuned model would be a *new exploratory trial* and require a genuinely unseen future/paper period for independent confirmation. G3/seal is not opened by this change.
+
+## Data acquisition readiness, separate from empirical acceptance
+
+The `kepler-data` Volume's missing canonical tape is an observed prerequisite. Bounded public archive *connectivity and checksum* probes may use old pre-seal months without changing the frozen universe or scoring any forecasts. These probes are NOT a substitute for the full tape, archival QC or economic test. Do not populate a production Volume with unchecked sample data.
