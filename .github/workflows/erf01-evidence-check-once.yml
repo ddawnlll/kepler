@@ -1,0 +1,96 @@
+name: Temporary ERF01 evidence and public DEV-data access check
+on:
+  push:
+    branches: [research/erf01-evidence-readiness-20261015]
+    paths: [.github/workflows/erf01-evidence-check-once.yml]
+permissions:
+  contents: read
+jobs:
+  evidence-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'pytest>=8,<9'
+      - run: |
+          python tests/test_architecture.py
+          python -m pytest -q tests/test_erf01_edge_audit.py
+  modal-public-dev-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'modal>=1.6,<2'
+      - name: One small historical data integrity probe, no Volume writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$MODAL_TOKEN_ID"
+          test -n "$MODAL_TOKEN_SECRET"
+          cat > kepler_erf01_public_probe.py <<'PY'
+          import hashlib
+          import io
+          import re
+          import urllib.request
+          import zipfile
+          import modal
+
+          app = modal.App("kepler-erf01-public-dev-readiness")
+          image = modal.Image.debian_slim(python_version="3.12")
+
+          def get(url, timeout=12):
+              with urllib.request.urlopen(
+                  urllib.request.Request(url, headers={"User-Agent": "Kepler-DEV-Readiness/1.0"}),
+                  timeout=timeout,
+              ) as r:
+                  return r.read()
+
+          @app.function(image=image, cpu=.125, memory=256, timeout=100,
+                        max_containers=1, min_containers=0)
+          def check():
+              base = "https://data.binance.vision/data/futures/um/monthly/"
+              checks=[]
+              for rel in (
+                  "klines/BTCUSDT/1d/BTCUSDT-1d-2025-01.zip",
+                  "fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-01.zip",
+              ):
+                  assert "2025-01" in rel and "2026-04" not in rel
+                  try:
+                      checksum = get(base + rel + ".CHECKSUM").decode().split()[0].lower()
+                      if not re.fullmatch("[a-f0-9]{64}", checksum):
+                          raise ValueError("unrecognized official checksum")
+                      source = get(base + rel)
+                      digest = hashlib.sha256(source).hexdigest()
+                      if digest != checksum:
+                          raise ValueError("published archive SHA256 mismatch")
+                      with zipfile.ZipFile(io.BytesIO(source)) as z:
+                          members=[n for n in z.namelist() if n.endswith(".csv")]
+                          if len(members)!=1: raise ValueError("unexpected archive schema")
+                          with z.open(members[0]) as handle:
+                              rows=sum(1 for x in handle if x.strip())
+                      if rows < 2: raise ValueError("historical source has no data rows")
+                      checks.append(dict(kind=rel.split("/")[0],sha256=digest,bytes=len(source),rows=rows))
+                  except Exception as e:
+                      print("PUBLIC_DEV_SOURCE_FAILED",rel,type(e).__name__,str(e)[:170])
+                      return {"status":"SOURCE_UNAVAILABLE","completed":checks}
+              print("PUBLIC_HISTORICAL_ARCHIVES_SHA256_OK",checks)
+              return {"status":"ARCHIVES_VERIFIED_NOT_CANONICAL_TAPE","completed":checks}
+
+          @app.local_entrypoint()
+          def main():
+              answer=check.remote()
+              print("DEV_SOURCE_PROBE_RESULT",answer)
+              # Source availability is not an edge or canonical nine-symbol tape result.
+              if answer["status"] != "ARCHIVES_VERIFIED_NOT_CANONICAL_TAPE":
+                  raise RuntimeError("DEV_SOURCE_NOT_READY")
+          PY
+          timeout --signal=TERM --kill-after=5s 160s modal run kepler_erf01_public_probe.py
