@@ -54,25 +54,58 @@ def test_alert_cooldown_crosses_fold_boundary():
     assert state["BTCUSDT"] == start + timedelta(days=7)
 
 
-def test_acquisition_must_be_complete_and_has_provenance(tmp_path):
+def test_acquisition_must_cover_actual_manifest_and_verify_checksums(tmp_path, monkeypatch):
     mod = get_module()
     raw = tmp_path / "raw"
     raw.mkdir()
+    monkeypatch.setattr(mod, "SYMS", ["BTCUSDT"])
+    monkeypatch.setattr(mod, "FIRST_MONTH", "2025-01")
+    monkeypatch.setattr(mod, "LAST_MONTH", "2025-02")
+    monkeypatch.setattr(mod, "_combined_manifest", lambda: {
+        "BTCUSDT": {
+            "klines": {"first": "2025-01", "last": "2025-02"},
+            "fundingRate": {"first": "2025-01", "last": "2025-02"},
+        }
+    })
     with pytest.raises(RuntimeError, match="incomplete"):
         mod._verify_acquisition({"complete": True, "records": [], "record_count": 0,
-                                 "expected_archives": 1, "workers": 12}, raw)
-    blob = raw / "klines" / "BTCUSDT" / "2025-01.zip"
-    blob.parent.mkdir(parents=True)
-    blob.write_bytes(b"fixture")
-    rec = {"symbol": "BTCUSDT", "kind": "klines", "month": "2025-01",
-           "sha256": hashlib.sha256(b"fixture").hexdigest()}
-    a = {"complete": True, "errors": [], "records": [rec], "record_count": 1,
-         "expected_archives": 1, "workers": 12, "raw_root": str(raw)}
+                                 "expected_archives": 0, "workers": 12}, raw)
+
+    records = []
+    for kind in ("klines", "fundingRate"):
+        for month in ("2025-01", "2025-02"):
+            blob = f"{kind}|{month}".encode()
+            path = raw / kind / "BTCUSDT" / f"{month}.zip"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(blob)
+            checksum = hashlib.sha256(blob).hexdigest()
+            records.append({"symbol": "BTCUSDT", "kind": kind, "month": month,
+                            "sha256": checksum, "checksum_sha256": checksum,
+                            "verification": "Binance published SHA-256 matched",
+                            "bytes": len(blob)})
+    a = {"complete": True, "errors": [], "records": records,
+         "record_count": len(records), "expected_archives": len(records),
+         "workers": 12, "raw_root": str(raw)}
     mod._verify_acquisition(a, raw)
-    blob.write_bytes(b"mutated")
+
+    # Malicious/self-consistent JSON must NOT suppress one manifest-required month.
+    truncated = {**a, "records": records[:-1], "record_count": 3, "expected_archives": 3}
+    with pytest.raises(RuntimeError, match="incomplete"):
+        mod._verify_acquisition(truncated, raw)
+
+    altered = {**records[0], "checksum_sha256": "0" * 64}
+    with pytest.raises(RuntimeError, match="checksum"):
+        mod._verify_acquisition({**a, "records": [altered] + records[1:]}, raw)
+
+    copy = {**a, "records": records[:3] + [records[2]]}
+    with pytest.raises(RuntimeError, match="duplicate"):
+        mod._verify_acquisition(copy, raw)
+
+    p = raw / "klines" / "BTCUSDT" / "2025-01.zip"
+    p.write_bytes(b"mutated")
     with pytest.raises(RuntimeError, match="modified"):
         mod._verify_acquisition(a, raw)
-    blob.write_bytes(b"fixture")
+    p.write_bytes(b"klines|2025-01")
     with pytest.raises(RuntimeError, match="raw_root"):
         mod._verify_acquisition(a, tmp_path)
 

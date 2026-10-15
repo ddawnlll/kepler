@@ -1,5 +1,13 @@
 # KEPLER — TASKS (G0–G1, çekirdek)
 
+## ERF-01 issue #56 hardening and acceptance (2026-10-15)
+
+- **Corrected:** `scripts/erf01.py::_verify_acquisition` no longer trusts its own acquisition JSON for claimed completeness. It compares the actual symbol × stream × monthly archive set with the frozen manifests, and checks unique records, bytes, SHA256 and Binance published-checksum provenance. A truncated but internally consistent receipt, duplicate/forged checksum, missing/modified file or sealed month now fails closed.
+- **New protocol:** `reports/erf01_protocol.md` is dated **today**; it is for *future* DEV-only screening and explicitly cannot certify historically pre-registered evidence. M0/M1/M2, 17-day purge, cooldown, statistical/false-alarm criteria and three `screen` trials are locked without changing past NO_EDGE/INCONCLUSIVE. G3/real-money/economic referee remains unavailable.
+- **Verification (final tree):** [GitHub Actions run 38717086742](https://github.com/ddawnlll/kepler/actions/runs/38717086742) reports **544 passed / 15 skipped / 0 failed**, architecture **8/8**. Modal remote CPU test ran **10/10 ERF-01 regressions**, using real Parquet→DuckDB→Kepler tape/QC code and checking incomplete 24h bars, funding, corrupt/missing tape fail-closed. No mock acceptance claim; fixture prices were *synthetic*, not empirical market predictions.
+- **Real-data blocker:** `kepler-data` Volume still contains **no canonical `/tape/klines/BTCUSDT.parquet`**, confirmed by same Actions run; full nine-symbol actual DEV backtest, M2-vs-M1 Brier, OOS event/alert performance, economic trade PnL, independent peer review and official provider bill are **NOT_RUN/UNKNOWN**. Factory remains PAUSED; do not close #56 as an achieved edge or restart autonomous research until canonical data and separate acceptances pass.
+- **Workflow:** one-time Actions workflow used only for validation, removed from merge candidate after passing. Evidence persists as GitHub Actions logs; no standing CI added.
+
 ## Consolidation execution (2026-10-15; supersedes preliminary audit gates)
 
 - **Owner authority:** User explicitly authorized protected financial/core files and the 3000 → 3500 physical-line budget change for this full consolidation. `tests/test_architecture.py` retains per-file 300/architectural-layer constraints. The earlier "no authorization" audit entry below is historical and has been superseded; no claim of independent third-party review is made.
