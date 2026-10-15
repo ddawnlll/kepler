@@ -1,5 +1,5 @@
 name: Kepler ERF01 bounded overnight economic research
-# Image now preloads full immutable Kepler referee graph before public API warmup.
+# Confirm checkpoint-resume with a second 21-day candidate after the first real Modal PASS.
 on:
   workflow_dispatch:
   schedule:
