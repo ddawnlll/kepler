@@ -1,0 +1,57 @@
+name: One-time prune after verified branch archive
+on:
+  push:
+    branches:
+      - chore/verified-branch-archive-20261015
+    paths:
+      - .github/workflows/prune-branches-once.yml
+permissions:
+  contents: write
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner,repo}=context.repo;
+            const names=["ccr-5b0b93ce-usxtma","ccr-17bd8bb8-5alkzf","ccr-018c70e2-hlz54f","ccr-33b980ad-tifh9z","ccr-3876f17d-enqq5z","ccr-607053d9-nh21js","ccr-c70b496a-spmxi0","chore/modal-connection-smoke-20261015","claude/dreamy-lamport-0t7yck","claude/ev1-decay-test","claude/jolly-carson-cdpdtq","claude/sweet-shannon-qzwbzj","cleanup/agent-development-gates-20261015","codex/agentic-24-7-runtime","codex/backtest-gates-fixes","codex/complete-integration","codex/github-templates","fix/erf01-methodology-integrity","i10-funding","i11-intents","i12-identity","i13-ledger","i14-family","i15-null","i16-500","i17-carry","i18-qc","i19-parity","integration/kepler-consolidation-20261015","integration/pr53-validation-20261015"];
+            const selfName="chore/verified-branch-archive-20261015";
+            if(context.ref!=="refs/heads/"+selfName) throw Error("wrong workflow branch");
+            const expectedMain="fe46cf6c7a669f3d63b05d27d319343807b0c7f5";
+            const main=(await github.rest.git.getRef({owner,repo,ref:"heads/main"})).data.object.sha;
+            if(main!==expectedMain) throw Error("main moved, abort");
+            const branches=await github.paginate(github.rest.repos.listBranches,{owner,repo,per_page:100});
+            const actual=branches.map(x=>x.name).sort();
+            const expected=["main",selfName,...names].sort();
+            if(JSON.stringify(actual)!==JSON.stringify(expected)) throw Error("unexpected branch inventory, no deletion: "+JSON.stringify(actual));
+            const prs=await github.paginate(github.rest.pulls.list,{owner,repo,state:"open",per_page:100});
+            if(prs.length) throw Error("open PRs exist, stop");
+            for(const name of names) {
+              const archived=(await github.rest.git.getRef({owner,repo,ref:"tags/archive/2026-10-15/branch/"+name})).data.object;
+              if(archived.type!=="tag") throw Error("archive must be annotated "+name);
+              const sha=(await github.rest.git.getTag({owner,repo,tag_sha:archived.sha})).data.object.sha;
+              const head=(await github.rest.git.getRef({owner,repo,ref:"heads/"+name})).data.object.sha;
+              if(sha!==head) throw Error("archive/head mismatch "+name);
+            }
+            const selfHead=(await github.rest.git.getRef({owner,repo,ref:"heads/"+selfName})).data.object.sha;
+            if(selfHead!==context.sha) throw Error("cleanup branch changed, abort");
+            const selfTagName="archive/2026-10-15/cleanup-execution/"+context.sha.slice(0,12);
+            const selfTag=(await github.rest.git.createTag({owner,repo,tag:selfTagName,message:"One-time branch cleanup execution retained at "+context.sha,object:context.sha,type:"commit"})).data.sha;
+            await github.rest.git.createRef({owner,repo,ref:"refs/tags/"+selfTagName,sha:selfTag});
+            core.info("PREFLIGHT_OK 30 branch heads and archive tags, main unchanged, no open PRs");
+            for (const name of names) {
+              const ref="heads/"+name;
+              const actualSha=(await github.rest.git.getRef({owner,repo,ref})).data.object.sha;
+              const tagObj=(await github.rest.git.getRef({owner,repo,ref:"tags/archive/2026-10-15/branch/"+name})).data.object;
+              const originalSha=(await github.rest.git.getTag({owner,repo,tag_sha:tagObj.sha})).data.object.sha;
+              if(actualSha!==originalSha) throw Error("branch advanced during cleanup "+name);
+              await github.rest.git.deleteRef({owner,repo,ref});
+              core.info("DELETED_ARCHIVED_BRANCH "+name);
+            }
+            const beforeSelf=await github.paginate(github.rest.repos.listBranches,{owner,repo,per_page:100});
+            if(JSON.stringify(beforeSelf.map(x=>x.name).sort())!==JSON.stringify(["main",selfName].sort())) throw Error("unexpected remaining branch; keep cleanup branch");
+            if((await github.rest.git.getRef({owner,repo,ref:"heads/"+selfName})).data.object.sha!==context.sha) throw Error("self advanced");
+            await github.rest.git.deleteRef({owner,repo,ref:"heads/"+selfName});
+            core.info("PRUNE_SUCCESS 31 branches removed, only main retained; all 31 original archive tags preserved");
