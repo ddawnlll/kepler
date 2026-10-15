@@ -1,0 +1,62 @@
+name: Temporary real BTC canonical hourly tape DEV staging
+on:
+  push:
+    branches: [research/erf01-evidence-readiness-20261015]
+    paths: [.github/workflows/erf01-real-hourly-btc-once.yml]
+permissions:
+  contents: read
+jobs:
+  one-bounded-btc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'modal>=1.6,<2'
+      - name: Download SHA-checked BTC 1h kline/mark/funding archive, stage only if genuine QC passes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$MODAL_TOKEN_ID"
+          test -n "$MODAL_TOKEN_SECRET"
+          cat > kepler_erf01_hourly_pilot.py <<'PY'
+          from pathlib import Path
+          import modal
+
+          ROOT=Path(__file__).resolve().parent
+          app=modal.App("kepler-erf01-hourly-btc-dev-staging")
+          vol=modal.Volume.from_name("kepler-data",create_if_missing=False)
+          image=(modal.Image.debian_slim(python_version="3.12")
+              .pip_install("numpy>=2,<2.3","pandas>=2,<3","pyarrow>=17,<24",
+                           "duckdb>=1,<2","requests>=2,<3")
+              .env({"PYTHONPATH":"/repo","OPENBLAS_NUM_THREADS":"1"})
+              .add_local_dir(str(ROOT/"kepler"),remote_path="/repo/kepler")
+              .add_local_dir(str(ROOT/"data_manifest"),remote_path="/repo/data_manifest")
+              .add_local_file(str(ROOT/"scripts/erf01_dev_tape_builder.py"),
+                              remote_path="/repo/scripts/erf01_dev_tape_builder.py"))
+          @app.function(image=image,volumes={"/data":vol},cpu=2,memory=4096,
+                        timeout=150,max_containers=1,min_containers=0)
+          def build():
+              from scripts.erf01_dev_tape_builder import build_symbol
+              import time
+              start=time.monotonic()
+              try:
+                  result=build_symbol(Path("/repo"),
+                       Path("/data/erf01/hourly_raw"),
+                       Path("/data/erf01/staging"),"BTCUSDT",workers=24)
+                  print("ERF01_BTC_REAL_HOURLY_CANONICAL_QC_STAGED",
+                        result,"seconds",round(time.monotonic()-start,2))
+                  return result
+              finally:
+                  vol.commit()
+          @app.local_entrypoint()
+          def main():
+              x=build.remote()
+              print("ERF01_BTC_HOURLY_QC_RESULT",x)
+          PY
+          timeout --signal=TERM --kill-after=5s 185s modal run kepler_erf01_hourly_pilot.py
