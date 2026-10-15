@@ -1,0 +1,23 @@
+name: Temporary market-intelligence refactor validation
+on:
+  push:
+    branches: [refactor/market-intelligence-core-20261016]
+permissions:
+  contents: read
+jobs:
+  targeted:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check syntax and architecture
+        run: python3 tests/test_architecture.py
+      - name: Install pinned environment
+        run: |
+          python -m pip install uv
+          uv sync --frozen --dev --no-install-project
+      - name: Intelligence and ERF-01 regression tests
+        run: uv run --no-sync pytest -q tests/test_intelligence_core.py tests/test_intelligence_factory_contract.py tests/test_erf01_regime_atlas.py tests/test_erf01_regression.py tests/test_erf01_tape.py tests/test_erf01_dev_tape_builder.py tests/test_erf01_edge_audit.py tests/test_erf01_trade_probe.py tests/test_factory_boundaries.py tests/test_factory_runtime.py tests/test_core_guard.py
