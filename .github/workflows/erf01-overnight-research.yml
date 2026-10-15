@@ -46,14 +46,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          timeout --signal=TERM --kill-after=10s 300s modal run modal_app.py --cmd "python scripts/erf01_trade_probe.py" 2>&1 | tee erf01-run.log
-          grep -q 'ERF01_RESEARCH_RESULT=' erf01-run.log
+          timeout --signal=TERM --kill-after=10s 300s modal run modal_app.py --cmd "python scripts/erf01_trade_probe.py" 2>&1 | tee "$RUNNER_TEMP/erf01-run.log"
+          grep -q 'ERF01_RESEARCH_RESULT=' "$RUNNER_TEMP/erf01-run.log"
       - name: Collect trial evidence from Modal Volume (read only)
         shell: bash
         if: always()
         run: |
           mkdir -p erf01-economic-artifact
-          cp erf01-run.log erf01-economic-artifact/run.log 2>/dev/null || :
+          cp "$RUNNER_TEMP/erf01-run.log" erf01-economic-artifact/run.log 2>/dev/null || :
           timeout 45s modal volume get kepler-data /erf01/research/erf01_economic_v1 ./erf01-economic-artifact/trials || echo 'Evidence remains in Modal Volume; CLI copy unavailable'
       - uses: actions/upload-artifact@v4
         if: always()
@@ -68,8 +68,9 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          import os
           from pathlib import Path
-          lines=Path("erf01-run.log").read_text().splitlines()
+          lines=(Path(os.environ["RUNNER_TEMP"]) / "erf01-run.log").read_text().splitlines()
           rows=[s.split("ERF01_RESEARCH_RESULT=",1)[1] for s in lines if "ERF01_RESEARCH_RESULT=" in s]
           if not rows:
               raise RuntimeError("Missing remote trial receipt")
