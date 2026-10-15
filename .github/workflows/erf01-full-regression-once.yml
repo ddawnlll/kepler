@@ -1,0 +1,23 @@
+name: Temporary full Kepler regression for ERF01 evidence and staged tape
+on:
+  push:
+    branches: [research/erf01-evidence-readiness-20261015]
+    paths: [.github/workflows/erf01-full-regression-once.yml]
+permissions:
+  contents: read
+jobs:
+  full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install --disable-pip-version-check uv
+          uv sync --frozen --dev --no-install-project
+      - name: Enforced architecture and all pinned repo regressions
+        run: |
+          uv run --no-sync python tests/test_architecture.py
+          uv run --no-sync python -m pytest -q
