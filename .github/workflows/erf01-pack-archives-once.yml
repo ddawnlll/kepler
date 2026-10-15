@@ -1,0 +1,90 @@
+name: Temporary ERF01 verified source packs for fast OOS replay
+on:
+  push:
+    branches: [research/erf01-evidence-readiness-20261015]
+    paths: [.github/workflows/erf01-pack-archives-once.yml]
+permissions:
+  contents: read
+jobs:
+  pack:
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - shard: btc_eth_sol
+          - shard: one
+          - shard: two
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+      ERF_SHARD: ${{ matrix.shard }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'modal>=1.6,<2'
+      - name: Check every original archive SHA once, pack locally verified immutable blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$MODAL_TOKEN_ID"
+          test -n "$MODAL_TOKEN_SECRET"
+          cat > erf01_pack_archive_once.py <<'PY'
+          import os
+          from pathlib import Path
+          import modal
+          app=modal.App("kepler-erf01-archive-packs")
+          vol=modal.Volume.from_name("kepler-data",create_if_missing=False)
+          image=modal.Image.debian_slim(python_version="3.12")
+
+          @app.function(image=image,volumes={"/data":vol},cpu=.5,
+                        memory=1024,timeout=130,max_containers=1,min_containers=0)
+          def pack(shard):
+              import io,tarfile,json,hashlib
+              base=Path("/data/erf01")
+              receipt=base/("archive_shard_"+shard)/"acquisition.json"
+              src=json.loads(receipt.read_text())
+              if not src.get("complete") or src.get("errors") or not src["records"]:
+                  raise RuntimeError("invalid original SHA verification receipt")
+              assert len(src["records"])==src["record_count"]==src["expected_archives"]
+              raw=base/"raw"
+              bundle=io.BytesIO()
+              seen=set()
+              with tarfile.open(fileobj=bundle,mode="w") as out:
+                  for rec in sorted(src["records"],key=lambda r:(r["symbol"],r["kind"],r["month"])):
+                      kind,sym,month=(rec["kind"],rec["symbol"],rec["month"])
+                      if kind not in ("klines","fundingRate") or sym not in src["symbols"]:
+                          raise ValueError("foreign archive in receipt")
+                      if not (month <= "2026-03" and month >= "2020-01"):
+                          raise ValueError("sealed/out-of-range archive")
+                      key=(kind,sym,month)
+                      if key in seen: raise ValueError("duplicate source")
+                      seen.add(key)
+                      b=(raw/kind/sym/(month+".zip")).read_bytes()
+                      digest=hashlib.sha256(b).hexdigest()
+                      if (digest!=rec["sha256"] or digest!=rec.get("checksum_sha256")
+                              or len(b)!=rec["bytes"]):
+                          raise ValueError("published SHA or content drift "+str(key))
+                      info=tarfile.TarInfo(name=kind+"/"+sym+"/"+month+".zip")
+                      info.size=len(b);info.mode=0o600;info.mtime=0
+                      out.addfile(info,io.BytesIO(b))
+              payload=bundle.getvalue()
+              target=base/"packs"
+              target.mkdir(parents=True,exist_ok=True)
+              (target/(shard+".tar")).write_bytes(payload)
+              digest=hashlib.sha256(payload).hexdigest()
+              (target/(shard+".json")).write_text(json.dumps({
+                  "shard":shard,"sha256":digest,"symbols":src["symbols"],
+                  "archives":len(seen),"bytes":len(payload)}))
+              vol.commit()
+              print("ERF01_VERIFIED_TAR_PACK_READY",shard,len(seen),digest,len(payload))
+              return {"shard":shard,"archives":len(seen),"sha256":digest}
+          @app.local_entrypoint()
+          def main():
+              print("ERF01_PACK",pack.remote(os.environ["ERF_SHARD"]))
+          PY
+          timeout --signal=TERM --kill-after=5s 165s modal run erf01_pack_archive_once.py
