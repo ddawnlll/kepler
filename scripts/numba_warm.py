@@ -1,19 +1,35 @@
-"""İmaj build adımı: hakem çekirdeğini çalışma zamanındakiyle AYNI tiplerle bir kez çalıştırıp numba önbelleğini imaja yazar (NUMBA_CACHE_DIR). Çalışma zamanı derlemesi ~10-16 sn -> yükleme."""
+"""Warm the *public* Numba referee API when building the Modal image.
+
+Never hard-code the private referee_core.simulate positional signature: core
+funding/intent accounting adds buffers over time. A small real portfolio call
+builds exactly the runtime argument structure and fails the build if it drifts.
+"""
 import numpy as np
+import pandas as pd
 
-from kepler import referee_core as c
+from kepler import referee
 
-n, cap, K = 64, 4096, 2
-T0 = np.arange(n, dtype=np.int64) * c.HOUR
-ev_t = np.r_[T0, T0 + c.HOUR - 1]
-b = np.r_[np.arange(n), np.arange(n)].astype(np.int64)
-order = np.lexsort((np.zeros(2 * n), ev_t))
-px = np.full(n, 100.0)
-for kind_mode in (0, 1):  # next_open (A/B olayları) ve close
-    ev_t = np.r_[T0, T0 + c.HOUR - 1] if kind_mode == 0 else np.r_[T0 + c.HOUR - 1, T0 + c.HOUR]
-    order = np.lexsort((np.zeros(2 * n), ev_t))
-    ev_kind = (np.r_[np.zeros(n, np.int8), np.ones(n, np.int8)] if kind_mode == 0 else np.r_[np.ones(n, np.int8), np.full(n, c.KIND_CLOSE, np.int8)])[order]
-    P = np.array([6e-4, 10, 0.005, 1.0, 5.0, 1000.0, 0.0, 0.0, float(kind_mode), 0.005])
-    c.simulate(np.zeros(2 * n, np.int64), b[order], ev_kind, T0, px, px, px, px, np.full((n, 4), 1000, np.int64), np.r_[np.nan, np.full(n - 1, 500.0)], np.full(n, np.nan), np.array([[1000.0, 100.0, 0.01, 1.0]] * K), P, cap,
-               np.zeros((cap, 4), np.int64), np.zeros((cap, 3)), np.zeros((cap, 3), np.int64), np.zeros(cap), np.zeros((cap, 3), np.int64), np.zeros(n, np.int64), np.zeros(n, np.int64), np.empty(0, np.int64), np.empty(0))
-print("numba önbelleği ısıtıldı")
+index = pd.date_range("2024-01-01", periods=64, freq="h", tz="UTC")
+px = np.full(len(index), 100.0)
+kl = pd.DataFrame({"open": px, "high": px + 1.0, "low": px - 1.0,
+                   "close": px, "volume": np.full(len(index), 1000.0)},
+                  index=index)
+rates = pd.DataFrame({"last_funding_rate": [0.0001] * len(index[8::8])},
+                     index=index[8::8])
+targets = {}
+for sym, sign in (("WARM_LONG", 1.0), ("WARM_SHORT", -1.0)):
+    target = pd.Series(0.0, index=index)
+    target.iloc[2:40] = sign * 1000.0
+    targets[sym] = {"kl": kl, "target": target, "mark": kl, "funding": rates,
+                    "tick": "0.01", "step": "0.001"}
+
+for fill in ("next_open", "close"):
+    spec = referee.Spec(capital=10000.0, leverage=10, liq=True,
+                        fill=fill, fee_rt_bps=10.0, slip_rt_bps=2.0,
+                        gross_cap=10000.0)
+    result = referee.run_portfolio(targets, spec)
+    metrics = result["summary"]
+    if (metrics["n_fills"] < 2 or metrics["n_rejected"]
+            or metrics["funding_missed"]):
+        raise RuntimeError(f"Numba warmup finance contract failed for {fill}: {metrics}")
+print("NUMBA_RUNTIME_PUBLIC_API_WARMUP_OK")
