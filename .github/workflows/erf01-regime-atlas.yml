@@ -1,0 +1,51 @@
+name: ERF01 regime atlas (forecast science, no trading)
+# Manual-only: do not spend Modal CPU re-running identical sealed historical data.
+on:
+  workflow_dispatch:
+concurrency:
+  group: kepler-erf01-regime-atlas
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  atlas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fail closed on missing Modal credentials
+        run: |
+          set -euo pipefail
+          test -n "$MODAL_TOKEN_ID" && test -n "$MODAL_TOKEN_SECRET"
+          python -m pip install 'modal>=1.6,<2' uv
+          uv sync --frozen --dev --no-install-project
+          uv run --no-sync pytest -q tests/test_erf01_regime_atlas.py tests/test_erf01_regression.py tests/test_erf01_tape.py
+      - name: Real canonical regime duration and forecast horizon evaluation
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout --signal=TERM --kill-after=10s 430s modal run modal_app.py --cmd "python scripts/erf01_regime_atlas.py --staging /data/erf01/staging --out /data/erf01/regime_atlas_20261015" 2>&1 | tee "$RUNNER_TEMP/erf01-regime-atlas.log"
+          grep -q 'ERF01_REGIME_ATLAS_RESULT=' "$RUNNER_TEMP/erf01-regime-atlas.log"
+      - name: Download transparent evidence from Modal staging
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p regime-atlas-artifact
+          cp "$RUNNER_TEMP/erf01-regime-atlas.log" regime-atlas-artifact/run.log 2>/dev/null || :
+          if modal volume ls kepler-data /erf01/regime_atlas_20261015 2>&1 | grep -q 'metrics.json'; then
+            modal volume get kepler-data /erf01/regime_atlas_20261015/metrics.json regime-atlas-artifact/metrics.json
+            modal volume get kepler-data /erf01/regime_atlas_20261015/report.md regime-atlas-artifact/report.md
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: erf01-regime-atlas-${{ github.run_id }}
+          path: regime-atlas-artifact/
+          if-no-files-found: warn
+          retention-days: 30
