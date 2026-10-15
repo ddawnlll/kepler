@@ -41,10 +41,10 @@ def summarise_forecast(records, name, paired_baseline, *, state_names):
         accuracy = float(np.mean(hit == actual))
         accuracy_baseline = float(np.mean(base_hit == actual))
         recall = {state_names[k]: float(np.mean(hit[actual == k] == k))
-                  if np.any(actual == k) else None for k in STATES}
+                  if np.any(actual == k) else None for k in state_names}
         confusion = {state_names[k]: {state_names[j]:
-                     int(np.sum((actual == k) & (hit == j))) for j in STATES}
-                     for k in STATES}
+                     int(np.sum((actual == k) & (hit == j))) for j in state_names}
+                     for k in state_names}
     else:
         delta = (base - actual) ** 2 - (prob - actual) ** 2
         brier = float(np.mean((prob - actual) ** 2))
