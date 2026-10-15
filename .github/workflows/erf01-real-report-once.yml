@@ -1,0 +1,52 @@
+name: Temporary ERF01 verified real OOS metrics export (read-only)
+on:
+  push:
+    branches: [research/erf01-evidence-readiness-20261015]
+    paths: [.github/workflows/erf01-real-report-once.yml]
+permissions:
+  contents: read
+jobs:
+  export-read-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'modal>=1.6,<2'
+      - name: Export exact trial metrics and OOS predictions without compute or seal
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p erf01_real_oos
+          modal volume get kepler-data /erf01/exploratory_20261015/results/metrics.json erf01_real_oos/metrics.json
+          modal volume get kepler-data /erf01/exploratory_20261015/results/oos_predictions.csv erf01_real_oos/oos_predictions.csv
+          python - <<'PY'
+          import csv, json, collections, statistics
+          from pathlib import Path
+          root=Path("erf01_real_oos")
+          m=json.loads((root/"metrics.json").read_text())
+          ds=collections.defaultdict(list)
+          for row in csv.DictReader((root/"oos_predictions.csv").open()):
+              ds[(row["model"],row["date"])].append(float(row["brier"]))
+          names=("M0","M1","M2")
+          daily={name:statistics.mean(statistics.mean(v) for (model,date),v in ds.items() if model==name)
+                 for name in names}
+          out={"status":"REAL_MARKET_EXPLORATORY_ONLY","daily_OOS_brier":daily,
+               "model_improvement_M1_vs_M0":(daily["M0"]-daily["M1"])/daily["M0"],
+               "model_improvement_M2_vs_M1":(daily["M1"]-daily["M2"])/daily["M1"],
+               "forecast_gate":m["forecast_gate_passed"],"verdict":m["verdict"],
+               "oos_events":m["counts"]["confirmed_onsets_oos"],
+               "economic_edge":"NOT_RUN","canonical_hourly_qc":"NOT_RUN"}
+          print("ERF01_OOS_MODEL_COMPARISON",json.dumps(out,sort_keys=True))
+          (root/"readme.txt").write_text(
+              "Historical archive-only exploratory output; not canonical 1h/mark QC, not independent confirmation, not trading PnL.\n")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: erf01-preseal-archive-exploratory-20261015
+          path: erf01_real_oos/
+          retention-days: 30
