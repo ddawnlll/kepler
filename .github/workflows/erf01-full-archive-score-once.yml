@@ -1,4 +1,4 @@
-name: Temporary ERF01 whole-panel exploratory archive screen
+name: Temporary ERF01 packed whole-panel exploratory archive screen
 on:
   push:
     branches: [research/erf01-evidence-readiness-20261015]
@@ -34,7 +34,7 @@ jobs:
           image=(modal.Image.debian_slim(python_version="3.12")
               .pip_install("numpy>=2,<2.3","pandas>=2,<3","scikit-learn>=1.5,<2",
                            "pyarrow>=17,<24","requests>=2,<3","duckdb>=1,<2")
-              .env({"PYTHONPATH":"/repo"})
+              .env({"PYTHONPATH":"/repo","OPENBLAS_NUM_THREADS":"1","OMP_NUM_THREADS":"1","MKL_NUM_THREADS":"1"})
               .add_local_dir(str(ROOT/"kepler"),remote_path="/repo/kepler")
               .add_local_dir(str(ROOT/"data_manifest"),remote_path="/repo/data_manifest")
               .add_local_file(str(ROOT/"scripts/erf01.py"),remote_path="/repo/scripts/erf01.py")
@@ -45,10 +45,11 @@ jobs:
           @app.function(image=image,volumes={"/data":vol},cpu=2,memory=4096,
                         timeout=165,max_containers=1,min_containers=0)
           def score():
-              import hashlib,json,tempfile
+              import hashlib,json,tempfile,tarfile,io,time
               from scripts import erf01 as erf
               from scripts.erf01_edge_audit import assess
-              raw=Path("/data/erf01/raw")
+              start=time.monotonic()
+              raw=Path(tempfile.mkdtemp(prefix="kepler_verified_archive_"))
               erf.OUT=Path("/data/erf01/exploratory_20261015/results")
               erf.PARQUET_OUT=Path("/data/erf01/exploratory_20261015/parquet")
               partpaths=[
@@ -57,6 +58,32 @@ jobs:
                   Path("/data/erf01/archive_shard_two/acquisition.json")
               ]
               try:
+                  pack_dir=Path("/data/erf01/packs")
+                  extracted=set()
+                  for shard in ("btc_eth_sol","one","two"):
+                      info=json.loads((pack_dir/(shard+".json")).read_text())
+                      payload=(pack_dir/(shard+".tar")).read_bytes()
+                      if hashlib.sha256(payload).hexdigest()!=info["sha256"]:
+                          raise RuntimeError("pack SHA256 mismatch: "+shard)
+                      found=0
+                      with tarfile.open(fileobj=io.BytesIO(payload),mode="r") as tar:
+                          for member in tar:
+                              parts=Path(member.name).parts
+                              if (not member.isfile() or len(parts)!=3 or
+                                  parts[0] not in ("klines","fundingRate") or
+                                  ".." in parts or not parts[2].endswith(".zip")):
+                                  raise ValueError("untrusted tar member")
+                              if tuple(parts) in extracted:
+                                  raise RuntimeError("duplicate source pack item")
+                              extracted.add(tuple(parts))
+                              dest=raw.joinpath(*parts)
+                              dest.parent.mkdir(parents=True,exist_ok=True)
+                              dest.write_bytes(tar.extractfile(member).read())
+                              found+=1
+                      if found!=info["archives"]:
+                          raise RuntimeError("pack count mismatch: "+shard)
+                  print("ERF01_PACK_EXTRACTED_TO_LOCAL_FAST_DISK",
+                        len(extracted),round(time.monotonic()-start,3))
                   seen=set()
                   records=[]
                   for p in partpaths:
@@ -78,11 +105,13 @@ jobs:
                       "workers":24,"complete":True,
                       "downloaded_bytes":sum(int(r["bytes"]) for r in records)
                   }
-                  # Re-hash every real source ZIP, require exact locked 9-symbol manifest coverage.
+                  # Validate original Binance SHA for each ZIP on fast local /tmp; pack SHA
+                  # already protects the immutable Modal Volume bundle as a whole.
                   erf._verify_acquisition(acquisition,raw)
                   print("ERF01_9SYMBOL_COMPLETE_PUBLISHED_SHA256_OK",
                         {"archives":len(records),"bytes":acquisition["downloaded_bytes"]})
                   erf._save_acquisition(acquisition)
+                  print("ERF01_FULL_MANIFEST_VERIFIED_SECONDS",round(time.monotonic()-start,3))
                   with tempfile.TemporaryDirectory(prefix="erf01_screen_") as td:
                       trial_ledger=Path(td)/"screen_trials.jsonl"
                       metrics=erf.run(raw,trial_ledger=trial_ledger,
@@ -114,6 +143,7 @@ jobs:
                       "independent_confirmation":"NOT_RUN"
                   }
                   print("ERF01_REAL_MARKET_EXPLORATORY_RESULT",json.dumps(result,sort_keys=True))
+                  print("ERF01_PACKED_RUN_TOTAL_SECONDS",round(time.monotonic()-start,3))
                   return result
               finally:
                   vol.commit()
