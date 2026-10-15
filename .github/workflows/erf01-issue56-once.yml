@@ -1,4 +1,5 @@
 name: Temporary ERF-01 issue 56 real gates
+# Final run includes committed real Parquet/DuckDB/QC regression
 on:
   push:
     branches: [fix/erf01-issue56-real-gates-20261015]
