@@ -373,7 +373,11 @@ def _parquet_inventory():
             return None
         import pyarrow.parquet as pq
         data = path.read_bytes()
-        files[name] = {"path": str(path.relative_to(ROOT)), "rows": pq.read_metadata(path).num_rows,
+        try:
+            display_path = str(path.relative_to(ROOT))
+        except ValueError:
+            display_path = str(path)  # Modal Volume persistence is outside /repo
+        files[name] = {"path": display_path, "rows": pq.read_metadata(path).num_rows,
                        "bytes": len(data), "sha256": sha(data)}
     return files
 

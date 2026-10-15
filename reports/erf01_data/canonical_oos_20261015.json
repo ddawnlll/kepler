@@ -1,0 +1,63 @@
+{
+  "experiment": "ERF-01",
+  "run_date_utc": "2026-10-15",
+  "status": "INCONCLUSIVE",
+  "scope": "real DEV-only forecast screen; no economic referee and no independent untouched confirmation",
+  "provenance": {
+    "data_source": "Binance USDT-M SHA256-verified monthly klines 1h, markPriceKlines 1h, fundingRate",
+    "container_source": "kepler-data:/erf01/staging/tape (NOT production /tape)",
+    "start_month": "2020-01",
+    "last_month": "2026-03",
+    "seal_start": "2026-04-01",
+    "universe": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "XRPUSDT",
+      "BNBUSDT",
+      "DOGEUSDT",
+      "ADAUSDT",
+      "LINKUSDT",
+      "AVAXUSDT"
+    ],
+    "canonical_qc_nine_symbols": "PASS (zero ERROR; warnings preserved in Volume staging receipts)",
+    "full_metrics_and_predictions_action": "https://github.com/ddawnlll/kepler/actions/runs/38724820208"
+  },
+  "oos": {
+    "nonempty_folds": 7,
+    "confirmed_up_onsets": 34,
+    "confirmed_down_onsets": 20,
+    "frozen_min_up": 30,
+    "frozen_min_down": 30,
+    "model_daily_mean_brier": {
+      "M0": 0.06870168081913519,
+      "M1": 0.06657039986604395,
+      "M2": 0.0672575973754567
+    },
+    "m2_relative_brier_improvement_vs_m1": -0.010322868884602546,
+    "m2_brier_block_bootstrap_p05": -0.001263014043866122,
+    "forecast_gate_passed": false,
+    "secondary_forecast_gate": "NO_EDGE_OR_INCONCLUSIVE",
+    "trial_receipts": "3 screen-only configurations; not economic simulations",
+    "trial_ledger_sha256": "800c89f0c1e2ac2ce481f11f9338017c56401cb3191799885c4c4ea98ae26afa"
+  },
+  "economic": {
+    "numba_strategy_execution": "NOT_RUN",
+    "fee_slippage_funding_net_pnl": "NOT_RUN",
+    "dependency_aware_trade_null": "NOT_RUN",
+    "independent_prospective_confirmation": "NOT_RUN",
+    "proven_trading_edge": false
+  },
+  "limitations": [
+    "M2 incremental features performed worse than M1 on this seen development panel.",
+    "Insufficient OOS down onset events (20 vs 30 minimum).",
+    "No G3, sealed data, live order or real-money exposure was opened.",
+    "Same 2020-26 DEV data cannot become independent confirmation through repeated tuning.",
+    "Provider bill unavailable; exact USD spend UNKNOWN."
+  ],
+  "related_actions": [
+    "https://github.com/ddawnlll/kepler/actions/runs/38723780237",
+    "https://github.com/ddawnlll/kepler/actions/runs/38723881888",
+    "https://github.com/ddawnlll/kepler/actions/runs/38724190709"
+  ]
+}
