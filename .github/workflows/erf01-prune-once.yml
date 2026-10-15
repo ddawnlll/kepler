@@ -1,0 +1,38 @@
+name: One-time prune merged ERF01 overnight branch
+on:
+  push:
+    branches:
+      - research/erf01-resumable-economics-20261015
+    paths:
+      - .github/workflows/erf01-prune-once.yml
+permissions:
+  contents: write
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner,repo}=context.repo;
+            const subject="research/erf01-resumable-economics-20261015";
+            const expectedMain="6584974e194daa4169d602731a5b2824f3be3e19";
+            if(context.ref!=="refs/heads/"+subject) throw Error("unexpected workflow branch");
+            const main=(await github.rest.git.getRef({owner,repo,ref:"heads/main"})).data.object.sha;
+            if(main!==expectedMain) throw Error("main changed; leave branch");
+            const pr=(await github.rest.pulls.get({owner,repo,pull_number:61})).data;
+            if(!pr.merged) throw Error("PR61 not merged; leave branch");
+            const branches=await github.paginate(github.rest.repos.listBranches,{owner,repo,per_page:100});
+            if(JSON.stringify(branches.map(b=>b.name).sort())!==JSON.stringify(["main",subject].sort()))
+              throw Error("unexpected branches; leave intact");
+            const head=(await github.rest.git.getRef({owner,repo,ref:"heads/"+subject})).data.object.sha;
+            if(head!==context.sha) throw Error("branch advanced; abort");
+            const tagName="archive/2026-10-15/branch/"+subject;
+            const tag=(await github.rest.git.createTag({owner,repo,tag:tagName,message:"Merged PR61 lineage plus temporary audited cleanup branch at "+head,object:head,type:"commit"})).data.sha;
+            await github.rest.git.createRef({owner,repo,ref:"refs/tags/"+tagName,sha:tag});
+            const pointer=(await github.rest.git.getRef({owner,repo,ref:"tags/"+tagName})).data.object;
+            if(pointer.type!=="tag"||(await github.rest.git.getTag({owner,repo,tag_sha:pointer.sha})).data.object.sha!==head)
+             throw Error("tag target unverified; leave branch");
+            await github.rest.git.deleteRef({owner,repo,ref:"heads/"+subject});
+            core.info("MERGED_RESEARCH_BRANCH_ARCHIVED_AND_DELETED "+head);
