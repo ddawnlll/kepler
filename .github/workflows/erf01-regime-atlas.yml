@@ -25,12 +25,12 @@ jobs:
           test -n "$MODAL_TOKEN_ID" && test -n "$MODAL_TOKEN_SECRET"
           python -m pip install 'modal>=1.6,<2' uv
           uv sync --frozen --dev --no-install-project
-          uv run --no-sync pytest -q tests/test_erf01_regime_atlas.py tests/test_erf01_regression.py tests/test_erf01_tape.py
+          uv run --no-sync pytest -q tests/test_erf01_regime_atlas.py tests/test_erf01_regression.py tests/test_erf01_tape.py tests/test_intelligence_core.py tests/test_architecture.py
       - name: Real canonical regime duration and forecast horizon evaluation
         shell: bash
         run: |
           set -euo pipefail
-          timeout --signal=TERM --kill-after=10s 430s modal run modal_app.py --cmd "python scripts/erf01_regime_atlas.py --staging /data/erf01/staging --out /data/erf01/regime_atlas_20261015" 2>&1 | tee "$RUNNER_TEMP/erf01-regime-atlas.log"
+          timeout --signal=TERM --kill-after=10s 430s modal run modal_app.py --cmd "python -m kepler.intelligence atlas --staging /data/erf01/staging --out /data/erf01/regime_atlas_20261015" 2>&1 | tee "$RUNNER_TEMP/erf01-regime-atlas.log"
           grep -q 'ERF01_REGIME_ATLAS_RESULT=' "$RUNNER_TEMP/erf01-regime-atlas.log"
       - name: Download transparent evidence from Modal staging
         if: always()

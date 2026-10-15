@@ -103,6 +103,8 @@ def test_allow_list_has_no_stale_entries():
 
 def test_package_does_not_import_outer_dirs():
     for f in PKG.rglob("*.py"):
+        if f == PKG / "intelligence" / "__main__.py":
+            continue  # CLI adapter may dispatch experiments; science primitives may not.
         for n in ast.walk(ast.parse(f.read_text(encoding="utf-8"))):
             names = [n.module] if isinstance(n, ast.ImportFrom) and n.module else [a.name for a in n.names] if isinstance(n, ast.Import) else []
             for m in names:

@@ -30,7 +30,7 @@ büyük bir adımdan önce yeniden oku.
 ## Mimari (kod zorlar; ayrıntı `ARCHITECTURE.md` "Katmanlar ve kurallar", tek kaynak `tests/test_architecture.py`)
 - Ana sistem Ensemble: durum (`market_state.py`, `state.py`) → uzman (`experts/`) → `ensemble.py` → boyutlama (`portfolio.py`, `risk.py`) → hakem.
 - **Uzman yalnızca tahmin verir**; boyut/kaldıraç/tavan risk katmanında. Uzman `risk`, `portfolio`, `ledger`, hakem kodunu import etmez; hakem hattı uzman/sinyal koduna bakmaz.
-- Nereye ne konur: yeni tahmin → `experts/<ad>.py` (+ önce `reports/<ad>_protocol.md`); yeni girdi → `market_state.py`/`state.py`; deney betiği → `scripts/`. Yeni modül = `LAYERS`a satır.
+- Nereye ne konur: yeni tahmin → `experts/<ad>.py` (+ önce `reports/<ad>_protocol.md`); yeni girdi → `market_state.py`/`state.py`; deney tanımı/pipeline → `experiments/<aile>/`; ortak rejim ve süre analizi → `kepler/intelligence/`; CLI wrapper → `scripts/`. Yeni modül = `LAYERS`a satır.
 - Yeni `.md` açma: ilgili mevcut belgeye yaz (izin listesi testte; `.github` katkı/güvenlik belgeleri ve PR şablonu dosya bazında izinlidir). Kural/mimari değişince ilgili belge **aynı commit'te** güncellenir.
 - Korumalı çekirdeğe (hakem, denetim, risk, state, tape, mühür, `tests/` mevcut dosyaları, BACKTEST/AGENTS/docs) ajan yazamaz; kullanıcı `KEPLER_CORE_UNLOCK=1` ile oturumu açarsa yazılır. Sonuçlanmış bir ön kayıt (`reports/<ad>_protocol.md` + `reports/<ad>.md` var) değişmez.
 
@@ -42,7 +42,7 @@ büyük bir adımdan önce yeniden oku.
 - Hakem, denetim, risk ve mühür kodu değişiklikleri kullanıcı yetkilendirmesi ve bağımsız inceleme gerektirir; model seçimi bu koşulların yerine geçmez.
 - Mühürlü dönem (son 6 ay) açılmaz, anahtar hiçbir yere girmez, `tools/seal_holdout.py` gerçek veriyle çalıştırılmaz.
 - Yeni bileşen için gözlenmiş engel gerekir. Yeni spec/anayasa belgesi yazılmaz (tek istisnalar `BACKTEST.md`, tasarım değişikliği oraya yazılır, ve fabrika spesifikasyonu `docs/factory.md`).
-- Kendi kodumuz küçük kalır (MISSION kural 7 iki sayıyı da raporlar). Testleri elle koş; CI yok.
+- Kodun boyutunu raporla ancak yapay 300/3500 satır tavanına göre tasarlama. Katman izolasyonu, nedensellik, bilimsel parite ve ilgili testleri doğrula. Geçici doğrulama gerekiyorsa masrafı sınırlı tut.
 - Doğrulanmamış rakam "doğrulanmadı" diye yazılır. Kuyruğa yazmak için `factory/enqueue.py`.
 
 ## Fabrika çalışma sınırı

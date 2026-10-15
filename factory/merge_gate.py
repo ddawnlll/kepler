@@ -42,7 +42,7 @@ def check(commit, base):
             raise PermissionError("symlink/submodule değişikliği reddedildi")
         if path in tracked_tests or any(fnmatch.fnmatch(path, p) for p in patterns):
             raise PermissionError(f"korumalı yol: {path}")
-        if not (path.startswith("kepler/experts/") or path.startswith("scripts/") or path.startswith("tests/test_") or path.startswith("reports/")):
+        if not (path.startswith("kepler/experts/") or path.startswith("kepler/intelligence/") or path.startswith("experiments/") or path.startswith("scripts/") or path.startswith("tests/test_") or path.startswith("reports/")):
             raise PermissionError(f"ajan yazma alanı dışında: {path}")
         if path.endswith("_protocol.md"):
             result = path.removesuffix("_protocol.md") + ".md"

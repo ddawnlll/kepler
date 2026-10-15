@@ -26,6 +26,7 @@ def code_hash(*paths) -> str:
     root = Path(__file__).resolve().parent.parent
     files = set((root / "kepler").rglob("*.py"))
     files.update((root / "scripts").rglob("*.py"))
+    files.update((root / "experiments").rglob("*.py"))  # experiment logic is execution code
     files.update(root / name for name in ("pyproject.toml", "uv.lock"))
     files.update(Path(p).resolve() for p in paths if p is not None)
     entries = [(p.relative_to(root).as_posix() if p.is_relative_to(root) else p.name,

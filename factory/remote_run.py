@@ -7,10 +7,11 @@ import subprocess
 import sys
 
 from kepler import ledger
+from factory.entrypoints import RESEARCH_ENTRYPOINTS
 
 
 def run(token, script, argv):
-    if not re.fullmatch(r"[0-9a-f]{32}", token) or script not in {"scripts/ensemble.py", "scripts/carryxs_card.py", "scripts/g2.py"}:
+    if not re.fullmatch(r"[0-9a-f]{32}", token) or script not in RESEARCH_ENTRYPOINTS:
         raise ValueError("geçersiz koşu")
     spool = Path("/data/ledger-spool") / token
     if spool.exists():
