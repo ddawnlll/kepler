@@ -1,0 +1,47 @@
+name: One-time verified branch archival
+on:
+  push:
+    branches:
+      - chore/verified-branch-archive-20261015
+    paths:
+      - .github/workflows/archive-branches-once.yml
+permissions:
+  contents: write
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner, repo = context.repo.repo;
+            const expected = [["ccr-5b0b93ce-usxtma","61f77f6ae51bd7ba538fdfdf175ca824494324e5"],["ccr-17bd8bb8-5alkzf","7ae0b76e8e0343366de791ae279718afb1d87e75"],["ccr-018c70e2-hlz54f","c978623b4164035f9cb670d810e74361dcdf2001"],["ccr-33b980ad-tifh9z","fd5ab44bb1211471156ee7aa6ee40689219fd300"],["ccr-3876f17d-enqq5z","b4938f16525e9a67b2eece6f8bb948adba6f883c"],["ccr-607053d9-nh21js","e282c0477bab6cea259ba085bc174bf0601aafae"],["ccr-c70b496a-spmxi0","38b9c5397dd1c7a4e1529dd4354ba9c5deb1d216"],["chore/modal-connection-smoke-20261015","2d3a92c0abf99a6c82c2613ef09ba0dd37be95b2"],["claude/dreamy-lamport-0t7yck","1c614d590d224cfa2fef4fc6c21c62659def41c2"],["claude/ev1-decay-test","74c12e87cd7aeb7973a9dc534e6651e65cc7045c"],["claude/jolly-carson-cdpdtq","dbedc4e4dd79d299c7317edf2fade0ccf44c2880"],["claude/sweet-shannon-qzwbzj","6e035af2d577e48d7c630c965b657332e07d3a63"],["cleanup/agent-development-gates-20261015","472c0968fc47f2f6ffd9d8fe9f5b7bd5a4cd7961"],["codex/agentic-24-7-runtime","9ccc4d4e06f2816553fcd2e42c96b89cc5a8c494"],["codex/backtest-gates-fixes","ca7d0b82f7f63827edfe1815d213955373dd2bc9"],["codex/complete-integration","4a9140060d1008120ad17557a69a31027db8a617"],["codex/github-templates","b5759143e1e187e33ce19ceeeaa593c7be221e8e"],["fix/erf01-methodology-integrity","ed04a0e4b5b192dfceef2f19162c7bb428ec8bed"],["i10-funding","7b03e7ff88762eaff9f3d208ae79139896cca7d8"],["i11-intents","b4573f5cdb3315e1bd4f9678673a81b66a03afa5"],["i12-identity","5779e32f3c20aa43b4b29a02f4d8615d1d604942"],["i13-ledger","ee9454425d178146b5e14d959253ac6717a20f3a"],["i14-family","c80e3cd93f699999d412a9c7d21b93a9ccd4587c"],["i15-null","727d5ceb45dd851ba685bb06476d96ec0889a857"],["i16-500","5c8f38f897fdd19f2735e96ceba3231ee3fec807"],["i17-carry","e00825b5d2b7dc6f613bf2c8badde111f6082bec"],["i18-qc","2e81941926b4664b9f38f3b4707370bd3a0d1c10"],["i19-parity","b27918cf751e3889f1dc52d4ff33c9f7b86171be"],["integration/kepler-consolidation-20261015","431d7646bb73128ee74a2390e946b9041007470f"],["integration/pr53-validation-20261015","da93a811092d574c658f7a8c7d93e7e3760e247b"]];
+            const mainExpected = "fe46cf6c7a669f3d63b05d27d319343807b0c7f5";
+            const currentMain = (await github.rest.git.getRef({owner,repo,ref:"heads/main"})).data.object.sha;
+            if (currentMain !== mainExpected) throw new Error("main moved; do not archive with stale evidence");
+            for (const [branch, sha] of expected) {
+              const current = (await github.rest.git.getRef({owner,repo,ref:"heads/"+branch})).data.object.sha;
+              if (current !== sha) throw new Error("branch changed: "+branch+"; abort before writing tags");
+            }
+            const all = [...expected, [context.ref.replace("refs/heads/",""),context.sha]];
+            for(const [branch,sha] of all) {
+              const tagName = "archive/2026-10-15/branch/"+branch;
+              const tagRef = "tags/"+tagName;
+              let current = null;
+              try { current=(await github.rest.git.getRef({owner,repo,ref:tagRef})).data.object; }
+              catch(e) { if(e.status!==404) throw e; }
+              if(current) {
+                if(current.type!=="tag") throw new Error("existing archive is not annotated "+tagName);
+                const prior=(await github.rest.git.getTag({owner,repo,tag_sha:current.sha})).data.object.sha;
+                if(prior!==sha) throw new Error("archive tag collision "+tagName);
+              } else {
+                const tag=(await github.rest.git.createTag({owner,repo,tag:tagName,message:"Verified pre-cleanup branch head "+branch+" @ "+sha+"; original work preserved, merge not implied.",object:sha,type:"commit"})).data.sha;
+                await github.rest.git.createRef({owner,repo,ref:"refs/tags/"+tagName,sha:tag});
+                const seen=(await github.rest.git.getRef({owner,repo,ref:tagRef})).data.object.sha;
+                const target=(await github.rest.git.getTag({owner,repo,tag_sha:seen})).data.object.sha;
+                if(target!==sha) throw new Error("archive verification failed "+tagName);
+              }
+              core.info("ARCHIVED "+branch+" "+sha);
+            }
+            core.info("ARCHIVE_SUCCESS "+all.length);
