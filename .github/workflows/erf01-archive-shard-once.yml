@@ -1,0 +1,64 @@
+name: Temporary ERF01 verified historic DEV archive shard
+on:
+  push:
+    branches: [research/erf01-evidence-readiness-20261015]
+    paths: [.github/workflows/erf01-archive-shard-once.yml]
+permissions:
+  contents: read
+jobs:
+  historical-shard-zero:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'modal>=1.6,<2'
+      - name: Bounded pre-seal BTC/ETH/SOL archive cache shard, published checksums only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$MODAL_TOKEN_ID"
+          test -n "$MODAL_TOKEN_SECRET"
+          cat > kepler_erf01_archive_shard.py <<'PY'
+          from pathlib import Path
+          import modal
+
+          ROOT=Path(__file__).resolve().parent
+          app=modal.App("kepler-erf01-dev-archive-shard-once")
+          vol=modal.Volume.from_name("kepler-data",create_if_missing=False)
+          image=(modal.Image.debian_slim(python_version="3.12")
+              .pip_install("numpy>=2,<2.3","pandas>=2,<3","scikit-learn>=1.5,<2",
+                           "pyarrow>=17,<24","requests>=2,<3","duckdb>=1,<2")
+              .env({"PYTHONPATH":"/repo"})
+              .add_local_dir(str(ROOT/"kepler"),remote_path="/repo/kepler")
+              .add_local_dir(str(ROOT/"data_manifest"),remote_path="/repo/data_manifest")
+              .add_local_file(str(ROOT/"scripts/erf01.py"),remote_path="/repo/scripts/erf01.py")
+              .add_local_file(str(ROOT/"reports/erf01_protocol.md"),remote_path="/repo/reports/erf01_protocol.md")
+          )
+          @app.function(image=image,volumes={"/data":vol},cpu=1,memory=1536,
+                        timeout=145,max_containers=1,min_containers=0)
+          def fetch_preseal():
+              from scripts import erf01 as erf
+              erf.SYMS=["BTCUSDT","ETHUSDT","SOLUSDT"]
+              erf.OUT=Path("/data/erf01/archive_shard_btc_eth_sol")
+              raw=Path("/data/erf01/raw")
+              try:
+                  result=erf.fetch(raw,workers=24)
+                  erf._verify_acquisition(result,raw)
+                  print("ERF01_ARCHIVE_SHARD_VERIFIED",{
+                    "symbols":result["symbols"],"records":result["record_count"],
+                    "bytes":result["downloaded_bytes"],"seal":result["seal_start"]})
+                  return {"status":"SHA_VERIFIED_PARTIAL_DEV_CACHE","records":result["record_count"]}
+              finally:
+                  # Persist only pre-seal, checksum-validated cache and its honest manifest.
+                  vol.commit()
+          @app.local_entrypoint()
+          def main():
+              print("ERF01_SHARD_RESULT",fetch_preseal.remote())
+          PY
+          timeout --signal=TERM --kill-after=5s 175s modal run kepler_erf01_archive_shard.py
