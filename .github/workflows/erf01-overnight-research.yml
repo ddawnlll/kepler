@@ -1,15 +1,10 @@
-name: Kepler ERF01 bounded overnight economic research
+name: Archived manual ERF01 economic probe (not scheduled)
 # Confirm checkpoint-resume with a second 21-day candidate after the first real Modal PASS.
+# Research priority pivot: profitability/trading trials are no longer scheduled.
+# Historical test retained ONLY for explicit manual invocation.
 on:
   workflow_dispatch:
-  schedule:
-    # 02:00 to 07:00 Europe/Istanbul (UTC+3) on six hourly ticks.
-    - cron: '0 23,0,1,2,3,4 * * *'
-  push:
-    branches:
-      - research/erf01-resumable-economics-20261015
-    paths:
-      - .github/workflows/erf01-overnight-research.yml
+
 concurrency:
   group: kepler-erf01-economic-v1
   cancel-in-progress: false
