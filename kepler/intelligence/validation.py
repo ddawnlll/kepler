@@ -82,8 +82,10 @@ def future_realized_risk(
     A gap or invalid close yields UNKNOWN; an unavailable right edge yields a
     right-censored target. Neither is silently converted into a zero event.
     """
-    if horizon_days < 1 or len(days) != len(closes):
+    if (isinstance(horizon_days, bool) or not isinstance(horizon_days, (int, np.integer))
+            or horizon_days < 1 or len(days) != len(closes)):
         raise ValueError("positive horizon and matching daily inputs are required")
+    horizon_days = int(horizon_days)
     if any(isinstance(d, datetime) or not isinstance(d, date) for d in days):
         raise TypeError("days must contain UTC date keys")
     if any(days[i] >= days[i + 1] for i in range(len(days) - 1)):
