@@ -19,5 +19,11 @@ jobs:
         run: |
           python -m pip install uv
           uv sync --frozen --dev --no-install-project
-      - name: Intelligence and ERF-01 regression tests
-        run: uv run --no-sync pytest -q tests/test_intelligence_core.py tests/test_intelligence_factory_contract.py tests/test_erf01_regime_atlas.py tests/test_erf01_regression.py tests/test_erf01_tape.py tests/test_erf01_dev_tape_builder.py tests/test_erf01_edge_audit.py tests/test_erf01_trade_probe.py tests/test_factory_boundaries.py tests/test_factory_runtime.py tests/test_core_guard.py
+      - name: CLI entrypoint smoke
+        run: |
+          uv run --no-sync python scripts/erf01.py --help
+          uv run --no-sync python scripts/erf01_regime_atlas.py --help
+          uv run --no-sync python -m kepler.intelligence --help
+          uv run --no-sync python scripts/ensemble.py --help
+      - name: Full pinned test suite
+        run: uv run --no-sync pytest -q
