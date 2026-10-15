@@ -27,6 +27,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from kepler.intelligence.features import (make_panel as _build_panel, _roll_sum,
     _roll_median_log_ratio, _funding_stress)
+from kepler.intelligence.scoring import _moving_block_ci
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "reports" / "erf01_data"
@@ -452,23 +453,6 @@ def _fit_predict(train, test, model_cols, return_train=False):
 def _scores(y: np.ndarray, prob: np.ndarray):
     one = np.eye(3)[y]
     return np.sum((prob - one) ** 2, axis=1), -np.log(np.maximum(prob[np.arange(len(y)), y], 1e-15))
-
-
-def _moving_block_ci(by_date: dict[date, float], B=2000, block=28, seed=20261014):
-    ds = sorted(by_date); x = np.asarray([by_date[d] for d in ds], dtype=float)
-    if len(x) < block:
-        return {"n_dates": len(x), "observed": float(x.mean()), "p05": None, "p025": None, "p975": None, "replicates": 0}
-    rng = np.random.default_rng(seed); reps = np.empty(B)
-    n = len(x)
-    for b in range(B):
-        sample = []
-        while len(sample) < n:
-            start = int(rng.integers(0, n - block + 1))
-            sample.extend(x[start:start + block])
-        reps[b] = np.mean(sample[:n])
-    return {"n_dates": n, "observed": float(x.mean()), "p05": float(np.quantile(reps, .05)),
-            "p025": float(np.quantile(reps, .025)), "p975": float(np.quantile(reps, .975)), "replicates": B,
-            "block_days": block, "seed": seed}
 
 
 def _cluster_events(events):

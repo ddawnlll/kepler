@@ -21,6 +21,7 @@ import numpy as np
 
 from experiments.erf01 import pipeline as erf01
 from experiments.erf01.tape_adapter import load_development
+from kepler.intelligence.scoring import summarise_forecast as _summarise_forecast
 
 STATES = (-1, 0, 1)
 STATE_NAMES = {-1: "downtrend_proxy", 0: "neutral_proxy", 1: "uptrend_proxy"}
@@ -37,42 +38,7 @@ from kepler.intelligence.regimes import (
 
 
 def summarise_forecast(records, name, paired_baseline):
-    if not records:
-        return {"n": 0, "status": "NOT_RUN"}
-    actual = np.asarray([r["true"] for r in records], dtype=int)
-    prob = np.asarray([r[name] for r in records], dtype=float)
-    base = np.asarray([r[paired_baseline] for r in records], dtype=float)
-    if prob.ndim == 2:
-        onehot = np.eye(3)[actual + 1]
-        delta = np.sum((base - onehot) ** 2, axis=1) - np.sum((prob - onehot) ** 2, axis=1)
-        brier = float(np.mean(np.sum((prob - onehot) ** 2, axis=1)))
-        baseline_brier = float(np.mean(np.sum((base - onehot) ** 2, axis=1)))
-        hit = np.argmax(prob, axis=1) - 1
-        base_hit = np.argmax(base, axis=1) - 1
-        accuracy = float(np.mean(hit == actual))
-        accuracy_baseline = float(np.mean(base_hit == actual))
-        recall = {STATE_NAMES[k]: float(np.mean(hit[actual == k] == k))
-                  if np.any(actual == k) else None for k in STATES}
-        confusion = {STATE_NAMES[k]: {STATE_NAMES[j]:
-                     int(np.sum((actual == k) & (hit == j))) for j in STATES}
-                     for k in STATES}
-    else:
-        delta = (base - actual) ** 2 - (prob - actual) ** 2
-        brier = float(np.mean((prob - actual) ** 2))
-        baseline_brier = float(np.mean((base - actual) ** 2))
-        accuracy = accuracy_baseline = None
-        recall = confusion = None
-    by_day = defaultdict(list)
-    for r, d in zip(records, delta):
-        by_day[r["date"]].append(float(d))
-    bootstrap = erf01._moving_block_ci({d: float(np.mean(x)) for d, x in by_day.items()},
-                                        B=1000, block=28, seed=20261015)
-    return {"n": len(records), "n_distinct_dates": len(by_day),
-            "brier": brier, "baseline_brier": baseline_brier,
-            "baseline_minus_model_brier": baseline_brier - brier,
-            "paired_block_bootstrap": bootstrap, "accuracy": accuracy,
-            "baseline_accuracy": accuracy_baseline, "class_recall": recall,
-            "confusion": confusion}
+    return _summarise_forecast(records, name, paired_baseline, state_names=STATE_NAMES)
 
 
 def analyse(days, panel):

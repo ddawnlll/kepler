@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scripts import erf01_trade_probe as probe
+from experiments.erf01 import economic_probe as probe
 
 
 def klines(start="2025-01-01", days=5):
