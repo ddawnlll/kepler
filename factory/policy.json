@@ -12,7 +12,7 @@
   "dev_workspace_verified": false,
   "provider_limits_verified": false,
   "acceptance_verified": false,
-  "research_scripts": ["scripts/ensemble.py", "scripts/carryxs_card.py", "scripts/g2.py"],
+  "research_scripts": ["scripts/ensemble.py", "scripts/carryxs_card.py", "scripts/g2.py", "experiments/erf01/atlas.py"],
   "required_tests": ["tests/test_architecture.py", "tests/test_factory_runtime.py", "tests/test_factory_boundaries.py", "tests/test_tape_ledger.py", "tests/test_referee.py", "tests/test_referee_engine.py", "tests/test_portfolio.py", "tests/test_realistic.py", "tests/test_ops.py", "tests/test_enqueue.py"],
   "checks_required_before_merge": true
 }

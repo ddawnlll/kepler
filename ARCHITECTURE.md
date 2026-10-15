@@ -45,6 +45,7 @@ Alt katman üst katmanı import edemez. Düşükten yükseğe:
 | temel | `ledger report stats capacity stress nested signals` | defter, istatistik, basit sinyaller |
 | risk | `risk portfolio` | boyutlama, kaldıraç, kill switch |
 | durum | `market_state state indicators` | oynaklık/korelasyon/funding, ATR/swing/profil, göstergeler |
+| bilimsel zeka | `intelligence/*` | deneyden bağımsız nedensel rejim özellikleri, süreler, geçiş olasılıkları ve bilimsel değerlendirme; CLI adaptörü istisna |
 | uzman | `experts/* turtle` | tahmin üretir: `experts/trend`, `xs_momentum`, `carry`, `zone_fade`; edge ailesi (`reports/edge_experts_protocol.md`): `bollinger`, `lowvol`, `nearhigh`, `fundcrowd`, `volrev`, `orderflow`. **Ensemble tek altyapıdır**: uzmanlar `ensemble.REG`'e kayıtlı takılabilir üyeler, bileşim `Params.names` + `Params.weights`. EV1 ayrı bir sistem değil, varsayılan bileşimdir (trend 0,6 / xs_momentum 0,2 / carry 0,2); yeni uzman henüz hiçbir bileşime ağırlıkla girmedi (kapı: `reports/edge_experts.md`) |
 | kompozisyon | `ensemble` | uzmanları birleştirir, kitap sözleşmesi |
 | hakem | `referee audit robust screen evaluate` | tek hakem, denetim, defter girişi |
@@ -54,14 +55,14 @@ Değişmez kurallar:
   (Bilinen tek istisna: `zone_fade` → `ledger`; yönetici ayrılınca kalkar, test listede tutar.)
 - **Hakem hattı sinyalden habersizdir.** `referee audit ledger stats robust` uzman, ensemble, sinyal, durum
   ve risk koduna bakmaz.
-- `kepler/` dışarıdaki `scripts`, `factory`, `tools` koduna bağlanmaz (akış tek yönlü).
-- **Boyut bütçesi:** dosya başına 300, `kepler/` toplam 3500 satır (2026-10-15 kullanıcı açık yetkilendirmesi: PR #53 muhasebe, receipts ve Numba entegrasyonu; diğer güvenlik ve katman kuralları korunur). Aşılırsa önce var olan sadeleşir.
+- `kepler/` dışarıdaki `scripts`, `experiments`, `factory`, `tools` koduna bağlanmaz (tek istisna çalıştırma adaptörü `kepler/intelligence/__main__.py`) (akış tek yönlü).
+- **Mimari büyüme ilkesi:** sabit dosya/toplam satır limitleri kaldırılmıştır. Import yönü, bilimsel çekirdeğin bağımsızlığı, nedensellik ve regresyon testleri korunur. Dosyalar sorumluluklarına göre ayrılır.
 - **Belge izin listesi:** yeni `.md` açılmaz; kalıcı belge türleri MISSION, ARCHITECTURE, BACKTEST, TASKS (+ `docs/factory.md` dondurulmuş, `reports/` deney çıktıları). GitHub katkı akışı için `.github/CONTRIBUTING.md`, `.github/SECURITY.md` ve `.github/pull_request_template.md` dosya bazında izinlidir; issue formları YAML'dir. İzin listesinin tek kaynağı `tests/test_architecture.py`'dir.
 - Yeni modül = `LAYERS`a satır; test bunu zorlar. Kural değişince bu bölüm aynı commit'te güncellenir.
 
 Nereye ne konur: yeni tahmin fikri → `experts/<ad>.py` (+ ön kayıt `reports/<ad>_protocol.md`);
 yeni girdi (oynaklık, ATR gibi) → `market_state.py` veya `state.py`; boyut/tavan → `portfolio.py`/`risk.py`;
-deneyi koşan betik → `scripts/`. Uzman içinde boyut hesaplanmaz, durum yeniden hesaplanmaz.
+deney tanımı ve pipeline → `experiments/<aile>/`; tekrar kullanılabilir rejim matematiği → `kepler/intelligence/`; ince çalıştırma girişleri → `scripts/`. Uzman içinde boyut hesaplanmaz, durum yeniden hesaplanmaz.
 
 ## Risk motoru
 

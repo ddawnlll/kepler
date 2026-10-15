@@ -1,6 +1,6 @@
 # Kepler
 
-Kepler is a minimal, reproducible quantitative research setup evaluating **Microsoft Qlib** and **Microsoft RD-Agent(Q)**.
+Kepler is a quantitative research repository for causal crypto-market analysis and evidence-preserving strategy evaluation. Current scientific priority is understanding observable market regimes before optimizing trading decisions.
 
 ## Kepler M0: Smoke-Test Gates
 
@@ -23,3 +23,9 @@ The repository includes an operator-installed broker, durable supervisor, Linux-
 ```
 
 ## Archive: Kepler M0 Smoke-Test Gates (salt-okunur)
+
+## Market intelligence research
+
+The reusable causal feature and regime math lives in `kepler/intelligence/`.
+Frozen ERF-01 experiment workflows live in `experiments/erf01/`; legacy CLI entry points under `scripts/` remain compatible.
+Run `python -m kepler.intelligence atlas --staging /data/erf01/staging --out /data/erf01/regime_atlas_20261015` inside the pinned Modal environment. The run is scientific analysis, not a verified trading edge.

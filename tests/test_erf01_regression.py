@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "erf01.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "experiments" / "erf01" / "pipeline.py"
 
 
 def get_module():
