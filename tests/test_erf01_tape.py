@@ -74,3 +74,51 @@ def test_canonical_tape_fails_on_seal_drift(monkeypatch, tmp_path):
     with pytest.raises(RuntimeError, match="seal"):
         _subject().load_development(
             tmp_path, ["BTCUSDT"], date(2025, 1, 1), date(2025, 1, 3), date(2026, 4, 1))
+
+
+def test_real_parquet_loader_and_real_kepler_qc(tmp_path):
+    """End-to-end source bytes -> DuckDB tape.load -> actual QC -> daily/funding adapter."""
+    hours = pd.date_range("2025-01-01", periods=25, freq="h", tz="UTC")
+    prices = np.full(len(hours), 100.0)
+    candles = pd.DataFrame({
+        "ts": hours, "ts_unit": "ms", "open": prices,
+        "high": prices + 1, "low": prices - 1,
+        "close": prices, "volume": np.full(len(hours), 5.0),
+    })
+    fr = pd.DataFrame({
+        "ts": pd.date_range("2025-01-01", periods=3, freq="8h", tz="UTC"),
+        "ts_unit": "ms", "funding_interval_hours": [8.0] * 3,
+        "last_funding_rate": [0.0001] * 3,
+    })
+    def write(kind, frame):
+        p = tmp_path / "tape" / kind / "BTCUSDT.parquet"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        frame.to_parquet(p, index=False)
+        return p
+
+    kl_path = write("klines", candles)
+    write("markPriceKlines", candles)
+    write("fundingRate", fr)
+
+    prices_by_symbol, funding, funding_rows, meta, acq = _subject().load_development(
+        tmp_path, ["BTCUSDT"], date(2025, 1, 1),
+        date(2025, 1, 3), date(2026, 4, 1))
+    assert list(prices_by_symbol["BTCUSDT"]) == [date(2025, 1, 1)]
+    assert len(funding["BTCUSDT"]) == len(funding_rows) == 3
+    assert meta["BTCUSDT"]["dropped_incomplete_days"] == 1
+    assert acq["record_count"] == 3 and acq["complete"]
+
+    # Same parser/QC must reject actual corrupted Parquet, rather than silently filtering.
+    corrupted = candles.copy()
+    corrupted.loc[0, "close"] = -1.0
+    write("klines", corrupted)
+    with pytest.raises(RuntimeError, match="QC errors"):
+        _subject().load_development(
+            tmp_path, ["BTCUSDT"], date(2025, 1, 1),
+            date(2025, 1, 3), date(2026, 4, 1))
+
+    kl_path.unlink()
+    with pytest.raises(FileNotFoundError, match="Missing canonical tape"):
+        _subject().load_development(
+            tmp_path, ["BTCUSDT"], date(2025, 1, 1),
+            date(2025, 1, 3), date(2026, 4, 1))
