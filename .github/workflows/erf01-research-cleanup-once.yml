@@ -1,0 +1,32 @@
+name: One-time archive/prune merged ERF01 research branch
+on:
+  push:
+    branches: [research/erf01-evidence-readiness-20261015]
+    paths: [.github/workflows/erf01-research-cleanup-once.yml]
+permissions:
+  contents: write
+jobs:
+  archive-and-prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner,repo}=context.repo;
+            const branch="research/erf01-evidence-readiness-20261015";
+            if(context.ref!=="refs/heads/"+branch) throw Error("wrong branch");
+            const main=(await github.rest.git.getRef({owner,repo,ref:"heads/main"})).data.object.sha;
+            if(main!=="5a326541d1d6222d5ed5bf7edba7bf88d0feae25") throw Error("main moved");
+            const pr=(await github.rest.pulls.get({owner,repo,pull_number:60})).data;
+            if(!pr.merged || pr.base.ref!=="main") throw Error("PR60 not merged");
+            const all=await github.paginate(github.rest.repos.listBranches,{owner,repo,per_page:100});
+            if(JSON.stringify(all.map(x=>x.name).sort())!==JSON.stringify(["main",branch].sort())) throw Error("unexpected branch head");
+            if((await github.rest.git.getRef({owner,repo,ref:"heads/"+branch})).data.object.sha!==context.sha) throw Error("branch SHA changed");
+            const tag="archive/2026-10-15/branch/"+branch;
+            const tagged=(await github.rest.git.createTag({owner,repo,tag,message:"Merged ERF01 real canonical DEV research (scientific verdict INCONCLUSIVE), original full source head "+context.sha,object:context.sha,type:"commit"})).data.sha;
+            await github.rest.git.createRef({owner,repo,ref:"refs/tags/"+tag,sha:tagged});
+            const ref=(await github.rest.git.getRef({owner,repo,ref:"tags/"+tag})).data.object;
+            if(ref.type!=="tag" || (await github.rest.git.getTag({owner,repo,tag_sha:ref.sha})).data.object.sha!==context.sha) throw Error("archive verification failed");
+            await github.rest.git.deleteRef({owner,repo,ref:"heads/"+branch});
+            core.info("ERF01_RESEARCH_BRANCH_ARCHIVED_AND_PRUNED "+context.sha);
