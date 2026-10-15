@@ -218,6 +218,10 @@ def analyse(days, panel):
                              for x in panel[sym]["q"][:test_start])
                              for state in STATES], dtype=float)
         state_prior = (state_prior + 1) / (state_prior.sum() + 3)
+        # Memoize (state, current-age, horizon) per fold; otherwise repeating
+        # pooled spell scan for every asset/day turns a 5-year pass quadratic.
+        survival_cache = {}
+        state_exit_priors = {state: survival_parameters(trained, state)[1] for state in STATES}
         for h in HORIZONS:
             matrix_h = np.linalg.matrix_power(transition, h)
             for sym in erf01.SYMS:
@@ -238,8 +242,11 @@ def analyse(days, panel):
                     if not np.isfinite(future_path).all():
                         continue
                     surviving = int(np.all(future_path == current))
-                    predicted = continuation_probability(trained, current, age, h)
-                    _, constant_exit = survival_parameters(trained, current)
+                    key = (current, age, h)
+                    if key not in survival_cache:
+                        survival_cache[key] = continuation_probability(trained, current, age, h)
+                    predicted = survival_cache[key]
+                    constant_exit = state_exit_priors[current]
                     forecast_by_horizon[h]["survival"].append({
                         "date": days[i], "fold": fold, "symbol": sym,
                         "state": current, "true": surviving,
