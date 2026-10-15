@@ -144,25 +144,52 @@ def _check_seal():
         raise RuntimeError(f"ERF-01 seal {SEAL} differs from kepler.qc {SEAL_START.date()}")
 
 
+def _expected_archive_keys():
+    """Derive coverage from frozen development manifests, never from acquisition JSON."""
+    manifest = _combined_manifest()
+    expected = set()
+    for sym in SYMS:
+        for kind in ("klines", "fundingRate"):
+            rng = manifest.get(sym, {}).get(kind)
+            if not rng:
+                raise RuntimeError(f"missing required manifest range: {sym}/{kind}")
+            for month in month_iter(FIRST_MONTH, LAST_MONTH):
+                if _month_in_range(month, rng["first"], rng["last"]):
+                    if month >= SEAL.strftime("%Y-%m"):
+                        raise RuntimeError(f"sealed archive in manifest: {sym}/{kind}/{month}")
+                    expected.add((sym, kind, month))
+    return expected
+
+
 def _verify_acquisition(a: dict, raw: Path):
+    expected = _expected_archive_keys()
     records = a.get("records", [])
-    if (not a.get("complete") or a.get("errors") or not records
-            or len(records) != a.get("record_count") or len(records) != a.get("expected_archives")
-            or not isinstance(a.get("workers"), int)):
+    if (not isinstance(records, list) or not a.get("complete") or a.get("errors")
+            or len(records) != a.get("record_count")
+            or len(records) != a.get("expected_archives")
+            or len(expected) != len(records)
+            or not isinstance(a.get("workers"), int) or a["workers"] < 1):
         raise RuntimeError("incomplete or inconsistent ERF-01 acquisition")
-    if Path(a["raw_root"]).resolve() != raw.resolve():
+    if Path(a.get("raw_root", "")).resolve() != raw.resolve():
         raise RuntimeError("acquisition raw_root mismatches --raw-root")
     seen = set()
     for r in records:
-        key = (r["symbol"], r["kind"], r["month"])
-        if key in seen or r["symbol"] not in SYMS or r["kind"] not in ("klines", "fundingRate"):
-            raise RuntimeError(f"duplicate/unknown archive: {key}")
+        key = (r.get("symbol"), r.get("kind"), r.get("month"))
+        if key not in expected or key in seen:
+            raise RuntimeError(f"unexpected, duplicate or out-of-window archive: {key}")
         seen.add(key)
-        if r["month"] > LAST_MONTH or r["month"] >= SEAL.strftime("%Y-%m"):
-            raise RuntimeError(f"archive outside development window: {key}")
+        digest = r.get("sha256")
+        published = r.get("checksum_sha256")
+        if (not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest)
+                or digest != published or r.get("verification") != "Binance published SHA-256 matched"):
+            raise RuntimeError(f"archive without verified published checksum: {key}")
         path = raw / r["kind"] / r["symbol"] / f"{r['month']}.zip"
-        if not path.is_file() or sha(path.read_bytes()) != r["sha256"]:
+        if not path.is_file() or sha(path.read_bytes()) != digest:
             raise RuntimeError(f"missing or modified source archive: {path}")
+        if path.stat().st_size != r.get("bytes"):
+            raise RuntimeError(f"source archive size mismatch: {path}")
+    if seen != expected:
+        raise RuntimeError(f"missing archive coverage: {len(expected - seen)} records")
 
 
 def fetch(raw: Path, workers=12):
