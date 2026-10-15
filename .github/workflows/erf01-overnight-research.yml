@@ -1,5 +1,5 @@
 name: Kepler ERF01 bounded overnight economic research
-# Image build uses stable referee.run_portfolio Numba warming (not private simulate ABI).
+# Image now preloads full immutable Kepler referee graph before public API warmup.
 on:
   workflow_dispatch:
   schedule:
