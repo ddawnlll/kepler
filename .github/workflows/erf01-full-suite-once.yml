@@ -1,0 +1,22 @@
+name: One-time Kepler full regression for ERF01 unattended economics
+on:
+  push:
+    branches: [research/erf01-resumable-economics-20261015]
+    paths: [.github/workflows/erf01-full-suite-once.yml]
+permissions:
+  contents: read
+jobs:
+  full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          set -euo pipefail
+          python -m pip install uv
+          uv sync --frozen --dev --no-install-project
+          uv run --no-sync python tests/test_architecture.py
+          uv run --no-sync pytest -q
