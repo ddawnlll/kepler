@@ -19,8 +19,8 @@ from pathlib import Path
 
 import numpy as np
 
-import erf01
-from erf01_tape import load_development
+from scripts import erf01
+from scripts.erf01_tape import load_development
 
 STATES = (-1, 0, 1)
 STATE_NAMES = {-1: "downtrend_proxy", 0: "neutral_proxy", 1: "uptrend_proxy"}
