@@ -1,0 +1,126 @@
+name: Temporary ERF01 whole-panel exploratory archive screen
+on:
+  push:
+    branches: [research/erf01-evidence-readiness-20261015]
+    paths: [.github/workflows/erf01-full-archive-score-once.yml]
+permissions:
+  contents: read
+jobs:
+  one-bounded-archive-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'modal>=1.6,<2'
+      - name: Reconcile 1304 SHA-checked historical ZIPs and run frozen archive-only OOS screen
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$MODAL_TOKEN_ID"
+          test -n "$MODAL_TOKEN_SECRET"
+          cat > kepler_erf01_archive_score.py <<'PY'
+          from pathlib import Path
+          import modal
+
+          ROOT=Path(__file__).resolve().parent
+          app=modal.App("kepler-erf01-archive-exploratory-screen")
+          vol=modal.Volume.from_name("kepler-data",create_if_missing=False)
+          image=(modal.Image.debian_slim(python_version="3.12")
+              .pip_install("numpy>=2,<2.3","pandas>=2,<3","scikit-learn>=1.5,<2",
+                           "pyarrow>=17,<24","requests>=2,<3","duckdb>=1,<2")
+              .env({"PYTHONPATH":"/repo"})
+              .add_local_dir(str(ROOT/"kepler"),remote_path="/repo/kepler")
+              .add_local_dir(str(ROOT/"data_manifest"),remote_path="/repo/data_manifest")
+              .add_local_file(str(ROOT/"scripts/erf01.py"),remote_path="/repo/scripts/erf01.py")
+              .add_local_file(str(ROOT/"scripts/erf01_edge_audit.py"),remote_path="/repo/scripts/erf01_edge_audit.py")
+              .add_local_file(str(ROOT/"reports/erf01_protocol.md"),remote_path="/repo/reports/erf01_protocol.md")
+          )
+
+          @app.function(image=image,volumes={"/data":vol},cpu=2,memory=4096,
+                        timeout=165,max_containers=1,min_containers=0)
+          def score():
+              import hashlib,json,tempfile
+              from scripts import erf01 as erf
+              from scripts.erf01_edge_audit import assess
+              raw=Path("/data/erf01/raw")
+              erf.OUT=Path("/data/erf01/exploratory_20261015/results")
+              erf.PARQUET_OUT=Path("/data/erf01/exploratory_20261015/parquet")
+              partpaths=[
+                  Path("/data/erf01/archive_shard_btc_eth_sol/acquisition.json"),
+                  Path("/data/erf01/archive_shard_one/acquisition.json"),
+                  Path("/data/erf01/archive_shard_two/acquisition.json")
+              ]
+              try:
+                  seen=set()
+                  records=[]
+                  for p in partpaths:
+                      part=json.loads(p.read_text())
+                      if not part.get("complete") or part.get("errors"):
+                          raise RuntimeError("incomplete source shard "+str(p))
+                      for r in part["records"]:
+                          k=(r["symbol"],r["kind"],r["month"])
+                          if k in seen:
+                              raise ValueError("duplicate raw source "+str(k))
+                          seen.add(k)
+                          records.append(r)
+                  records.sort(key=lambda r:(r["symbol"],r["kind"],r["month"]))
+                  acquisition={
+                      "period_requested":[erf.FIRST_MONTH,erf.LAST_MONTH],
+                      "seal_start":erf.SEAL.isoformat(),"symbols":erf.SYMS,
+                      "records":records,"errors":[],"record_count":len(records),
+                      "expected_archives":len(records),"raw_root":str(raw),
+                      "workers":24,"complete":True,
+                      "downloaded_bytes":sum(int(r["bytes"]) for r in records)
+                  }
+                  # Re-hash every real source ZIP, require exact locked 9-symbol manifest coverage.
+                  erf._verify_acquisition(acquisition,raw)
+                  print("ERF01_9SYMBOL_COMPLETE_PUBLISHED_SHA256_OK",
+                        {"archives":len(records),"bytes":acquisition["downloaded_bytes"]})
+                  erf._save_acquisition(acquisition)
+                  with tempfile.TemporaryDirectory(prefix="erf01_screen_") as td:
+                      trial_ledger=Path(td)/"screen_trials.jsonl"
+                      metrics=erf.run(raw,trial_ledger=trial_ledger,
+                                      source="archive",data_root=Path("/data"))
+                      receipts=trial_ledger.read_bytes()
+                      lines=[json.loads(x) for x in receipts.decode().splitlines() if x]
+                      if len(lines)!=3 or metrics["trial_ledger"]["n_model_configs"]!=3:
+                          raise RuntimeError("three model-screen trial receipts not recorded")
+                      receipt_sha=hashlib.sha256(receipts).hexdigest()
+                  import csv
+                  with (erf.OUT/"alerts.csv").open() as f:
+                      alarms=list(csv.DictReader(f))
+                  secondary=assess(metrics,alarms)
+                  if secondary["status"]!="NOT_RUN":
+                      raise AssertionError("noncanonical archive cannot pass secondary QC gate")
+                  f=metrics["forecast"]; c=metrics["counts"]
+                  result={
+                      "status":"REAL_MARKET_EXPLORATORY_ONLY",
+                      "original_verdict":metrics["verdict"],
+                      "forecast_gate_passed":metrics["forecast_gate_passed"],
+                      "operational_gate_passed":bool(metrics["operational_gate"] and metrics["operational_gate"]["passed"]),
+                      "m1_brier":f["brier_m1"],"m2_brier":f["brier_m2"],
+                      "relative_m2_brier_improvement":f["relative_brier_improvement"],
+                      "block_bootstrap_p05":f["brier_improvement_block_bootstrap"]["p05"],
+                      "oos_up":c["confirmed_up_oos"],"oos_down":c["confirmed_down_oos"],
+                      "oos_folds":c["oos_folds_nonempty"],"archive_count":len(records),
+                      "trial_ledger_entries":len(lines),"trial_ledger_sha256":receipt_sha,
+                      "secondary_actual_tape_gate":"NOT_RUN","economic_edge":"NOT_RUN",
+                      "independent_confirmation":"NOT_RUN"
+                  }
+                  print("ERF01_REAL_MARKET_EXPLORATORY_RESULT",json.dumps(result,sort_keys=True))
+                  return result
+              finally:
+                  vol.commit()
+
+          @app.local_entrypoint()
+          def main():
+              r=score.remote()
+              print("ERF01_SCREEN_RETURN_STATUS",r["status"])
+          PY
+          timeout --signal=TERM --kill-after=5s 195s modal run kepler_erf01_archive_score.py
