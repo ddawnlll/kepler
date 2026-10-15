@@ -131,3 +131,20 @@ def test_real_label_path_and_purge_boundary():
     start = dates[30]
     train = [d for d in dates if d < start - timedelta(days=17)]
     assert all(d + timedelta(days=17) < start for d in train)
+
+
+def test_external_volume_parquet_inventory_is_reusable(tmp_path, monkeypatch):
+    """Repeated Modal runs use an external cache and must not treat it as /repo-relative."""
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    mod = get_module()
+    outside = tmp_path / "modal-volume" / "erf01" / "parquet"
+    outside.mkdir(parents=True)
+    monkeypatch.setattr(mod, "PARQUET_OUT", outside)
+    for name in ("daily_klines.parquet", "funding.parquet"):
+        pq.write_table(pa.table({"test": [1, 2, 3]}), outside / name)
+    first = mod._parquet_inventory()
+    assert set(first) == {"daily_klines.parquet", "funding.parquet"}
+    assert first["daily_klines.parquet"]["rows"] == 3
+    assert first["daily_klines.parquet"]["path"] == str(outside / "daily_klines.parquet")
+    assert first == mod._parquet_inventory()
