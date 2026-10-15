@@ -6,7 +6,7 @@ from datetime import date, timedelta
 import numpy as np
 import pytest
 
-from scripts import erf01_regime_atlas as ra
+from experiments.erf01 import atlas as ra
 
 
 def sequence(values, first=date(2025, 1, 1)):

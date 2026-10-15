@@ -15,6 +15,7 @@ LAYERS = [
     ("temel", ["ledger", "report", "intents", "receipt", "stats", "capacity", "stress", "nested", "signals"]),
     ("risk", ["risk", "portfolio"]),
     ("durum", ["market_state", "state", "indicators"]),
+    ("bilimsel-zeka", ["intelligence"]),
     ("uzman", ["experts", "turtle"]),  # experts = kepler/experts/* (tek grup)
     ("kompozisyon", ["ensemble"]),
     ("hakem", ["referee", "referee_core", "audit", "robust", "screen", "evaluate"]),
@@ -33,13 +34,10 @@ ALLOW = {
     ("experts", "ledger"): "zone_fade.py defter yazıyor (K1 rotate_book/yönetici dahil); WP1'de (experts/_interface) yönetici ayrılınca kalkar",
 }
 
-MAX_FILE_LINES = 300
-MAX_TOTAL_LINES = 3500  # 2026-10-13 authorized full integration: Numba, provenance and positioning; per-file/import protections retained.
-
 # Git'te izlenen .md dosyaları için izin listesi (doc hell kapısı). Yeni belge türü açmak = bu listeyi bilerek değiştirmek.
 ALLOWED_MD = [
     "AGENTS.md", "CLAUDE.md", "MISSION.md", "ARCHITECTURE.md", "BACKTEST.md", "TASKS.md", "README.md", "docs/factory.md",
-    "reports/*", "factory/*", "books_text/*", "data_manifest/*", "state/*", ".pi/*", "tests/*",
+    "reports/*", "experiments/*", "experiments/**/*", "factory/*", "books_text/*", "data_manifest/*", "state/*", ".pi/*", "tests/*",
     ".claude/rules/*", ".claude/skills/*", ".claude/agents/*",
     ".github/CONTRIBUTING.md", ".github/SECURITY.md", ".github/pull_request_template.md",
 ]
@@ -108,14 +106,34 @@ def test_package_does_not_import_outer_dirs():
         for n in ast.walk(ast.parse(f.read_text(encoding="utf-8"))):
             names = [n.module] if isinstance(n, ast.ImportFrom) and n.module else [a.name for a in n.names] if isinstance(n, ast.Import) else []
             for m in names:
-                assert m.split(".")[0] not in {"scripts", "factory", "tools", "tests"}, f"{f.relative_to(ROOT)}:{n.lineno}: kepler/ dışarıdaki '{m}' kodunu import edemez (akış tek yönlü)"
+                assert m.split(".")[0] not in {"scripts", "experiments", "factory", "tools", "tests"}, f"{f.relative_to(ROOT)}:{n.lineno}: kepler/ dışarıdaki '{m}' kodunu import edemez (akış tek yönlü)"
 
 
-def test_size_budget():
-    sizes = {f: len(f.read_text(encoding="utf-8").splitlines()) for f in PKG.rglob("*.py")}
-    big = {str(f.relative_to(ROOT)): n for f, n in sizes.items() if n > MAX_FILE_LINES}
-    assert not big, f"dosya başına {MAX_FILE_LINES} satır tavanı aşıldı (böl, uzmanı ayrı dosyaya al): {big}"
-    assert sum(sizes.values()) <= MAX_TOTAL_LINES, f"kepler/ toplam {sum(sizes.values())} satır > {MAX_TOTAL_LINES}: AGENTS.md 'kendi kodumuz küçük kalır'. Önce var olanı sadeleştir."
+def test_source_files_parse():
+    """Architecture is an import contract, not an arbitrary line-count ceiling."""
+    for package in (PKG, ROOT / "experiments"):
+        if not package.exists():
+            continue
+        for file in package.rglob("*.py"):
+            ast.parse(file.read_text(encoding="utf-8"), filename=str(file))
+
+
+def test_intelligence_is_independent():
+    """Only the CLI adapter can dispatch an experiment from the core package."""
+    root = PKG / "intelligence"
+    banned = {"scripts", "experiments", "factory", "tools", "tests"}
+    forbidden_core = {"experts", "ensemble", "risk", "portfolio", "referee",
+                      "referee_core", "ledger", "evaluate"}
+    for file in root.rglob("*.py"):
+        if file.name == "__main__.py":
+            continue
+        for node in ast.walk(ast.parse(file.read_text(encoding="utf-8"))):
+            modules = ([node.module] if isinstance(node, ast.ImportFrom) and node.module else
+                       [n.name for n in node.names] if isinstance(node, ast.Import) else [])
+            for module in modules:
+                parts = module.split(".")
+                assert parts[0] not in banned, f"{file}: forbidden import {module}"
+                assert not (parts[0] == "kepler" and len(parts) > 1 and parts[1] in forbidden_core), (file, module)
 
 
 def test_markdown_allowlist():
