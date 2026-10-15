@@ -1,0 +1,127 @@
+name: Temporary ERF01 real canonical nine-symbol OOS screen (DEV only)
+on:
+  push:
+    branches: [research/erf01-evidence-readiness-20261015]
+    paths: [.github/workflows/erf01-canonical-oos-once.yml]
+permissions:
+  contents: read
+jobs:
+  genuine-tape-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'modal>=1.6,<2'
+      - name: Frozen M0/M1/M2 on fully QC'd genuine hourly/mark/funding DEV tape
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$MODAL_TOKEN_ID"
+          test -n "$MODAL_TOKEN_SECRET"
+          cat > kepler_erf01_canonical_oos_once.py <<'PY'
+          from pathlib import Path
+          import modal
+          ROOT=Path(__file__).resolve().parent
+          app=modal.App("kepler-erf01-canonical-dev-oos-screen")
+          vol=modal.Volume.from_name("kepler-data",create_if_missing=False)
+          image=(modal.Image.debian_slim(python_version="3.12")
+              .pip_install("numpy>=2,<2.3","pandas>=2,<3","scikit-learn>=1.5,<2",
+                           "pyarrow>=17,<24","requests>=2,<3","duckdb>=1,<2")
+              .env({"PYTHONPATH":"/repo:/repo/scripts","OPENBLAS_NUM_THREADS":"1",
+                    "OMP_NUM_THREADS":"1","MKL_NUM_THREADS":"1"})
+              .add_local_dir(str(ROOT/"kepler"),remote_path="/repo/kepler")
+              .add_local_file(str(ROOT/"scripts/erf01.py"),
+                              remote_path="/repo/scripts/erf01.py")
+              .add_local_file(str(ROOT/"scripts/erf01_tape.py"),
+                              remote_path="/repo/scripts/erf01_tape.py")
+              .add_local_file(str(ROOT/"scripts/erf01_edge_audit.py"),
+                              remote_path="/repo/scripts/erf01_edge_audit.py")
+              .add_local_file(str(ROOT/"reports/erf01_protocol.md"),
+                              remote_path="/repo/reports/erf01_protocol.md"))
+          @app.function(image=image,volumes={"/data":vol},cpu=2,memory=4096,
+                        timeout=160,max_containers=1,min_containers=0)
+          def run_screen():
+              import json,time,tempfile,hashlib,csv,statistics,collections
+              from scripts import erf01 as e
+              from scripts.erf01_edge_audit import assess
+              started=time.monotonic()
+              stage=Path("/data/erf01/staging")
+              out=Path("/data/erf01/canonical_20261015/results")
+              e.OUT=out
+              e.PARQUET_OUT=Path("/data/erf01/canonical_20261015/parquet")
+              try:
+                  for sym in e.SYMS:
+                      source=stage/"erf01_qc"/(sym+".json")
+                      qc=json.loads(source.read_text())
+                      if (qc.get("symbol")!=sym or qc.get("status")!="STAGED_NOT_ACCEPTED"
+                          or len(qc.get("sources",[]))<1 or
+                          any(x["severity"]=="ERROR" for x in qc.get("findings",[]))):
+                          raise RuntimeError("canonical DEV staging QC not ready "+sym)
+                      for kind in ("klines","markPriceKlines","fundingRate"):
+                          if not (stage/"tape"/kind/(sym+".parquet")).is_file():
+                              raise FileNotFoundError("missing staged stream "+sym+"/"+kind)
+                  print("ERF01_CANONICAL_9SYMBOL_STAGING_QC_PREFLIGHT_OK",
+                        round(time.monotonic()-started,3))
+                  with tempfile.TemporaryDirectory(prefix="erf01_tape_screen_") as scratch:
+                      trial_file=Path(scratch)/"screen_trials.jsonl"
+                      metrics=e.run(Path(scratch),trial_ledger=trial_file,
+                                    source="tape",data_root=stage)
+                      trial_bytes=trial_file.read_bytes()
+                      rows=[json.loads(line) for line in trial_bytes.decode().splitlines() if line]
+                      if len(rows)!=3 or metrics["trial_ledger"]["n_model_configs"]!=3:
+                          raise RuntimeError("M0/M1/M2 screen receipts missing")
+                      trial_sha=hashlib.sha256(trial_bytes).hexdigest()
+                  with (out/"alerts.csv").open() as f:
+                      alarms=list(csv.DictReader(f))
+                  audit=assess(metrics,alarms)
+                  data=metrics["data"]
+                  if not data.get("canonical_qc") or data["source"]!="kepler_tape":
+                      raise RuntimeError("scientific QC route not canonical")
+                  perday=collections.defaultdict(list)
+                  with (out/"oos_predictions.csv").open() as handle:
+                      for r in csv.DictReader(handle):
+                          perday[(r["model"],r["date"])].append(float(r["brier"]))
+                  scores={k:statistics.mean(statistics.mean(v) for (model,d),v in perday.items() if model==k)
+                          for k in ("M0","M1","M2")}
+                  stats=metrics["forecast"]
+                  result={"status":"CANONICAL_DEV_SCREEN_ONLY_NOT_ECONOMIC_EDGE",
+                          "verdict":metrics["verdict"],
+                          "model_brier":scores,
+                          "m2_relative_improvement":stats["relative_brier_improvement"],
+                          "m2_block_bootstrap_p05":stats["brier_improvement_block_bootstrap"]["p05"],
+                          "oos_up":metrics["counts"]["confirmed_up_oos"],
+                          "oos_down":metrics["counts"]["confirmed_down_oos"],
+                          "oos_folds":metrics["counts"]["oos_folds_nonempty"],
+                          "original_forecast_gate":metrics["forecast_gate_passed"],
+                          "secondary_forecast_audit":audit["status"],
+                          "screen_trials":len(rows),"trial_sha256":trial_sha,
+                          "economic_net_pnl":"NOT_RUN","independent_confirmation":"NOT_RUN"}
+                  print("ERF01_REAL_CANONICAL_OOS_RESULT",json.dumps(result,sort_keys=True))
+                  print("ERF01_CANONICAL_RUNTIME_SECONDS",round(time.monotonic()-started,3))
+                  return result
+              finally:
+                  vol.commit()
+          @app.local_entrypoint()
+          def main():
+              print("ERF01_CANONICAL_RETURN_STATUS",run_screen.remote()["status"])
+          PY
+          timeout --signal=TERM --kill-after=5s 190s modal run kepler_erf01_canonical_oos_once.py
+      - name: Export immutable scored artifacts (no extra compute)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p erf01_canonical_oos
+          modal volume get kepler-data /erf01/canonical_20261015/results/metrics.json erf01_canonical_oos/metrics.json
+          modal volume get kepler-data /erf01/canonical_20261015/results/oos_predictions.csv erf01_canonical_oos/oos_predictions.csv
+          modal volume get kepler-data /erf01/canonical_20261015/results/alerts.csv erf01_canonical_oos/alerts.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: erf01-canonical-nine-symbol-dev-oos-20261015
+          path: erf01_canonical_oos/
+          retention-days: 30
