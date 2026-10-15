@@ -1,0 +1,978 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Finansal piyasa rejimlerinin çok ölçekli doğası, süresi ve öngörülebilirliği üzerine 48 kaynaklı bağımsız bilimsel monografi."><title>Multiscale Financial Market Regimes — Scientific Monograph</title><style>
+:root{color-scheme:light;--ink:#182936;--sub:#526571;--blue:#164d6a;--line:#d6e0e4;--paper:#fff;--wash:#f2f6f7;--accent:#bd633d}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:26px}body{margin:0;background:#eaf0f2;color:var(--ink);font-family:Georgia,'Times New Roman',serif;line-height:1.76;font-size:17px}a{color:var(--blue);text-decoration-thickness:1px;text-underline-offset:3px}a:hover{color:var(--accent)}
+.layout{max-width:1510px;margin:0 auto;display:grid;grid-template-columns:280px minmax(0,1fr);align-items:start}.rail{position:sticky;top:0;padding:35px 25px 24px;height:100vh;overflow:auto;font-family:Arial,sans-serif;font-size:12px;line-height:1.5}.brand{font-size:11px;letter-spacing:1.9px;font-weight:700;color:var(--blue);border-top:4px solid var(--accent);padding-top:15px}.rail-title{font-size:21px;line-height:1.3;font-weight:600;margin:17px 0 9px}.rail-meta{color:var(--sub);margin-bottom:24px}.toc{list-style:none;margin:0;padding:0}.toc li{margin:0;border-top:1px solid var(--line)}.toc a{display:block;padding:9px 0;text-decoration:none;color:var(--sub)}.toc a:hover{color:var(--blue)}.rail-note{margin-top:24px;color:var(--sub);font-size:11px}.doc{min-width:0;background:var(--paper);padding:64px 64px 90px;box-shadow:0 1px 28px #1b3b4d0c}.eyebrow{font:700 11px Arial,sans-serif;letter-spacing:2.5px;color:var(--accent);margin:0 0 23px}
+h1{font-family:Arial,sans-serif;font-size:43px;line-height:1.12;font-weight:650;letter-spacing:-1.2px;max-width:900px;margin:0 0 22px;color:#12364b}p.subtitle{font-size:23px;line-height:1.45;max-width:830px;margin:0 0 23px;color:#38586b}.meta{font:12px Arial,sans-serif;color:var(--sub);padding-bottom:30px;border-bottom:1px solid var(--line);margin-bottom:42px}
+h2{font-family:Arial,sans-serif;font-size:28px;line-height:1.25;letter-spacing:-.4px;margin:65px 0 23px;color:#123f58;border-top:2px solid #bed0d9;padding-top:24px}h2:first-of-type{margin-top:36px}h3{font-family:Arial,sans-serif;font-size:19px;line-height:1.4;margin:32px 0 14px;color:#294d63}p{margin:0 0 18px}strong{font-weight:700}ul,ol{padding-left:25px;margin:15px 0 23px}li{padding-left:3px;margin:8px 0}blockquote{background:var(--wash);border-left:3px solid var(--accent);margin:25px 0;padding:18px 23px}.cite{font:11px Arial,sans-serif;white-space:normal;color:#597286}.cite a{text-decoration:none}.table-wrap{width:100%;overflow-x:auto;margin:26px 0 30px;border:1px solid var(--line);border-radius:5px}table{border-collapse:collapse;width:100%;font-family:Arial,sans-serif;font-size:12px;line-height:1.65}th{text-align:left;color:#fff;background:#194b65;padding:13px 12px;font-weight:600;vertical-align:top}td{border-top:1px solid var(--line);padding:12px;vertical-align:top;min-width:100px}td:first-child{font-weight:600;color:#254a61;min-width:130px}tr:nth-child(even){background:#f4f7f8}.equation{font-family:Georgia,serif;font-size:19px;text-align:center;background:var(--wash);border:1px solid #d9e4e8;border-radius:5px;overflow-x:auto;padding:20px 14px;margin:22px 0;line-height:1.8}.references{font-family:Arial,sans-serif;font-size:12px;line-height:1.75;padding-left:26px}.references li{padding:10px 6px 12px 7px;border-bottom:1px solid #e3e9ec;margin:0}.references em{color:var(--sub);font-style:normal}.references li:target{background:#fff2de}.references a{overflow-wrap:anywhere}h2:last-of-type{border-top:4px solid var(--accent);background:linear-gradient(90deg,#f5f8fa,white);padding:27px 20px 20px;margin-left:-20px;margin-right:-20px}.endmark{margin:50px 0 0;border-top:1px solid var(--line);padding-top:18px;font:11px Arial,sans-serif;color:var(--sub)}
+@media(max-width:1150px){.layout{grid-template-columns:235px minmax(0,1fr)}.rail{padding:25px 18px}.doc{padding:45px 35px}h1{font-size:36px}table{font-size:11px}td,th{padding:10px}}
+@media(max-width:760px){body{font-size:16px}.layout{display:block}.rail{position:static;height:auto;padding:20px}.rail-title{font-size:19px}.toc{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}.rail-note{display:none}.rail-meta{margin-bottom:14px}.doc{padding:32px 21px 60px}h1{font-size:32px}p.subtitle{font-size:20px}h2{font-size:25px;margin-top:48px}h3{font-size:18px}table{min-width:650px;font-size:12px}.equation{font-size:17px}h2:last-of-type{margin-left:-9px;margin-right:-9px;padding-left:9px;padding-right:9px}}
+@media print{body{background:white;font-size:10.5pt;line-height:1.55}.layout{display:block}.rail{display:none}.doc{box-shadow:none;padding:0}h1{font-size:28pt}h2{font-size:19pt;break-before:page;margin-top:0}h3{font-size:13pt;break-after:avoid}p.subtitle{font-size:15pt}.table-wrap{overflow:visible;border-radius:0}table{font-size:8pt;min-width:0!important}td{min-width:0!important}tr{break-inside:avoid}thead{display:table-header-group}.equation{font-size:11pt}.cite{font-size:7pt}.references{font-size:8pt}a{color:inherit;text-decoration:none}h2:last-of-type{margin-left:0;margin-right:0} @page{size:A4;margin:18mm 17mm}}
+</style></head><body><div class="layout"><aside class="rail"><div class="brand">PREDICTIVE MARKET INTELLIGENCE</div><div class="rail-title">Rejimler, süreler<br>ve öngörünün sınırları</div><div class="rail-meta">15 Ekim 2026<br>48 kaynak kaydı · 8 araştırma yönü<br>Yaklaşık 10000 sözcük</div><nav aria-label="İçindekiler"><ol class="toc"><li><a href="#s0">Araştırmanın temel sonucu</a></li><li><a href="#s1">1. Kapsam, kaynak seçimi ve kanıt standardı</a></li><li><a href="#s2">2. Piyasa rejimi nedir?</a></li><li><a href="#s3">3. Çok ölçekli piyasa davranışı</a></li><li><a href="#s4">4. Rejim süresi, yaşı ve kalan ömrü</a></li><li><a href="#s5">5. Gelecekteki rejimler: Beş ayrı tahmin problemi</a></li><li><a href="#s6">6. Yöntem ailelerinin bilimsel karşılaştırması</a></li><li><a href="#s7">7. Veri aileleri ve geleceğe yönelik bilgi</a></li><li><a href="#s8">8. Ampirik kanıtların eleştirel bilançosu</a></li><li><a href="#s9">9. Bilimsel doğrulama ve yanlışlanabilirlik</a></li><li><a href="#s10">10. Beş yıllık veri ve altı aylık rejim sorunu</a></li><li><a href="#s11">11. Bilimsel olarak bildiklerimiz ve açık sorular</a></li><li><a href="#s12">12. Kaynakça ve erişim denetimi</a></li><li><a href="#s13">13. Predictive Market Intelligence — Scientific Research Agenda</a></li></ol></nav><p class="rail-note">Kaynak erişimi:<br>T — ilgili tam metin bölümleri<br>Ö — öz / yazar özeti<br>İ — indekslenen metin kesiti<br>D — resmî belge</p></aside><main class="doc"><div class="eyebrow">BAĞIMSIZ BİLİMSEL MONOGRAFİ</div><h1>Multiscale Financial Market Regimes &amp; Predictive Market Intelligence</h1>
+<p class="subtitle">Çok ölçekli finansal piyasa rejimleri, süreleri ve geçişlerinin öngörülebilirliği üzerine eleştirel bilimsel monografi</p>
+<p class="meta">15 Ekim 2026 · Bağımsız literatür sentezi · Türkçe</p>
+
+<h2 id="s0">Araştırmanın temel sonucu</h2>
+<p><strong>Piyasalarda koşullu olarak öngörülebilir bilgi vardır; fakat bu bilgi bütün rejim boyutlarına ve tahmin ufuklarına eşit dağılmaz.</strong> Volatilitenin devamlılığı ve gelecekteki dağılımı için kanıt, uzun vadeli boğa/ayı yönünün veya dönüş tarihinin güvenilir biçimde tahmin edilmesine ilişkin kanıttan daha güçlüdür. Bir rejimin mevcut olduğunu çıkarsamak, ne kadar süreceğini bilmekten; süresini olasılıksal modellemek de bitiş gününü önceden belirlemekten farklıdır. Bu, incelenen çalışmaların birlikte değerlendirilmesinden çıkan yargıdır; bütün piyasalar için kanıtlanmış bir olanaksızlık teoremi değildir. <span class="cite">[<a href="#ref12" aria-label="Kaynak 12">12</a>, <a href="#ref13" aria-label="Kaynak 13">13</a>, <a href="#ref14" aria-label="Kaynak 14">14</a>, <a href="#ref17" aria-label="Kaynak 17">17</a>, <a href="#ref18" aria-label="Kaynak 18">18</a>, <a href="#ref19" aria-label="Kaynak 19">19</a>, <a href="#ref20" aria-label="Kaynak 20">20</a>, <a href="#ref21" aria-label="Kaynak 21">21</a>, <a href="#ref22" aria-label="Kaynak 22">22</a>]</span></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Soru</th>
+<th>Bu araştırmanın vardığı yargı</th>
+<th>Başlıca sınır</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Piyasa koşulları zaman içinde değişiyor mu?</td>
+<td>Evet; özellikle varyans, kuyruk riski, likidite ve birlikte hareket değişiyor.</td>
+<td>Her değişim ayrı bir ekonomik rejim olmak zorunda değildir.</td>
+</tr>
+<tr>
+<td>Mevcut koşullar modellenebilir mi?</td>
+<td>Evet, ölçüm ve model belirsizliğiyle birlikte.</td>
+<td>Geçmişi kullanan filtre ile geleceği de kullanan düzleştirme karıştırılmamalıdır.</td>
+</tr>
+<tr>
+<td>Günlük ve çok aylık durumlar birlikte temsil edilebilir mi?</td>
+<td>Evet; hiyerarşik, çok bileşenli ve karma frekanslı çerçeveler vardır.</td>
+<td>Temsil kabiliyeti, ileri dönem tahmin üstünlüğünü kanıtlamaz.</td>
+</tr>
+<tr>
+<td>Rejim yaşı bitiş olasılığını açıklıyor mu?</td>
+<td>Bazı tanım ve örneklemlerde; evrensel bir yaşlanma yasası gösterilmiş değildir.</td>
+<td>Etiketleme, az sayıda uzun dönem ve seçilim etkileri.</td>
+</tr>
+<tr>
+<td>Volatilite önceden tahmin edilebilir mi?</td>
+<td>Günlerden haftalara uzanan ufuklarda güçlü ve farklı piyasalarda desteklenen bir araştırma alanıdır.</td>
+<td>Sıçramanın tam zamanı ve büyüklüğü ayrı sorunlardır.</td>
+</tr>
+<tr>
+<td>Altı ay sonraki boğa/ayı rejimi güvenilir biçimde bilinebilir mi?</td>
+<td>Genellenebilir yüksek güvenilirlik gösterilmiş değildir. Koşullu olasılıklar araştırılabilir.</td>
+<td>Az sayıda bağımsız döngü, değişen ilişkiler ve gelecekteki haberler.</td>
+</tr>
+<tr>
+<td>Kripto türev verileri katkı sağlayabilir mi?</td>
+<td>Ek bilgi için gerekçe ve bazı dar ampirik bulgular vardır.</td>
+<td>Funding, vadeli baz ve tahmini likidasyon haritası birbirinin yerine kullanılamaz.</td>
+</tr>
+<tr>
+<td>Beş yıl yeterli mi?</td>
+<td>Kısa ufuklu ilk çalışmalar için olabilir; altı aylık rejimlerin sağlam genellemesi için tek başına genellikle yetersizdir.</td>
+<td>Satır sayısı, bağımsız rejim/geçiş sayısı değildir.</td>
+</tr>
+</tbody></table></div>
+<p><strong>Bilimsel hedef:</strong> “Piyasanın geleceğini biliyoruz” iddiası yerine, önceden tanımlanmış bir olay için geçmişte erişilebilir verinin basit referanslara göre ne kadar ek ve kalibre edilmiş bilgi sağladığını ölçmek. Başarı ölçütleri tahmin kaybı, kalibrasyon, geçiş yakalama, yanlış alarm ve süre dağılımının doğruluğudur. İşlem getirisi ve strateji performansı bu monografinin kapsamı dışındadır.</p>
+<h2 id="s1">1. Kapsam, kaynak seçimi ve kanıt standardı</h2>
+<p>Bu çalışma eleştirel bir anlatısal literatür sentezidir; önceden kaydedilmiş bir sistematik derleme veya meta-analiz değildir. Aramalar rejim değişimi, boğa/ayı tarihlemesi, süre bağımlılığı, çok ölçekli volatilite, çevrim içi değişim tespiti, kripto türevleri ve tahmin doğrulaması etrafında yürütüldü. Özgün yöntem makaleleri, hakemli ampirik çalışmalar, yazarların üniversite arşivleri ve resmî veri belgeleri önceliklendirildi. Olumlu sonuçların yanında rassal yürüyüş karşılaştırmaları, başarısız ileri dönem tahminleri ve erken uyarı eleştirileri özellikle arandı.</p>
+<p>Kaynaklar üç farklı iş görür: bir yöntemin matematiksel olarak tanımlanabilir olduğunu göstermek; belirli bir örneklemde tahmin başarısı bildirmek; bu başarının başka dönem ve piyasalarda sürdüğünü sınamak. Bunlar aynı kanıt düzeyi değildir. Bir yöntem makalesi güçlü olabilirken, o yöntemin kripto rejimlerini öngördüğü iddiası zayıf kalabilir.</p>
+<p>Burada kullanılan <strong>kanıt gücü</strong> dereceleri bu sentezin nitel değerlendirmeleridir; yayımlanmış bir derecelendirme sistemi değildir:</p>
+<ul>
+<li><strong>Güçlü:</strong> birbiriyle uyumlu teorik gerekçe ve farklı çalışmalardan/piyasalardan destek; kapsamı belirtilmiş sonuç.</li>
+<li><strong>Orta:</strong> anlamlı ampirik destek var; tanım, dönem veya karşılaştırma bağımlılığı önemli.</li>
+<li><strong>Sınırlı:</strong> az sayıda uygulama, dar hedef veya yetersiz bağımsız tekrar.</li>
+<li><strong>Belirsiz/çelişkili:</strong> sonuçlar kullanılan tanıma ya da değerlendirmeye göre değişiyor veya doğrudan kanıt yok.</li>
+</ul>
+<p>Kaynakçadaki erişim notları önemlidir. <strong>T</strong>, tam metnin ilgili yöntem, bulgu veya sonuç bölümlerinin incelendiğini; <strong>Ö</strong>, öz ya da yazarın kurumsal özetinin incelendiğini; <strong>İ</strong>, yalnızca yayıncı sayfasının indekslenen öz/metin kesitine erişildiğini; <strong>D</strong>, resmî belgenin okunduğunu belirtir. T işareti makalenin her sayfasının denetlendiği anlamına gelmez. Erişilemeyen makalelerin tabloları ve sayısal sonuçları incelenmiş gibi aktarılmamıştır. Bu çalışma yeni bir piyasa veri analizi, replikasyon veya ileri dönem deney yürütmemiştir; aşağıdaki deneyler araştırma önerileridir.</p>
+<h2 id="s2">2. Piyasa rejimi nedir?</h2>
+<h3>2.1. Gözlenen özellik, sınıf ve latent durum</h3>
+<p>“Son 90 günde fiyat düştü” gözlenebilir ve ölçülebilir bir özelliktir. “Piyasa kalıcı bir ayı durumunda” ise görünmeyen bir dinamik yapıya ilişkin çıkarımdır. İlk ifade için bir hesaplama kuralı yeterlidir; ikinci ifade için rejimin neyi değiştirdiği ve alternatif açıklamalardan neden daha iyi olduğu belirtilmelidir.</p>
+<p>Hamilton’ın Markov-switching yaklaşımında gözlenen serinin parametreleri görünmeyen bir durumla değişir. Bu, değişimin matematiksel bir modelidir; durumlara verilen ekonomik adların gerçekliğini tek başına doğrulamaz. Üstelik özgün uygulama ekonomik büyümeyle ilgilidir; doğrudan kripto dönüş tahmini kanıtı değildir. <span class="cite">[<a href="#ref1" aria-label="Kaynak 1">1</a>]</span></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Boyut</th>
+<th>Gözlenebilir ölçüm örnekleri</th>
+<th>Rejim olarak ifade edilen şey</th>
+<th>Temel yorum sorunu</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Yön</td>
+<td>Geçmiş birikimli getiri, drawdown, eğim</td>
+<td>Pozitif/negatif koşullu eğilim</td>
+<td>Geçmiş düşüş, gelecekteki negatif beklenen getiriyle aynı değildir.</td>
+</tr>
+<tr>
+<td>Trend yapısı</td>
+<td>İşaret devamlılığı, otokorelasyon, yönün büyüklüğe oranı</td>
+<td>Devamlılık ya da geri dönüş baskınlığı</td>
+<td>Güçlü trend yüksek volatiliteyle birlikte bulunabilir.</td>
+</tr>
+<tr>
+<td>Volatilite</td>
+<td>Gerçekleşmiş varyans, mutlak getiriler, gün içi aralık</td>
+<td>Düşük/yüksek risk, sıkışma/genişleme</td>
+<td>Göreli yüksekliğin referans dönemi değişebilir.</td>
+</tr>
+<tr>
+<td>Likidite</td>
+<td>Spread, derinlik, fiyat etkisi, toparlanma hızı</td>
+<td>Normal/kırılgan işlem koşulları</td>
+<td>Görünen emirler geri çekilebilir; hacim derinlik değildir.</td>
+</tr>
+<tr>
+<td>Katılım</td>
+<td>Piyasa genişliği, işlem sayısı, katılımcı/akış dağılımı</td>
+<td>Yaygın ya da dar tabanlı hareket</td>
+<td>Aynı kişi birçok hesap/cüzdan kullanabilir.</td>
+</tr>
+<tr>
+<td>Kaldıraç ve finansman</td>
+<td>Funding, open interest, baz, teminat koşulları</td>
+<td>Dengeli/kalabalık/kırılgan pozisyonlanma</td>
+<td>Büyüyen açık pozisyon tek başına yön belirtmez.</td>
+</tr>
+<tr>
+<td>Bağımlılık</td>
+<td>Korelasyonlar, ortak faktör, kuyruk eş hareketi</td>
+<td>Ayrışma ya da ortak stres</td>
+<td>Ortak şok, varlıklar arasında doğrudan neden ilişkisi değildir.</td>
+</tr>
+<tr>
+<td>Yapı</td>
+<td>Parametre ve sözleşme değişimleri, piyasa kuralları</td>
+<td>Eski ilişkinin kalıcı biçimde değişmesi</td>
+<td>Tekrarlayan rejimle bir defalık kırılma ayrılmalıdır.</td>
+</tr>
+</tbody></table></div>
+<p><strong>Boğa/ayı</strong>, genel olarak bir fiyat çevriminin yükseliş/düşüş evresidir; akademide tek bir zorunlu tanımı yoktur. Sabit yüzde eşiği, tepe-dip algoritması, minimum süre ve latent koşullu ortalama tanımları farklı dönemler üretir. Pagan–Sossounov, bir tarihleme kuralının hangi veri üretim süreçleriyle benzer çevrimler oluşturduğunu inceleyerek bu bağımlılığı açıkça gösterir. <span class="cite">[<a href="#ref2" aria-label="Kaynak 2">2</a>]</span></p>
+<p><strong>Konsolidasyon</strong>, düşük net yönlülük veya sınırlı fiyat aralığıyla tanımlanabilir; mutlaka düşük volatilite değildir. Fiyat geniş bir aralıkta sert gidip gelip aynı yere dönebilir. <strong>Volatilite sıkışması/genişlemesi</strong> yönsüz risk boyutudur. <strong>Likidite krizi</strong>, işlem yapabilmenin ve finansman bulabilmenin bozulmasıdır; fiyat düşüşüyle örtüşebilir fakat onunla eşanlamlı değildir. Likidite ve teminat koşulları arasındaki geri besleme için yapısal bir gerekçe vardır. <span class="cite">[<a href="#ref28" aria-label="Kaynak 28">28</a>]</span></p>
+<h3>2.2. Gerçek zamanda bilmek ile sonradan anlamak</h3>
+<div class="equation">Filtre: P(S<sub>t</sub> | 𝓕<sub>t</sub>) &nbsp; · &nbsp; Düzleştirme: P(S<sub>t</sub> | 𝓕<sub>T</sub>), T &gt; t &nbsp; · &nbsp; Tahmin: P(S<sub>t+h</sub> | 𝓕<sub>t</sub>)</div>
+
+<p>Burada 𝓕<sub>t</sub>, tahmin anında gerçekten erişilebilir bilgi kümesidir. Düzleştirilmiş bir grafik dönüşleri çok temiz gösterebilir; bunun nedeni sonraki fiyatların geçmiş durum hakkında bilgi vermesidir. Aynı keskinliğin gerçek zamanda elde edildiğini varsaymak hatadır. Parametreler tüm örneklemde tahmin edilmişse, yalnızca filtre olasılığı çizmek de sızıntıyı ortadan kaldırmaz: parametrelerin kendisi geleceği görmüştür.</p>
+<p>Tepe tarihi, tepenin doğrulandığı tarih ve alarm tarihi ayrı kaydedilmelidir. Örneğin zirveden sonra büyük düşüş şartıyla tanımlanan bir ayı piyasasının başlangıcını önceki zirveye geri yazmak tarihsel inceleme için meşrudur; bu tarihin zirve gününde bilindiğini iddia etmek meşru değildir.</p>
+<h3>2.3. Kesikli rejimler gerçekten var mı?</h3>
+<p>Kesikli durumlar, sürekli değişen koşulların pratik bir özeti olabilir. Alternatifler arasında sürekli stokastik volatilite, değişen drift, dinamik faktörler, düzgün geçişli modeller ve kalın kuyruklu tek durum modelleri bulunur. Ekonomik mekanizmalar bazen gerçekten keskin olabilir: işlem durması, teminat kuralı değişikliği veya bir finansman kısıtının bağlayıcı hâle gelmesi gibi. Fakat veride iki kümeye ayrılma, bu mekanizmalardan birini ispatlamaz.</p>
+<p>Diebold–Inoue, rejim değişiminin bazı koşullarda uzun bellek gibi görünebildiğini gösterir. Dolayısıyla yavaş sönümlenen bağımlılık, tek başına ne sürekli uzun belleğin ne de kesikli ekonomik durumların kesin kanıtıdır. <span class="cite">[<a href="#ref15" aria-label="Kaynak 15">15</a>]</span> Bulla–Bulla’nın HSMM uygulaması finansal serilerin bazı biçimsel özelliklerini yakalama kapasitesine ilişkindir; bunu dönüşleri önceden bilmenin kanıtı olarak kullanmamak gerekir. <span class="cite">[<a href="#ref9" aria-label="Kaynak 9">9</a>]</span></p>
+<p>Bu sorunun bilimsel karşılığı şudur: <strong>Kesikli durumlar, benzer esneklikteki sürekli modellere kıyasla gelecekteki gözlenebilir dağılımı daha iyi mi tahmin ediyor?</strong> Cevap hayırsa rejimler açıklayıcı bir dil olarak kullanılabilir; ayrı bir öngörü mekanizması oldukları ileri sürülmemelidir.</p>
+<h2 id="s3">3. Çok ölçekli piyasa davranışı</h2>
+<h3>3.1. Zaman ölçeği ile örnekleme sıklığı farklıdır</h3>
+<p>Günlük veri kullanmak yalnızca günlük rejim modellemek anlamına gelmez. Günlük gözlemler aylarca devam eden yavaş bir durumun ölçümünü besleyebilir. Tersine, aylık veriler kısa süren bir çöküşü ortalamada gizleyebilir. Tahmin ufku da üçüncü bir kavramdır: bugünkü çok aylık durumu tahmin etmek ile 180 gün sonraki durumu tahmin etmek farklıdır.</p>
+<p>Bir piyasa aynı anda “çok aylık aşağı eğilim, son haftalarda toparlanma, son günlerde volatilite sıkışması” gösterebilir. Bu ifadeler birbiriyle çelişmez. Ancak bunları tek bir boğa/ayı etiketi içinde sıkıştırmak bilgi kaybettirir.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Ölçek</th>
+<th>Temsil edilebilecek özellik</th>
+<th>Anlamlı ölçümler</th>
+<th>Kaçınılması gereken çıkarım</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Günler</td>
+<td>Kısa risk/likidite durumu</td>
+<td>Gerçekleşmiş varyans, spread, akış dengesizliği</td>
+<td>Birkaç günün yükselişi makro boğa başlangıcıdır.</td>
+</tr>
+<tr>
+<td>Haftalar</td>
+<td>Ara hareket, ralli/düzeltme</td>
+<td>Birikimli getiri, semivaryans, genişlik, funding dağılımı</td>
+<td>Her ralli ana rejimi değiştirir.</td>
+</tr>
+<tr>
+<td>Birkaç ay</td>
+<td>Kalıcı eğilim ve risk bileşeni</td>
+<td>Orta dönem drift, ortak faktör, yavaş volatilite</td>
+<td>Düşüşün süresi onun ekonomik nedenini kanıtlar.</td>
+</tr>
+<tr>
+<td>Çok ay/yıl</td>
+<td>Finansal koşullar ve yapısal ortam</td>
+<td>Kredi, reel faiz, değerleme, uzun bellek, katılım yapısı</td>
+<td>Daha düşük frekans daha kesin tahmin demektir.</td>
+</tr>
+</tbody></table></div>
+<p>Bu ölçekler örnek bir araştırma düzenidir; doğanın belirlediği kesin sınırlar değildir. Aynı tarih aralıkları her varlık için aynı ekonomik anlamı taşımaz.</p>
+<h3>3.2. En güçlü teorik çerçeveler</h3>
+<p><strong>Hiyerarşik durumlar.</strong> Yavaş bir üst durum, hızlı alt durumların dağılımını veya geçişlerini etkileyebilir. Maheu–McCurdy–Song, boğa düzeltmeleri ve ayı rallilerini ayrı bileşenler olarak temsil eder. Böylece ayı içindeki pozitif hareketi otomatik olarak boğaya geçiş saymamak mümkün olur. Bu çalışma belirli bir ABD hisse örneklemine ve model kısıtlarına dayanır; genel bir altı aylık yön kehaneti değildir. <span class="cite">[<a href="#ref5" aria-label="Kaynak 5">5</a>]</span></p>
+<p>Oelschläger–Adam’ın hakemli çalışmasının yayımlanmış özetindeki uygulamalar DAX ve Deutsche Bank hissesidir; arXiv sürümünün özetinde farklı bir ikinci veri kümesi geçer. Bu monografi yayımlanmış sürümü esas alır. Çalışma çok ölçekli temsilin uygulanabilirliğini destekler; geniş piyasa ve dönemler üzerinde bağımsız tahmin üstünlüğü sonucunu tek başına vermez. <span class="cite">[<a href="#ref6" aria-label="Kaynak 6">6</a>]</span> Adam–Oelschläger’nin aylık hacim ve günlük getiriyi birleştiren konferans uygulaması da karma frekanslı ortak modelin mümkün olduğunu gösterir; kanıt kapsamı dardır. <span class="cite">[<a href="#ref7" aria-label="Kaynak 7">7</a>]</span></p>
+<p><strong>Çok bileşenli volatilite.</strong> Günlük, haftalık ve aylık etkiler, tek bir kesikli etiket gerekmeksizin birlikte modellenebilir. Corsi’nin HAR-RV modeli bu fikri az parametreyle uygular; döviz, hisse endeksi ve tahvil gerçekleşmiş volatilitesi üzerinde örneklem dışı karşılaştırmalar sunar. Günlük/haftalık/iki haftalık başarıyı 180 günlük boğa/ayı başarısına dönüştürmek doğru değildir. <span class="cite">[<a href="#ref12" aria-label="Kaynak 12">12</a>]</span></p>
+<p><strong>Farklı kalıcılıklara sahip latent bileşenler.</strong> Calvet–Fisher’in Markov-switching multifractal yaklaşımı, farklı sürelerde değişen volatilite çarpanlarını birleştirir. Yayımlanmış özde 10–50 günlük volatilite tahminlerinde kazanımlar bildirilir. Bu, çok ölçekli risk için olumlu bir bulgudur; yön veya rejim başlangıç tarihi için aynı iddia yapılmaz. <span class="cite">[<a href="#ref14" aria-label="Kaynak 14">14</a>]</span></p>
+<p><strong>Karma frekanslı yavaş/hızlı bileşenler.</strong> GARCH-MIDAS ailesi günlük risk dinamiğiyle düşük frekanslı makro bilgiyi ilişkilendirir. Engle–Ghysels–Sohn, enflasyon ve sanayi üretimiyle beslenen uzun dönem bileşenin çeyreklik ve daha uzun volatilite tahminlerinde yararlı olabildiğini bildirir. Kanıt, bu makro değişkenlerin her piyasada aynı yönsel rejimi belirlediği anlamına gelmez. <span class="cite">[<a href="#ref16" aria-label="Kaynak 16">16</a>]</span></p>
+<p><strong>Sürekli durum-uzayı ve dinamik faktörler.</strong> Yavaş eğilim, hızlı şok ve ölçüm gürültüsü ayrı latent süreçler olabilir. Gaussian doğrusal modellerde çıkarım görece kolaydır; ağır kuyruk, doğrusal olmayan geçiş veya çok sayıda latent bileşen maliyeti artırır. Bir yavaş faktöre “makro rejim” adını vermeden önce bunun yalnızca ortak fiyat seviyesini mi yoksa öngörülebilir davranışı mı temsil ettiği sınanmalıdır. Kripto ortak faktörü çalışması bu ayrımın önemli bir uygulama alanıdır. <span class="cite">[<a href="#ref26" aria-label="Kaynak 26">26</a>]</span></p>
+<p><strong>Dalgaçık ve zaman-frekans analizi.</strong> Rua–Nunes, piyasalar arası birlikte hareketin hem tarihe hem frekansa göre değiştiğini gösterir. Bu yöntemler betimleyici ölçekte güçlüdür; eş hareket veya faz farkı kendi başına nedensellik ve ileri dönem bilgi kanıtı değildir. Simetrik filtreler ve örneklem sonundaki sınır etkileri, gerçek zaman iddiasında ayrıca kontrol edilmelidir. <span class="cite">[<a href="#ref44" aria-label="Kaynak 44">44</a>]</span></p>
+<h3>3.3. Kısa vadeli yapı makro dönüşü haber verebilir mi?</h3>
+<p>Bir finansman sıkışmasının önce spreadlerde, sonra zorunlu pozisyon çözülmesinde, ardından kalıcı risk değişiminde görünmesi ekonomik olarak mümkündür. Bunun tersi de mümkündür: ortak haber bütün ölçekleri aynı anda etkiler; kısa vadeli bozulma yalnızca aynı şokun daha hızlı ölçümüdür. Yavaş trend zaten hızlı getirilerin toplamı olduğundan, kısa–uzun ölçek ilişkilerinin bir bölümü mekanik olabilir.</p>
+<p>Bu nedenle üç ayrı sınama gerekir: kısa ölçek özellikleri uzun ölçeğin kendi geçmişinin üzerine bilgi ekliyor mu; bu ek bilgi makro değişim başlamadan önce mevcut mu; ilişki ortak faktörler ve volatilite kontrol edildiğinde sürüyor mu? Bir Granger öngörü ilişkisi bile ekonomik nedenselliği tek başına çözmez.</p>
+<p><strong>Altı aylık düşüş, yapısal ayı ve geçici düzeltme:</strong> İlk ifade gerçekleşmiş fiyat yolu; ikincisi veri üretim sürecine/ekonomik ortama ilişkin model; üçüncüsü daha büyük çevrim içindeki konumdur. Aynı gözlenen düşüş birden fazla açıklamayla uyumlu olabilir. Reel/nominal fiyat, toplam getiri ve referans varlık tercihi de sınıflamayı değiştirir. Gerçek zamanda bunları kesin biçimde ayırmak yerine alternatif açıklamalara olasılık vermek daha savunulabilirdir.</p>
+<h2 id="s4">4. Rejim süresi, yaşı ve kalan ömrü</h2>
+<h3>4.1. Temel büyüklükler</h3>
+<p>D, bir rejim döneminin toplam uzunluğu; a, mevcut yaşı olsun. Ayrık zamanda:</p>
+<div class="equation">G(a) = P(D &gt; a) &nbsp; · &nbsp; q(a) = P(D = a+1 | D &gt; a)</div>
+<div class="equation">P(D &gt; a+h | D &gt; a) = G(a+h) / G(a)</div>
+
+<p>G sağkalım, q bir sonraki adımda sona erme olasılığıdır. İkinci eşitlik sabit bir süre dağılımına koşullandığında geçerlidir. Zamanla değişen açıklayıcı değişkenlerle gelecekteki hazard yolları da bilinmiyorsa bu yollar üzerindeki belirsizliği bütünleştirmek gerekir. Bugünkü makro koşulları gelecek 180 gün boyunca kesinmiş gibi tutmak farklı bir varsayımdır.</p>
+<p>Ortalama süre, medyan süre ve ortalama kalan süre farklıdır. Ortalama az sayıdaki çok uzun dönemden kuvvetle etkilenir; medyan gözlenen aralıkta tanımlanamayabilir. Sansür nedeniyle eğri yeterince düşmüyorsa “medyan henüz tahmin edilemiyor” geçerli bir sonuçtur. Kalan ömrü ortalama toplam süreden mevcut yaşı çıkararak bulmak genel olarak yanlıştır.</p>
+<p><strong>Tümüyle varsayımsal örnek:</strong> Bir HMM’de aynı durumda kalma olasılığı 0,99 ise süre geometriktir; ortalama 100 adım, medyan yaklaşık 69 adımdır. Rejim 60 adım sürmüş olsa bile bu modelin beklenen kalan ömrü yine 100 adımdır. Çünkü model yaş bilgisi taşımayan sabit çıkış olasılığı varsayar. Bu rakamlar piyasa ölçümü değildir.</p>
+<h3>4.2. Tarihsel ortalama ve medyan için somut bir örnek</h3>
+<p>Lunde–Timmermann’ın 9 Temmuz 2002 tarihli çalışma metni, 1885–1997 ABD günlük hisse serisi üzerinde farklı yüzde filtreleri kullanır. Aşağıdaki değerler bu metnin <strong>Tablo 1, Panel A, Actual</strong> satırlarından, hafta cinsinden aktarılmıştır; 2004 yayımlanmış makalenin tablosuyla bire bir eşit oldukları ayrıca doğrulanmamıştır. <span class="cite">[<a href="#ref4" aria-label="Kaynak 4">4</a>]</span></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Filtre</th>
+<th align="right">Boğa ortalama süre</th>
+<th align="right">Boğa medyan süre</th>
+<th align="right">Ayı ortalama süre</th>
+<th align="right">Ayı medyan süre</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>20/15</td>
+<td align="right">119,8 hafta</td>
+<td align="right">103 hafta</td>
+<td align="right">42,63 hafta</td>
+<td align="right">36 hafta</td>
+</tr>
+<tr>
+<td>15/10</td>
+<td align="right">48,97 hafta</td>
+<td align="right">27 hafta</td>
+<td align="right">24,42 hafta</td>
+<td align="right">17 hafta</td>
+</tr>
+</tbody></table></div>
+<p>Bu tablonun asıl önemi evrensel bir ortalama vermesi değildir: <strong>aynı tarihsel seri, farklı tarihleme filtresiyle belirgin biçimde farklı süre istatistikleri üretir.</strong> Bu değerler kriptoya veya güncel piyasalara taşınamaz. Yazarların süre ve hazard sonuçları ile Pagan–Sossounov’un rassal yürüyüşün açıklayıcılığına ilişkin sonucu da birlikte okunmalıdır; tanım ve sınanan özellikler değişmektedir. <span class="cite">[<a href="#ref2" aria-label="Kaynak 2">2</a>, <a href="#ref4" aria-label="Kaynak 4">4</a>]</span></p>
+<h3>4.3. Süre dağılımları ve model seçimi</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Süre varsayımı</th>
+<th>Ne zaman yararlı?</th>
+<th>Başlıca kırılganlık</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Standart homojen HMM</td>
+<td>Geometrik; sabit çıkış olasılığı</td>
+<td>Az parametreli süre/geçiş referansı</td>
+<td>Yaşa bağlı çıkışı açıklayamaz.</td>
+</tr>
+<tr>
+<td>Weibull / parametrik hazard</td>
+<td>Şekle bağlı artan/azalan hazard</td>
+<td>Basit ve yorumlanabilir yaş etkisi</td>
+<td>Yanlış biçim özellikle uzun kuyrukta etkili olur.</td>
+</tr>
+<tr>
+<td>Log-normal / log-logistic süre</td>
+<td>Daha esnek kuyruk ve hazard biçimleri</td>
+<td>Tekdüze olmayan sona erme riski</td>
+<td>Uzun dönemlerde az gözlem.</td>
+</tr>
+<tr>
+<td>Ayrık zaman hazard regresyonu</td>
+<td>Yaş ve açıklayıcı değişkenlere bağlı</td>
+<td>Gün/hafta ölçeğinde olay olasılığı</td>
+<td>Etiket başlangıcı ve gelecekteki değişken yolları belirsizdir.</td>
+</tr>
+<tr>
+<td>Cox yaklaşımı</td>
+<td>Belirli modelde orantılı hazard</td>
+<td>Kovaryatların göreli etkisi</td>
+<td>Orantılılık, sansür ve bağımlılık varsayımları sınanmalıdır.</td>
+</tr>
+<tr>
+<td>HSMM</td>
+<td>Her durum için açık süre dağılımı</td>
+<td>Latent durumla süreyi birlikte çıkarsamak</td>
+<td>HMM’ye göre daha fazla esneklik ve veri ihtiyacı.</td>
+</tr>
+<tr>
+<td>Hiyerarşik süre modeli</td>
+<td>Piyasa/dönem bazında kısmi ortaklık</td>
+<td>Az olaylı gruplarda bilgi paylaşımı</td>
+<td>Yanlış ortaklaştırma gerçek farklılıkları silebilir.</td>
+</tr>
+</tbody></table></div>
+<p>Cox ve HSMM özgün metodolojileri bu sorulara matematiksel araç sağlar; yöntemlerin başka alanlardaki başarısı finansal rejim öngörüsünü doğrulamaz. <span class="cite">[<a href="#ref8" aria-label="Kaynak 8">8</a>, <a href="#ref40" aria-label="Kaynak 40">40</a>]</span> Maheu–McCurdy, süre bağımlı Markov yapıda boğa durumunun azalan hazardı gibi sonuçlar bildirir; bu bulgu model ve örneklem bağımlıdır. <span class="cite">[<a href="#ref3" aria-label="Kaynak 3">3</a>]</span></p>
+<h3>4.4. Gerçek zaman sorunları ve yaşam döngüsü</h3>
+<p>Gerçek zamanda rejimin başlangıcı kesin olmayabilir. Bu durumda tek bir “bugün 83. gün” değeri yerine <strong>durum ve yaşın ortak posterioru</strong> taşınmalıdır. Kalan ömür tahmini bu olası yaşların tamamı üzerinden hesaplanır. En olası başlangıcı kesin kabul etmek aralıkları gereğinden fazla daraltabilir.</p>
+<p>Başlangıcı örneklem öncesinde olan dönemler sol sansür/sol kesilme; henüz bitmeyen dönemler sağ sansür; ancak aralık içinde yerleştirilebilen dönüşler aralık sansürü doğurur. Günlük satırları bağımsız kişiler gibi ele alan sağkalım analizi uygun değildir. Tekrarlayan dönemler, ortak şoklar ve piyasa içi bağımlılık hesaba katılmalıdır.</p>
+<p>Rastgele bir günde görülen rejim, rastgele seçilen bir rejim başlangıcından daha uzun olmaya eğilimlidir: uzun dönemlerin gözlenme şansı fazladır. Ayrıca farklı gizli çıkış oranlarına sahip dönemlerin karışımı, tek tek dönemlerde gerçek bir yaşlanma olmasa da azalan toplu hazard üretebilir. Dolayısıyla yaş–devamlılık ilişkisi doğrudan “rejim olgunlaşıyor” mekanizması sayılmamalıdır.</p>
+<p>“Başlangıç–olgunlaşma–sona erme” anlatısı araştırılabilir bir hipotezdir. Bu aşamalar bağımsız gözlenebilir işaretlerle veya dış örneklemde iyileşmeyle desteklenmiyorsa, veri üzerine yerleştirilmiş bir hikâye olarak kalır. Rejimin bittiğini öğrendikten sonra son bölümünü “tükeniş” diye adlandırmak tahmin değildir.</p>
+<h2 id="s5">5. Gelecekteki rejimler: Beş ayrı tahmin problemi</h2>
+<h3>5.1. Hedefler birbirinin yerine geçmez</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Tahmin edilecek büyüklük</th>
+<th>Başarıyı ne gösterir?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Gelecekteki belirli anın rejimi</td>
+<td>P(S<sub>t+h</sub>=j</td>
+<td>𝓕<sub>t</sub>)</td>
+</tr>
+<tr>
+<td>Kesintisiz devam</td>
+<td>P(ilk çıkış &gt; h</td>
+<td>𝓕<sub>t</sub>)</td>
+</tr>
+<tr>
+<td>Geçiş ve zamanlama</td>
+<td>P(ilk geçiş ≤ h, hedef=j</td>
+<td>𝓕<sub>t</sub>)</td>
+</tr>
+<tr>
+<td>Bir sonraki rejimin özelliği</td>
+<td>Sonraki durumun yönü, riski, likiditesi</td>
+<td>Koşullu hedef dağılımının doğruluğu.</td>
+</tr>
+<tr>
+<td>Başlangıçtan önce uyarı</td>
+<td>Alarm ile olay başlangıcı arasındaki süre</td>
+<td>Olay başlamadan verilen, yanlış alarm yükü sınırlı uyarı.</td>
+</tr>
+</tbody></table></div>
+<p>Özellikle <strong>aynı durumda bulunmak, hiç çıkmamış olmak değildir.</strong> Homojen HMM’de gelecekteki durum dağılımı α<sub>t</sub>P<sup>h</sup> ile hesaplanırken, kesin bilinen i durumunda h adım kesintisiz kalma olasılığı p<sub>ii</sub><sup>h</sup> olur. İlk hesap arada çıkıp geri dönmeyi de içerir. “180 gün sonra ayı” ve “ayı rejimi 180 gün hiç kesilmeden devam edecek” ayrı olaylardır.</p>
+<p>Bir sonraki duruma ilişkin model de çıkış nedenlerini ayırmalıdır. Düşük volatiliteden yüksek volatiliteye geçiş yukarı veya aşağı fiyat hareketiyle gerçekleşebilir. Her çıkışı “ayı başlangıcı” saymak yön bilgisi varmış izlenimi yaratır. Çok hedefli geçişlerde cause-specific hazard ve kümülatif olay olasılığı birbirine karıştırılmamalıdır.</p>
+<h3>5.2. Tahmin ufukları</h3>
+<p>Aşağıdaki karşılaştırma literatürün nitel sentezidir; ufuklara ilişkin evrensel doğruluk yüzdeleri veya ölçülmüş bir başarı sıralaması değildir. Kriptoda gün takvim günüdür; diğer piyasalarda işlem günü/takvim günü dönüşümü baştan sabitlenmelidir.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Ufuk</th>
+<th>Araştırılabilir bilgi</th>
+<th>Ana sınır</th>
+<th>Savunulabilir çıktı</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>3 gün</td>
+<td>Mevcut risk/likidite devamlılığı, kısa stres</td>
+<td>Gün içi bilgi günlük toplamada kaybolabilir; haber şokları</td>
+<td>Yakın dönem risk ve olay olasılığı.</td>
+</tr>
+<tr>
+<td>7 gün</td>
+<td>Volatilite kalıcılığı, bazı yön/katılım ilişkileri</td>
+<td>Haftalık döngüler, eş zamanlılık ve örtüşme</td>
+<td>Çok boyutlu kalibre edilmiş koşul tahmini.</td>
+</tr>
+<tr>
+<td>14 gün</td>
+<td>Hızlı ve yavaş risk bileşenlerinin birleşimi</td>
+<td>Geçiş tahmini ile geç tespiti ayırmak zorlaşır</td>
+<td>Risk dağılımı ve ilk geçiş olasılığı.</td>
+</tr>
+<tr>
+<td>30 gün</td>
+<td>Volatilite seviyesi, seçenek fiyatları ve finansal koşullar</td>
+<td>Risk nötr beklenti fiziksel olay olasılığı değildir</td>
+<td>Aylık dağılım ve senaryo ağırlıkları.</td>
+</tr>
+<tr>
+<td>90 gün</td>
+<td>Yavaş volatilite/makro bileşeni, kırılganlık</td>
+<td>Az olay, makro revizyonlar, değişen etkiler</td>
+<td>Geniş belirsizlik aralıklı koşullu olasılıklar.</td>
+</tr>
+<tr>
+<td>180 gün</td>
+<td>Uzun risk ortamı ve birden çok olası geçiş yolu</td>
+<td>Çok az bağımsız döngü; model ve gelecek şok belirsizliği</td>
+<td>Kaba olasılık dağılımı; kesin yön/tarih iddiası için kanıt zayıf.</td>
+</tr>
+</tbody></table></div>
+<p>Bu taramada 3, 7, 14, 30, 90 ve 180 günü aynı veri ve aynı etiketlerle karşılaştıran, farklı piyasalar üzerinde yerleşmiş bir ortak değerlendirme standardı belirlenmedi. Bu nedenle farklı makalelerin başarı yüzdelerini yan yana koymak güvenilir bir meta-karşılaştırma oluşturmaz. Özellikle bir günlük gerçekleşmiş volatilite hatası ile altı aylık boğa/ayı doğruluğu karşılaştırılamaz.</p>
+<h3>5.3. Uzun ufkun teorik sınırları</h3>
+<p>Geçiş matrisi sabit ve zincir ergodikse, yeterince uzun ufukta P<sup>h</sup> başlangıç durumundan bağımsız durağan dağılıma yaklaşır. Böyle bir modelde güncel rejim bilgisinin etkisi ufukla azalır. Yüksek kalıcılık bu azalmayı yavaşlatır; çok sayıda ileri adımı kesinleştirmez. Gerçekte geçiş kurallarının değişmesi, bu hesaplamaya ayrıca model belirsizliği ekler.</p>
+<p>Öte yandan “uzun vade her zaman daha zordur” da genel bir matematik yasası değildir. Sabit bir drift uzun süre devam ederse birikimli sinyal artabilir; yavaş finansal koşullar kısa gürültüyü aşabilir. Sorun, bu koşulların ne kadar sabit kaldığını bilmektir. Boudoukh–Richardson–Whitelaw, kalıcı tahmin ediciler ve örtüşen uzun ufukların birbirinden bağımsız kanıtlar üretmediğini gösterir. Artan ufukla yükselen örneklem içi açıklama gücü kendi başına daha güçlü öngörü kanıtı değildir. <span class="cite">[<a href="#ref21" aria-label="Kaynak 21">21</a>]</span></p>
+<p>Piyasa etkinliği, bütün risk ve dağılım özelliklerinin tahmin edilemez olduğunu söylemez. Koşullu varyans ve risk primi değişebilir. Fakat yeni bilginin önemli kısmı önceden erişilebilir değilse, rejim dönüşlerinin bir bölümü de önceki veriden güvenilir biçimde çıkarılamaz. Bunun oranı piyasa ve hedefe özgü ampirik sorudur.</p>
+<h3>5.4. Erken tespit, erken tahmin ve kırılganlık</h3>
+<p>Bayesian online change-point detection, en son değişimden beri geçen sürenin posteriorunu günceller. Özgün çerçevede sabit hazard seçilirse, gelecekteki yeni değişimin temel olasılığı yaşa göre değişmez. Model mevcut değişimin kanıtlarını biriktirebilir; bu, yaklaşan dönüşü bağımsız öncü veriden öngördüğü anlamına gelmez. <span class="cite">[<a href="#ref10" aria-label="Kaynak 10">10</a>]</span></p>
+<p>Benzer biçimde artan varyans veya otokorelasyonu otomatik bir çöküş öncüsü saymak doğru değildir. Diks–Hommes–Wang, incelenen krizler öncesinde kritik yavaşlama için az destek bulur ve ekonomik sistemlerin adapte olan katılımcıları nedeniyle doğal sistemlerden farklılaşabileceğini tartışır. Böyle bir negatif sonuç, bütün erken uyarı yöntemlerini çürütmez; “her çöküşten önce aynı fiziksel imza çıkar” iddiasını zayıflatır. <span class="cite">[<a href="#ref22" aria-label="Kaynak 22">22</a>]</span></p>
+<p>En savunulabilir ayrım şudur: <strong>kırılganlık</strong>, belirli bir şok gelirse ciddi sonuç oluşma olasılığının yüksek olmasıdır; <strong>tetikleyici</strong>, şokun kendisidir. Kırılganlık tahmin edilebilirken tetikleyicinin tarihi tahmin edilemeyebilir.</p>
+<h2 id="s6">6. Yöntem ailelerinin bilimsel karşılaştırması</h2>
+<h3>6.1. Karşılaştırma matrisi</h3>
+<p>“Kanıt” sütunu yöntemin genel matematiksel geçerliliğini değil, burada tartışılan finansal tahmin problemine ilişkin desteği özetler. Hesaplama maliyeti aynı büyüklükte veri ve makul küçük modeller içindir; kesin süre veya donanım ölçümü değildir.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Yöntem ailesi</th>
+<th>Doğal tahmin hedefi</th>
+<th>Kanıt ve açıklanabilirlik</th>
+<th>Veri / hesaplama</th>
+<th>Başarısızlık koşulu</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Kalıcılık, tarihsel sıklık, basit AR ve lojistik modeller</td>
+<td>Gelecek koşul/olay olasılığı</td>
+<td>Zorunlu referanslar; yorumu açık</td>
+<td>Düşük</td>
+<td>Yeni ilişki veya kırılmayı yavaş öğrenir; yine de zor yenilebilir.</td>
+</tr>
+<tr>
+<td>HMM / Markov-switching</td>
+<td>Latent durum ve koşullu dağılım</td>
+<td>Olgun yöntem; finansal uygulamalar olumlu ve olumsuz sonuçlar içerir</td>
+<td>Küçük K için orta; kabaca her adımda K² geçiş</td>
+<td>Durum karışması, geometrik süre, yanlış dağılım, az geçiş.</td>
+</tr>
+<tr>
+<td>Zamanla değişen geçiş olasılıkları</td>
+<td>Kovaryatlara bağlı rejim geçişi</td>
+<td>Mekanizmaya uygun; evrensel üstünlük yok</td>
+<td>HMM’den fazla veri; orta</td>
+<td>Birkaç dönüşe çok sayıda değişken uydurmak, gelecekteki kovaryatları biliniyor saymak.</td>
+</tr>
+<tr>
+<td>HSMM / süre bağımlı durum modelleri</td>
+<td>Yaş, kalan ömür, geçiş</td>
+<td>Süre sorusuna doğrudan uygun; finansal erken tahmin kanıtı daha sınırlı</td>
+<td>Süre desteği ve durum sayısıyla artan maliyet</td>
+<td>Süre kuyruğunu az sayıda dönemden öğrenmek; yanlış süre ailesi.</td>
+</tr>
+<tr>
+<td>BOCPD, CUSUM ve ardışık değişim tespiti</td>
+<td>Başlamış değişimin fark edilmesi</td>
+<td>Tespit için sağlam yöntemsel temel; önceden uyarı ayrı hipotez</td>
+<td>Tam run-length izlemede zamanla artar; budama yaklaşıklaştırır</td>
+<td>Tek uç gözlemi yeni rejim sanmak, dağılım kaymasını yanlış modellemek.</td>
+</tr>
+<tr>
+<td>Bai–Perron / çoklu kırılma</td>
+<td>Tarihsel parametre kırılmaları</td>
+<td>İyi tanımlı ekonometrik çerçeve</td>
+<td>Segment ve minimum uzunluk seçimi; orta</td>
+<td>Sonradan bulunan kırılma tarihini gerçek zaman bilgisi saymak.</td>
+</tr>
+<tr>
+<td>GARCH / stokastik volatilite / HAR</td>
+<td>Gelecek risk ve dağılım</td>
+<td>Volatilite için güçlü temel; yön için ayrı kanıt gerekir</td>
+<td>Düşük–orta; RV için gün içi veri yararlı</td>
+<td>Ani sıçramalar, yanlış kalıcılık, kirli ölçüm.</td>
+</tr>
+<tr>
+<td>Sürekli durum-uzayı / dinamik faktör</td>
+<td>Yavaş eğilim, ortak risk, latent bileşen</td>
+<td>Esnek ve yorumlanabilir; ekonomik adlandırma ek sınama ister</td>
+<td>Doğrusal durumda görece düşük; nonlinear durumda daha yüksek</td>
+<td>Drift ile gürültüyü ayıramama, fazla latent bileşen, değişen yükler.</td>
+</tr>
+<tr>
+<td>Hiyerarşik / factorial / coupled durumlar</td>
+<td>Eş zamanlı ölçek ve boyutlar</td>
+<td>Temsil gerekçesi güçlü; geniş bağımsız tahmin üstünlüğü sınırlı</td>
+<td>Ortak durum uzayı hızla büyür</td>
+<td>Özdeşlenebilirlik, aşırı parametre, kurala zorlanmış hiyerarşi.</td>
+</tr>
+<tr>
+<td>GARCH-MIDAS / çok bileşenli uzun bellek</td>
+<td>Hızlı ve yavaş risk</td>
+<td>Uzun volatilite ufku için anlamlı ampirik destek</td>
+<td>Makro yayın takvimi ve uzun geçmiş; orta</td>
+<td>Revize veri sızıntısı, değişen makro aktarım, yanlış uzun bellek.</td>
+</tr>
+<tr>
+<td>Multifractal / farklı kalıcılıklı bileşenler</td>
+<td>Çok ufuklu volatilite</td>
+<td>Belirli FX uygulamalarında olumlu sonuç; genelleme koşullu</td>
+<td>Durum kombinasyonları veya yaklaşık çıkarım; orta–yüksek</td>
+<td>Temsil başarısını ekonomik nedensellik sanmak.</td>
+</tr>
+<tr>
+<td>Dalgaçık / frekans ayrıştırma</td>
+<td>Ölçekler arası bağımlılık</td>
+<td>Betimleyici destek; tek başına tahminci değildir</td>
+<td>Görece orta; uç nokta kontrolü zorunlu</td>
+<td>Geleceği içeren filtre, sınır etkisi, frekans taramasında çoklu deneme.</td>
+</tr>
+<tr>
+<td>Düzenlileştirilmiş lojistik/GAM, ağaçlar ve boosting</td>
+<td>Doğrudan olay olasılığı / hazard</td>
+<td>Nonlinear ilişkiyi sınamak için güçlü rakipler; üstünlük veri ve hedefe bağlı</td>
+<td>Düşük–orta; bağımsız olay sayısı belirleyici</td>
+<td>Sınıf dengesizliği, kalibrasyon kayması, yanlış validasyon.</td>
+</tr>
+<tr>
+<td>RNN / LSTM / Transformer ve derin latent modeller</td>
+<td>Diziye bağlı olasılık/dağılım</td>
+<td>Bazı dar finansal uygulamalarda olumlu; uzun rejim tahmini için genel üstünlük gösterilmiş değil</td>
+<td>Yüksek ayar ve veri maliyeti</td>
+<td>Az döngü, dolaylı etiket öğrenimi, tekrar denemeye bağlı seçim yanlılığı.</td>
+</tr>
+</tbody></table></div>
+<p>Bai–Perron yaklaşımı birden fazla kırılmanın tarihini ve belirsizliğini incelemek için uygundur. Ancak ilgili varsayımlar altında tarihsel kırılma çıkarımı yapması, beklenmedik bir sonraki kırılmayı önceden tahmin ettiği anlamına gelmez. <span class="cite">[<a href="#ref11" aria-label="Kaynak 11">11</a>]</span> HSMM’nin açık süre dağılımı HMM’nin kısıtını gevşetir; bu ek esneklik daha iyi tahmin çıkacağını garanti etmez. <span class="cite">[<a href="#ref8" aria-label="Kaynak 8">8</a>]</span></p>
+<h3>6.2. Tahmin ile açıklama arasındaki ampirik açık</h3>
+<p>Dacco–Satchell’in döviz rejim modellerine ilişkin çalışması, iyi örneklem içi uyumun neden zayıf tahminle birlikte bulunabildiğini tartışır: gelecek durumun küçük yanlış sınıflandırılması bile karmaşık modelin avantajını yok edebilir. Bu sonuç “bütün rejim modelleri yararsızdır” biçiminde genellenmemelidir. <span class="cite">[<a href="#ref17" aria-label="Kaynak 17">17</a>]</span> Guidolin–Timmermann, Birleşik Krallık getirilerinin dağılımı için iki durumlu modelde örneklem dışı iyileşme bildirir. İki sonuç birlikte, başarının hedefe ve örnekleme bağlı olduğunu gösterir. <span class="cite">[<a href="#ref18" aria-label="Kaynak 18">18</a>]</span></p>
+<p>Andersen ve arkadaşları, dövizlerde yüksek frekanslı veriden ölçülen gerçekleşmiş volatiliteyi kullanarak gelecekteki dağılım ve kuantil tahminlerinde olumlu bulgular sunar. Bu, rejim etiketlerini doğru bulmaktan daha doğrudan gözlenebilir bir başarıdır. <span class="cite">[<a href="#ref13" aria-label="Kaynak 13">13</a>]</span> Dolayısıyla “rejim modeli” adı taşımayan bir model bilimsel soruya daha iyi cevap verebilir.</p>
+<h3>6.3. Modern öğrenme yöntemlerine ilişkin ne söylenebilir?</h3>
+<p>Gu–Kelly–Xiu’nun geniş hisse paneli çalışması, nonlinear etkileşimleri yakalayan yöntemlerin beklenen getiri tahmininde yararlı olabildiğini gösterir. Hem kesit hem zaman serisi sonuçları içerir; yine de araştırma hedefi uzun süreli piyasa rejimlerinin başlangıcı ve ömrü değildir. Bu bulgudan, birkaç yıllık kripto serisinde Transformer’ın altı aylık geçişleri güvenilir tahmin edeceği sonucu çıkmaz. <span class="cite">[<a href="#ref32" aria-label="Kaynak 32">32</a>]</span></p>
+<p>Brauneis–Sahiner’nin çalışması sekiz kripto varlıkta <strong>altı saatlik</strong> gerçekleşmiş volatiliteyi, 292 örneklem dışı tahminle karşılaştırır. Bazı ML yöntemleri HAR’a göre iyileşir; Bitcoin ve QLIKE karşılaştırmaları daha ihtiyatlı bir tablo verir, birçok ikili fark anlamlı değildir. Duygu verisinin katkısı da modele göre değişir. Bu çalışma modern yöntemlerin araştırılabilir olduğunu destekler; altı aylık yönsel rejim tahmini kanıtı değildir. <span class="cite">[<a href="#ref31" aria-label="Kaynak 31">31</a>]</span></p>
+<p>Bir derin model bir etiketleme algoritmasının çıktısını başarıyla öğrenmiş olabilir. Bundan gelecekteki ekonomik ortamı anladığı sonucu çıkarmak için, etiket üreticisinin ötesinde gözlenebilir sonuç tahmini ve bağımsız dönem testi gerekir. Açıklanabilirlik araçları da mekanizma ispatı değildir: özellik önemi, girdilerin modelde kullanıldığını; nedensellik ise karşı olgusal etkiyi sorar.</p>
+<h3>6.4. Önceliklendirme</h3>
+<p>Bu sentezin araştırma maliyeti ve kanıt gücüne göre önerdiği sıra şöyledir:</p>
+<ol>
+<li><strong>Gözlenebilir risk dağılımı ve olay tahmini:</strong> tarihsel kalıcılık, AR/HAR/GARCH ve basit olasılık regresyonları; düşük maliyetle gerçek bilgi bulunup bulunmadığını ölçer.</li>
+<li><strong>Az durumlu HMM ve sürekli durum rakibi:</strong> aynı veriden kesikli ayrımın ek katkısını sınar.</li>
+<li><strong>Yaş içeren hazard veya küçük HSMM:</strong> yeterli dönem ve geçiş varsa süre sorusunu hedefler.</li>
+<li><strong>Sınırlı çok ölçekli/hiyerarşik ve karma frekanslı modeller:</strong> bağımsız ölçeklere karşı ortak modelin değerini sınar.</li>
+<li><strong>Türev ve likidite verisiyle kontrollü ek bilgi deneyleri:</strong> veri arşivi maliyeti ve ölçüm riski daha yüksektir.</li>
+<li><strong>Derin modeller ve yüksek boyutlu latent yapılar:</strong> daha basit rakiplerin çözemediği, yeterli veriyle tanımlanmış bir problem varsa.</li>
+</ol>
+<p>Bu bir yazılım mimarisi ya da geliştirme sırası değildir; hangi bilimsel karşılaştırmanın önce daha fazla bilgi sağlayacağına ilişkin araştırma yargısıdır.</p>
+<p>Uzun ufuklu olasılık üreten çalışmalar da vardır: Maheu–McCurdy–Song’un COVID-19 çalışma metni bir yıl ileri durum olasılıkları sunar ve 2020 gözlemlerinde dağılım tahminini karşılaştırır. Ancak bir yıllık projeksiyonun çizilmiş olması, o ufkun birçok bağımsız döngüde doğrulandığı anlamına gelmez. Aynı metinde uzun tahminlerin durağan dağılıma yaklaşması da açıkça belirtilir. <span class="cite">[<a href="#ref48" aria-label="Kaynak 48">48</a>]</span></p>
+<h2 id="s7">7. Veri aileleri ve geleceğe yönelik bilgi</h2>
+<h3>7.1. Veri–bilgi–kalite matrisi</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Veri ailesi</th>
+<th>Temsil ettiği davranış</th>
+<th>Öngörü kanıtı ve sınırı</th>
+<th>Kalite / zamanlama riski</th>
+<th>Yararlı veya yanıltıcı olabileceği koşul</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OHLC / getiriler</td>
+<td>Fiyat yolu, geçmiş yön, aralık</td>
+<td>Bazı yön devamlılığı bulguları var; uzun rejim için değişmez yasa yok</td>
+<td>Fiyat türü, saat sınırı, düzeltilmiş hisse fiyatları, borsa parçalanması</td>
+<td>Likit piyasalarda temel referans; ince piyasada tek fiyat sıçraması yanıltabilir.</td>
+</tr>
+<tr>
+<td>Gerçekleşmiş varyans / semivaryans</td>
+<td>Riskin düzeyi, aşağı/yukarı hareket katkısı</td>
+<td>Volatilite tahmininin güçlü veri ailesi</td>
+<td>Mikro yapı gürültüsü, atlanan işlemler, gece/hafta sonu, ölçüm hatası</td>
+<td>Kalıcı riskte yararlı; aynı varyans farklı yön yollarını gizler.</td>
+</tr>
+<tr>
+<td>İşlem hacmi / işlem sayısı</td>
+<td>Aktivite ve bilgi işleme yoğunluğu</td>
+<td>İlişki var; ek tahmin katkısı fiyat/volatilite üzerine sınanmalı</td>
+<td>Sahte hacim, borsalar arası çifte sayım, değişen teşvikler</td>
+<td>Haber ve katılım değişiminde yararlı; hacim artışı yönü tek başına söylemez.</td>
+</tr>
+<tr>
+<td>Piyasa genişliği / kesit</td>
+<td>Hareketin kaç varlığa yayıldığı</td>
+<td>Sistemik ve özgül hareketi ayırmak için makul</td>
+<td>Sonradan seçilmiş coin/hisse evreni, delist edilen varlıklar</td>
+<td>Geniş tabanlı stres için araştırılabilir; ortak faktör yüzlerce bağımsız kanıt değildir.</td>
+</tr>
+<tr>
+<td>Perpetual funding</td>
+<td>Sözleşmenin spotla bağlanma maliyeti ve baskısı</td>
+<td>Fiyatlama gerekçesi güçlü; rejim geçişine ek bilgi koşullu ve daha az yerleşik</td>
+<td>Tahmini/gerçekleşmiş oran, farklı hesaplama aralığı, clamp ve sözleşme değişimi</td>
+<td>Kalabalık pozisyonlanmada yararlı olabilir; pozitif oran uzun süre devam edebilir.</td>
+</tr>
+<tr>
+<td>Open interest</td>
+<td>Kapanmamış sözleşme stoku</td>
+<td>Kaldıraç/katılım için ölçüm; tek başına yön bilgisi değil</td>
+<td>Coin/adet/USD birimi, fiyatın USD OI’yi mekanik artırması, kapsanan borsalar</td>
+<td>Fiyat, baz ve derinlikle birlikte kırılganlık araştırılır; çıplak artış yanlış yorumlanabilir.</td>
+</tr>
+<tr>
+<td>Vadeli baz / carry / vade yapısı</td>
+<td>Vadeli–spot farkı, finansman ve arbitraj kısıtı</td>
+<td>Kriptoda belirli çöküş riski bulguları var</td>
+<td>Vade uyumu, yıllıklandırma, teminat ve karşı taraf farkı</td>
+<td>Finansman gerilimi/kalabalıklıkta anlamlı; normal carry değişimiyle karışabilir.</td>
+</tr>
+<tr>
+<td>Gerçekleşmiş likidasyonlar</td>
+<td>Zorunlu pozisyon çözülmesi</td>
+<td>Stres ve geri besleme için doğrudan iz; çoğu sinyal olayla eş zamanlı</td>
+<td>Akış kapsamı, eksiklik, tekrar, borsa kuralları</td>
+<td>Stres devamını açıklayabilir; ilk şoku önceden haber verdiği varsayılamaz.</td>
+</tr>
+<tr>
+<td>Tahmini likidasyon haritası</td>
+<td>Modelle hesaplanan kırılgan fiyat bölgeleri</td>
+<td>Bağımsız ve genellenebilir rejim tahmin kanıtı bu taramada kurulamadı</td>
+<td>Model varsayımları, geçmiş görüntünün revizyonu, bilinmeyen gerçek teminat</td>
+<td>Koşullu maruziyet hipotezine uygun; gerçekleşecek fiyat hedefi gibi kullanmak yanıltıcı.</td>
+</tr>
+<tr>
+<td>Emir defteri / işlemler</td>
+<td>Spread, derinlik, fiyat etkisi, akış</td>
+<td>Çok kısa fiyat etkisi için anlamlı kanıt; gün/ay aktarımı ayrıca sınanmalı</td>
+<td>Emir iptali, feed kesintisi, örnekleme, senkronizasyon</td>
+<td>Likidite bozulmasında yararlı; görünen derinlik kalıcı garanti değildir.</td>
+</tr>
+<tr>
+<td>Opsiyonlar / implied volatility</td>
+<td>Piyasanın risk fiyatlaması ve kuyruk talebi</td>
+<td>Risk ve varyans primi için bilgi; fiziksel olasılığa doğrudan eşit değil</td>
+<td>Seyrek strike/vade, bid–ask, model, teminat</td>
+<td>Korku ve risk fiyatını ayırmada yararlı; pahalı sigorta kesin çöküş demek değildir.</td>
+</tr>
+<tr>
+<td>Makro / kredi / finansal koşullar</td>
+<td>Yavaş risk ortamı, finansman, talep</td>
+<td>Uzun risk ve kriz olasılığı için destek; yönsel dönüş günü için yeterli değil</td>
+<td>Yayın gecikmesi, revizyon, frekans farkı, fiyatlanmış beklenti</td>
+<td>90–180 gün için makul aday; etkiler dönem ve piyasa yapısıyla değişebilir.</td>
+</tr>
+<tr>
+<td>On-chain / stablecoin / akışlar</td>
+<td>Ağ kullanımı, transfer, ekosistem finansmanı</td>
+<td>Ekonomik gerekçe var; temiz ek rejim bilgisi hedefe özgü sınanmalı</td>
+<td>Adres–kişi farkı, borsa içi transfer, etiketlerin sonradan değişmesi</td>
+<td>Piyasa yapısını açıklayabilir; her transfer yeni net talep değildir.</td>
+</tr>
+<tr>
+<td>Haber / duygu / arama</td>
+<td>Dikkat, belirsizlik ve anlatı</td>
+<td>Bazı örneklemlerde tahmin katkısı; sonuçlar karışık</td>
+<td>Metnin yayın zamanı, geçmişte olmayan modelle duygu üretimi, veri revizyonu</td>
+<td>Yeni katılımda bilgi olabilir; fiyatın yarattığı ilgiyi neden sanma riski vardır.</td>
+</tr>
+</tbody></table></div>
+<h3>7.2. Kriptoya özgü kritik ayrımlar</h3>
+<p><strong>Funding, baz ve açık pozisyon üç ayrı nesnedir.</strong> Perpetual funding bir nakit akışı mekanizmasıdır; vadeli baz fiyat farkıdır; open interest sözleşme stokudur. Her sözleşmenin long ve short tarafı olduğundan toplam OI büyümesi “net long çoğaldı” anlamına gelmez. Pozisyonların ne kadar yönsel, ne kadar hedge/arbitraj olduğu toplamdan gözlenmez. Perpetual fiyatlama teorisi, funding’in sözleşme tasarımının parçası olduğunu açıklar; bu mekanik bağ kendi başına spot yön tahminini kanıtlamaz. <span class="cite">[<a href="#ref45" aria-label="Kaynak 45">45</a>]</span></p>
+<p>Schmeling–Schrimpf–Todorov’un <strong>Crypto Carry</strong> çalışmasının 2026 hakemli sürümü trend izleyen kaldıraç talebi ve sınırlı arbitraj sermayesine vurgu yapar. BIS çalışma sürümünün yazar özetinde yüksek carry ile gelecekteki fiyat çöküşleri arasında öngörü ilişkisi bildirilir. Bu iki sürüm aynı bağımsız kanıt olarak iki kez sayılmamalıdır. Ayrıca futures–spot carry bulgusu, perpetual funding’in aynı güce veya işarete sahip olduğunu göstermez. <span class="cite">[<a href="#ref25" aria-label="Kaynak 25">25</a>]</span></p>
+<p><strong>Likidasyon haritası bütün hesapların kesin tasfiye listesini vermez.</strong> İncelenen resmî CoinGlass Model1 belgesi, seviyelerin piyasa verisi ve kaldıraç seviyeleri kullanılarak hesaplandığını belirtir. Bu nedenle harita, gerçek hesap teminatlarının eksiksiz gözlemi olarak kabul edilemez. Fiyatın o bölgeye gitme olasılığı ile bölgeye giderse tasfiye baskısı oluşması farklı koşullu sorulardır. <span class="cite">[<a href="#ref42" aria-label="Kaynak 42">42</a>]</span></p>
+<p>Makarov–Schoar, kripto borsaları arasında kalıcı fiyat farkları ve sermaye hareketi kısıtlarının önemini gösterir. Dolayısıyla bir borsadaki funding, fiyat veya hacmi “küresel piyasanın tek doğru ölçümü” saymak hatalı olabilir. Çalışmadaki eş zamanlı akış–fiyat açıklaması da gelecekteki rejim tahmini olarak okunmamalıdır. <span class="cite">[<a href="#ref24" aria-label="Kaynak 24">24</a>]</span></p>
+<p>Cong ve arkadaşları, 29 merkezi borsa örnekleminde düzenlenmemiş borsaların raporlanan hacminde ciddi wash trading tahmin eder. Bu tarihsel örneklem bulgusu bütün bugünkü borsalara aynı yüzdeyi atamak için kullanılamaz; hacmin doğal ve hatasız bir ölçüm olmadığını göstermesi bakımından önemlidir. <span class="cite">[<a href="#ref29" aria-label="Kaynak 29">29</a>]</span></p>
+<h3>7.3. Piyasalar arası aktarılabilen bulgular</h3>
+<p>Cont–Kukanov–Stoikov, 50 ABD hissesinde kısa zaman aralıklarındaki fiyat değişimi ile emir akışı dengesizliği arasında, derinlikle ilişkili güçlü bir bağ bulur. Bu mekanizma mikro yapı verisinin neden bilgi taşıyabileceğini açıklar. Ancak aynı aralıktaki fiyat etkisi, günler veya aylar sonraki rejim için bağımsız öngörü kanıtı değildir. <span class="cite">[<a href="#ref27" aria-label="Kaynak 27">27</a>]</span></p>
+<p>Liu–Tsyvinski’nin erken dönem kripto çalışması momentum ve dikkat değişkenleri için olumlu sonuçlar bildirirken, daha sonraki IMF çalışması kurumsal katılımın arttığı dönemde kripto ile küresel hisseler arasında daha güçlü bağlar bulur. Bunlar farklı dönem, veri ve soruları ele alır. Erken dönem “kripto bağımsızdır” sonucunu zamandan bağımsız bir özellik olarak almak yerine değişen piyasa yapısına ilişkin hipotez olarak incelemek gerekir. <span class="cite">[<a href="#ref23" aria-label="Kaynak 23">23</a>, <a href="#ref26" aria-label="Kaynak 26">26</a>]</span></p>
+<p>Hisselerde kredi ve makro-finansal koşullar uzun kırılganlık hakkında bilgi taşıyabilir. Schularick–Taylor, 14 ülkenin uzun tarihsel örnekleminde kredi büyümesinin finansal krizlerle ilişkili öngörü gücünü bulur. Buradaki sonuç bankacılık/finansal kriz olasılığıdır; 180 gün sonraki hisse veya Bitcoin yönü değildir. <span class="cite">[<a href="#ref41" aria-label="Kaynak 41">41</a>]</span></p>
+<p>Opsiyon fiyatlarında risk nötr beklenti ile gerçek dünya beklentisi ayrılmalıdır. Bekaert–Hoerova, VIX karesini beklenen varyans ve varyans primi bileşenlerine ayırır; bunların farklı sonuçlar için farklı bilgi taşıdığını gösterir. “Opsiyon piyasası yüksek düşüş olasılığı fiyatlıyor” ifadesini fiziksel olay frekansı şeklinde yorumlamak için risk primi ve fiyatlama varsayımları gerekir. <span class="cite">[<a href="#ref30" aria-label="Kaynak 30">30</a>]</span></p>
+<h3>7.4. Gerçek ek bilgi nasıl ayrılır?</h3>
+<p>Yeni veri ailesi, aynı örneklem ve aynı erişim takvimi altında temel modelin üzerine eklenmelidir. Yalnızca veri mevcut günleri kullanınca örneklem değişiyorsa önce bu ortak alt örneklemde temel sonuç yeniden hesaplanır. Funding ekli modelin başarısının daha yeni, daha likit bir dönemden gelmesi önlenir.</p>
+<p>Ablasyon, fiyat/volatiliteyi sabit tutarak veri ailelerini sırayla çıkarmak; gecikme deneyi, veriyi yalnızca gerçekten erişilebilir olduğu anda kullanmak; borsa dışlama deneyi, bir kaynaktaki sonucun başka kaynağa taşınıp taşınmadığını kontrol etmektir. Bunlar nedensellik ispatlamaz fakat ölçüm ve seçim kaynaklı alternatifleri daraltır.</p>
+<p>Makro veride gözlem tarihi ile yayın tarihi aynı değildir. ALFRED, belirli geçmiş tarihte gerçekten yayımlanmış olan veri sürümlerini sunan resmî bir kaynaktır. Sonradan revize edilmiş sanayi üretimini geçmiş tahmin anına koymak gerçek zaman iddiasını bozar. <span class="cite">[<a href="#ref43" aria-label="Kaynak 43">43</a>]</span></p>
+<h2 id="s8">8. Ampirik kanıtların eleştirel bilançosu</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>İddia</th>
+<th>Başlıca kanıt</th>
+<th>Karşı kanıt / kapsam sınırı</th>
+<th>Bu sentezin yargısı</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Volatilite zaman içinde kalıcı ve çok ölçeklidir.</td>
+<td>RV ve HAR literatürü; farklı varlık uygulamaları. <span class="cite">[<a href="#ref12" aria-label="Kaynak 12">12</a>, <a href="#ref13" aria-label="Kaynak 13">13</a>]</span></td>
+<td>Kırılmalar uzun bellek gibi görünebilir. <span class="cite">[<a href="#ref15" aria-label="Kaynak 15">15</a>]</span></td>
+<td>Güçlü betimleyici ve koşullu tahmin kanıtı; tek bir mekanizma seçilemez.</td>
+</tr>
+<tr>
+<td>Rejim modelleri geleceği daha iyi tahmin eder.</td>
+<td>Bazı dağılım tahmini ve UK getirisi uygulamaları. <span class="cite">[<a href="#ref5" aria-label="Kaynak 5">5</a>, <a href="#ref18" aria-label="Kaynak 18">18</a>]</span></td>
+<td>Dövizlerde durum yanlış sınıflaması; basit süreçler de çevrim üretir. <span class="cite">[<a href="#ref2" aria-label="Kaynak 2">2</a>, <a href="#ref17" aria-label="Kaynak 17">17</a>]</span></td>
+<td>Genel değil, hedef ve veri bağımlı.</td>
+</tr>
+<tr>
+<td>Rejim yaşı sona ermeyi öngörür.</td>
+<td>Süre bağımlı boğa/ayı çalışmaları. <span class="cite">[<a href="#ref3" aria-label="Kaynak 3">3</a>, <a href="#ref4" aria-label="Kaynak 4">4</a>]</span></td>
+<td>Etiket duyarlılığı, farklı hazard biçimleri, az olay.</td>
+<td>Orta/sınırlı; kriptoda evrensel yasa kurulmamıştır.</td>
+</tr>
+<tr>
+<td>Hiyerarşik model iki ölçeği daha iyi temsil eder.</td>
+<td>Kuramsal uygunluk ve finansal uygulamalar. <span class="cite">[<a href="#ref6" aria-label="Kaynak 6">6</a>, <a href="#ref7" aria-label="Kaynak 7">7</a>]</span></td>
+<td>Az uygulama; bağımsız uzun ufuk üstünlüğü gösterilmemiştir.</td>
+<td>Temsil için güçlü gerekçe; öngörü için sınırlı kanıt.</td>
+</tr>
+<tr>
+<td>Daha çok değişken uzun yön tahminini çözer.</td>
+<td>Bazı olumlu makro ve ML bulguları. <span class="cite">[<a href="#ref16" aria-label="Kaynak 16">16</a>, <a href="#ref32" aria-label="Kaynak 32">32</a>]</span></td>
+<td>Birçok getiri tahmincisinin sonradan zayıflaması. <span class="cite">[<a href="#ref19" aria-label="Kaynak 19">19</a>, <a href="#ref20" aria-label="Kaynak 20">20</a>]</span></td>
+<td>Otomatik bir kazanım değil; seçim ve istikrarsızlık kritik.</td>
+</tr>
+<tr>
+<td>Kripto türev verisi yeni rejimi haber verir.</td>
+<td>Carry ve kırılganlık mekanizması. <span class="cite">[<a href="#ref25" aria-label="Kaynak 25">25</a>, <a href="#ref28" aria-label="Kaynak 28">28</a>]</span></td>
+<td>Funding/baz ayrımı; kısa ve parçalı geçmiş; olayla eş zamanlılık.</td>
+<td>Araştırmaya değer; geniş iddia için kanıt yetersiz.</td>
+</tr>
+<tr>
+<td>Her krizden önce genel bir öncü imza vardır.</td>
+<td>Bazı mekanizma hipotezleri.</td>
+<td>Kritik yavaşlama için zayıf destek. <span class="cite">[<a href="#ref22" aria-label="Kaynak 22">22</a>]</span></td>
+<td>Genel iddia desteklenmiyor.</td>
+</tr>
+<tr>
+<td>Derin öğrenme klasik yöntemlerden üstündür.</td>
+<td>Bazı RV ve beklenen getiri uygulamaları. <span class="cite">[<a href="#ref31" aria-label="Kaynak 31">31</a>, <a href="#ref32" aria-label="Kaynak 32">32</a>]</span></td>
+<td>Hedef, varlık, kayıp fonksiyonu ve döneme göre sonuç değişir.</td>
+<td>Evrensel üstünlük gösterilmiş değildir.</td>
+</tr>
+</tbody></table></div>
+<p>Goyal–Welch’in 2008 çalışması, yaygın hisse risk primi tahmincilerinin istikrarsızlığına ilişkin önemli bir negatif karşılaştırmadır. <span class="cite">[<a href="#ref19" aria-label="Kaynak 19">19</a>]</span> Goyal–Welch–Zafirov’un 2024 yeniden incelemesi 29 yeni ve 17 eski değişkeni ele alır: yeni değişkenlerin üçte birinden fazlası genişletilmiş örneklemde örneklem içi anlamlılığını kaybeder; kalanların yarısı zayıf örneklem dışı performans gösterir. Küçük bir küme ise daha iyi kalır. Bu, bütün öngörülebilirliğin yokluğunu değil, yayımlanmış olumlu sonucun dış geçerliliğinin sınanması gerektiğini gösterir. Çalışma doğrudan rejim sınıflandırması üzerine değildir. <span class="cite">[<a href="#ref20" aria-label="Kaynak 20">20</a>]</span></p>
+<p>Bu monografide <strong>bağımsız biçimde tekrarlanabilir</strong> denebilecek en güçlü genel örüntü, riskin zamanla değişmesi ve geçmiş riskin gelecekteki risk dağılımı hakkında bilgi taşımasıdır. Belirli bir HSMM, belirli bir duygu modeli veya likidasyon haritası için aynı düzeyde bağımsız, çok döngülü ve çok piyasada kalibrasyon kanıtı saptanmamıştır. Bu ifade taranan kanıtın sınırıdır; literatürde hiçbir olumlu çalışma olmadığı iddiası değildir.</p>
+<h2 id="s9">9. Bilimsel doğrulama ve yanlışlanabilirlik</h2>
+<h3>9.1. Önce tahmin edilecek nesne sabitlenmeli</h3>
+<p>Üç meşru fakat farklı hedef ailesi vardır:</p>
+<ol>
+<li><strong>Geçmiş veriden hesaplanan gerçek zaman durumu:</strong> Y<sub>t</sub>=g(𝓕<sub>t</sub>). Örneğin sabit tanımlı drawdown ve geçmiş risk koşulu. Tahmin hedefi gelecekte bu durumun ne olacağıdır.</li>
+<li><strong>Sonradan tarihlenen çevrim veya latent durum:</strong> daha büyük bir zaman aralığını kullanan etiket. Referans bir yorumdur; bağımsız fiziksel gerçeklik değildir.</li>
+<li><strong>İleri penceredeki gözlenebilir olay:</strong> gelecek 14 günde yüksek gerçekleşmiş varyans, belirli drawdown veya likidite bozulması. Bunlar rejim adı vermeden test edilebilir.</li>
+</ol>
+<p><strong>Gelecekteki veriyi gerçekleşen sonucu tanımlamakta kullanmak tek başına sızıntı değildir.</strong> Tahmin zaten gelecekteki bir sonuçla karşılaştırılır. Sızıntı; bu sonucun, onu oluşturmak için gereken gelecekteki gözlemlerin veya tam örneklemde seçilmiş eşik/parametrelerin tahmin anında kullanılmasıdır. Sonradan tarihleme için gereken doğrulama süresi de öğrenme ve değerlendirme takvimine eklenmelidir.</p>
+<p>Latent rejimde “gerçek etiket” doğrudan gözlenmediğinden, aynı modelin tüm veriden çıkardığı durumları yine aynı modelin tahminleriyle karşılaştırmak dairesellik yaratabilir. Bu yüzden dış örneklem gözlem yoğunluğu/log skoru, önceden sabitlenmiş olaylar ve alternatif etiketlere duyarlılık birlikte raporlanmalıdır. Farklı modellerin “Durum 1”i aynı nesne değildir; ad eşleştirmesi test dönemine bakarak yapılmamalıdır.</p>
+<h3>9.2. Kronolojik deney düzeni</h3>
+<p><strong>Keşif dönemi:</strong> hedef tanımı, makul özellikler ve aday modeller belirlenir. Bu dönemde bulunan başarı teyit kanıtı sayılmaz.</p>
+<p><strong>İç kronolojik doğrulama:</strong> hiperparametre, durum sayısı, süre ailesi, eşik ve kalibrasyon ayarları yalnızca daha eski verilerle seçilir. Ölçekleme, eksik veri doldurma, boyut indirgeme ve özellik seçimi her eğitim penceresinde yeniden tahmin edilir.</p>
+<p><strong>Dış walk-forward değerlendirme:</strong> tahminler yalnızca geçmiş eğitimden üretilir; genişleyen veya kayan pencere seçimi önceden sabitlenir. Test tarihindeki eğitim örneklerinin hedefleri o tarihte olgunlaşmış olmalıdır. Örneğin 180 günlük sonuç için başlangıç tarihi tahmin tarihinden en az 180 gün önceki etiketler kullanılabilir; sonradan teyit gereken etiketlerde süre daha uzundur.</p>
+<p><strong>Dondurulmuş bağımsız ileri dönem:</strong> hedefler, ana model karşılaştırması ve karar kuralları kaydedildikten sonra gelen veriyle sınanır. Bir dönem defalarca incelendiyse, sonradan “dokunulmamış test” diye adlandırmak onu bağımsız yapmaz. İleri dönemin uzunluğu takvim konforuna göre değil, olay sayısı ve test gücüne göre belirlenmelidir.</p>
+<p>Random K-fold zaman serilerinde her koşulda matematiksel olarak geçersiz değildir; Bergmeir ve arkadaşları belirli saf otoregresif ve hata koşullarında kullanılabilirliğini gösterir. Ancak değişen rejimler, örtüşen ileri hedefler ve gerçek zamanda yeni döneme genelleme iddiası için bu koşullar varsayılamaz. Burada dış kronolojik sınama esas olmalıdır. <span class="cite">[<a href="#ref38" aria-label="Kaynak 38">38</a>]</span></p>
+<h3>9.3. Basit referanslar</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Hedef</th>
+<th>Zorunlu referanslar</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Gelecek rejim</td>
+<td>Eğitim döneminin sınıf sıklığı; son bilinen durum; basit Markov geçişi; düşük boyutlu lojistik model.</td>
+</tr>
+<tr>
+<td>Volatilite koşulu</td>
+<td>Son risk seviyesi; tarihsel ortalama; AR/HAR/GARCH gibi güçlü sürekli risk modelleri.</td>
+</tr>
+<tr>
+<td>İlk geçiş</td>
+<td>Sabit hazard; yalnızca yaş içeren hazard; kovaryatsız süre dağılımı.</td>
+</tr>
+<tr>
+<td>Kalan ömür</td>
+<td>Uygun sansürle tahmin edilmiş temel sağkalım; geometrik ve basit parametrik süre rakipleri.</td>
+</tr>
+<tr>
+<td>Çok ölçek</td>
+<td>Ölçeklerin ayrı modellenmesi; basit geçmiş özetlerin birleşimi; ortak yavaş faktör.</td>
+</tr>
+<tr>
+<td>Türev verisinin katkısı</td>
+<td>Aynı tarih ve örneklemde fiyat + volatilite modeli; sonra tek veri ailesi eklenmiş karşılaştırma.</td>
+</tr>
+</tbody></table></div>
+<p>“En güçlü referans”, test döneminde rastgele seçilen en iyi model değildir. Referans seçimi ve karşılaştırma ailesi önceden belirlenmelidir; aksi hâlde referans seçimi de çoklu deneme olur.</p>
+<h3>9.4. Olasılık kalitesi ve sınıf dengesizliği</h3>
+<div class="equation">Brier = N⁻¹ Σ<sub>t</sub> Σ<sub>k</sub> (p<sub>t,k</sub> − 1{Y<sub>t</sub>=k})²</div>
+<div class="equation">Log loss = −N⁻¹ Σ<sub>t</sub> log p<sub>t,Yt</sub> &nbsp; · &nbsp; Skill = 1 − L<sub>model</sub> / L<sub>referans</sub></div>
+
+<p>Burada Brier çok sınıflı toplam kare biçimindedir; ikili olay için tek olay bileşeninin kare hatası da yaygın bir başka konvansiyondur. Ölçek açık yazılmalıdır. Düzgün olasılık skorları doğru dağılımı bildirmeyi teşvik eder; aynı dağılım için yalnızca sınıf etiketini puanlamak çok bilgi kaybettirir. <span class="cite">[<a href="#ref33" aria-label="Kaynak 33">33</a>]</span></p>
+<p><strong>Varsayımsal örnek:</strong> Olay sıklığı %5 olan 1.000 günde sürekli “olay yok” diyen model %95 doğruluk, %0 olay recall’u elde eder. Sabit 0,05 olay olasılığıysa yalnızca sıklık referansıdır; ikili Brier beklentisi 0,0475, log loss yaklaşık 0,1985 nat olur. Bir yeni model bu düşük taban kayıplarıyla karşılaştırılmalıdır. Bu sayılar herhangi bir piyasadan ölçülmemiştir.</p>
+<p>Kalibrasyon, “%30 olasılık verdiğimiz örneklerin yaklaşık %30’unda olay oldu mu?” sorusudur. Tek bir olayın gerçekleşmesi %30 tahminin yanlış olduğunu göstermez. İncelenecekler: güvenilirlik eğrileri, kalibrasyon eğimi/sapması, dönem ve sınıf bazlı olasılık uyumu; ayrıca tahminlerin sabit taban olasılıktan anlamlı biçimde ayrışıp ayrışmadığıdır. Sadece taban oranını bildirmek kalibre olabilir ama ek bilgi taşımaz.</p>
+<p>Precision, recall, sınıf bazlı hata matrisi ve PR eğrileri nadir olaylarda yararlıdır. ROC-AUC tek başına yeterli değildir. Eşik eğitim/iç doğrulama döneminde sabitlenmeli; testte eşik aramak yeni bir optimizasyondur. Rastgele yeniden örnekleme veya sınıf ağırlıklandırması kullanıldıysa gerçek olay sıklığına göre olasılık kalibrasyonu tekrar değerlendirilmelidir. Ağırlıklı tanısal skorlar, özgün fiziksel olasılığı ölçen ana düzgün skorun yerine sessizce konmamalıdır.</p>
+<h3>9.5. Süre, olay zamanı ve erken uyarı ölçümleri</h3>
+<p>Sağkalım olasılıkları için ufuk bazlı Brier ve integrated Brier score, uygun sansür düzeltmesiyle kullanılabilir. Graf ve arkadaşlarının yöntemi bu alandaki temel araçlardandır; uygulamada sansürün nedenine ilişkin varsayımlar finansal dönemler için ayrıca sınanmalıdır. <span class="cite">[<a href="#ref34" aria-label="Kaynak 34">34</a>]</span> C-index ve zamana bağlı ayrım ölçüleri olayların sırasını ayırmaya yarar; tek başına doğru kalan ömür veya kalibrasyon göstermez. Uno ve arkadaşlarının sansür altında C-istatistikleri çalışması bu ayrımı güçlendirir. <span class="cite">[<a href="#ref46" aria-label="Kaynak 46">46</a>]</span></p>
+<p>Olay zamanı için dağılım/kuantil kaybı, tahmin aralıklarının kapsamı ve genişliği raporlanabilir. Yalnızca tamamlanmış dönemlerde ortalama mutlak süre hatası hesaplamak, uzun ve hâlen devam eden dönemleri dışlayarak sonucu iyimserleştirebilir. Çok hedefli geçişlerde her hedefin kümülatif olay olasılığı birlikte değerlendirilmelidir.</p>
+<p>Erken uyarıda gün bazlı doğruluk yerine olay bazlı eşleştirme yapılmalıdır. Önceden belirlenmiş alarm penceresi, aynı olaya birden çok alarmın nasıl sayılacağı ve alarmların ne kadar süre etkin kalacağı tanımlanır. Ana çıktılar: yakalanan bağımsız olay oranı, yanlış alarm/ay veya yıl, alarm altında geçen zamanın payı, başlangıç öncesi lead time dağılımı ve başlangıç sonrası detection delay. Sürekli alarm vererek bütün krizleri “yakalamak” bu ölçülerde görünür hâle gelmelidir.</p>
+<h3>9.6. Örtüşme, bağımlılık ve istatistiksel çıkarım</h3>
+<p>Ardışık 180 günlük ileri pencereler 179 günü paylaşır. Günlük kayıp farklarını bağımsız sanan standart hata bu bağımlılığı görmez. Çok ufuklu karşılaştırmalarda kayıp dizisinin bağımlılığına uygun HAC/uzun dönem varyans, blok temelli yöntemler veya gerekçelendirilmiş alternatifler gerekir. Diebold–Mariano çerçevesi tahmin kayıplarını karşılaştırmanın temelidir; küçük örneklem, tahmin edilmiş modeller ve güçlü bağımlılıkta otomatik bir p-değeri makinesi gibi kullanılmamalıdır. <span class="cite">[<a href="#ref35" aria-label="Kaynak 35">35</a>]</span></p>
+<p>Politis–Romano’nun stationary bootstrap’ı zayıf bağımlı durağan gözlemler için geliştirilmiştir. Rejim serisine uygulanınca bu varsayımlar kendiliğinden sağlanmaz. Uzun blok sayısı çok azsa, binlerce bootstrap tekrarının bulunmayan bağımsız bilgiyi yaratmadığı belirtilmelidir. Piyasalar birlikte hareket ediyorsa panelde ortak tarih blokları ve uygun kümelenme düşünülmelidir. <span class="cite">[<a href="#ref47" aria-label="Kaynak 47">47</a>]</span></p>
+<p>Eğitim etiketi penceresinin test dönemi sonuçlarına uzanması engellenmelidir. Ancak geçmiş girdi pencerelerinin ortak günler içermesi tek başına geleceğe sızıntı değildir; bilgi erişimi ve hata bağımlılığı ayrı sorunlardır. Körlemesine her örtüşmeyi silmek veri kaybına, hiçbirini dikkate almamak aşırı güvene yol açabilir.</p>
+<h3>9.7. Çoklu deneme ve araştırmacı serbestliği</h3>
+<p>Etiket eşiği, ölçek sayısı, tahmin ufku, coin evreni, veri kaynağı ve model ayarı ayrı deneme eksenleridir. Bir hedef için yüzlerce kombinasyondan en iyiyi seçip yalnızca onun p-değerini raporlamak seçilim yanlılığı yaratır. White’ın Reality Check yaklaşımı en iyi görünen adayın referansa üstünlüğünü model aramasıyla birlikte değerlendirmeyi amaçlar. <span class="cite">[<a href="#ref36" aria-label="Kaynak 36">36</a>]</span> Hansen’in SPA testi bu karşılaştırmayı güçlendiren bir yöntemdir; kaydedilmemiş denemeleri veya kötü bir hedef tanımını düzeltmez. <span class="cite">[<a href="#ref37" aria-label="Kaynak 37">37</a>]</span></p>
+<p>Ana hedefler az ve önceden belirlenmiş olmalı; ikincil ufuklar keşif olarak veya aile bazında düzeltmeyle raporlanmalıdır. Başarısız deneyler de kayıt altında tutulmalıdır. Model sayısı kadar, denenmiş rejim tanımlarının sayısı da önemlidir.</p>
+<h3>9.8. Bilimsel başarı ve başarısızlık kararları</h3>
+<p>Önceden belirlenen ana hedefte en güçlü referansa göre kayıp farkı, bağımlılığa uygun güven aralığıyla raporlanır. Pozitif skill, makul kalibrasyon ve farklı olay/dönemlerde tutarlılık birlikte aranır. İyileşme yalnızca tek çöküşten geliyorsa genelleme iddiası daraltılır. Patton’un gösterdiği gibi, volatiliteyi ölçen kusurlu vekiller altında kullanılan kayıp fonksiyonu da model sıralamasını değiştirebilir; risk tahmininde uygun QLIKE ve alternatif ölçümler bu yüzden değerlidir. <span class="cite">[<a href="#ref39" aria-label="Kaynak 39">39</a>]</span></p>
+<p>Üç sonuç ayrılmalıdır:</p>
+<ul>
+<li><strong>Destek:</strong> önceden belirlenen, bilimsel olarak anlamlı iyileşme yeterli belirsizlik kontrolüyle gösterilir.</li>
+<li><strong>Pratik olarak anlamlı katkının dışlanması:</strong> güven aralığının üst sınırı önceden belirlenen minimum etkiyi bile karşılamaz.</li>
+<li><strong>Kararsız sonuç:</strong> güven aralığı hem sıfırı hem anlamlı katkıyı kapsar; veri veya test gücü yetersizdir.</li>
+</ul>
+<p>Anlamsız p-değeri “hiç bilgi yok” kanıtı değildir. Öte yandan aynı veriyi tekrar tekrar inceleyerek elde edilen tek olumlu sonuç da güvenilir bilgi değildir.</p>
+<h2 id="s10">10. Beş yıllık veri ve altı aylık rejim sorunu</h2>
+<h3>10.1. Satır sayısı neden yanıltır?</h3>
+<p>Beş takvim yılı yaklaşık 1.825 gün, fakat yalnızca yaklaşık <strong>10 tane birbirini örtmeyen 180 günlük blok</strong> içerir. Bu hesap bir açıklama aracıdır; bütün modeller için kesin etkin örneklem büyüklüğü formülü değildir. Gerçek etkin bilgi, hedefin bağımlılığına, geçiş sayısına, kalıcılığına ve ortak şoklara bağlıdır.</p>
+<p>Rejim dönemleri kabaca altışar ay sürüyorsa beş yılda yaklaşık on dönem, dolayısıyla yalnızca bir avuç tam boğa–ayı çevrimi görülebilir. Arka arkaya aynı döneme ait günlük tahminler, yeni bir geçiş örneği oluşturmaz. Üstelik eğitim/validasyon/test ayrımı bu az sayıdaki olayları daha da böler. Hisse piyasasındaki işlem günü sayısının daha düşük olması da takvim bazlı rejim çeşitliliğini artırmaz.</p>
+<p><strong>Varsayımsal belirsizlik örneği:</strong> Birbirinden bağımsız 10 olayın 10’unu doğru yakalayan bir prosedürün başarı olasılığı için iki taraflı %95 Clopper–Pearson aralığının alt ucu yaklaşık %69’dur. Gerçek olaylar bağımlıysa veya yöntem bu olaylara bakılarak seçildiyse bu aralık bile fazla iyimser olabilir. Bu hesap, küçük sayıda kusursuz sonucun neden kesin güvenilirlik göstermediğini anlatır.</p>
+<h3>10.2. Daha sık veri ve daha çok coin çözüm mü?</h3>
+<p>Saatlik veri ölçüm hatasını azaltabilir, mikro dinamikler hakkında yeni bilgi sağlayabilir. Fakat aynı beş yılı 24 kat fazla satıra çevirmek 24 kat fazla altı aylık döngü yaratmaz. Benzer biçimde yüzlerce coin aynı makro şokla birlikte düşüyorsa bunlar yüzlerce bağımsız kriz değildir.</p>
+<p>Panel veri yine de değerlidir: farklı piyasa yapılarını karşılaştırabilir, ortak ve özgül bileşenleri ayırabilir, kısmi ortaklaştırma sağlayabilir. Ancak ortak tarih şoklarıyla coin bazlı bağımsızlık ayrılmalı; kripto içindeki bir ortak faktörün gücü göz önünde tutulmalıdır. <span class="cite">[<a href="#ref26" aria-label="Kaynak 26">26</a>]</span></p>
+<h3>10.3. Beş yıl ile ne yapılabilir?</h3>
+<p>Kısa ufuklu risk tahmini, basit modellerin kalibrasyonu, veri kalitesinin incelenmesi ve sınırlı hipotezlerin ilk yanlışlama deneyi yapılabilir. Uzun süre dağılımının kuyruğu, nadir ana rejim dönüşü ve döngüler arası taşınabilirlik için güçlü sonuçlar genellikle çıkarılamaz. Bu bir “beş yılda hiçbir şey öğrenilmez” hükmü değildir; öğrenilen bilginin kapsamını dar tutma gereğidir.</p>
+<p>Daha uzun tarih, farklı varlık sınıfları, piyasa yapısına göre alt dönemler ve bağımsız ileri izleme birlikte yararlı olabilir. Ancak eski mikro yapının bugüne benzememesi nedeniyle tarih uzadıkça bilgi otomatik olarak eşit kalitede artmaz. En uzun veri ile en güncel veri arasındaki gerilim modele ve dış doğrulamaya bırakılmalıdır.</p>
+<p>Beş yıllık tek kripto serisinde 180 günlük rejimler için başarısız hipotezin doğru yorumu çoğu zaman <strong>“anlamlı katkıyı göstermek için yetersiz kanıt”</strong> olacaktır. Gerçekten katkının olmadığını söylemek için makul etki büyüklüklerini dışlayacak test gücü gerekir.</p>
+<h2 id="s11">11. Bilimsel olarak bildiklerimiz ve açık sorular</h2>
+<h3>11.1. Desteklenen sonuçlar</h3>
+<p><strong>Birincisi, piyasanın tek boyutlu bir ruh hâli yoktur.</strong> Yön, risk, likidite, katılım ve finansman eş zamanlı fakat farklı dinamikler gösterebilir. Bunları aynı etiketle temsil etmek zorunlu değildir. Çok ölçekli modellerin teorik gerekçesi, eş zamanlı hızlı ve yavaş bileşenleri ayırabilmeleridir; tahmin üstünlükleri ayrıca sınanmalıdır.</p>
+<p><strong>İkincisi, riskin koşullu öngörülebilirliği fiyat yolunun kesin öngörülebilirliğinden ayrıdır.</strong> Geçmiş risk bilgisi gelecekteki risk dağılımını iyileştirebilir. Beklenen getiride zayıf bir sinyal bulunması bile tek tek yönleri veya ana rejim dönüş tarihini güvenilir biçimde belirlemek anlamına gelmez. <span class="cite">[<a href="#ref12" aria-label="Kaynak 12">12</a>, <a href="#ref13" aria-label="Kaynak 13">13</a>, <a href="#ref19" aria-label="Kaynak 19">19</a>, <a href="#ref20" aria-label="Kaynak 20">20</a>]</span></p>
+<p><strong>Üçüncüsü, rejim süresi ölçülebilir ama tanıma bağlıdır.</strong> Tarihsel ortalama/medyan, belirli bir tanım ve örneklem için geçerlidir. Sürenin dağılımı geometrik, Weibull veya kalın kuyruklu kabul edilmeden önce rakipler ve sansür değerlendirilmelidir. Az sayıda uzun dönemden güvenilir bir güç yasası veya “çevrim saati” çıkarmak mümkün olmayabilir.</p>
+<p><strong>Dördüncüsü, geçiş için bilgi varsa bunun doğal ifadesi olasılıktır.</strong> “Önümüzdeki 30 günde stres geçişi riski arttı” test edilebilir bir iddiadır. “Düşüş şu gün başlar” daha kuvvetli ve başka bir iddiadır. Bilinen bir modelden kesin rakam üretilebilmesi, rakamın kalibre olduğu anlamına gelmez.</p>
+<p><strong>Beşincisi, veri çeşitliliği kadar bağımsız dönem çeşitliliği gerekir.</strong> Daha çok gösterge veya daha sık örnekleme, yeni ana rejim örneklerinin yerini tutmaz. Ekonomik mekanizmalar değişebildiği için, eski verideki olumlu ilişkinin yeni dönemde tekrar sınanması bilimsel sonucun parçasıdır.</p>
+<h3>11.2. Henüz çözülmemiş temel sorular</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Açık soru</th>
+<th>Neden çözülmüş sayılmıyor?</th>
+<th>İlerlemeyi ne gösterir?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Rejimler ayrı ekonomik varlıklar mı, yararlı özetler mi?</td>
+<td>Sürekli ve kesikli modeller benzer gözlemler üretebilir.</td>
+<td>Gözlenebilir dağılım tahmininde kalıcı fark ve bağımsız mekanizma kanıtı.</td>
+</tr>
+<tr>
+<td>Makro dönüşten önce genel bir mikro imza var mı?</td>
+<td>Hedef sonradan tanımlanabilir; ortak şok ve gecikme açıklamaları güçlü.</td>
+<td>Sabit yanlış alarm bütçesi altında başlangıç öncesi bağımsız başarı.</td>
+</tr>
+<tr>
+<td>Yaşın etkisi gerçek mi, karışım/seçilim mi?</td>
+<td>Latent başlangıç, uzun dönem seçilimi ve farklı gizli çıkış oranları.</td>
+<td>Ortak belirsizlik altında, farklı tanımlarda dış örneklem katkısı.</td>
+</tr>
+<tr>
+<td>Kripto funding/OI uzun rejime bilgi ekliyor mu?</td>
+<td>Kalıcı ve karşılaştırılabilir türev arşivleri sınırlı; veri endojen.</td>
+<td>Fiyat/risk üzerine ek, borsalar ve dönemler arasında taşınan olasılık bilgisi.</td>
+</tr>
+<tr>
+<td>Hiyerarşi öngörü kazandırıyor mu?</td>
+<td>Daha esnek temsil kolaylıkla daha iyi uyum verebilir.</td>
+<td>Ayrı ölçek ve sürekli bileşen rakiplerine karşı adil ileri dönem kazanım.</td>
+</tr>
+<tr>
+<td>90–180 günlük rejim yönü ne kadar kalibre edilebilir?</td>
+<td>Nadir bağımsız çevrimler ve değişen ekonomik bağlar.</td>
+<td>Uzun, çok dönemli ve yeterli test güçlü kayıtlı deneyler.</td>
+</tr>
+<tr>
+<td>Modeller yeni ve önceden görülmemiş rejimi tanıyabilir mi?</td>
+<td>Sabit K durum, gelecekte bütün olası davranışları kapsamayabilir.</td>
+<td>“Bilinen sınıfların hiçbiri” durumunda iyi belirsizlik ve dağılım kontrolü.</td>
+</tr>
+<tr>
+<td>Bilginin ömrü ve kaynaklar arası taşınabilirliği nedir?</td>
+<td>Piyasa katılımı, kural ve veri üretim süreci değişir.</td>
+<td>Yayın sonrası veya yeni piyasa testinde tekrarlanan katkı.</td>
+</tr>
+</tbody></table></div>
+<p>Bu araştırmanın ana hükmü, piyasaların tümüyle anlaşılmaz olduğu veya yeterince karmaşık bir modelle anlaşılacağı değildir. <strong>Bazı koşullu dağılım özelliklerini öngörmek mümkün görünür; uzun süreli yönsel rejimlerin başlangıç, ömür ve sonunu birlikte güvenilir biçimde tahmin etmek için kanıt çok daha sınırlıdır.</strong> Araştırmanın değeri, bu sınırın hangi veri, hedef ve ufukta nerede bulunduğunu ölçmektir.</p>
+<h2 id="s12">12. Kaynakça ve erişim denetimi</h2>
+<p>Aşağıdaki 48 kayıt 48 bağımsız ampirik doğrulama değildir. Bazıları özgün metodoloji, bazıları derleme/kurumsal yazar özeti veya veri belgesidir. Çalışma ve yayımlanmış sürümler birlikte verildiğinde aynı araştırma olarak sayılmıştır. Ö ve İ kayıtlarında ayrıntılı tablo veya replikasyon denetimi yapılmamıştır. Bağlantılar kaynakların kendisine veya yazarın/kurumun resmî kaydına gider. Erişim/tarama tarihi: 15 Ekim 2026.</p>
+<ol class="references">
+<li id="ref1"><b>Hamilton, J. D. (1989).</b> A New Approach to the Economic Analysis of Nonstationary Time Series and the Business Cycle. <i>Econometrica</i>, 57, 357–384. <a href="https://www.ssc.wisc.edu/~bhansen/718/Hamilton1989.pdf">Özgün makale PDF</a>. <em>T: yalnızca ilk sayfa ve yöntem çerçevesi; taranmış PDF.</em></li>
+<li id="ref2"><b>Pagan, A. R.; Sossounov, K. A. (2003).</b> A Simple Framework for Analysing Bull and Bear Markets. <i>Journal of Applied Econometrics</i>, 18, 23–46. <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/jae.664">Yayıncı ve öz</a>. <em>Ö.</em></li>
+<li id="ref3"><b>Maheu, J. M.; McCurdy, T. H. (2000).</b> Identifying Bull and Bear Markets in Stock Returns. <i>Journal of Business &amp; Economic Statistics</i>, 18, 100–112. <a href="https://www.tandfonline.com/doi/abs/10.1080/07350015.2000.10524851">Yayıncı</a>. <em>İ: yayımlanmış öz kesiti; tam metne erişilemedi.</em></li>
+<li id="ref4"><b>Lunde, A.; Timmermann, A. (2004).</b> Duration Dependence in Stock Prices: An Analysis of Bull and Bear Markets. <i>Journal of Business &amp; Economic Statistics</i>, 22, 253–273. <a href="https://www.tandfonline.com/doi/abs/10.1198/073500104000000136">Yayıncı</a>; <a href="https://econweb.ucsd.edu/~atimmerm/dur-14-2.pdf">incelenen 9 Temmuz 2002 çalışma metni</a>. <em>T: veri, süre yöntemi, bulgular ve Tablo 1; sayısal aktarım bu çalışma sürümündendir.</em></li>
+<li id="ref5"><b>Maheu, J. M.; McCurdy, T. H.; Song, Y. (2012).</b> Components of Bull and Bear Markets: Bull Corrections and Bear Rallies. <i>Journal of Business &amp; Economic Statistics</i>, 30, 391–403. <a href="https://experts.mcmaster.ca/scholarly-works/315796">Yazarın kurumsal kaydı ve öz</a>; <a href="https://doi.org/10.1080/07350015.2012.680412">DOI</a>. <em>Ö.</em></li>
+<li id="ref6"><b>Oelschläger, L.; Adam, T. (2023).</b> Detecting Bearish and Bullish Markets in Financial Time Series Using Hierarchical Hidden Markov Models. <i>Statistical Modelling</i>, 23(2). <a href="https://journals.sagepub.com/doi/10.1177/1471082X211034048">Yayımlanmış öz</a>; <a href="https://arxiv.org/abs/2007.14874">2020 ön baskı özeti</a>. <em>Ö: sürümlerin veri kümesi farkı metinde belirtildi.</em></li>
+<li id="ref7"><b>Adam, T.; Oelschläger, L. (2020).</b> Hidden Markov Models for Multi-scale Time Series: An Application to Stock Market Data. <i>Proceedings of the 35th IWSM</i>, 2–7. <a href="https://research-portal.st-andrews.ac.uk/en/publications/hidden-markov-models-for-multi-scale-time-series-an-application-t/">Kurumsal kayıt ve öz</a>. <em>Ö; konferans çalışması.</em></li>
+<li id="ref8"><b>Yu, S.-Z. (2010).</b> Hidden Semi-Markov Models. <i>Artificial Intelligence</i>, 174, 215–243. <a href="https://www.cs.ubc.ca/~murphyk/Teaching/CS540-Spring10/projects/Yu-hsmm09.pdf">Makale PDF</a>. <em>T: genel model, süre ve çıkarım çerçevesi; yöntem derlemesi.</em></li>
+<li id="ref9"><b>Bulla, J.; Bulla, I. (2006).</b> Stylized Facts of Financial Time Series and Hidden Semi-Markov Models. <i>Computational Statistics &amp; Data Analysis</i>, 51, 2192–2209. <a href="https://www.sciencedirect.com/science/article/pii/S0167947306002374">Yayıncı</a>. <em>İ; ayrıntılı ampirik üstünlük iddiasında kullanılmadı.</em></li>
+<li id="ref10"><b>Adams, R. P.; MacKay, D. J. C. (2007).</b> Bayesian Online Changepoint Detection. <a href="https://arxiv.org/pdf/0710.3742">Özgün çalışma PDF</a>. <em>T: run-length, hazard ve sınır koşulları; ön baskı.</em></li>
+<li id="ref11"><b>Bai, J.; Perron, P. (2003).</b> Computation and Analysis of Multiple Structural Change Models. <i>Journal of Applied Econometrics</i>, 18, 1–22. <a href="https://onlinelibrary.wiley.com/doi/10.1002/jae.659">Makale</a>. <em>T: yöntem, kırılma sayısı ve uygulama sınırlamaları.</em></li>
+<li id="ref12"><b>Corsi, F. (2009).</b> A Simple Approximate Long-Memory Model of Realized Volatility. <i>Journal of Financial Econometrics</i>, 7, 174–196. <a href="https://statmath.wu.ac.at/~hauser/LVs/FinEtricsQF/References/Corsi2009JFinEtrics_LMmodelRealizedVola.pdf">Makale PDF</a>. <em>T: HAR çerçevesi ve örneklem dışı sonuç/sonuç bölümü.</em></li>
+<li id="ref13"><b>Andersen, T. G.; Bollerslev, T.; Diebold, F. X.; Labys, P. (2003).</b> Modeling and Forecasting Realized Volatility. <i>Econometrica</i>, 71, 579–625. <a href="https://econ.duke.edu/~boller/Published_Papers/ecta_03.pdf">Makale PDF</a>. <em>T: RV, dağılım tahmini ve ölçüm hatası tartışması.</em></li>
+<li id="ref14"><b>Calvet, L. E.; Fisher, A. J. (2004).</b> How to Forecast Long-Run Volatility: Regime Switching and the Estimation of Multifractal Processes. <i>Journal of Financial Econometrics</i>, 2, 49–83. <a href="https://academic.oup.com/jfec/article-abstract/2/1/49/960710">Yayıncı</a>. <em>İ: 10–50 günlük bulgu yayımlanmış öz kesitinden; tablo denetimi yok.</em></li>
+<li id="ref15"><b>Diebold, F. X.; Inoue, A. (2001).</b> Long Memory and Regime Switching. <i>Journal of Econometrics</i>, 105, 131–159. <a href="https://www.sciencedirect.com/science/article/abs/pii/S0304407601000732">Yayıncı</a>. <em>İ: teorik sonuç ve öz/metin kesitleri.</em></li>
+<li id="ref16"><b>Engle, R. F.; Ghysels, E.; Sohn, B. (2013).</b> Stock Market Volatility and Macroeconomic Fundamentals. <i>Review of Economics and Statistics</i>, 95, 776–797. <a href="https://direct.mit.edu/rest/article/95/3/776/58092/Stock-Market-Volatility-and-Macroeconomic">Yayıncı</a>. <em>İ: bileşen modeli ve pseudo-OOS bulgusu öz kesitinden.</em></li>
+<li id="ref17"><b>Dacco, R.; Satchell, S. (1999).</b> Why Do Regime-Switching Models Forecast So Badly? <i>Journal of Forecasting</i>, 18, 1–16. <a href="https://doi.org/10.1002/(SICI)1099-131X(199901)18:1%3C1::AID-FOR685%3E3.0.CO;2-B">DOI / yayıncı</a>. <em>İ: döviz ve yanlış sınıflama argümanı indekslenen özden.</em></li>
+<li id="ref18"><b>Guidolin, M.; Timmermann, A. (2003).</b> Recursive Modeling of Nonlinear Dynamics in UK Stock Returns. <i>The Manchester School</i>, 71, 381–395. <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1467-9957.00352">Yayıncı ve öz</a>. <em>Ö.</em></li>
+<li id="ref19"><b>Welch, I.; Goyal, A. (2008).</b> A Comprehensive Look at the Empirical Performance of Equity Premium Prediction. <i>Review of Financial Studies</i>, 21, 1455–1508. <a href="https://academic.oup.com/rfs/article-abstract/21/4/1455/1565737">Yayıncı</a>. <em>İ: yayımlanmış öz; tam metin denetimi yapılmadı.</em></li>
+<li id="ref20"><b>Goyal, A.; Welch, I.; Zafirov, A. (2024).</b> A Comprehensive 2022 Look at the Empirical Performance of Equity Premium Prediction. <i>Review of Financial Studies</i>, 37, 3490–3557. <a href="https://academic.oup.com/rfs/article/37/11/3490/7749383">Açık erişimli makale</a>. <em>T: örneklem, karşılaştırma, tekrar değerlendirme ve bulgular.</em></li>
+<li id="ref21"><b>Boudoukh, J.; Richardson, M.; Whitelaw, R. F. (2008).</b> The Myth of Long-Horizon Predictability. <i>Review of Financial Studies</i>, 21, 1577–1605. <a href="https://pages.stern.nyu.edu/~rwhitela/papers/mlhp%20rfs08.pdf">Makale PDF</a>. <em>T: ufuklar arası bağımlılık ve ortak sınama argümanı.</em></li>
+<li id="ref22"><b>Diks, C.; Hommes, C.; Wang, J. (2019).</b> Critical Slowing Down as an Early Warning Signal for Financial Crises? <i>Empirical Economics</i>, 57. <a href="https://link.springer.com/article/10.1007/s00181-018-1527-3">Makale</a>. <em>T: ampirik bulgular, negatif sonuç ve tartışma.</em></li>
+<li id="ref23"><b>Liu, Y.; Tsyvinski, A. (2021).</b> Risks and Returns of Cryptocurrency. <i>Review of Financial Studies</i>, 34, 2689–2727. <a href="https://academic.oup.com/rfs/article-abstract/34/6/2689/5912024">Yayın kaydı</a>; <a href="https://cepr.org/voxeu/columns/risks-and-returns-cryptocurrencies">yazarların incelenen 2018 açıklaması</a>. <em>Ö: 2018 çalışma sürümünün yazar özeti; 2021 tablolarının denetimi yapılmadı.</em></li>
+<li id="ref24"><b>Makarov, I.; Schoar, A. (2020).</b> Trading and Arbitrage in Cryptocurrency Markets. <i>Journal of Financial Economics</i>, 135, 293–319. <a href="https://dspace.mit.edu/entities/publication/7f91bfb5-ba77-4d0e-9c79-ec75e104e6cc">MIT yazar arşivi ve öz</a>. <em>Ö.</em></li>
+<li id="ref25"><b>Schmeling, M.; Schrimpf, A.; Todorov, K. (2026).</b> Crypto Carry. <i>Management Science</i>, çevrim içi 6 Mayıs 2026. <a href="https://pubsonline.informs.org/doi/abs/10.1287/mnsc.2024.05069">Hakemli sürümün özü</a>; <a href="https://www.bis.org/publications/working-paper-1087-crypto-carry">BIS Working Paper 1087 (2023), yazar özeti</a>. <em>Ö: iki sürüm tek araştırma; çöküş öngörüsü BIS sürümünün özetine dayanır.</em></li>
+<li id="ref26"><b>Che, N.; Copestake, A.; Furceri, D.; Terracciano, T. (2023).</b> The Crypto Cycle and US Monetary Policy. <i>IMF Working Paper</i>, 23/163. <a href="https://www.imf.org/-/media/files/publications/wp/2023/english/wpiea2023163-print-pdf.pdf">Çalışma PDF</a>. <em>T: dinamik faktör, dönem farkı ve para politikası tanımlama yaklaşımı; çalışma metni.</em></li>
+<li id="ref27"><b>Cont, R.; Kukanov, A.; Stoikov, S. (2014).</b> The Price Impact of Order Book Events. <i>Journal of Financial Econometrics</i>, 12, 47–88. <a href="https://academic.oup.com/jfec/article-abstract/12/1/47/816163">Yayıncı ve öz</a>. <em>Ö: kısa aralıklı fiyat etkisi, uzun rejim tahmini değil.</em></li>
+<li id="ref28"><b>Brunnermeier, M. K.; Pedersen, L. H. (2009).</b> Market Liquidity and Funding Liquidity. <i>Review of Financial Studies</i>, 22, 2201–2238. <a href="https://markus.scholar.princeton.edu/publications/market-liquidity-and-funding-liquidity">Yazarın kurumsal kaydı ve öz</a>. <em>Ö: teorik mekanizma.</em></li>
+<li id="ref29"><b>Cong, L. W.; Li, X.; Tang, K.; Yang, Y. (2023).</b> Crypto Wash Trading. <i>Management Science</i>. <a href="https://pubsonline.informs.org/doi/abs/10.1287/mnsc.2021.02709">Yayıncı ve öz</a>. <em>Ö: örneklem kapsamı korunarak kullanıldı.</em></li>
+<li id="ref30"><b>Bekaert, G.; Hoerova, M. (2014).</b> The VIX, the Variance Premium and Stock Market Volatility. <i>Journal of Econometrics</i>, 183, 181–192. <a href="https://business.columbia.edu/faculty/research/vix-variance-premium-and-stock-market-volatility">Columbia yazar kaydı ve öz</a>. <em>Ö.</em></li>
+<li id="ref31"><b>Brauneis, A.; Sahiner, M. (2024 çevrim içi; 2026 cilt).</b> Crypto Volatility Forecasting: Mounting a HAR, Sentiment, and Machine Learning Horserace. <i>Asia-Pacific Financial Markets</i>, 33, 379–411. <a href="https://link.springer.com/article/10.1007/s10690-024-09510-6">Makale</a>. <em>T: yöntem, ufuk, test büyüklüğü ve karma bulgular.</em></li>
+<li id="ref32"><b>Gu, S.; Kelly, B.; Xiu, D. (2020).</b> Empirical Asset Pricing via Machine Learning. <i>Review of Financial Studies</i>, 33, 2223–2273. <a href="https://dachxiu.chicagobooth.edu/download/ML_BKP.pdf">İncelenen 13 Eylül 2019 yazar sürümü</a>. <em>T: veri, yöntem, OOS hedefi ve sonuç kapsamı.</em></li>
+<li id="ref33"><b>Gneiting, T.; Raftery, A. E. (2007).</b> Strictly Proper Scoring Rules, Prediction, and Estimation. <i>JASA</i>, 102, 359–378. <a href="https://doi.org/10.1198/016214506000001437">Yayıncı</a>. <em>İ: düzgün skor çerçevesi; tam PDF erişimi başarısız.</em></li>
+<li id="ref34"><b>Graf, E.; Schmoor, C.; Sauerbrei, W.; Schumacher, M. (1999).</b> Assessment and Comparison of Prognostic Classification Schemes for Survival Data. <i>Statistics in Medicine</i>, 18, 2529–2545. <a href="https://pubmed.ncbi.nlm.nih.gov/10474158/">Özgün makalenin PubMed özü</a>. <em>Ö: finans dışı ölçüm metodolojisi.</em></li>
+<li id="ref35"><b>Diebold, F. X.; Mariano, R. S. (1995).</b> Comparing Predictive Accuracy. <i>Journal of Business &amp; Economic Statistics</i>, 13, 253–263. <a href="https://economia.uc3m.es/jgonzalo/teaching/PhdTimeSeries/DieboldMariano.pdf">Makale PDF</a>; <a href="https://www.jstor.org/stable/1392185">yayın kaydı</a>. <em>İ/ilk sayfa: taranmış PDF’nin ayrıntılı denklemleri okunamadı; temel yöntem kapsamında kullanıldı.</em></li>
+<li id="ref36"><b>White, H. (2000).</b> A Reality Check for Data Snooping. <i>Econometrica</i>, 68, 1097–1126. <a href="https://users.ssc.wisc.edu/~behansen/718/White2000.pdf">Makale PDF</a>. <em>T: problem, karşılaştırma ilkesi ve sonuç bölümü.</em></li>
+<li id="ref37"><b>Hansen, P. R. (2005).</b> A Test for Superior Predictive Ability. <i>Journal of Business &amp; Economic Statistics</i>, 23, 365–380. <a href="https://www.jstor.org/stable/27638834">Yayın kaydı</a>. <em>İ: testin amacı ve Reality Check karşılaştırması; tam metin denetimi yok.</em></li>
+<li id="ref38"><b>Bergmeir, C.; Hyndman, R. J.; Koo, B. (2018).</b> A Note on the Validity of Cross-Validation for Evaluating Autoregressive Time Series Prediction. <i>Computational Statistics &amp; Data Analysis</i>, 120, 70–83. <a href="https://p5g.robjhyndman.com/publications/cv-time-series/">Yazarın sayfası ve öz</a>. <em>Ö: kullanılabilirlik koşulları korunarak aktarıldı.</em></li>
+<li id="ref39"><b>Patton, A. J. (2011).</b> Volatility Forecast Comparison Using Imperfect Volatility Proxies. <i>Journal of Econometrics</i>, 160, 246–256. <a href="https://scholars.duke.edu/publication/792433">Duke yazar kaydı ve öz</a>; <a href="https://doi.org/10.1016/j.jeconom.2010.03.034">DOI</a>. <em>Ö.</em></li>
+<li id="ref40"><b>Cox, D. R. (1972).</b> Regression Models and Life-Tables. <i>JRSS Series B</i>, 34, 187–202. <a href="https://doi.org/10.1111/j.2517-6161.1972.tb00899.x">Yayıncı</a>. <em>İ: genel sağkalım metodolojisi; finansal ampirik kanıt olarak kullanılmadı.</em></li>
+<li id="ref41"><b>Schularick, M.; Taylor, A. M. (2012).</b> Credit Booms Gone Bust: Monetary Policy, Leverage Cycles, and Financial Crises, 1870–2008. <i>American Economic Review</i>, 102, 1029–1061. <a href="https://www.aeaweb.org/articles?id=10.1257/aer.102.2.1029">Yayıncı ve öz</a>. <em>Ö: kriz hedefi ile piyasa yönü ayrıldı.</em></li>
+<li id="ref42"><b>CoinGlass (resmî belge).</b> Pair Liquidation Heatmap Model1. <a href="https://github.com/coinglass-official/coinglass-api-docs/blob/main/rest/Futures/Liquidation/liquidation-heatmap.md">Sağlayıcının açıklaması</a>. <em>D: hesaplama tanımı; bağımsız tahmin başarısı kanıtı değildir.</em></li>
+<li id="ref43"><b>Federal Reserve Bank of St. Louis (resmî belge).</b> ALFRED Download Data Help. <a href="https://alfred.stlouisfed.org/help/downloaddata">Vintage ve gerçek zaman veri açıklaması</a>. <em>D.</em></li>
+<li id="ref44"><b>Rua, A.; Nunes, L. C. (2009).</b> International Comovement of Stock Market Returns: A Wavelet Analysis. <i>Journal of Empirical Finance</i>, 16, 632–639. <a href="https://research.unl.pt/ws/portalfiles/portal/12146379/International_comovement_of_stock_market_returns.pdf">İncelenen yazar çalışma metni</a>. <em>T: zaman-frekans yaklaşımı ve bulgular.</em></li>
+<li id="ref45"><b>Ackerer, D.; Hugonnier, J.; Jermann, U. (2025 çevrim içi / 2026 cilt).</b> Perpetual Futures Pricing. <i>Mathematical Finance</i>, 36. <a href="https://onlinelibrary.wiley.com/doi/10.1111/mafi.70018">Makale</a>. <em>T: sözleşme, funding ve fiyatlama çerçevesi; yönsel tahmin kanıtı olarak kullanılmadı.</em></li>
+<li id="ref46"><b>Uno, H.; Cai, T.; Pencina, M. J.; D’Agostino, R. B.; Wei, L. J. (2011).</b> On the C-statistics for Evaluating Overall Adequacy of Risk Prediction Procedures with Censored Survival Data. <i>Statistics in Medicine</i>, 30, 1105–1117. <a href="https://pubmed.ncbi.nlm.nih.gov/21484848/">Özgün makale öz kaydı</a>. <em>İ: sansür altında ayrım ölçümü; finansal sonuç içermez.</em></li>
+<li id="ref47"><b>Politis, D. N.; Romano, J. P. (1994).</b> The Stationary Bootstrap. <i>JASA</i>, 89, 1303–1313. <a href="https://www.tandfonline.com/doi/abs/10.1080/01621459.1994.10476870">Yayıncı</a>. <em>İ: zayıf bağımlı durağan gözlemler için yeniden örnekleme.</em></li>
+<li id="ref48"><b>Maheu, J. M.; McCurdy, T. H.; Song, Y. (2020 çalışma metni).</b> Bull and Bear Markets During the COVID-19 Pandemic. <a href="https://arxiv.org/pdf/2012.01623">İncelenen Kasım 2020 sürümü</a>. <em>T: 2020 predictive likelihood karşılaştırması ve bir yıl ileri durum projeksiyonları; aynı araştırma grubundan, bağımsız replikasyon değildir.</em></li>
+</ol>
+
+<h2 id="s13">13. Predictive Market Intelligence — Scientific Research Agenda</h2>
+<p>Bu gündem herhangi bir mevcut teknoloji veya ürüne dayanmaz. Öncelikler, hipotezin yanlışlanabilirliği, bağımsız bilgi üretme olasılığı ve veri maliyeti üzerinden verilmiştir. Aşağıdaki başarı/başarısızlık kuralları deneyden önce somutlaştırılmalıdır; hiçbirinin başarılı çıkacağı varsayılmamaktadır.</p>
+<h3>Ortak deney sözleşmesi</h3>
+<p>Her çalışma bir ana hedef, bir ana ufuk ve sınırlı sayıda ana karşılaştırma kaydetmelidir. 3, 7, 14, 30, 90 ve 180 günün tamamı raporlanabilir; ancak bunların hepsinde aynı anda keşfedilen en iyi sonuç teyit bulgusu sayılmaz. Ana hedef dışındaki bulgular ikincil veya keşif olarak işaretlenir.</p>
+<p>Minimum anlamlı etki <strong>δ</strong>, istatistiksel anlamlılıktan önce belirlenir. Örneğin %1 göreli tahmin kaybı azalması yalnızca olası bir araştırma eşiğidir; bu monografide ölçülmüş sonuç veya evrensel gereklilik değildir. δ, ölçüm hatası ve bilimsel soruya göre seçilmelidir. Destek için güven aralığı, kalibrasyon ve olay çeşitliliği birlikte aranır. Anlamlı katkının dışlanması için aralığın üst sınırı δ’nın altında kalmalıdır; aralık genişse sonuç kararsızdır.</p>
+<p>Test gücü, gözlenen seri bağımlılığına ve makul rejim/şok senaryolarına uyan benzetimlerle değerlendirilmelidir. Geçiş, dönem ve bağımsız döngü sayısı ayrı raporlanır. “Her model için en az şu kadar olay gerekir” biçiminde evrensel bir sayı varsayılmaz. Farklı piyasalardaki ortak şoklar aynı deney olayının farklı gözlemleri olabilir.</p>
+<h3>Öncelik 1 — H1: Çok ölçekli risk bilgisi gerçekten ek öngörü sağlıyor mu?</h3>
+<p><strong>Hipotez:</strong> Günlük/haftalık/aylık risk bileşenleri birlikte, yalnızca son risk düzeyi ve tek ölçek geçmişine göre gelecek yüksek volatilite olasılığını iyileştirir.</p>
+<p><strong>Bilimsel gerekçe:</strong> Çok ölçekli volatilite literatürü en sağlam başlangıç kanıtını sunar. Araştırma, bu bilgiyi kalibre edilmiş olay olasılığına taşımanın değerini ölçer; yön iddiası içermez.</p>
+<p><strong>Gerekli veri:</strong> Likit hisse endeksleri, döviz ve başlıca kriptolar için karşılaştırılabilir günlük/gün içi fiyatlar; varyans ölçümünün hata denetimi. Ana ufuk 7 veya 14 gün; diğer ufuklar ikincil.</p>
+<p><strong>Test:</strong> Kronolojik dış değerlendirmede son değer, AR/HAR/GARCH ve basit olasılık modeli karşılaştırılır. Eğitimde sabitlenen yüksek risk eşiği, sürekli risk tahmini ve olay olasılığı birlikte puanlanır. Alternatif varyans ölçümleriyle duyarlılık yapılır.</p>
+<p><strong>Başarısızlık kriteri:</strong> Ek ölçekler en güçlü referansa göre δ düzeyinde katkı sağlamaz veya katkı tek bir krizden gelir; geniş aralıkta sonuç kararsız sayılır.</p>
+<p><strong>Beklenen bilgi kazanımı / maliyet:</strong> Düşük–orta maliyet. Rejim etiketi kullanmadan en temel koşullu bilgi miktarını verir.</p>
+<h3>Öncelik 2 — H2: Yaş bilgisi kalan ömre katkı sağlıyor mu?</h3>
+<p><strong>Hipotez:</strong> Rejim yaşı, güncel fiyat/risk koşulları kontrol edildikten sonra sona erme olasılığını ve kalan ömür dağılımını iyileştirir.</p>
+<p><strong>Bilimsel gerekçe:</strong> HMM’nin geometrik süresinin gereksiz kısıt olup olmadığını sınar; süre bağımlılığının tarihsel betimlemeden tahmine geçip geçmediğini belirler.</p>
+<p><strong>Gerekli veri:</strong> Birden çok uzun piyasa tarihi, sabit ve alternatif rejim tanımları, sansür bilgisi; başlangıç tarihinin posterior belirsizliği.</p>
+<p><strong>Test:</strong> Kovaryatsız sabit hazard, yalnız yaş, yalnız piyasa koşulları ve koşullar+yaş karşılaştırılır. Küçük HMM ve HSMM ek rakiplerdir. Ortak eğitim/test takvimi, sağkalım Brier, aralık kapsamı ve dönem bazlı değerlendirme kullanılır. Gizli heterojenlik içeren kontrol benzetimi yapılır.</p>
+<p><strong>Başarısızlık kriteri:</strong> Yaşın katkısı tanım değişince kaybolur, koşullara ek bilgi sağlamaz veya kalan ömür kalibrasyonu bozulur. Yetersiz uzun dönem sayısı “kanıt yok” ile “etki dışlandı” ayrımını gerektirir.</p>
+<p><strong>Beklenen bilgi kazanımı / maliyet:</strong> Orta maliyet. Rejimlerin gerçekten yaşlanıp yaşlanmadığı ile gözlem/seçilim etkisini ayırır.</p>
+<h3>Öncelik 3 — H3: Hiyerarşik yapı ortak tahmini iyileştiriyor mu?</h3>
+<p><strong>Hipotez:</strong> Yavaş üst durum ile hızlı alt durumun ortak modeli, ölçekleri ayrı modellemekten ve sürekli yavaş/hızlı bileşenlerden daha iyi dış örneklem tahmini üretir.</p>
+<p><strong>Bilimsel gerekçe:</strong> Çok ölçekli anlatının bilimsel değerini doğrudan sınar. Aynı veri üzerinden ralli–ana rejim karışıklığının gerçekten azalıp azalmadığını ölçer.</p>
+<p><strong>Gerekli veri:</strong> Uzun günlük fiyat ve risk serileri; mümkünse piyasa genişliği veya düşük frekanslı bağımsız ölçümler. Bir ana kısa ufuk ve bir ana yavaş ölçek önceden seçilir.</p>
+<p><strong>Test:</strong> Hiyerarşik HMM/HSMM, ayrı ölçek modelleri, basit ortak kovaryat modeli ve sürekli durum-uzayı rakibi karşılaştırılır. Aynı girdiler, eşit ayar fırsatı ve model karmaşıklığına duyarlılık kullanılır. Ana ölçüm ortak gözlenebilir dağılım ve sabit hedeflerdir; modelin kendi etiketleri değildir.</p>
+<p><strong>Başarısızlık kriteri:</strong> Daha iyi tarihsel ayrıştırmaya rağmen ileri dönem kaybı düşmez; kazanç yalnızca daha fazla parametre veya üst durumun gelecekle tahmin edilmesinden kaynaklanır.</p>
+<p><strong>Beklenen bilgi kazanımı / maliyet:</strong> Orta–yüksek maliyet. Hiyerarşinin yararlı bir betimleme mi, gerçek tahmin kısıtı mı olduğunu belirler.</p>
+<h3>Öncelik 4 — H4: Kripto türevleri fiyat ve riske ek bilgi taşıyor mu?</h3>
+<p><strong>Hipotez:</strong> Funding, normalize open interest ve vade uyumlu baz; fiyat, geçmiş risk, hacim ve piyasa ortak faktörüne ek olarak gelecek stres/ilk geçiş olasılığını iyileştirir. Üç veri ailesinin işaret ve katkısı ayrı sınanır.</p>
+<p><strong>Bilimsel gerekçe:</strong> Kalabalık kaldıraç ve arbitraj kısıtı mekanizması makuldür; mekanik fiyat ilişkisiyle gerçek öncü bilgiyi ayırmak gerekir.</p>
+<p><strong>Gerekli veri:</strong> Birden fazla borsada tutarlı geçmiş; gerçek erişim zamanlı funding, OI birimleri, spot–vadeli fiyatları ve sözleşme kuralları. Gerçekleşmiş likidasyon ve model haritası ayrı tutulur.</p>
+<p><strong>Test:</strong> Ortak tarih alt örnekleminde tek tek ve birlikte ablasyon; 3/7/14/30 gün; geçmiş getiri/volatilite kontrolleri; USD fiyat etkisinden arındırılmış OI; borsa dışlama ve sonraki dönem testi. Harita için sonradan yeniden çizilmiş görüntüler yerine tahmin anında arşivlenmiş sürümler gerekir.</p>
+<p><strong>Başarısızlık kriteri:</strong> Katkı kontrol değişkenleri, gerçek gecikme veya borsa dışlama sonrası kaybolur; sadece eş zamanlı tasfiyeyi açıklar; ileri dönem kalibrasyonu sürmez.</p>
+<p><strong>Beklenen bilgi kazanımı / maliyet:</strong> Yüksek veri maliyeti, orta model maliyeti. Türevlerin bağımsız bilgi mi yoksa mevcut fiyat/risk durumunun yankısı mı olduğunu gösterir.</p>
+<h3>Öncelik 5 — H5: Gerçek başlangıç öncesi uyarı mümkün mü?</h3>
+<p><strong>Hipotez:</strong> Mikro yapı, finansman ve katılım özellikleri, önceden sabitlenmiş bir yanlış alarm bütçesi altında makro rejim başlangıcından önce bilgi verir.</p>
+<p><strong>Bilimsel gerekçe:</strong> Araştırmanın en iddialı sorusunu, başlamış değişimi hızlı fark etmekten ayırır. Değişim tespiti zaten başladıktan sonra başarılıysa erken tahmin iddiası yapılmaz.</p>
+<p><strong>Gerekli veri:</strong> Uzun ve birden fazla olay içeren fiyat/likidite/finansman arşivi; olay başlangıcının tahmin ve teyit tarihleri; sınır tarihine ilişkin belirsizlik.</p>
+<p><strong>Test:</strong> Birincil ön uyarı penceresi örneğin 7–14 gün olarak seçilir. Sabit hazard, koşullu olay modeli ve BOCPD/CUSUM tespiti karşılaştırılır. Bir olaya bir alarm eşleştirmesi, alarm altında kalınan süre ve olay öncesi/sonrası zamanlama raporlanır. Önceki tahmin anından sonra oluşmuş özellikler silinir.</p>
+<p><strong>Başarısızlık kriteri:</strong> Kazanç yalnızca olaydan sonraki daha hızlı tespitten gelir; aynı recall için alarm süresi sürekli yüksek kalır; olay öncesi katkı başka dönemlerde tekrarlanmaz.</p>
+<p><strong>Beklenen bilgi kazanımı / maliyet:</strong> Yüksek maliyet. Kırılganlık, tetiklenme ve tespiti ayrıştırır; negatif sonuç bilimsel olarak değerlidir.</p>
+<h3>Öncelik 6 — H6: Makro bilgi 90–180 günlük tahmini iyileştiriyor mu?</h3>
+<p><strong>Hipotez:</strong> Gerçek yayın sürümlü makro/kredi/finansal koşullar, yavaş risk dağılımına ve önceden tanımlı uzun ufuk olayına fiyat geçmişinin üzerine katkı sağlar. Uzun yönsel rejim ayrı bir ikincil hipotezdir.</p>
+<p><strong>Bilimsel gerekçe:</strong> Yavaş ekonomik değişkenler için teorik gerekçe vardır; risk ile yönü karıştırmadan uzun ufka bilgi taşınıp taşınmadığını sınar.</p>
+<p><strong>Gerekli veri:</strong> Birden çok ekonomik döngüyü kapsayan uzun hisse/FX örneklemleri, makro vintage ve yayın zamanları; kripto daha kısa dış taşınabilirlik alt örneklemi olarak ele alınır.</p>
+<p><strong>Test:</strong> Karma frekanslı veya dinamik faktör modeli, yalnız piyasa geçmişi ve basit uzun bileşen rakipleriyle karşılaştırılır. 90 ve 180 gün birlikte raporlanır; örtüşen kayıplar ve çoklu ufuk kontrolü uygulanır. Bilinen vintage ile revize seri arasındaki fark ayrıca gösterilir.</p>
+<p><strong>Başarısızlık kriteri:</strong> Katkı yalnız revize veride görünür; uzun bloklar ve farklı döngülerde sürmez; risk iyileşmesi yön tahmini diye sunulur. Çok geniş aralık kesin olumsuz hüküm yerine kararsız sonuçtur.</p>
+<p><strong>Beklenen bilgi kazanımı / maliyet:</strong> Orta–yüksek maliyet ve uzun doğrulama süresi. Uzun ufukta hangi hedefin gerçekten öğrenilebilir olduğunu daraltır.</p>
+<h3>Öncelik 7 — H7: Kesikli rejim varsayımı gerekli mi?</h3>
+<p><strong>Hipotez:</strong> Az sayıda kesikli durum, kalın kuyruklu sürekli risk/drift ve düzgün geçişli rakiplere göre gelecekteki gözlenebilir dağılımı daha iyi tahmin eder.</p>
+<p><strong>Bilimsel gerekçe:</strong> “Rejim” sözcüğünün yalnızca uygun bir sınıflama mı yoksa yararlı bir dinamik kısıt mı olduğunu sınar. Sonucun olumsuz çıkması ana araştırma sorusunu ortadan kaldırmaz; temsili değiştirir.</p>
+<p><strong>Gerekli veri:</strong> H1–H3 ile aynı uzun piyasa serileri; yeni veri maliyeti düşük tutulabilir.</p>
+<p><strong>Test:</strong> Ortak geçmiş ve benzer ayar bütçesiyle HMM/HSMM, sürekli durum-uzayı, stokastik volatilite ve düzgün geçiş rakipleri; örneklem dışı yoğunluk, kuyruk olasılığı ve kalibrasyon. Durum sayısına ve uç değer dağılımına duyarlılık. Her modelin kendi etiketini gerçek kabul etmeden değerlendirme.</p>
+<p><strong>Başarısızlık kriteri:</strong> Kesikli modelin üstünlüğü dış örneklemde kaybolur veya yalnız Gaussian rakibin ağır kuyrukları yanlış modellemesinden doğar.</p>
+<p><strong>Beklenen bilgi kazanımı / maliyet:</strong> Orta maliyet. Araştırmanın ontolojik iddiasını zayıflatır veya güçlendirir; daha iyi bir tahmin dili seçmeye yardım eder.</p>
+<h3>Öncelik 8 — H8: Bulunan bilgi yeni dönem ve piyasaya taşınabiliyor mu?</h3>
+<p><strong>Hipotez:</strong> H1–H7’den destek alan sınırlı ilişkiler, yeni bir dönem veya dışarıda bırakılmış bir piyasa grubunda yeniden kalibre edilebilir ek bilgi taşır.</p>
+<p><strong>Bilimsel gerekçe:</strong> Tek örneklem başarısıyla bağımsız tekrar arasındaki farkı hedefler. Yeni piyasanın daha fazla satır sağlaması değil, farklı koşullarda aynı iddianın yaşaması önemlidir.</p>
+<p><strong>Gerekli veri:</strong> Ortak takvim blokları korunmuş çok piyasalı panel; borsa ve varlık grupları; geriye dönük evren seçimini önleyen delist tarihçesi; deney sonrası biriken yeni veri.</p>
+<p><strong>Test:</strong> Kronolojik dönem dışlama, piyasa grubu dışlama ve kaydedilmiş ileri dönem. Ortak şoklar kümelenir. Kaynak gecikmeleri artırılır, alternatif etiketler kullanılır; yalnız kalibrasyon güncellemesiyle tam yeniden öğrenme birbirinden ayrılır. Taşınabilirlik tanımı baştan sabitlenir.</p>
+<p><strong>Başarısızlık kriteri:</strong> Katkı yalnız ilk seçilmiş örneklemde kalır; yeni piyasa/dönemde tersine döner veya bütün üstünlük tek ortak krizden kaynaklanır.</p>
+<p><strong>Beklenen bilgi kazanımı / maliyet:</strong> Yüksek zaman maliyeti. En önemli çıktı, öngörülebilir bilginin kapsamı ve ne zaman sona erdiğidir.</p>
+<h3>Araştırma sırası ve durdurma kuralları</h3>
+<p>Önce H1 ve H7 ile ölçülebilir bilgi ve temsil gereği sınanır. Yeterli dönem varsa H2 ve H3; veri kalitesi kurulabiliyorsa H4 yürütülür. H5 ve H6, daha büyük iddiaları nedeniyle daha uzun ve güçlü doğrulama ister. H8, desteklenen her iddianın son sınamasıdır.</p>
+<p>Bu sıra tüm hipotezlerin başarıya ulaşmasını gerektirmez. H1’de öngörülebilir risk bulunup H5’te dönüş öncesi bilgi bulunmaması tutarlı bir sonuçtur. H7’de kesikli rejimlerin üstün gelmemesi de sürekli dağılım tahmininin değerini ortadan kaldırmaz.</p>
+<p>Veri olgunlaşmamışsa, yeterli bağımsız olay yoksa veya hedef tanımı kararsızsa daha karmaşık modelle devam etmek yerine <strong>sorunun mevcut veriyle tanımlanamadığı</strong> raporlanmalıdır. Geçerli bir araştırma çıktısı yalnızca başarılı tahminci değildir: hangi rejim boyutunda, hangi ufukta ve hangi bilgi kümesiyle savunulabilir öngörü bulunamadığını göstermek de temel bilgi kazanımıdır.</p>
+<p class="endmark">Literatür sentezi · Araştırma tarihi 15 Ekim 2026</p></main></div></body></html>
