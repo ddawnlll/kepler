@@ -22,6 +22,7 @@ from experiments.market_intelligence.h1 import (
 
 UTC = timezone.utc
 PROTOCOL_SHA = "6e6008088e55d670a55378c64ea9ac48f77d0ce9"
+PROTOCOL_FILE_SHA256 = "e1db4266091929a0b590e7f079700a26264c1f33f37ab88866b5b74cd081860f"
 DF = 5
 PSEUDO_OBSERVATIONS = 20.0
 STATES = (-1, 0, 1)
@@ -261,13 +262,10 @@ def run_h7(staging: Path, out_dir: Path, *, run_url: str | None = None) -> dict:
     from experiments.erf01.pipeline import DAYS, FOLDS, M1_NAMES, M2_NAMES, SEAL, SYMS
     from experiments.erf01.tape_adapter import load_development
     from kepler.intelligence.features import make_panel
-    import subprocess
 
     root = Path(__file__).resolve().parents[2]
     protocol_path = root / "reports" / "pmi_h7_protocol.md"
-    historical = subprocess.run(["git", "show", f"{PROTOCOL_SHA}:reports/pmi_h7_protocol.md"],
-                                capture_output=True, text=True, check=True).stdout
-    if historical != protocol_path.read_text(encoding="utf-8"):
+    if hashlib.sha256(protocol_path.read_bytes()).hexdigest() != PROTOCOL_FILE_SHA256:
         raise RuntimeError("H7 protocol differs from its frozen protocol commit")
     if SEAL != date(2026, 4, 1):
         raise RuntimeError("pipeline seal does not match H7 protocol")
