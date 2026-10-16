@@ -80,7 +80,7 @@ def test_invalid_close_and_unknown_event_labels_do_not_become_negatives():
 
 
 def test_temporal_split_purges_overlapping_and_equal_maturity_targets():
-    rows = [target(date(2025, 1, 1)), target(date(2025, 1, 10)),
+    rows = [target(date(2025, 1, 1)), target(date(2025, 1, 11)),
             target(date(2025, 1, 20))]
     split = temporal_split(rows, datetime(2025, 1, 19, tzinfo=UTC),
                            datetime(2025, 2, 1, tzinfo=UTC))
@@ -94,7 +94,7 @@ def test_threshold_fit_rejects_test_or_unmatured_rows():
     assert fit_quantile_threshold(rows[:1], .75,
                                   matured_before=datetime(2025, 1, 20, tzinfo=UTC)) == 1.0
     with pytest.raises(ValueError, match="not mature"):
-        fit_quantile_threshold(rows, .75, matured_before=datetime(2025, 1, 12, tzinfo=UTC))
+        fit_quantile_threshold(rows, .75, matured_before=datetime(2025, 1, 11, tzinfo=UTC))
     with pytest.raises(ValueError, match="quantile"):
         fit_quantile_threshold(rows[:1], 1.0,
                                matured_before=datetime(2025, 1, 20, tzinfo=UTC))
@@ -196,7 +196,7 @@ def test_h7_transition_is_cut_off_before_calibration_and_density_candidates_matc
     for day in list(mutated):
         if datetime.combine(day + timedelta(days=1), datetime.min.time(), UTC) > cutoff:
             mutated[day] = -mutated[day]
-    assert _state_transition(mutated, sorted(mutated), cutoff) == pytest.approx(transition)
+    np.testing.assert_array_equal(_state_transition(mutated, sorted(mutated), cutoff), transition)
     fit = [rows[i] for i in range(300)]
     test_rows = [(target_row, features, q_by_day[target_row.prediction_at.date() - timedelta(days=1)])
                  for target_row, features in rows[500:520]]
