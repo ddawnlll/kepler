@@ -36,4 +36,3 @@ Minimum meaningful effect is +0.01 nats per target. `SUPPORTED_ON_SEEN_DEV` requ
 ## Leakage controls and interpretation
 
 Tests must prove that future perturbations cannot change current slow/fast inputs, the fast-state threshold uses matured fit targets only, all predictions use timestamps no later than their features, train labels mature before test starts, and gaps/censoring are not scored as ordinary values. No future-smoothed hidden states are used. A linked model that changes state segmentation without improving observable future log score does not support predictive superiority. This benchmark is a lightweight test of shared fast/slow information; a full filtered HMM/HSMM remains incomplete.
-0510c00d202a17db87a2fda5cd02b305554d884430628ea6d8dee7eddd2b983e  reports/pmi_h3_protocol.md
