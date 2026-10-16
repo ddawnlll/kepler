@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 22587)
-Total output lines: 525
-
 # KEPLER — TASKS (G0–G1, çekirdek)
 
 ## ACTIVE SCIENTIFIC PRIORITY — Regime intelligence, NOT trading (2026-10-15)
@@ -129,7 +126,130 @@ Aktif iş: PMI-H3 lightweight linked fast/slow observable-risk benchmark (#69) |
 Ön kayıt `reports/edge_experts_protocol.md` (`e76cf5d`), sonuç `reports/edge_experts.md` (+ `reports/edge_experts_data/<uzman>/`). Defter satırları Modal Volume'da (`/edge/<uzman>/ledger_<uzman>.jsonl`), repoya taşınmadı (`ledger/*` ajan yazamaz; kullanıcı kilidiyle taşınır). Kullanıcı bu iş için "Faz 3 kararından önce yeni koşu yok" kuralını kaldırdı; Faz 3 kararı ve EV1 dondurma hâlâ bekliyor.
 - **Sonuç:** ZAYIF 3 (`trend`, `xs_momentum`, `nearhigh`: hepsi momentum ailesi, hepsinde K9 kalıyor), NO_EDGE 6 (`carry`, `bollinger` [geçersiz koşu: hesap bitti, deftere yazılmadı], `lowvol`, `fundcrowd`, `volrev`, `orderflow`). Ensemble'a giren yok (kapı: K1+K2+aile düzeltmesi+M1+M2; `nearhigh` M1'de kaldı).
 - **Koşulamayanlar:** gerçek maker/likidite (emir defteri yok), haber/NLP (veri yok), execution (uzman değil); volatility selling (opsiyon verisi yok). Vekiller etiketli.
-- **Kod:** 6 yeni uzman `kepler/experts/`, `Params.expert/xp/flip`, `market_state` `dvol`/`tbr`, `scripts/ensemble.py --expe…4587 tokens truncated…modal_app.py, uv.lock), `modal run modal_app.py --cmd 'pytest -q'`; tests/test_env.py 3 geçti |
+- **Kod:** 6 yeni uzman `kepler/experts/`, `Params.expert/xp/flip`, `market_state` `dvol`/`tbr`, `scripts/ensemble.py --expert`, `tests/test_edge_experts.py` (22). EV1 yolu değişmedi: günlük PnL birebir (net 8 297,33; 5 561 dolum).
+- **Deneme sayısı N:** 4 119 + 8 = **4 127** (Bollinger yazılmadı).
+- **Hazır bileşimler (2026-10-05):** `ensemble.PRESETS` (`ev1` varsayılan, `all9_equal`, `ev1_plus_new`). `ev1_plus_new` keşifte Sharpe 1,89 / maks DD %6,8 (EV1 1,45 / %9,7) ama kanıt değil; varsayılan değişmedi, K-kartı koşulmadan değiştirilmez.
+- **Yapı (2026-10-05, kullanıcı itirazı "hiyerarşik karmaşa"):** ensemble tek altyapı; uzmanlar takılabilir üye, bileşim `Params.names/weights`; EV1 = varsayılan bileşim. `expert=` yalnızca tek üyeli bileşim kısayolu. EV1 ve tek uzman çıktısı birebir aynı (günlük fark 0,0), `tests/test_ensemble_compose.py` (4).
+- **Keşif eki (2026-10-05, kullanıcı kararı: ön kayıt yok, stop şart):** `scripts/mr_explore.py` (stoplu, rejim kapılı saatlik mean reversion) + `scripts/mr_events.py` (olay çalışması); sonuç `reports/edge_experts.md` "Keşif eki". Özet: kapısız hepsi hesabı bitirdi; range rejimi + hacimsiz uç kapısıyla brüt pozitif ama maliyet yiyor (stopsuz net +937, stoplu −3 418, dönemler kararsız). Ledger dışı, N'ye girmez.
+- **Trade denetimi (2026-10-05, kullanıcı isteği):** `scripts/trade_audit.py` (Modal, veri) + `scripts/trade_audit_report.py` (PDF, LLM'siz); çıktı `reports/trade_audit.pdf` (+ `reports/trade_audit_data/`); EV1 @ $1 000. Nautilus hesaplayıcılarıyla çapraz kontrol (Sharpe/Sortino/DD/oynaklık/kazanma/beklenti aynı; pozisyon sayısı 1 242 = 1 242). Test: `tests/test_trade_audit.py`. Mutabakat farkı 0,034 USDT (`report.hourly_pnl` bilinen küçük fark). **Tek dosya, uzman bazlı (kullanıcı isteği):** `reports/ev1_new_trade_audit.pdf` (= `ev1_plus_new` bileşimi, 9 uzman; Bölüm II uzman bazlı genel bakış + her uzman için ayrı sayfa: tanım, tek başına K-kartı, bileşim içi rol, grafikler; Bölüm III ensemble genel analizi). Bileşim raporları: ev1 / ev1_plus_new / all9_equal (`reports/trade_audit_data/<bileşim>/`; ev1_plus_new için 9 leave-one-out koşusu `loo/`). Maliyet duyarlılığı tablosu (doğrusal yeniden hesap), uzman atfı, tek başına uzman tablosu, bileşim karşılaştırması eklendi. Genişletilmiş sürüm (19-20 sayfa): drawdown tablosu, getiri dağılımı/BTC beta, long/short maruziyet, sinyal kalibrasyonu, sembol incelemesi, MAE/MFE zamanlaması, karşı-olgusal stop ölçümü (saatlik gerçek pozisyon profiliyle; yeniden kurulum 922,6 vs hakem 918,3 USDT).
+- **Trade denetimi düzeltmeleri (2026-10-06, kullanıcı görevi; iki bağımsız inceleme sonrası):** özet ve tablo `reports/audit_fixes.md`, ilerleme/ön-koşu kararları `reports/fix_progress.md`, rapor `reports/trade_audit.pdf` (+ `reports/trade_audit_data/fix/`), ön kayıt TASLAKLARI (koşulmadı) `reports/preregistration/`. Nedensellik: sızıntı yok. Birincil metrikler sabit sermaye (Sharpe 1,86; DD %6,8); 2025+ Sharpe 0,12. MEXC kuralları `contract/detail` ile doğrulandı; asgari uygulanabilir sermaye $2 500. Defter sayımı N = 4 775 (TASKS'taki 4 127 eksik: pre2022 648 satırı Volume'da). DSR(N=4 775) ≈ 0; seçim prosedürü yazılı olmadığından walk-forward yapılamadı. Hayatta kalma: delist perp'ler veride var; dinamik evrende Sharpe 0,82–1,04. Ölçüm koşuları deftere/N'ye girmedi. Hakem/korumalı çekirdeğe dokunulmadı (Nautilus günlük sessizleştirmesi script içinde sarmalandı).
+- **Açık:** BACKTEST.md günlüğü (korumalı; `dvol`/`tbr` [VAR] notu). `evaluate.code_hash` uzman dosyalarını kapsamıyor. Ters yön (Bollinger −F net +8 025) post-hoc: yeni ön kayıt olmadan kullanılmaz.
+
+## İş planı v1 (2026-10-04): EV1'i anla, gerçekliğe bağla, karar ver
+
+**Hedef:** ~4 hafta içinde EV1 (ana sistem) için kanıta dayalı tek karar: **ADAY → G3 → küçük canlı (H5)** ya da **NO_DEPLOY**.
+Yeni uzman avı bu planın merkezi değildir; her yeni hipotez Faz 1'in teşhisinden çıkmalı (MISSION kural 4, 11).
+
+**Çıkış noktası (ölçülmüş):** EV1 net +8 297 / 10 000, 6 yıl; Sharpe 1,45, yıllık %13,8, oynaklık %9,5, maks DD %9,7; maliyetler brütün ≈ %10.
+Zayıf yanlar:
+- Netin %60'ı 2020–21'de (2022–26 Sharpe 0,81, alfa t 1,60; bu dönem için null koşulmadı).
+- Tasarım görülmüş veriyle yapıldı; K9 kaldı (range −895).
+- Ortalama brüt pozisyon 0,15× sermaye.
+- $500 hedef boyutları MEXC minimumlarının altında kalabilir (`reports/account_reality.md`, doğrulanmadı).
+- Veri denetimi kırmızı (`reports/data_audit.md`).
+- Deneme sayısı repo 4 117 / Modal 5 434 (`reports/trial_inventory.md`).
+
+| Faz | İş | Bitti sayılması için (kanıt) | Bağımlılık / kim | Durum |
+|---|---|---|---|---|
+| **0 Zemin** | 0.1 Modal erişimi bu ortamda | `modal run ... pytest -q` yeşil | kullanıcı: token | ☑ 2026-10-04: token ortamda, `modal` 1.6.1 (`modal[api-proxy-support]`) proxy altında çalışıyor; Modal'de 285 geçti, 4 atlandı, 9 kırmızı (hepsi 0.6: TradingView fixture'ı yok) |
+| | 0.2 Deneme sayacı tek kaynak (N) + defter tek yazar (flock Volume'da çalışmıyor) | N tanımı yazılı; iki konteyner aynı deftere yazamıyor (test) | çekirdek (ledger): kullanıcı kilidi + bağımsız inceleme | ☐ |
+| | 0.3 Veri kırmızılarının EV1'e etkisi: işaretli barlar/boşluklar/mark–last ayrışması/funding aralığı EV1 pozisyonlarına ne kadar değiyor | etkilenen PnL payı tabloda; eşik ön kayıtlı | 0.1 | ☐ |
+| | 0.4 Bugünkü mimari commit'lerinin bağımsız incelemesi (`a2de714`, `4a8ea18`) | bulgular giderildi/belgelendi | kullanıcı + `arch-reviewer` | ☐ |
+| | 0.5 Sızıntı mutantları (V8 LEAK fikri): bilinen 6–10 sızıntı (shift(-1), center, günün nihai hacmi, ileri ffill…) `audit` tarafından %100 yakalanıyor | `tests/test_leak_mutants.py` yeşil, her mutant kırmızıya düşüyor | – | ☐ |
+| | 0.6 `tests/data/tradingview` `.gitignore`'da (`data/`): TV doğrulaması temiz klonda koşmuyor (Modal'de 9 test bu yüzden kırmızı) | fixture yeniden üretilip repoya girer ya da test fixture yoksa açıkça atlanır | kullanıcı: mevcut test dosyası korumalı; fixture TradingView'den yeniden alınmalı | ☐ |
+| **1 EV1 adli analiz** (strateji değişmez; sonuçla EV1 ayarlanmaz) | 1.1 Uzman PnL atfı (E1/E2/E3 + etkileşim artığı) | toplam = net (mutabakat) | 0.1 | ☐ |
+| | 1.2 Ayrıştırma küpü: sembol × yıl × rejim × uzman; brüt → fee → slip → funding | tablo + toplamlar netle birebir | 0.1 | ☐ |
+| | 1.3 Pozisyon dönemleri: giriş gecikmesi, MFE/MAE, tutma, çıkışta geri verilen; karşı-olgu (işlem yok / +k gün tut / erken çık), yalnızca ölçüm (V8 Outcome Cube) | dönem tablosu + "para nerede kaybediliyor" özeti | 1.2 | ☐ |
+| | 1.4 Risk kullanımı: gerçekleşen oynaklık/τ, brüt kullanım, tampon ve IDM etkisi | tablo | 0.1 | ☐ |
+| | 1.5 Sönme testi: 2022-01 → 2026-04 için ayrı rotasyon null'u + DSR (ön kayıtlı not; N +1) | p, DSR raporda | 0.2 | ☑ 2026-10-05 `reports/ensemble_decay.md` (ön kayıt `d6bb74a`): **KANITSIZ (W2)**: brüt p 0,0100 geçti, DSR(W2) 0,926 < 0,95 kaldı; N +1 (ledger 4 119) |
+| **2 Hesap gerçekliği** (paralel) | 2.1 MEXC kontrat kuralları (9 sembol: tick, lot, minVol, contractSize, fee) | `account_reality_data/symbol_rules.csv` doğrulanmış | kullanıcı (proxy 403) | ☐ |
+| | 2.2 Gerçek lot/minimumla EV1 $500 ve $1k/$2k/$5k koşuları (bilgi) | red sayısı, 10k'ya göre takip farkı | 2.1, 0.1 | ☐ |
+| | 2.3 Asgari uygulanabilir sermaye ve sembol listesi | tek cümle karar önerisi | 2.2 | ☐ |
+| **3 Karar noktası** | K9 / ZAYIF: (a) EV2 ön kaydı, (b) ZAYIF kabul → NO_DEPLOY, (c) K9 eşiği (yalnızca sonraki test için) | karar MISSION/TASKS'a işlendi | kullanıcı; Faz 1–2 bitince | ☐ |
+| | EV1 kodunu ve parametrelerini dondur (hash + tarih): ≥ dondurma tarihi gelen veri gerçek ileriye dönük test olur | dondurma kaydı defterde | kullanıcı onayı | ☐ |
+| **4 EV2** (yalnız 3a seçilirse) | Faz 1'in teşhis ettiği tek mekanizmaya yönelik en çok 3 denemelik ön kayıt (ör. rejime göre trend ağırlığı, risk bütçesi τ, delta-nötr carry). `reports/bollinger_protocol.md` taslağı yalnızca teşhis range kaybını trend whipsaw'a bağlarsa aday | K1–K9 kartı; ADAY → G3 | Faz 3 | ☐ |
+| **5 Doğrulama + canlı** (yalnız ADAY) | G3 mühür tek atış; MEXC emir adaptörü + mutabakat + kill switch; küçük canlı (H5) | G3 kararı; canlı ilk 30 gün mutabakatı | kullanıcı komutu | ☐ |
+| **6 Hipotez hattı** (sürekli, bütçeli) | Kaynak sırası: yapısal mekanizma (funding/basis, OI/likidasyon verisi: Binance arşivinde olup olmadığı doğrulanmadı) > kitap kuralları. Çeyrekte en çok 3 ön kayıt; durma kuralı: 3 ardışık NO_EDGE → kaynak değiştir | ön kayıt + rapor | Faz 3'ten sonra | ☐ |
+| **7 Altyapı** (düşük öncelik) | WP1 (Zone Fade arayüze), `portfolio.size` + `risk.py` birleşimi (C), fabrika F2/H4 **ADAY çıkana kadar dondurulur** | – | – | ☐ |
+
+**Kullanıcıdan gereken:** Modal token (0.1), çekirdek kilidi + bağımsız inceleme (0.2, 0.4), MEXC kural çıktısı (2.1), K9 kararı ve EV1 dondurma onayı (Faz 3).
+**Durma kuralı:** Faz 1–2 bitince Faz 3 kararı verilmeden yeni strateji koşusu yapılmaz. Her faz sonunda TASKS güncellenir, commit + push.
+
+Bu dosya görev planıdır, spec değil. Hedef, kapılar ve kurallar `MISSION.md`'de; sistem haritası
+`ARCHITECTURE.md`'de. Çelişki olursa o iki belge kazanır; çelişkiyi raporla.
+
+Yeni ajan: bu listeyi kendi görev sistemine aç, kendi planla, işi sırala ve böl. Aşağıdaki görevler
+**ne** bitmeli ve **ne zaman bitti** sayılacağını söyler; **nasıl** yapacağın sana ait.
+İlerlemeyi her görev bitince bu dosyadaki tabloda güncelle ve commit + push et (yüzdeler sana ait
+tahmin; ama her "yapıldı" işareti için kanıt dosyası/test adı yaz). Başka bir ajan (Hermes) buradan
+devralacak.
+
+## KEPLER TOPLAM DURUM (tek bakışta; ARCHITECTURE'daki 10 sistem)
+
+Durum: ☑ çalışıyor ve testli, ◐ kısmen, ☐ yok. "Çalışıyor" = gerçek veride koşuldu veya testle kanıtlı.
+
+| # | Sistem | Durum | Ne var / ne yok |
+|---|---|---|---|
+| 1 | Veri hattı | ☑ | 2022-01 → 2026-03, 179 sembol, QC raporu, sha256 manifest, mühür ayrı (G0) |
+| 2 | Sinyal | ☑ | `kepler/signals.py`: 6 kitap sinyali (Turtle S1/S2, Donchian Trend, tsmom, dual momentum, carry→funding), parametreleri `reports/book_signals.md`'de veriye bakmadan sabit; tests/test_signals.py (12: elle hesaplı kural + nedensellik) |
+| 3 | Risk motoru | ☑ | `kepler/risk.py`: vol hedefleme, kaldıraç tavanı, rebalance bandı, kill switch; `evaluate(size=, kill_dd=)`; N-boyutlama/piramit/birim sınırları (`turtle.py`); `Spec.equity_scale` (equity'ye göre ölçekleme) + portföy kill switch (`run_book(kill_dd=)`); tests/test_ops.py, test_turtle.py, test_portfolio.py (elle hesaplı). Gerçek veri: tam Turtle S1/S2 (6 deneme) + BTC `vol_target` duman testi (3 deneme), `reports/backtest_completion.md`. Parametreler ayarlanmadı |
+| 4 | Backtest/hakem (yürütme+muhasebe) | ☑ | Nautilus hakem gerçekçi: sonraki-bar açılış dolumu, zorunlu slippage (`evaluate`), açık pozisyon çıkış maliyeti, likidasyon çifte sayımı yok, likidasyon sonrası hesap ölü (tests/test_realistic.py, test_referee.py). Tek sembol: portföy = sembol başına bağımsız koşu toplamı (G2'de) |
+| 5 | Denetim | ☑ | `evaluate()` tek giriş: nedensellik denetimi → hakem → defter (ledger flock + `audit_causal` korkuluğu); walk-forward, rotasyon null'ı, DSR; PBO/CSCV (`stats.cscv`), SPA (`stats.spa`), nested walk-forward (`kepler/nested.py`), işlem sırası MC, tarihsel stres (`kepler/stress.py`), kapasite/karekök etki (`kepler/capacity.py`): hepsi gerçek veride kullanıldı (`reports/backtest_completion.md`). Yok (gerekçeli): StepM/MCS, purge/embargo/CPCV (etiket yok), sentetik senaryo, limit emir, cross-margin |
+| 6 | Rapor | ☑ | `kepler/report.py` (işlem tablosu, saatlik PnL), `scripts/g2_report.py`, `scripts/search_report.py` (otomatik tablolar); özet raporlar elle |
+| 7 | Araştırma ajanı (7/24) | ☐ | Yalnızca talimat dosyaları (`factory/agents/`) |
+| 8 | Canlı emir katmanı | ☐ | Yok; MEXC desteği doğrulanmadı |
+| 9 | Güncelleme (15–20 dk) | ◐ | `factory/status.py` deterministik özet (LLM yok; tests/test_ops.py); `state/STATUS.md` üretildi. Zamanlama (cron) + Telegram gönderimi F2'ye (sunucu) bağlı |
+| 10 | Sekreter/müdür (Hermes) | ◐ | Hermes sunucuda kurulmuş (başka oturumdan), sekreter talimatı henüz uygulanmadı; kuyruk kodu var (`factory/enqueue.py`) |
+
+**Döngü** (sinyal → boyut → backtest → denetim → rapor): boyut (risk motoru) hariç uçtan uca çalıştı (G2: `scripts/g2.py` + `g2_report.py`, Modal'de); rapor elle yazıldı.
+**G2 cevabı: NO_EDGE** (kitap sinyalleri, 4–16 bps fee, gerçekçi hakem; en iyi turtle_s2 p=0,06 sert null'da, Bonferroni 0,72). Sıradaki: yeni hipotez (MISSION: aynı altyapıyla başka fikre geç). Hakem+yapıştırma 347 satır: tavan 450'ye çekildi (MISSION kural 7a, 2026-10-02).
+
+## Zone Fade v1 + market state servisi v0 (2026-10-02; kullanıcı görevi): bitti, NO_EDGE (K1)
+
+Ön kayıt `reports/zone_fade_protocol.md`, sonuç `reports/zone_fade.md` (+ `reports/zone_fade_data/`, `ledger/zone_fade/`). 165 işlem (örnek yeterli), K1 p = 0,371, DSR 0,706 → **NO_EDGE**; K2, K3, K5, K6, K9 da kalıyor; K4, K7, K8 geçiyor. Kümülatif deneme 4 118. ADAY değil: G3/mühür açılmadı.
+
+| İş | Durum | Kanıt |
+|---|---|---|
+| State servisi v0 (BACKTEST §15) | ☑ testli | `kepler/state.py` (178 satır), `tests/test_state.py`: §15.5'in 7 kuralı elle hesaplı (ATR 41/14, impuls 5,75, swing onay tarihleri, profil POC 45/VAL 10/VAH 70, 3d çıpa 2022-01-01) |
+| Zone Fade uzmanı + yönetici | ☑ testli | `kepler/experts/zone_fade.py` (193), `tests/test_zone_fade.py` (hakem e2e dahil); hedefte çıkış/koşullu giriş sinyalle taklit edildi (hakem değişmedi, taklit yetti) |
+| Tek koşu + K1–K10 | ☑ | `scripts/zone_fade.py`, `scripts/zone_fade_report.py`; 39 test geçti |
+| Bağımsız inceleme | ☑ | BLOCKER yok; bulgular `reports/zone_fade.md` içinde (giderilenler ve bilinçle giderilmeyenler) |
+
+**Devralma notları (yeniden keşfetme):**
+- Bu koşu Modal'de değil bir bulut konteynerinde yapıldı (Modal gRPC proxy'den geçmiyordu). Ham veri Binance arşivinden indirildi (`kepler.universe.build_symbol`, EXT-9 + K7 14 sembol), zip sha256'lar manifestle birebir; `universe.parquet` ve `usable.json` manifestten kuruldu. Komut: `PYTHONPATH=. python scripts/zone_fade.py --stage primary|second|k7|null --root <kök> --out <dizin>` (`--smoke` kısa boru hattı denemesi). Modal'de aynı komutlar `--root /data --out /data/zone_fade` ile koşar.
+- Açık, sonucu etkileyebilecek ama koşulmayan: aday yeniden oluşumunu engelleyen varyant (inceleme MAJOR; yeni ön kayıt ve deneme gerekir). Ayar turu yapılmadı.
+- Ekstra: `evaluate.py` `code_hash` state.py'yi kapsamıyor ve state `id`'si deftere yazılmıyor (hakem tarafı; kullanıcı onayı gerekir).
+- State servisi v0: ilk uzman sonucuna göre "genişler ya da atılır" (BACKTEST §15.7): öneri tutulsun (küçük, testli), yeni uzman yeni ön kayıtla eklensin.
+
+## Kararlar (2026-10-02, kullanıcı adına; MISSION'a işlendi)
+
+1. PR #2 main'e birleşti (gerçekçi hakem, G2, arama). Benim dalımdaki paralel sertleştirme (`b8ec86e`, `claude/blissful-ptolemy-4kmtvf`) birleştirilmez, arşiv olarak dalda kalır.
+2. G2 sonucu geçerli: kitap sinyallerinin kırpılmış sürümleri için `NO_EDGE`. Kapı ölçütü MISSION'da sabit: ortak-ofset rotasyon null'ı + Bonferroni (N = deneme sayısı) + fee 10 ve 16'da net > 0.
+3. Risk motoru ve trade yönetimi stratejinin parçası: G3'ten önce kullanılır.
+4. Satır tavanı: hakem+yapıştırma tavanı **kaldırıldı** (kullanıcı kararı 2026-10-02; önceki 300→450→600), sayı raporlanmaya devam eder; araştırma kodu tavansız ama testli ve kullanılıyor olmalı. Kullanılmayan `scripts/probe.py` silindi.
+5. Aynı veride serbest arama yok (MISSION kural 11).
+6. Mühürlü dönem (son 6 ay, ≥ 2026-04-01) **aday çıkmadıkça açılmaz** (kullanıcı kararı 2026-10-02; önceki "hiç kullanılmayacak" ifadesinin yerine). Aday (K1–K9) çıkarsa G3 yalnızca kullanıcı komutuyla, tek atış. MISSION'a işlendi.
+
+## Motor v2 + tam sistem testi (hepsi tamam; kullanıcı görevi 2026-10-02)
+
+Tasarım ve test senaryoları: `BACKTEST.md` §4 (stoplu sözleşme), §5.2, §6.4–6.5, §12.2.
+
+Soru: kitaptaki tam Turtle sistemi (N-boyutlama, 2N stop, piramitleme, portföy birim sınırları), G2'deki kırpılmış sürümün yapamadığını yapıyor mu? Evet → eksik olan motordu; hayır → sorun sinyalde.
+
+| Ad | İş | Bitti sayılması için | Durum |
+|---|---|---|---|
+| Stop | Strateji stopu: sinyal hedef + stop seviyesi döner; stop-market bar içinde (gap dahil) tetiklenir | Elle hesaplı stop testleri (gap, aynı bar giriş+stop, likidasyonla etkileşim) | ☑ tests/test_stops.py (8) |
+| Portföy | Portföy hakemi: tek Nautilus motorunda çok sembol, ortak sermaye, toplam brüt pozisyon tavanı | Tek sembolde mevcut hakemle birebir aynı sonuç + elle hesaplı portföy testleri | ☑ tests/test_portfolio.py (6; denklik: eski hakemden sabit sayılar) |
+| Risk | Risk motorunu bağla: N (ATR) boyutlama, piramitleme, birim sınırları (sembol/korele grup/toplam) | Testli; sabit boyuta karşı karşılaştırma raporlanır | ☑ tests/test_turtle.py (14); sabit boyuta karşı karşılaştırma `reports/full_systems.md` (g2_equiv) |
+| Tam sistem | Tam Turtle S1/S2 ön kaydı (`reports/full_systems_protocol.md`, koddan önce commit) ve tek koşu | `reports/full_systems.md`: MISSION başarı kartıyla (K1–K9) sonuç | ☑ **NO_EDGE (K1)**; S1 p=0,026 DSR 0,52, S2 p=0,060 DSR 0,36 |
+
+Kapsam dışı: haber, emir defteri, likidasyon akışı (veri yok), limit/maker emirler, diskresyoner kararlar.
+
+## İlerleme (G0–G1 çekirdek görevleri)
+
+| # | Görev | Ağırlık | Durum | Kanıt |
+|---|---|---|---|---|
+| A | Ortam, proje iskeleti, görev takibi | 5 | ☑ | Modal imajı (modal_app.py, uv.lock), `modal run modal_app.py --cmd 'pytest -q'`; tests/test_env.py 3 geçti |
 | B1 | Binance arşiv istemcisi (liste, indirme, checksum) | 8 | ☑ | tests/test_data.py: bozuk sha256 reddi + yeniden indirme, idempotent, mühür koruması (SealedError), gerçek uçtan uca (KEPLER_NET=1, Modal) |
 | B2 | Kalite kontrolü + manifest | 8 | ☑ | tests/test_qc.py+test_review_fixes.py: her kontrol sentetik bozuk veride tetikleniyor; gerçek veri: data_manifest/quality_report.md (0 ERROR, 695 WARN, 105 INFO, hiçbiri düzeltilmedi) |
 | B3 | Dönemsel hacim evreni + gerçek dev verisi | 8 | ☑ | data_manifest/manifest.json (178 sembol, 51 ay × top20; emtia/stable sıralamadan önce çıkarıldı, kline~mark ayrışma kesimi 28 sembol); son bar 2026-03-31 23:00; mühür ayı indirilmedi (tests/test_data.py::test_sealed_period_is_never_fetched, tests/test_universe_rules.py) |
