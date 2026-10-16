@@ -29,8 +29,11 @@ The **primary comparison** is mean test log-density gain of linked hierarchical 
 
 Primary score is paired log predictive density on matched target rows. Report PIT calibration in ten fixed-width bins, central 50/80/95% predictive interval coverage, support, parameter counts, and log scores by fold, year, and symbol. Aggregate correlated assets by UTC prediction date before a 28-calendar-day moving-block bootstrap (2,000 replicates, seed 20261016); do not bootstrap symbols as independent macro observations. If continuous 28-day support is unavailable, no interval is emitted.
 
+Also report each model's mean proper log score within the observed current joint-state cells `q_v1_proxy × fast_RV7_high/low`, with cell support. This is a stratified score of the future observable-risk density conditional on the joint current state, not a multivariate joint probability law across assets; cross-symbol dependence is represented only in the date-clustered uncertainty calculation. It is a prespecified diagnostic and does not replace the pooled primary score.
+
 Minimum meaningful effect is +0.01 nats per target. `SUPPORTED_ON_SEEN_DEV` requires a mean gain at least this large, a two-sided 95% date-block interval wholly above zero, and at least two test folds with valid scores. An interval spanning zero and the meaningful effect or inadequate target support is `INCONCLUSIVE`; otherwise report `NOT_SUPPORTED_ON_SEEN_DEV`. Any result on this previously examined development panel remains `EXPLORATORY`, never independent validation.
 
 ## Leakage controls and interpretation
 
 Tests must prove that future perturbations cannot change current slow/fast inputs, the fast-state threshold uses matured fit targets only, all predictions use timestamps no later than their features, train labels mature before test starts, and gaps/censoring are not scored as ordinary values. No future-smoothed hidden states are used. A linked model that changes state segmentation without improving observable future log score does not support predictive superiority. This benchmark is a lightweight test of shared fast/slow information; a full filtered HMM/HSMM remains incomplete.
+0510c00d202a17db87a2fda5cd02b305554d884430628ea6d8dee7eddd2b983e  reports/pmi_h3_protocol.md
