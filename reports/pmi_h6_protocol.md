@@ -4,7 +4,7 @@
 
 ## Scope
 
-Implement and test the reusable contract needed to prevent revised macro observations from entering a historical prediction before that exact vintage was available. A record must include its observation-period end, value, normalized unit, source, source vintage identifier, publication timestamp, vintage timestamp and actual availability timestamp. As-of selection uses `available_at <= prediction_at`; no forward filling creates a value for an unreleased observation.
+Implement and test the reusable contract needed to prevent revised macro observations from entering a historical prediction before that exact vintage was available. A record must include its observation-period end, value, normalized unit, source name and SHA256 manifest digest, source vintage identifier, publication timestamp, vintage timestamp and actual availability timestamp. As-of selection uses `available_at <= prediction_at`; no forward filling creates a value for an unreleased observation.
 
 Only synthetic records are used in tests. They validate the contract and are not macro market data, forecast observations or evidence for H6.
 
