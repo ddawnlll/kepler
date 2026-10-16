@@ -21,6 +21,8 @@ MARKET_FEATURES = ("log_rv1", "log_rv7", "log_rv30")
 def _state(raw) -> int | None:
     if raw is None:
         return None
+    if isinstance(raw, (bool, np.bool_)):
+        raise ValueError("boolean values are not observable spell states")
     try:
         value = float(raw)
     except (TypeError, ValueError):
@@ -229,6 +231,8 @@ def predict_one_day_exit_hazard(
     market_conditions: Sequence[float],
 ) -> float:
     """Predict a one-day state exit probability from an explicit model."""
+    if model.family not in HAZARD_FAMILIES:
+        raise ValueError(f"unknown fitted hazard family: {model.family}")
     if model.family == "state_age_blind":
         mapping = dict(model.state_hazards)
         if state not in mapping:
@@ -258,6 +262,8 @@ def forecast_remaining_survival(
     """
     prediction_at = utc(prediction_at)
     feature_available_at = utc(feature_available_at)
+    if model.family not in HAZARD_FAMILIES:
+        raise ValueError(f"unknown fitted hazard family: {model.family}")
     if feature_available_at > prediction_at:
         raise ValueError("market features were published after the prediction timestamp")
     if (isinstance(horizon_days, bool) or not isinstance(horizon_days, (int, np.integer))
@@ -267,22 +273,37 @@ def forecast_remaining_survival(
             or elapsed_age < 1 or isinstance(state, bool)
             or not isinstance(state, (int, np.integer)) or state not in STATES):
         raise ValueError("survival forecast needs a valid observable state and positive age")
-    survival = 1.0
-    daily_hazards = []
-    for offset in range(int(horizon_days)):
-        age = elapsed_age + offset
-        hazard = predict_one_day_exit_hazard(
-            model, state=state, elapsed_age=age, market_conditions=market_conditions)
-        daily_hazards.append(hazard)
-        survival *= 1.0 - hazard
+    horizon_days = int(horizon_days)
+    ages = np.arange(elapsed_age, elapsed_age + horizon_days, dtype=np.float64)
+    if model.family == "state_age_blind":
+        mapping = dict(model.state_hazards)
+        if state not in mapping:
+            raise ValueError("age-blind hazard model is missing the requested state")
+        daily_hazards = np.full(horizon_days, mapping[state], dtype=np.float64)
+    else:
+        market = np.asarray(market_conditions, dtype=np.float64)
+        if market.shape != (3,) or not np.isfinite(market).all():
+            raise ValueError("market features must be finite logRV1/logRV7/logRV30 values")
+        raw_columns = [np.full(horizon_days, float(state == candidate)) for candidate in STATES]
+        if model.family in {"age_only", "market_plus_age"}:
+            raw_columns.append(np.log1p(ages))
+        if model.family in {"market_only", "market_plus_age"}:
+            raw_columns.extend(np.full(horizon_days, value) for value in market)
+        raw = np.column_stack(raw_columns)
+        standardized = (raw - np.asarray(model.means)) / np.asarray(model.scales)
+        design = np.column_stack((np.ones(horizon_days), standardized))
+        logits = np.clip(design @ np.asarray(model.coefficients), -40.0, 40.0)
+        daily_hazards = np.clip(1.0 / (1.0 + np.exp(-logits)), 1e-6, 1 - 1e-6)
+    survival_path = np.cumprod(1.0 - daily_hazards)
+    survival = float(survival_path[-1])
     return {
         "family": model.family,
         "prediction_at": prediction_at.isoformat(),
         "feature_available_at": feature_available_at.isoformat(),
         "state": int(state), "elapsed_age": int(elapsed_age),
         "horizon_days": int(horizon_days),
-        "survival_probability": float(survival),
-        "daily_exit_hazards": daily_hazards,
+        "survival_probability": survival,
+        "daily_exit_hazards": daily_hazards.tolist(),
     }
 
 
@@ -336,8 +357,12 @@ def build_survival_landmarks(
             if j is None or q[j] is None:
                 # The state is known only through the last consecutive close.
                 followup = offset - 1
-                label_end = prediction + timedelta(days=followup)
                 status = "UNKNOWN_GAP" if j is not None or future_day <= days[-1] else "RIGHT_CENSORED"
+                # The absence is only knowable at the scheduled future close;
+                # do not let an adjacent fold train on the censoring outcome
+                # before that timestamp.
+                label_end = (prediction + timedelta(days=offset) if status == "UNKNOWN_GAP"
+                             else prediction + timedelta(days=followup))
                 break
             if q[j] != state:
                 followup, event_time, survives, status = offset, offset, 0, "OBSERVED"
@@ -377,17 +402,25 @@ def fit_delayed_entry_censor_curve(
     if any(r.label_end >= cutoff for r in rows):
         raise ValueError("censor risk rows must mature strictly before the cutoff")
     rows = [r for r in rows if r.elapsed_age is not None]
+    risk_counts: dict[int, int] = defaultdict(int)
+    censor_counts: dict[int, int] = defaultdict(int)
+    for row in rows:
+        # One-day intervals enter at attained age + 1, whether the next close
+        # is observed or is the first missing close. This is the delayed-entry
+        # reverse-KM risk set for the observation process.
+        attained_age = int(row.elapsed_age) + 1
+        risk_counts[attained_age] += 1
+        if row.status in {"UNKNOWN_GAP", "RIGHT_CENSORED"}:
+            censor_counts[attained_age] += 1
     g = 1.0
     curve = {0: {"survival": 1.0, "risk": 0.0, "censors": 0.0}}
     for age in range(1, through_age + 1):
-        at_risk = [r for r in rows
-                   if r.elapsed_age < age <= r.elapsed_age + max(1, r.followup_days)]
-        censored = [r for r in at_risk if r.status in {"UNKNOWN_GAP", "RIGHT_CENSORED"}
-                    and r.elapsed_age + max(1, r.followup_days) == age]
+        at_risk = risk_counts[age]
+        censored = censor_counts[age]
         if at_risk:
-            g *= 1.0 - len(censored) / len(at_risk)
-        curve[age] = {"survival": float(max(g, 0.0)), "risk": float(len(at_risk)),
-                      "censors": float(len(censored))}
+            g *= 1.0 - censored / at_risk
+        curve[age] = {"survival": float(max(g, 0.0)), "risk": float(at_risk),
+                      "censors": float(censored)}
     return curve
 
 
@@ -438,12 +471,21 @@ def ipcw_survival_scores(
                 "minimum_effective_n": float(minimum_effective_n), "support_adequate": False,
                 "n_left_censored": left_censored,
                 "n_censored_before_horizon": censored_before_horizon,
+                "n_zero_weight": zero_weight, "n_exits": 0, "n_survivors": 0,
+                "weight_sum": 0.0, "weight_square_sum": 0.0,
                 "n_zero_weight": zero_weight, "max_ipcw_weight": None,
-                "calibration_in_the_large": None, "reliability": []}
+                "calibration_in_the_large": None, "reliability": [],
+                "date_brier": {}, "date_weight_sum": {}}
     weights = np.asarray([r[2] for r in contributions], dtype=np.float64)
     probabilities = np.asarray([r[0] for r in contributions], dtype=np.float64)
     outcomes = np.asarray([r[1] for r in contributions], dtype=np.float64)
     effective_n = float(weights.sum() ** 2 / np.square(weights).sum())
+    date_weighted_losses: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0])
+    for probability, outcome, weight, day in contributions:
+        date_weighted_losses[day][0] += weight * (probability - outcome) ** 2
+        date_weighted_losses[day][1] += weight
+    date_brier = {day: loss / weight for day, (loss, weight) in sorted(date_weighted_losses.items())}
+    date_weight_sum = {day: weight for day, (_loss, weight) in sorted(date_weighted_losses.items())}
     edges = np.linspace(0, 1, bins + 1)
     reliability = []
     for i in range(bins):
@@ -462,8 +504,12 @@ def ipcw_survival_scores(
         })
     return {
         "n_scored": len(contributions),
+        "n_exits": int(np.sum(outcomes == 0.0)),
+        "n_survivors": int(np.sum(outcomes == 1.0)),
         "brier": float(np.dot(weights, np.square(probabilities - outcomes)) / weights.sum()),
         "effective_n": effective_n,
+        "weight_sum": float(weights.sum()),
+        "weight_square_sum": float(np.square(weights).sum()),
         "minimum_effective_n": float(minimum_effective_n),
         "support_adequate": effective_n >= minimum_effective_n,
         "n_left_censored": left_censored,
@@ -471,6 +517,7 @@ def ipcw_survival_scores(
         "n_zero_weight": zero_weight,
         "max_ipcw_weight": max_weight,
         "calibration_in_the_large": float(np.dot(weights, probabilities - outcomes) / weights.sum()),
-        "reliability": reliability,
+        "reliability": reliability, "date_brier": date_brier,
+        "date_weight_sum": date_weight_sum,
     }
 
