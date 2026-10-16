@@ -39,7 +39,8 @@ def test_spell_onset_age_exit_and_left_censor_are_explicit():
 
 def test_gap_censors_instead_of_becoming_a_survival_failure():
     rows = landmarks([-1, 1, 1, None, 1], horizon=2)
-    jan3 = next(row for row in rows if row.prediction_at.date() == date(2025, 1, 3))
+    jan3 = next(row for row in rows
+                if row.prediction_at == daily_close_time(date(2025, 1, 3)))
     assert jan3.status == "UNKNOWN_GAP"
     assert jan3.survives_horizon is None
     assert jan3.event_time_days is None
@@ -47,7 +48,8 @@ def test_gap_censors_instead_of_becoming_a_survival_failure():
     # this timestamp prevents a fold boundary from training on the future gap.
     assert jan3.label_end == daily_close_time(date(2025, 1, 4))
     # An observed state after a missing close does not inherit a known onset.
-    jan5 = next(row for row in rows if row.prediction_at.date() == date(2025, 1, 5))
+    jan5 = next(row for row in rows
+                if row.prediction_at == daily_close_time(date(2025, 1, 5)))
     assert jan5.left_censored
     assert jan5.elapsed_age is None
 
