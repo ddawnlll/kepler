@@ -9,6 +9,7 @@ from kepler.intelligence.survival import (
     fit_delayed_entry_censor_curve,
     forecast_remaining_survival,
     ipcw_survival_scores,
+    predict_one_day_exit_hazard,
 )
 from kepler.intelligence.validation import daily_close_time
 
@@ -42,6 +43,9 @@ def test_gap_censors_instead_of_becoming_a_survival_failure():
     assert jan3.status == "UNKNOWN_GAP"
     assert jan3.survives_horizon is None
     assert jan3.event_time_days is None
+    # A missing Jan 4 close is not knowable until its scheduled Jan 5 close;
+    # this timestamp prevents a fold boundary from training on the future gap.
+    assert jan3.label_end == daily_close_time(date(2025, 1, 4))
     # An observed state after a missing close does not inherit a known onset.
     jan5 = next(row for row in rows if row.prediction_at.date() == date(2025, 1, 5))
     assert jan5.left_censored
@@ -95,6 +99,10 @@ def test_four_frozen_hazard_candidates_are_train_only_and_forecast_as_of():
         assert result["prediction_at"] == target.prediction_at.isoformat()
         assert 0 <= result["survival_probability"] <= 1
         assert len(result["daily_exit_hazards"]) == 14
+        for offset, hazard in enumerate(result["daily_exit_hazards"]):
+            assert hazard == pytest.approx(predict_one_day_exit_hazard(
+                model, state=target.state, elapsed_age=target.elapsed_age + offset,
+                market_conditions=market[rows.index(target)]))
 
     with pytest.raises(ValueError, match="strictly before the cutoff"):
         fit_discrete_hazard(rows, market, family="market_plus_age",
@@ -147,6 +155,7 @@ def test_ipcw_uses_observation_probability_before_event_day():
     assert result["n_scored"] == 1
     assert result["max_ipcw_weight"] == pytest.approx(2.0)
     assert result["brier"] == pytest.approx((0.75 - 0.0) ** 2)
+    assert result["date_brier"] == {"2025-01-04": pytest.approx((0.75 - 0.0) ** 2)}
 
 
 def test_landmarks_reject_bad_prediction_times_and_invalid_horizons():
@@ -155,3 +164,15 @@ def test_landmarks_reject_bad_prediction_times_and_invalid_horizons():
         build_survival_landmarks("T", days, [0, 0], [daily_close_time(d) for d in days], 1.5)
     with pytest.raises(ValueError, match="matching UTC daily closes"):
         build_survival_landmarks("T", days, [0, 0], [daily_close_time(days[0])] * 2, 1)
+    with pytest.raises(ValueError, match="boolean values"):
+        build_survival_landmarks("T", days, [True, 0], [daily_close_time(d) for d in days], 1)
+
+
+def test_future_state_perturbation_does_not_change_prior_episode_age():
+    days = [date(2025, 1, 1) + timedelta(days=i) for i in range(6)]
+    times = [daily_close_time(day) for day in days]
+    baseline = build_survival_landmarks("T", days, [-1, -1, 1, 1, 1, 1], times, 2)
+    perturbed = build_survival_landmarks("T", days, [-1, -1, 1, -1, -1, -1], times, 2)
+    for index in (0, 1, 2):
+        assert baseline[index].state == perturbed[index].state
+        assert baseline[index].elapsed_age == perturbed[index].elapsed_age
