@@ -2,6 +2,8 @@
 
 **Status:** Preregistered before the H5 event-support census. The first H5 run is a support-only census and emits no model scores. A scored result is `NOT_RUN` until the frozen minimum event support is met. The q-state is an observable technical proxy, not an economic or latent-regime ground truth.
 
+**Pre-census timestamp amendment:** After the initial protocol commit `cafd4b2f6aa05c9337537366dc063dbae8911f35`, a boundary review clarified that a daily state keyed by date d becomes available at the completed UTC close `d + 1 day`. This amendment was committed before any event census or score. Every onset, warning feature and confirmation state must have its daily close strictly before the 2026-04-01 00:00 UTC seal; therefore the 2026-03-31 daily state is excluded. No event counts or forecasts were inspected when making this correction.
+
 ## Question and target ontology
 
 Can a causal warning score identify an upcoming onset of the frozen `q_v1_proxy` 7–14 calendar days before its onset, under a fixed budget of at most three alarm episodes per asset-year? Recognition within six days before onset and detection on or after onset are reported separately and cannot count as primary early-warning evidence.
@@ -12,7 +14,7 @@ A candidate onset for symbol s is the first day t with q(s,t) in {-1,+1} after e
 
 ## Data, chronology, and support-only gate
 
-Use the QC-validated canonical nine-symbol development tape through the exclusive 2026-04-01 seal, with 2020 warmup. OOS event support is counted only in the seven existing chronological folds (2023-H1 through 2026-Q1), and only when the complete 14-day warning origin window begins inside that same test fold and the confirmation window ends before the seal. The survivor-biased universe and q-v1's technical-proxy limitations must accompany all results. Do not inspect sealed/G3 data.
+Use the QC-validated canonical nine-symbol development tape through the exclusive 2026-04-01 00:00 UTC seal, with 2020 warmup. A q value keyed by daily date d is available only at the close `d + 1 day`; that timestamp must be strictly before the seal for the q value to enter event extraction, scoring, or confirmation. OOS event support is counted only in the seven existing chronological folds (2023-H1 through 2026-Q1), and only when the complete 14-day warning origin window begins inside that same test fold and the confirmation window is fully available before the seal. The survivor-biased universe and q-v1's technical-proxy limitations must accompany all results. Do not inspect sealed/G3 data.
 
 First run an event census that reports raw candidates, confirmed events, rejected candidates, unknown/gap candidates, left/right eligibility and independent cross-symbol event clusters by fold, year, symbol and direction. Independent event clusters are formed by sorting confirmed OOS onsets by date and assigning each event to the earliest cluster whose first date is within 13 calendar days; otherwise start a new cluster. This fixed anchored 14-day grouping avoids treating same-shock events across symbols as independent.
 
