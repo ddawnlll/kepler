@@ -42,8 +42,9 @@ CURRENT_EVIDENCE = (
         test_status="TESTED", empirical_status="NOT_RUN", independent_status="NOT_RUN",
         protocol_path="reports/pmi_h2_protocol.md",
         protocol_sha="97db1f8ea813d101e3cd69008ee63e1b3add5a4a",
-        blocker="PMI-H2 date-block evaluation and full sensitivity acceptance remain unrun.",
-        note="Separate historical ERF-01 age signal is adjacent exploratory evidence, not this protocol's result.",
+        blocker="Canonical PMI-H2 scoring, residual-life coverage and a Modal result artifact have not been generated.",
+        note=("Date-block uncertainty and the single frozen label-sensitivity path are implemented and synthetically tested. "
+              "The H2 event-support deduplication fix is on PR #75. Historical ERF-01 age evidence remains separate."),
         review_url="https://github.com/ddawnlll/kepler/pull/75",
         branch="codex/pmi-h2-duration"),
     EvidenceRecord(
