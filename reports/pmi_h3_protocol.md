@@ -16,7 +16,7 @@ Within each symbol and fold, training target labels must mature strictly before 
 
 ## Frozen candidate forecasts
 
-All distribution candidates use a location-scale Student-t density with df=5 and training-only residual scale. Candidate locations are:
+All distribution candidates use a location-scale Student-t density with df=5 and training-only residual scale. Residual RMS is calculated from each model's fit rows; the Student-t scale is `RMS × sqrt((df−2)/df)`, matching the residual variance to the Student-t implied variance, with a fixed numerical floor of 1e-6. The unlinked mixture uses the equal-weight average of its fast-component and slow-component residual mean squares before this conversion. Candidate locations are:
 
 1. **Unlinked fast/slow mixture:** equal-weight mixture of a fast-risk-class mean model and a slow-q-state mean model; the components are fit separately and are not linked.
 2. **Flat combined cells:** a separate mean for each observed slow-q × fast-risk cell, with a pooled fallback only for a cell absent from training.
