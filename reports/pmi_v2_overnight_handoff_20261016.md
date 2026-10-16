@@ -48,6 +48,9 @@ No issue is closed on the basis of these code and synthetic-test deliveries.
 
 These checks establish software behavior on synthetic fixtures only. They do not establish a forecast effect, calibration on market data, or a scientific hypothesis.
 
+
+- GitHub head checks: combined commit status was empty and the connected commit-run lookup returned no pull-request-triggered workflow runs for PR heads #74–#80 at this check. This is not a passing CI result.
+
 ## Modal and market-data record
 
 There is no PMI Actions run URL, Modal invocation, runtime, result artifact, configuration receipt, or scored market metric to report. No real PMI market-data evaluation was executed.
