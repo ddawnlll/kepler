@@ -174,10 +174,14 @@ def _unique_test_events(rows: list[dict]) -> dict:
         target = row["targets"][PRIMARY_HORIZON]
         if target.status != "OBSERVED" or target.survives_horizon != 0:
             continue
-        event_day = row["prediction_at"].date() + timedelta(days=target.event_time_days)
+        # `prediction_at` is the close timestamp for its date-key bar, so an
+        # exit after one future close is on that next bar's date (`date + 0`).
+        event_day = (row["prediction_at"].date()
+                     + timedelta(days=target.event_time_days - 1))
         event_key = (row["symbol"], event_day.isoformat())
         current = events.get(event_key)
-        if current is None or row["prediction_at"] < current["prediction_at"]:
+        if (current is None
+                or row["prediction_at"] < datetime.fromisoformat(current["first_test_prediction_at"])):
             events[event_key] = {"symbol": row["symbol"], "event_date": event_day.isoformat(),
                                  "fold": row["fold"], "first_test_prediction_at": row["prediction_at"].isoformat()}
     by_fold = defaultdict(int)

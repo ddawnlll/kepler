@@ -7,6 +7,7 @@ from experiments.market_intelligence.h2 import (
     _residual_intervals,
     _score_collection,
     _sensitivity_states,
+    _unique_test_events,
 )
 from kepler.intelligence.survival import build_survival_landmarks
 from kepler.intelligence.validation import daily_close_time
@@ -48,3 +49,25 @@ def test_label_sensitivity_keeps_missing_rolling_inputs_unknown():
         np.array([2.0, 1.5, -1.5, 1.49, np.nan]),
         np.array([.4, .35, .35, .8, .8]),
     ) == [1, 1, -1, 0, None]
+
+
+def test_unique_exit_events_deduplicate_repeated_landmarks_and_keep_first_prediction():
+    days = [date(2025, 1, 1) + timedelta(days=i) for i in range(5)]
+    targets = build_survival_landmarks(
+        "TEST", days, [-1, 1, 1, 1, -1],
+        [daily_close_time(day) for day in days], horizon_days=14,
+    )
+    rows = [
+        {"symbol": target.symbol, "fold": "f1", "prediction_at": target.prediction_at,
+         "targets": {14: target}}
+        for target in targets if target.elapsed_age is not None
+        and target.state == 1
+    ]
+
+    result = _unique_test_events(rows)
+
+    assert result["n_unique_symbol_exit_events"] == 1
+    assert result["n_distinct_exit_dates"] == 1
+    assert result["by_fold"] == {"f1": 1}
+    assert result["events"][0]["event_date"] == "2025-01-05"
+    assert result["events"][0]["first_test_prediction_at"] == daily_close_time(days[1]).isoformat()
