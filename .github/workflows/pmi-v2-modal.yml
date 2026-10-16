@@ -1,0 +1,87 @@
+name: PMI V2 bounded DEV evaluation
+
+on:
+  workflow_dispatch:
+    inputs:
+      experiment:
+        description: Bounded data preflight or frozen market-intelligence experiment
+        type: choice
+        required: true
+        options:
+          - smoke
+          - h1
+          - h7
+        default: h1
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pmi-v2-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+      PMI_EXPERIMENT: ${{ inputs.experiment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify clean source, Modal credentials and synthetic contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$MODAL_TOKEN_ID" && test -n "$MODAL_TOKEN_SECRET"
+          test -z "$(git status --porcelain)"
+          python -m pip install 'modal>=1.6,<2' uv
+          uv sync --frozen --dev --no-install-project
+          uv run --no-sync pytest -q tests/test_pmi_smoke.py tests/test_intelligence_v2.py tests/test_intelligence_core.py tests/test_erf01_regime_atlas.py tests/test_erf01_regression.py tests/test_erf01_tape.py tests/test_architecture.py
+      - name: Bounded selected evaluation on canonical Modal DEV tape
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$PMI_EXPERIMENT" in
+            smoke) result_marker='PMI_SMOKE_RESULT='; module='smoke' ;;
+            h1) result_marker='PMI_H1_RESULT=' ;;
+            h7) result_marker='PMI_H7_RESULT=' ;;
+            *) echo "Unsupported experiment selection" >&2; exit 2 ;;
+          esac
+          if [[ "$PMI_EXPERIMENT" == "h1" || "$PMI_EXPERIMENT" == "h7" ]]; then
+            module="$PMI_EXPERIMENT"
+          fi
+          run_path="/data/market_intelligence_v2/${PMI_EXPERIMENT}/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          command="python -m experiments.market_intelligence.${module} --staging /data/erf01/staging --out ${run_path} --run-url ${run_url}"
+          timeout --signal=TERM --kill-after=10s 430s modal run modal_app.py --cmd "$command" 2>&1 | tee "$RUNNER_TEMP/pmi-experiment.log"
+          grep -Fq "$result_marker" "$RUNNER_TEMP/pmi-experiment.log"
+      - name: Collect unique Modal evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_path="/data/market_intelligence_v2/${PMI_EXPERIMENT}/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          mkdir -p pmi-artifact
+          cp "$RUNNER_TEMP/pmi-experiment.log" pmi-artifact/run.log 2>/dev/null || true
+          listing="$(modal volume ls kepler-data "$run_path" 2>&1 || true)"
+          if grep -Fq 'metrics.json' <<< "$listing"; then
+            for file in metrics.json manifest.json predictions.jsonl; do
+              if grep -Fq "$file" <<< "$listing"; then
+                modal volume get kepler-data "${run_path}/${file}" "pmi-artifact/${file}"
+              fi
+            done
+          else
+            printf '%s\n' 'No completed Modal result files were available.' > pmi-artifact/result-status.txt
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pmi-${{ inputs.experiment }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: pmi-artifact/
+          if-no-files-found: warn
+          retention-days: 30
