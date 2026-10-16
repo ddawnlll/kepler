@@ -31,6 +31,14 @@ def test_revision_replaces_first_release_only_after_revision_is_available():
     assert asof_macro_vintages([first, revised], at(8)) == (revised,)
 
 
+def test_late_ingested_old_vintage_cannot_overwrite_newer_visible_revision():
+    old = release(2.5, vintage_id="old", publication=at(5), vintage=at(5), available=at(10))
+    revised = release(3.1, vintage_id="new", publication=at(6), vintage=at(6), available=at(6))
+
+    assert asof_macro_vintages([old, revised], at(9)) == (revised,)
+    assert asof_macro_vintages([revised, old], at(11)) == (revised,)
+
+
 def test_future_release_perturbation_and_input_order_do_not_change_past_asof_view():
     old = release(2.5, vintage_id="v1", available=at(5))
     second_period = release(1.8, period=date(2025, 1, 31), vintage_id="v1",

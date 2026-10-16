@@ -82,12 +82,13 @@ def asof_macro_vintages(
 
     selected = []
     for key, versions in grouped.items():
-        latest_time = max(record.available_at for record in versions)
-        latest = [record for record in versions if record.available_at == latest_time]
-        newest_vintage = max(record.vintage_at for record in latest)
-        latest = [record for record in latest if record.vintage_at == newest_vintage]
+        # Availability gates which versions can participate. Among visible
+        # versions, the source vintage timestamp determines revision order;
+        # a late-ingested old vintage must not overwrite a newer visible one.
+        newest_vintage = max(record.vintage_at for record in versions)
+        latest = [record for record in versions if record.vintage_at == newest_vintage]
         signatures = {(record.value, record.unit, record.source, record.source_sha256, record.vintage_id,
-                       record.publication_at) for record in latest}
+                       record.publication_at, record.available_at) for record in latest}
         if len(signatures) > 1:
             raise ValueError(f"ambiguous macro vintage at the same as-of time: {key}")
         selected.append(sorted(latest, key=lambda record: (record.source, record.vintage_id))[0])
