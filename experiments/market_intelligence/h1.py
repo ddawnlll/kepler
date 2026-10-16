@@ -20,6 +20,7 @@ from kepler.intelligence.validation import (
 
 UTC = timezone.utc
 PROTOCOL_SHA = "d89003c7c956ff25a3b1602fdffdaf5cb81028c0"
+PROTOCOL_FILE_SHA256 = "fa2f9abfd6ea24631b7fe31089290d6fa82547f37effba938d0b8579f85d8708"
 SEAL = datetime(2026, 4, 1, tzinfo=UTC)
 PRIMARY_HORIZON_DAYS = 7
 FEATURE_NAMES = {
@@ -220,12 +221,10 @@ def run_h1(staging: Path, out_dir: Path, *, run_url: str | None = None) -> dict:
     from experiments.erf01.tape_adapter import load_development
 
     protocol_file = Path(__file__).resolve().parents[2] / "reports" / "pmi_h1_protocol.md"
-    # The protocol must still be byte-identical to the committed preregistration.
-    import subprocess
-    historical = subprocess.run(["git", "show", f"{PROTOCOL_SHA}:reports/pmi_h1_protocol.md"],
-                                capture_output=True, text=True, check=True).stdout
-    current = protocol_file.read_text(encoding="utf-8")
-    if historical != current:
+    # Modal images exclude .git; the source commit is checked in the Actions
+    # preflight and the vendored protocol content is hash-checked here.
+    current_hash = hashlib.sha256(protocol_file.read_bytes()).hexdigest()
+    if current_hash != PROTOCOL_FILE_SHA256:
         raise RuntimeError("H1 protocol differs from its frozen protocol commit")
     if SEAL != date(2026, 4, 1):
         raise RuntimeError("pipeline seal does not match H1 protocol")
