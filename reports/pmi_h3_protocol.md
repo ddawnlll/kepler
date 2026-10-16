@@ -4,7 +4,7 @@
 
 ## Primary question and target
 
-Does a small linked fast/slow state model improve a seven-day future realized-volatility distribution forecast over an unlinked fast/slow mixture, when both use only information available at the prediction timestamp? The primary observable target is log future RV7 from the shared PMI target contract. Unknown gaps and right-censored targets are excluded from density scoring and reported; they are not assigned fabricated values.
+Does a small linked fast/slow state model improve a seven-day future realized-volatility distribution forecast over an unlinked fast/slow mixture, when both use only information available at the prediction timestamp? The primary observable target is `log(max(future_RV7, 1e-12))` from the shared PMI target contract; exact-zero RV7 is retained at this fixed floor. Unknown gaps and right-censored targets are excluded from density scoring and reported; they are not assigned fabricated values.
 
 At each completed UTC daily close, the slow state is the existing causal `q_v1_proxy` in {-1, 0, +1}. The fast state is high/low trailing RV7, where the high threshold is the 75th percentile of current RV7 among matured fit rows for that symbol/fold. The threshold and all model parameters are fit using training rows only. Forecast timestamps and feature publication timestamps are explicit.
 
