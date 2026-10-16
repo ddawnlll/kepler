@@ -270,6 +270,7 @@ def _evaluate_ontology(
             test_state_targets = [target for target in h14_targets
                                   if start <= target.prediction_at < end]
             left_censored_test = sum(target.elapsed_age is None for target in test_state_targets)
+            observed_episode_onsets = sum(target.elapsed_age == 1 for target in test_state_targets)
             left_censored_total += left_censored_test
             test_targets = []
             for target in test_state_targets:
@@ -288,6 +289,7 @@ def _evaluate_ontology(
                     "training_feature_complete_rows": len(finite_train),
                     "test_state_rows": len(test_state_targets), "test_feature_complete_rows": len(test_targets),
                     "test_left_censored_landmarks": left_censored_test,
+                    "test_observed_episode_onsets": observed_episode_onsets,
                 }
                 continue
             try:
@@ -310,6 +312,7 @@ def _evaluate_ontology(
                     "training_risk_rows": len(train_risk), "training_feature_complete_rows": len(finite_train),
                     "test_feature_complete_rows": len(test_targets),
                     "test_left_censored_landmarks": left_censored_test,
+                    "test_observed_episode_onsets": observed_episode_onsets,
                 }
                 continue
             censor_curves[(fold_name, symbol)] = censor_curve
@@ -358,6 +361,7 @@ def _evaluate_ontology(
                 "test_state_rows": len(test_state_targets),
                 "test_feature_complete_rows": len(test_targets),
                 "test_left_censored_landmarks": left_censored_test,
+                "test_observed_episode_onsets": observed_episode_onsets,
                 "models": model_support,
             }
         all_predictions.extend(fold_predictions)
@@ -567,6 +571,9 @@ def run_h2(staging: Path, out_dir: Path, *, run_url: str | None = None) -> dict:
         "n_distinct_prediction_dates": len({row["prediction_at"].date().isoformat() for row in all_predictions}),
         "test_left_censored_landmarks": sum(
             item.get("test_left_censored_landmarks", 0)
+            for fold in fold_status.values() for item in fold["symbols"].values()),
+        "test_observed_episode_onsets": sum(
+            item.get("test_observed_episode_onsets", 0)
             for fold in fold_status.values() for item in fold["symbols"].values()),
         "label_sensitivity": {
             "status": "EXPLORATORY" if sensitivity_predictions else "NOT_RUN",
