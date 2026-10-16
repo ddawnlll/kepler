@@ -13,6 +13,7 @@ on:
           - h2
           - h3
           - h4
+          - h5
           - h7
         default: h1
 
@@ -47,6 +48,7 @@ jobs:
             h2) protocol_sha='97db1f8ea813d101e3cd69008ee63e1b3add5a4a'; protocol_path='reports/pmi_h2_protocol.md' ;;
             h3) protocol_sha='72af5363ec89482d904c0c0a80e4867a1f122369'; protocol_path='reports/pmi_h3_protocol.md' ;;
             h4) protocol_sha='d83a085c00688d30a4942e80a8888ea6656064be'; protocol_path='reports/pmi_h4_protocol.md' ;;
+            h5) protocol_sha='2755a7709eb1e84814c9b99237a88e73c6ec549c'; protocol_path='reports/pmi_h5_protocol.md' ;;
             h7) protocol_sha='6e6008088e55d670a55378c64ea9ac48f77d0ce9'; protocol_path='reports/pmi_h7_protocol.md' ;;
             *) protocol_sha=''; protocol_path='' ;;
           esac
@@ -58,7 +60,7 @@ jobs:
           fi
           python -m pip install 'modal>=1.6,<2' uv
           uv sync --frozen --dev --no-install-project
-          uv run --no-sync pytest -q tests/test_pmi_smoke.py tests/test_pmi_h2_runner.py tests/test_survival_v2.py tests/test_pmi_h3.py tests/test_pmi_h4.py tests/test_intelligence_v2.py tests/test_intelligence_core.py tests/test_erf01_regime_atlas.py tests/test_erf01_regression.py tests/test_erf01_tape.py tests/test_architecture.py
+          uv run --no-sync pytest -q tests/test_pmi_smoke.py tests/test_pmi_h2_runner.py tests/test_survival_v2.py tests/test_pmi_h3.py tests/test_pmi_h4.py tests/test_market_events.py tests/test_pmi_h5_support.py tests/test_intelligence_v2.py tests/test_intelligence_core.py tests/test_erf01_regime_atlas.py tests/test_erf01_regression.py tests/test_erf01_tape.py tests/test_architecture.py
       - name: Bounded selected evaluation on canonical Modal DEV tape
         shell: bash
         run: |
@@ -69,15 +71,18 @@ jobs:
             h2) result_marker='PMI_H2_RESULT='; module='h2' ;;
             h3) result_marker='PMI_H3_RESULT='; module='h3' ;;
             h4) result_marker='PMI_H4_RESULT='; module='h4' ;;
+            h5) result_marker='PMI_H5_RESULT='; module='h5' ;;
             h7) result_marker='PMI_H7_RESULT=' ;;
             *) echo "Unsupported experiment selection" >&2; exit 2 ;;
           esac
-          if [[ "$PMI_EXPERIMENT" == "h1" || "$PMI_EXPERIMENT" == "h7" ]]; then
+          if [[ "$PMI_EXPERIMENT" == "h1" || "$PMI_EXPERIMENT" == "h5" || "$PMI_EXPERIMENT" == "h7" ]]; then
             module="$PMI_EXPERIMENT"
           fi
           run_path="/data/market_intelligence_v2/${PMI_EXPERIMENT}/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          command="python -m experiments.market_intelligence.${module} --staging /data/erf01/staging --out ${run_path} --run-url ${run_url}"
+          stage_args=''
+          if [[ "$PMI_EXPERIMENT" == "h5" ]]; then stage_args='--stage support'; fi
+          command="python -m experiments.market_intelligence.${module} ${stage_args} --staging /data/erf01/staging --out ${run_path} --run-url ${run_url}"
           timeout --signal=TERM --kill-after=10s 430s modal run modal_app.py --cmd "$command" 2>&1 | tee "$RUNNER_TEMP/pmi-experiment.log"
           grep -Fq "$result_marker" "$RUNNER_TEMP/pmi-experiment.log"
       - name: Collect unique Modal evidence
@@ -90,7 +95,7 @@ jobs:
           cp "$RUNNER_TEMP/pmi-experiment.log" pmi-artifact/run.log 2>/dev/null || true
           listing="$(modal volume ls kepler-data "$run_path" 2>&1 || true)"
           if grep -Fq 'metrics.json' <<< "$listing"; then
-            for file in metrics.json manifest.json predictions.jsonl sensitivity_predictions.jsonl; do
+            for file in metrics.json manifest.json predictions.jsonl sensitivity_predictions.jsonl events.jsonl; do
               if grep -Fq "$file" <<< "$listing"; then
                 modal volume get kepler-data "${run_path}/${file}" "pmi-artifact/${file}"
               fi
