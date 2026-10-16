@@ -10,6 +10,7 @@ on:
         options:
           - smoke
           - h1
+          - h2
           - h7
         default: h1
 
@@ -41,6 +42,7 @@ jobs:
           test -z "$(git status --porcelain)"
           case "$PMI_EXPERIMENT" in
             h1) protocol_sha='d89003c7c956ff25a3b1602fdffdaf5cb81028c0'; protocol_path='reports/pmi_h1_protocol.md' ;;
+            h2) protocol_sha='97db1f8ea813d101e3cd69008ee63e1b3add5a4a'; protocol_path='reports/pmi_h2_protocol.md' ;;
             h7) protocol_sha='6e6008088e55d670a55378c64ea9ac48f77d0ce9'; protocol_path='reports/pmi_h7_protocol.md' ;;
             *) protocol_sha=''; protocol_path='' ;;
           esac
@@ -52,7 +54,7 @@ jobs:
           fi
           python -m pip install 'modal>=1.6,<2' uv
           uv sync --frozen --dev --no-install-project
-          uv run --no-sync pytest -q tests/test_pmi_smoke.py tests/test_intelligence_v2.py tests/test_intelligence_core.py tests/test_erf01_regime_atlas.py tests/test_erf01_regression.py tests/test_erf01_tape.py tests/test_architecture.py
+          uv run --no-sync pytest -q tests/test_pmi_smoke.py tests/test_pmi_h2_runner.py tests/test_survival_v2.py tests/test_intelligence_v2.py tests/test_intelligence_core.py tests/test_erf01_regime_atlas.py tests/test_erf01_regression.py tests/test_erf01_tape.py tests/test_architecture.py
       - name: Bounded selected evaluation on canonical Modal DEV tape
         shell: bash
         run: |
@@ -60,6 +62,7 @@ jobs:
           case "$PMI_EXPERIMENT" in
             smoke) result_marker='PMI_SMOKE_RESULT='; module='smoke' ;;
             h1) result_marker='PMI_H1_RESULT=' ;;
+            h2) result_marker='PMI_H2_RESULT='; module='h2' ;;
             h7) result_marker='PMI_H7_RESULT=' ;;
             *) echo "Unsupported experiment selection" >&2; exit 2 ;;
           esac
@@ -81,7 +84,7 @@ jobs:
           cp "$RUNNER_TEMP/pmi-experiment.log" pmi-artifact/run.log 2>/dev/null || true
           listing="$(modal volume ls kepler-data "$run_path" 2>&1 || true)"
           if grep -Fq 'metrics.json' <<< "$listing"; then
-            for file in metrics.json manifest.json predictions.jsonl; do
+            for file in metrics.json manifest.json predictions.jsonl sensitivity_predictions.jsonl; do
               if grep -Fq "$file" <<< "$listing"; then
                 modal volume get kepler-data "${run_path}/${file}" "pmi-artifact/${file}"
               fi
