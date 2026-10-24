@@ -13,6 +13,9 @@ permissions:
   issues: write
 jobs:
   one-registered-trial:
+    # PAUSED: no approved paid Modal budget; CLI timeout does not bound remote container runtime.
+    # Re-enable only after independent remote <=180s timeout, aggregate budget gate, and explicit owner approval.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
