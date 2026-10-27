@@ -1,12 +1,15 @@
-"""Fail-closed regression guard for research compute while budget is unapproved.
+"""Fail-closed static guard for named research workflows while budget is unapproved.
 
-This intentionally does not attempt Modal access or prove provider-side billing caps.
-It prevents a future PR from silently enabling a paid manual workflow on main.
+This does not prove provider-side runtime/billing caps, stop external Modal dispatch,
+or replace explicit owner authorization. It intentionally disables every job in
+these workflows, including jobs added later or invoking Modal differently.
 """
 
 import json
 import re
 from pathlib import Path
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +31,29 @@ def _job_blocks(source: str):
         yield header.group(1), jobs[header.end():end]
 
 
+def _assert_paused_workflow(source: str, name: str):
+    # Disallow inline/multi-trigger syntax; the only permitted trigger is a
+    # top-level manual workflow_dispatch mapping, with no implicit extra events.
+    on_header = re.search(r"(?m)^on:\s*$", source)
+    assert on_header, f"{name}: expected explicit top-level on: mapping"
+    triggers = []
+    for line in source[on_header.end():].splitlines():
+        if line.strip() and not line[0].isspace() and not line.startswith("#"):
+            break
+        trigger = re.match(r"^  ([A-Za-z_][\w-]*):", line)
+        if trigger:
+            triggers.append(trigger.group(1))
+    assert triggers == ["workflow_dispatch"], f"{name}: only manual dispatch is permitted"
+
+    # Guard ALL jobs, not just jobs containing the literal 'modal run'. A new
+    # job or a changed command spelling must not bypass the hold.
+    for job, block in _job_blocks(source):
+        assert re.search(r"(?m)^    if:\s*\$\{\{\s*false\s*\}\}\s*$", block), (
+            f"{name}/{job}: job-level disabled guard required until fresh "
+            "owner authorization and provider-side hard caps"
+        )
+
+
 def test_research_factory_remains_paused():
     policy = json.loads((ROOT / "factory/policy.json").read_text(encoding="utf-8"))
     assert policy["research_enabled"] is False
@@ -39,16 +65,23 @@ def test_paid_research_workflows_cannot_dispatch_remote_compute():
     assert (workflows / PAID_RESEARCH_WORKFLOWS[1]).is_file()
     for name in PAID_RESEARCH_WORKFLOWS:
         path = workflows / name
-        if not path.exists():
-            continue
-        source = path.read_text(encoding="utf-8")
-        assert re.search(r"(?m)^  workflow_dispatch:\s*$", source), name
-        assert not re.search(r"(?m)^  (?:schedule|push|pull_request):\s*$", source), name
-        paid_jobs = [(job, block) for job, block in _job_blocks(source)
-                     if re.search(r"\bmodal\s+run\b", block)]
-        assert paid_jobs, f"{name}: expected at least one research compute job"
-        for job, block in paid_jobs:
-            assert re.search(r"(?m)^    if:\s*\$\{\{\s*false\s*\}\}\s*$", block), (
-                f"{name}/{job}: remote compute must remain job-level disabled "
-                "until fresh owner authorization and provider-side hard caps"
-            )
+        if path.exists():
+            _assert_paused_workflow(path.read_text(encoding="utf-8"), name)
+
+
+@pytest.mark.parametrize("injection", [
+    "  push:\n",  # new automatic trigger
+    "  workflow_call:\n",  # reusable workflow dispatch
+])
+def test_rejects_extra_triggers(injection):
+    source = "on:\n  workflow_dispatch:\n" + injection + "jobs:\n  compute:\n    if: ${{ false }}\n"
+    with pytest.raises(AssertionError, match="only manual dispatch"):
+        _assert_paused_workflow(source, "synthetic.yml")
+
+
+def test_rejects_new_job_without_guard_even_if_modal_command_is_renamed():
+    source = ("on:\n  workflow_dispatch:\njobs:\n  old:\n    if: ${{ false }}\n"
+              "  new:\n    runs-on: ubuntu-latest\n    steps:\n"
+              "      - run: python -m modal run modal_app.py\n")
+    with pytest.raises(AssertionError, match="new: job-level disabled"):
+        _assert_paused_workflow(source, "synthetic.yml")
