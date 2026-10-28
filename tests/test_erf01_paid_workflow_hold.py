@@ -21,23 +21,29 @@ PAID_RESEARCH_WORKFLOWS = (
 
 
 def _job_blocks(source: str):
-    jobs_header = re.search(r"(?m)^jobs:\s*$", source)
-    assert jobs_header, "research workflow must have a jobs section"
-    jobs = source[jobs_header.end():]
-    headers = list(re.finditer(r"(?m)^  ([a-zA-Z][\w-]*):\s*$", jobs))
+    # Reject duplicate YAML keys: a later jobs/job key can replace an earlier
+    # guarded block in parsers that silently accept duplicate mappings.
+    jobs_headers = list(re.finditer(r"(?m)^jobs:[ \t]*$", source))
+    assert len(jobs_headers) == 1, "exactly one jobs section required"
+    jobs = source[jobs_headers[0].end():]
+    headers = list(re.finditer(r"(?m)^  ([a-zA-Z][\w-]*):[ \t]*$", jobs))
     assert headers, "research workflow must have at least one job"
+    seen = set()
     for index, header in enumerate(headers):
+        name = header.group(1)
+        assert name not in seen, f"duplicate job name: {name}"
+        seen.add(name)
         end = headers[index + 1].start() if index + 1 < len(headers) else len(jobs)
-        yield header.group(1), jobs[header.end():end]
+        yield name, jobs[header.end():end]
 
 
 def _assert_paused_workflow(source: str, name: str):
     # Disallow inline/multi-trigger syntax; the only permitted trigger is a
     # top-level manual workflow_dispatch mapping, with no implicit extra events.
-    on_header = re.search(r"(?m)^on:\s*$", source)
-    assert on_header, f"{name}: expected explicit top-level on: mapping"
+    on_headers = list(re.finditer(r"(?m)^on:[ \t]*$", source))
+    assert len(on_headers) == 1, f"{name}: exactly one top-level on mapping required"
     triggers = []
-    for line in source[on_header.end():].splitlines():
+    for line in source[on_headers[0].end():].splitlines():
         if line.strip() and not line[0].isspace() and not line.startswith("#"):
             break
         trigger = re.match(r"^  ([A-Za-z_][\w-]*):", line)
@@ -48,8 +54,10 @@ def _assert_paused_workflow(source: str, name: str):
     # Guard ALL jobs, not just jobs containing the literal 'modal run'. A new
     # job or a changed command spelling must not bypass the hold.
     for job, block in _job_blocks(source):
-        assert re.search(r"(?m)^    if:\s*\$\{\{\s*false\s*\}\}\s*$", block), (
-            f"{name}/{job}: job-level disabled guard required until fresh "
+        # A second job-level 'if:' can override an earlier false guard.
+        guards = [value.strip() for value in re.findall(r"(?m)^    if:[ \t]*(.*)$", block)]
+        assert len(guards) == 1 and re.fullmatch(r"\$\{\{\s*false\s*\}\}", guards[0]), (
+            f"{name}/{job}: exactly one job-level disabled guard required until fresh "
             "owner authorization and provider-side hard caps"
         )
 
@@ -85,3 +93,15 @@ def test_rejects_new_job_without_guard_even_if_modal_command_is_renamed():
               "      - run: python -m modal run modal_app.py\n")
     with pytest.raises(AssertionError, match="new: job-level disabled"):
         _assert_paused_workflow(source, "synthetic.yml")
+
+
+@pytest.mark.parametrize("injection, expected", [
+    ("    if: ${{ true }}\\n", "exactly one job-level disabled guard"),
+    ("  compute:\\n    if: ${{ true }}\\n", "duplicate job name"),
+    ("jobs:\\n  replacement:\\n    if: ${{ true }}\\n", "exactly one jobs section"),
+    ("on:\\n  push:\\n", "exactly one top-level on mapping"),
+])
+def test_rejects_duplicate_yaml_keys_that_can_override_pause(injection, expected):
+    source = "on:\\n  workflow_dispatch:\\njobs:\\n  compute:\\n    if: ${{ false }}\\n"
+    with pytest.raises(AssertionError, match=expected):
+        _assert_paused_workflow(source + injection, "synthetic.yml")
