@@ -91,17 +91,17 @@ def test_rejects_new_job_without_guard_even_if_modal_command_is_renamed():
     source = ("on:\n  workflow_dispatch:\njobs:\n  old:\n    if: ${{ false }}\n"
               "  new:\n    runs-on: ubuntu-latest\n    steps:\n"
               "      - run: python -m modal run modal_app.py\n")
-    with pytest.raises(AssertionError, match="new: job-level disabled"):
+    with pytest.raises(AssertionError, match="new: exactly one job-level disabled"):
         _assert_paused_workflow(source, "synthetic.yml")
 
 
 @pytest.mark.parametrize("injection, expected", [
-    ("    if: ${{ true }}\\n", "exactly one job-level disabled guard"),
-    ("  compute:\\n    if: ${{ true }}\\n", "duplicate job name"),
-    ("jobs:\\n  replacement:\\n    if: ${{ true }}\\n", "exactly one jobs section"),
-    ("on:\\n  push:\\n", "exactly one top-level on mapping"),
+    ("    if: ${{ true }}\n", "exactly one job-level disabled guard"),
+    ("  compute:\n    if: ${{ true }}\n", "duplicate job name"),
+    ("jobs:\n  replacement:\n    if: ${{ true }}\n", "exactly one jobs section"),
+    ("on:\n  push:\n", "exactly one top-level on mapping"),
 ])
 def test_rejects_duplicate_yaml_keys_that_can_override_pause(injection, expected):
-    source = "on:\\n  workflow_dispatch:\\njobs:\\n  compute:\\n    if: ${{ false }}\\n"
+    source = "on:\n  workflow_dispatch:\njobs:\n  compute:\n    if: ${{ false }}\n"
     with pytest.raises(AssertionError, match=expected):
         _assert_paused_workflow(source + injection, "synthetic.yml")
