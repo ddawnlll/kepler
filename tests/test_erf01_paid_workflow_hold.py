@@ -26,6 +26,13 @@ def _job_blocks(source: str):
     jobs_headers = list(re.finditer(r"(?m)^jobs:[ \t]*$", source))
     assert len(jobs_headers) == 1, "exactly one jobs section required"
     jobs = source[jobs_headers[0].end():]
+    # Valid YAML allows inline job mappings and job IDs beginning with "_".
+    # Fail closed rather than silently skipping any unguarded job declaration.
+    for line in jobs.splitlines():
+        if line.startswith("  ") and not line.startswith("   ") and line.strip() and not line.lstrip().startswith("#"):
+            assert re.fullmatch(r"  [A-Za-z][\w-]*:[ \t]*", line), (
+                f"noncanonical or unguarded job declaration: {line!r}"
+            )
     headers = list(re.finditer(r"(?m)^  ([a-zA-Z][\w-]*):[ \t]*$", jobs))
     assert headers, "research workflow must have at least one job"
     seen = set()
@@ -105,3 +112,14 @@ def test_rejects_duplicate_yaml_keys_that_can_override_pause(injection, expected
     source = "on:\n  workflow_dispatch:\njobs:\n  compute:\n    if: ${{ false }}\n"
     with pytest.raises(AssertionError, match=expected):
         _assert_paused_workflow(source + injection, "synthetic.yml")
+
+
+@pytest.mark.parametrize("injection", [
+    "  rogue: {runs-on: ubuntu-latest, steps: [{run: echo-bypass}]}\n",
+    "  _rogue:\n    runs-on: ubuntu-latest\n",
+    "  rogue: # comment disguises a valid YAML job\n    runs-on: ubuntu-latest\n",
+])
+def test_rejects_unguarded_noncanonical_job_keys(injection):
+    source = "on:\n  workflow_dispatch:\njobs:\n  compute:\n    if: ${{ false }}\n" + injection
+    with pytest.raises(AssertionError, match="noncanonical or unguarded job declaration"):
+        _assert_paused_workflow(source, "synthetic.yml")
