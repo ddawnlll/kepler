@@ -53,9 +53,14 @@ def _assert_paused_workflow(source: str, name: str):
     for line in source[on_headers[0].end():].splitlines():
         if line.strip() and not line[0].isspace() and not line.startswith("#"):
             break
-        trigger = re.match(r"^  ([A-Za-z_][\w-]*):", line)
-        if trigger:
-            triggers.append(trigger.group(1))
+        # Quoted YAML event keys (e.g. "push":) are valid in Actions.
+        # Count every trigger-level mapping entry; do not silently ignore
+        # quoted keys, explicit keys or YAML merge-key syntax.
+        if line.startswith("  ") and not line.startswith("   ") and line.strip() and not line.lstrip().startswith("#"):
+            assert re.fullmatch(r"  workflow_dispatch:[ \t]*", line), (
+                f"{name}: only manual dispatch is permitted"
+            )
+            triggers.append("workflow_dispatch")
     assert triggers == ["workflow_dispatch"], f"{name}: only manual dispatch is permitted"
 
     # Guard ALL jobs, not just jobs containing the literal 'modal run'. A new
@@ -87,6 +92,9 @@ def test_paid_research_workflows_cannot_dispatch_remote_compute():
 @pytest.mark.parametrize("injection", [
     "  push:\n",  # new automatic trigger
     "  workflow_call:\n",  # reusable workflow dispatch
+    '  "push":\n',  # valid quoted YAML event key
+    "  'push':\n",  # valid single-quoted YAML event key
+    "  <<: *events\n",  # YAML merge-key injection must fail closed
 ])
 def test_rejects_extra_triggers(injection):
     source = "on:\n  workflow_dispatch:\n" + injection + "jobs:\n  compute:\n    if: ${{ false }}\n"
