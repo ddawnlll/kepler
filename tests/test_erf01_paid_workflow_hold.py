@@ -139,8 +139,8 @@ def test_rejects_new_job_without_guard_even_if_modal_command_is_renamed():
 @pytest.mark.parametrize("injection, expected", [
     ("    if: ${{ true }}\n", "exactly one job-level disabled guard"),
     ("  compute:\n    if: ${{ true }}\n", "duplicate job name"),
-    ("jobs:\n  replacement:\n    if: ${{ true }}\n", "exactly one jobs section"),
-    ("on:\n  push:\n", "exactly one top-level on mapping"),
+    ("jobs:\n  replacement:\n    if: ${{ true }}\n", "duplicate top-level YAML key"),
+    ("on:\n  push:\n", "duplicate top-level YAML key"),
 ])
 def test_rejects_duplicate_yaml_keys_that_can_override_pause(injection, expected):
     source = "on:\n  workflow_dispatch:\njobs:\n  compute:\n    if: ${{ false }}\n"
