@@ -29,7 +29,7 @@ def _assert_canonical_top_level_keys(source: str):
     for line in source.splitlines():
         if not line.strip() or line.lstrip().startswith("#") or line[0].isspace():
             continue
-        match = re.match(r"^([A-Za-z][A-Za-z0-9_-]*):(?:[ \\t]|$)", line)
+        match = re.match(r"^([A-Za-z][A-Za-z0-9_-]*):(?:[ \t]|$)", line)
         assert match, f"noncanonical top-level YAML key: {line!r}"
         key = match.group(1)
         assert key not in seen, f"duplicate top-level YAML key: {key}"
@@ -89,7 +89,7 @@ def _assert_paused_workflow(source: str, name: str):
         for line in block.splitlines():
             if (line.startswith("    ") and not line.startswith("     ")
                     and line.strip() and not line.lstrip().startswith("#")):
-                assert re.match(r"^    [A-Za-z][A-Za-z0-9_-]*:(?:[ \\t]|$)", line), (
+                assert re.match(r"^    [A-Za-z][A-Za-z0-9_-]*:(?:[ \t]|$)", line), (
                     f"{name}/{job}: noncanonical job-level YAML key: {line!r}"
                 )
         # A second job-level 'if:' can override an earlier false guard.
@@ -160,23 +160,23 @@ def test_rejects_unguarded_noncanonical_job_keys(injection):
 
 
 @pytest.mark.parametrize("injection", [
-    '"jobs":\\n  rogue:\\n    runs-on: ubuntu-latest\\n',
-    "'jobs':\\n  rogue:\\n    runs-on: ubuntu-latest\\n",
-    '"on":\\n  push:\\n',
-    "'on':\\n  push:\\n",
-    "? jobs\\n: {rogue: {runs-on: ubuntu-latest}}\\n",
+    '"jobs":\n  rogue:\n    runs-on: ubuntu-latest\n',
+    "'jobs':\n  rogue:\n    runs-on: ubuntu-latest\n",
+    '"on":\n  push:\n',
+    "'on':\n  push:\n",
+    "? jobs\n: {rogue: {runs-on: ubuntu-latest}}\n",
 ])
 def test_rejects_alternative_yaml_top_level_key_syntax(injection):
-    source = "on:\\n  workflow_dispatch:\\njobs:\\n  compute:\\n    if: ${{ false }}\\n" + injection
+    source = "on:\n  workflow_dispatch:\njobs:\n  compute:\n    if: ${{ false }}\n" + injection
     with pytest.raises(AssertionError, match="noncanonical top-level YAML key"):
         _assert_paused_workflow(source, "synthetic.yml")
 
 
 @pytest.mark.parametrize("injection", [
-    '    "if": ${{ true }}\\n',
-    "    'if': ${{ true }}\\n",
+    '    "if": ${{ true }}\n',
+    "    'if': ${{ true }}\n",
 ])
 def test_rejects_quoted_job_level_if_override(injection):
-    source = "on:\\n  workflow_dispatch:\\njobs:\\n  compute:\\n    if: ${{ false }}\\n" + injection
+    source = "on:\n  workflow_dispatch:\njobs:\n  compute:\n    if: ${{ false }}\n" + injection
     with pytest.raises(AssertionError, match="noncanonical job-level YAML key"):
         _assert_paused_workflow(source, "synthetic.yml")
