@@ -20,6 +20,23 @@ PAID_RESEARCH_WORKFLOWS = (
 )
 
 
+
+def _assert_canonical_top_level_keys(source: str):
+    # Regex-only checks for 'on:'/'jobs:' can miss valid quoted or explicit
+    # YAML keys that override an earlier guarded mapping. Require a small,
+    # canonical subset of top-level mapping syntax and reject duplicates.
+    seen = set()
+    for line in source.splitlines():
+        if not line.strip() or line.lstrip().startswith("#") or line[0].isspace():
+            continue
+        match = re.match(r"^([A-Za-z][A-Za-z0-9_-]*):(?:[ \\t]|$)", line)
+        assert match, f"noncanonical top-level YAML key: {line!r}"
+        key = match.group(1)
+        assert key not in seen, f"duplicate top-level YAML key: {key}"
+        seen.add(key)
+    assert {"on", "jobs"} <= seen, "on and jobs mappings are required"
+
+
 def _job_blocks(source: str):
     # Reject duplicate YAML keys: a later jobs/job key can replace an earlier
     # guarded block in parsers that silently accept duplicate mappings.
@@ -45,6 +62,7 @@ def _job_blocks(source: str):
 
 
 def _assert_paused_workflow(source: str, name: str):
+    _assert_canonical_top_level_keys(source)
     # Disallow inline/multi-trigger syntax; the only permitted trigger is a
     # top-level manual workflow_dispatch mapping, with no implicit extra events.
     on_headers = list(re.finditer(r"(?m)^on:[ \t]*$", source))
@@ -66,6 +84,14 @@ def _assert_paused_workflow(source: str, name: str):
     # Guard ALL jobs, not just jobs containing the literal 'modal run'. A new
     # job or a changed command spelling must not bypass the hold.
     for job, block in _job_blocks(source):
+        # A quoted/explicit YAML key can override an earlier unquoted 'if'.
+        # Reject noncanonical job-level keys instead of counting only ^    if:.
+        for line in block.splitlines():
+            if (line.startswith("    ") and not line.startswith("     ")
+                    and line.strip() and not line.lstrip().startswith("#")):
+                assert re.match(r"^    [A-Za-z][A-Za-z0-9_-]*:(?:[ \\t]|$)", line), (
+                    f"{name}/{job}: noncanonical job-level YAML key: {line!r}"
+                )
         # A second job-level 'if:' can override an earlier false guard.
         guards = [value.strip() for value in re.findall(r"(?m)^    if:[ \t]*(.*)$", block)]
         assert len(guards) == 1 and re.fullmatch(r"\$\{\{\s*false\s*\}\}", guards[0]), (
@@ -130,4 +156,27 @@ def test_rejects_duplicate_yaml_keys_that_can_override_pause(injection, expected
 def test_rejects_unguarded_noncanonical_job_keys(injection):
     source = "on:\n  workflow_dispatch:\njobs:\n  compute:\n    if: ${{ false }}\n" + injection
     with pytest.raises(AssertionError, match="noncanonical or unguarded job declaration"):
+        _assert_paused_workflow(source, "synthetic.yml")
+
+
+@pytest.mark.parametrize("injection", [
+    '"jobs":\\n  rogue:\\n    runs-on: ubuntu-latest\\n',
+    "'jobs':\\n  rogue:\\n    runs-on: ubuntu-latest\\n",
+    '"on":\\n  push:\\n',
+    "'on':\\n  push:\\n",
+    "? jobs\\n: {rogue: {runs-on: ubuntu-latest}}\\n",
+])
+def test_rejects_alternative_yaml_top_level_key_syntax(injection):
+    source = "on:\\n  workflow_dispatch:\\njobs:\\n  compute:\\n    if: ${{ false }}\\n" + injection
+    with pytest.raises(AssertionError, match="noncanonical top-level YAML key"):
+        _assert_paused_workflow(source, "synthetic.yml")
+
+
+@pytest.mark.parametrize("injection", [
+    '    "if": ${{ true }}\\n',
+    "    'if': ${{ true }}\\n",
+])
+def test_rejects_quoted_job_level_if_override(injection):
+    source = "on:\\n  workflow_dispatch:\\njobs:\\n  compute:\\n    if: ${{ false }}\\n" + injection
+    with pytest.raises(AssertionError, match="noncanonical job-level YAML key"):
         _assert_paused_workflow(source, "synthetic.yml")
